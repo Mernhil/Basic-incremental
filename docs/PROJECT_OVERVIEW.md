@@ -799,12 +799,11 @@ The hub is the main screen (DESIGN section 2, Base camp). `hub-wide-640x360.png`
 
 ### The table and its views (`src/renderer/src/table/`)
 
-- `contract.ts`: a view is a `ViewDef` (id, title, optional dock `pile`, `mount(host, ctx, api)` called once at start) returning a `ViewHandle` (`render()`, optional `opened` / `closed`). A `TablePieceDef` is a live table piece (`centre`, `left`, `right`) that opens a view. `TableContext` is what `app.ts` hands every view.
-- `viewIds.ts` lists the fourteen ids (`training` and `expeditions` are new); `registry.ts` collects the four view packages and fixes the dock order (`DOCK`).
+- `contract.ts`: a view is a `ViewDef` (id, title, optional dock `pile`, `mount(host, ctx, api)` called once at start) returning a `ViewHandle` (`render()`, optional `opened` / `closed`). A `TablePieceDef` is a live table piece (`centre`, `left`, `right`) that opens a view; the dungeon window has `view: null` (it opens nothing: it is the one dungeon view). `TableContext` is what `app.ts` hands every view.
+- `viewIds.ts` lists the fourteen ids (no `dungeon`: the dungeon is the table's second screen, not a view) (`training` and `expeditions` are new); `registry.ts` collects the four view packages and fixes the dock order (`DOCK`).
 
 | Id                                           | Opened from                                  | Defined in                  | Drawn by                                                       |
 | -------------------------------------------- | -------------------------------------------- | --------------------------- | -------------------------------------------------------------- |
-| `dungeon`                                    | centre piece                                 | `views/dungeon/index.ts`    | `stage/arena.ts`, `pages/dungeons.ts`                          |
 | `logging`, `mining`                          | building (forest, mine)                      | `views/gathering/index.ts`  | `views/gathering/camp.ts`                                      |
 | `training`, `expeditions`                    | building (Training ground, Expedition board) | `views/gathering/index.ts`  | `views/gathering/training.ts`, `expeditions.ts`                |
 | `forge`                                      | pile                                         | `views/gathering/index.ts`  | `views/gathering/forge.ts`                                     |
@@ -854,9 +853,9 @@ A view is one full screen the player opens from the table (see Shell and table).
 
 ### `views/dungeon`
 
-- `index.ts`: the table's centre piece and the `dungeon` view share one duel element (`stage/arena.ts`, see Fights), moved between them on open and close.
+- `index.ts`: the dungeon window, the only dungeon view, filling the whole area under the header (`table.css`: no wings, no side gaps) (there is no full-screen dungeon view and no expand button). It holds the duel element (`stage/arena.ts`, see Fights) with its own Challenge, auto and Speed controls, and the Dungeons, Weapon and Training buttons. Goals that point at the dungeons go to the dungeon screen (`app.ts` `goTo`).
 - `stage/duelPace.ts` publishes the pace the duel's animations play at while a sped-up Challenge runs (`duelPace`, `paced`, CSS `--pace`); hits, numbers, boss hits and the cut-in follow it. The duel's Speed button (`data-key="arena-speed"`, in `stage/arena.ts`) cycles the open speeds; `app.ts` passes the choice in as `TableContext.duelSpeed`.
-- The view's title bar holds three buttons, Dungeons, Weapon and Training. Each opens its panel (built by `pages/dungeons.ts` `createDungeonPanels`, see Screens) as a sheet over the running fight; the same button, the back button or Esc closes it.
+- The window's top left holds three buttons, Dungeons, Weapon and Training (`.dv-buttons`). Each opens its panel (built by `pages/dungeons.ts` `createDungeonPanels`, see Screens) as a sheet over the running fight; the same button, the back button or Esc closes it.
 - `duelModel.ts`: hand layout, slot colours, enemy pips, feed lines, stat sheet rows, skill plate queue; read by `stage/arena.ts`.
 
 ### `views/gathering`
@@ -1004,7 +1003,7 @@ Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view dat
 
 ### Dungeon panels (`dungeons.ts`, `dungeonsModel.ts`)
 
-- `createDungeonPanels` builds three panels that the `dungeon` view (`views/dungeon/index.ts`) opens as a sheet over the running fight, from its Dungeons, Weapon and Training buttons.
+- `createDungeonPanels` builds three panels that the dungeon window (`views/dungeon/index.ts`) opens as a sheet over the running fight, from its Dungeons, Weapon and Training buttons.
 - **Dungeons.** Left: dungeons and trials with stars and medals (`bossMastery`). Right, for the picked one: difficulty tiers (`setDifficulty`), Fight here (`pickDungeon`), the stage map, a row per stage and a column per tier (`stageMap`), with Overflow switches (`setOverflow`), a line naming the boss's weakness and resistance with their percents and that Wood to Prismatic cards do base damage (`bossElements` in `dungeonsModel.ts`, tested in `tests/dungeonsModel.test.ts`), trial rewards (`trialRewards`), and the drops of the dungeon being fought (`effectiveDrops`, `bossStatus`). See Dungeons, floors and stages.
 - **Weapon.** The weapon panel (`ui/weaponPanel.ts`) of a card in the fighting loadout, switched by tabs. **Training.** `createTrainingPanel` (`ui/training.ts`).
 - `dungeonsModel.ts` also feeds the duel (`stage/arena.ts`): `barsGone`, `healthPercent`, `challengeButton`, `challengeVerdict`. Its `overflowSwitch` is unused. `bossElements` gives the panel's element line: the boss's element, what it is weak to and what it resists.
