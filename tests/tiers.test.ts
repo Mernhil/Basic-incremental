@@ -355,12 +355,7 @@ describe('the three new dungeons', () => {
       ['void_hollow', 'Hollow of the Void', 60, 'sunken_sanctum'],
     ]);
     expect(later.map((d) => [d.boss.name, ...d.enemies.map((e) => e.name)])).toEqual([
-      [
-        'Abyssal Anchor Leviathan',
-        'Abyssal Sharkfang Raider',
-        'Gothic Corsair',
-        'Obsidian Crab Green',
-      ],
+      ['Abyssal Anchor Leviathan', 'Drowned Deckhand', 'Gothic Corsair', 'Obsidian Crab Green'],
       [
         'Sanctuary Archangel',
         'Golden Cross Novice Priestess',

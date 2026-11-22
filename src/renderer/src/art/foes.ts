@@ -29,9 +29,11 @@ export const FOE_H = 172;
 /** The row the feet stand on in the canvas (scripts/art/cut-pack.py), the origin of a zoom. */
 const FOE_GROUND = 166;
 
-/** Whether a foe picture (still and idle strip) exists for this sprite id. */
-export const hasFoeSprite = (id: string | undefined): boolean =>
-  !!id && !!sprite(`foe-${id}`) && !!strip(`foe-${id}`);
+/**
+ * Whether a foe picture exists for this sprite id: the still, with an idle strip beside it for the
+ * pack enemies. The newer approved pictures are stills only (no idle loop, shown as one frame).
+ */
+export const hasFoeSprite = (id: string | undefined): boolean => !!id && !!sprite(`foe-${id}`);
 
 type FxKind = 'sea' | 'angel' | 'void';
 /** The bosses with an aura and an idle effect layer. */
@@ -47,6 +49,11 @@ const FX: Readonly<Record<string, { glow: string; kind: FxKind }>> = {
  */
 export const foeZoom = (id: string): number =>
   FX[id] ? 1 : ((ZOOM as Record<string, number>)[id] ?? 1);
+
+const zoomStyle = (id: string): string => {
+  const z = foeZoom(id);
+  return z > 1 ? `transform:scale(${z});transform-origin:50% ${(FOE_GROUND / FOE_H) * 100}%;` : '';
+};
 
 interface Speck {
   x: number;
@@ -212,14 +219,18 @@ export function placeholderHtml(scale: number): string {
  */
 export function foeHtml(id: string, scale: number): string {
   const s = strip(`foe-${id}`);
-  if (!s) return placeholderHtml(scale);
+  const still = sprite(`foe-${id}`);
+  if (!s && !still) return placeholderHtml(scale);
   const w = FOE_W * scale;
   const h = FOE_H * scale;
+  if (!s) {
+    // a still picture: one frame, drawn like the strip but with no animation
+    const zoom = zoomStyle(id);
+    return `<div class="bi-foe" data-sprite="foe-${id}" aria-hidden="true" style="width:${w}px;height:${h}px;${zoom}background-image:url(${still!.url});background-size:100% 100%;background-repeat:no-repeat;image-rendering:pixelated"></div>`;
+  }
   const fx = FX[id];
   if (!fx) {
-    const z = foeZoom(id);
-    const zoom =
-      z > 1 ? `transform:scale(${z});transform-origin:50% ${(FOE_GROUND / FOE_H) * 100}%;` : '';
+    const zoom = zoomStyle(id);
     return `<div class="bi-px-anim bi-foe" data-sprite="foe-${id}" aria-hidden="true" style="width:${w}px;height:${h}px;${zoom}${stripStyle(s)}"></div>`;
   }
   const inner =

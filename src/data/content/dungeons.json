@@ -10,7 +10,7 @@
         "id": "moss_slime",
         "name": "Woodland Stalker Wolf",
         "hpWeight": 1,
-        "sprite": "woodland_stalker_wolf"
+        "sprite": "moss_slime"
       },
       {
         "id": "root_sprite",
@@ -22,7 +22,7 @@
         "id": "bramble_beast",
         "name": "Plague Doctor",
         "hpWeight": 1.5,
-        "sprite": "plague_doctor"
+        "sprite": "bramble_beast"
       }
     ],
     "miniBoss": {
@@ -182,13 +182,13 @@
         "id": "frost_imp",
         "name": "Ivory Direwolf",
         "hpWeight": 1,
-        "sprite": "ivory_direwolf"
+        "sprite": "frost_imp"
       },
       {
         "id": "ice_wisp",
         "name": "Ice Sorceress",
         "hpWeight": 0.7,
-        "sprite": "ice_sorceress"
+        "sprite": "ice_wisp"
       },
       {
         "id": "snow_wolf",
@@ -264,15 +264,15 @@
     "enemies": [
       {
         "id": "spark_wisp",
-        "name": "Abyssal Sharkfang Raider",
+        "name": "Drowned Deckhand",
         "hpWeight": 0.7,
-        "sprite": "abyssal_sharkfang_raider"
+        "sprite": "drowned_deckhand"
       },
       {
         "id": "gale_harpy",
         "name": "Gothic Corsair",
         "hpWeight": 1,
-        "sprite": "gothic_corsair"
+        "sprite": "storm_harpy"
       },
       {
         "id": "thunder_ram",
@@ -350,13 +350,13 @@
         "id": "lantern_moth",
         "name": "Golden Cross Novice Priestess",
         "hpWeight": 0.7,
-        "sprite": "golden_cross_novice_priestess"
+        "sprite": "lantern_moth"
       },
       {
         "id": "gilded_acolyte",
         "name": "Ivory Sun Priestess",
         "hpWeight": 1,
-        "sprite": "ivory_sun_priestess"
+        "sprite": "gilded_acolyte"
       },
       {
         "id": "marble_sentinel",
@@ -434,7 +434,7 @@
         "id": "shade_mote",
         "name": "Shadow Slime",
         "hpWeight": 0.7,
-        "sprite": "shadow_slime"
+        "sprite": "shade_mote"
       },
       {
         "id": "hollow_stalker",
@@ -446,7 +446,7 @@
         "id": "rift_maw",
         "name": "Bloodroot Black",
         "hpWeight": 1.5,
-        "sprite": "bloodroot_black"
+        "sprite": "rift_maw"
       }
     ],
     "miniBoss": {
