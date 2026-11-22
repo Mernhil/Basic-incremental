@@ -25,7 +25,7 @@ export const GATHERING_COPY = {
   emptyPlace: 'No worker: plain rate. Click to place a card.',
   emptyNoSlot: 'No worker, and no free slot. Click to swap a card in.',
   levelUp: (n: number, max: boolean) =>
-    max ? `Level up max (${n})` : n === 1 ? 'Level up' : `Level up ×${n}`,
+    max ? `Level up ×${n} (max)` : n === 1 ? 'Level up' : `Level up ×${n}`,
   unlock: 'Unlock',
   unlockFor: (price: string) => `Unlock for ${price}`,
   clearToUnlock: (dungeon: string) => `Clear ${dungeon} to unlock`,

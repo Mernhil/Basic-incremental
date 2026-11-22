@@ -90,10 +90,6 @@ _Why (user, 2026-11-20): "another thing we need to work on ... is tghe summoning
 - [To build] **Frames made by the user** (user, 2026-11-12: "sure we'll customize frames as well since you mentioned it but chat does that not you"). The user has ChatGPT design more card frames; Claude does not design them. Today: no frame cosmetics made by the user beyond the existing borders and card kits.
 - [To build] **New finish, tick and number items** (user, 2026-11-12: "throw all away and redo a new batch"). A new batch of items for each of the three empty slots: finishes done well, and damage-number styles made for the redone number display. Today: the three slots exist with no items.
 
-### Screens
-
-- [To build] **The Upgrades tab is made easy to use** (user, 2026-11-22: "also the upgrades tab is also kinda weird and not good to use"; picking its two worst problems: "3 a and c"). A player can tell what an upgrade does before buying it, and buying takes fewer clicks, with buy x10 and buy max. Today: the Upgrades view is three panels (Logging, Mining, Training) listing every line's milestones, as the overview describes.
-
 ### Account
 
 - [To build] **Account level rework** (user, 2026-11-15: "account level should probably be less incremental at cap at like 500, just as a general direction then you fix it a bit at level 0-50 early game 50-100 mid game 100-200 early endgame 200+ endgame"). Account levels get a much flatter XP curve and a cap of about 500, in four bands: 0 to 50 early game, 50 to 100 mid game, 100 to 200 early endgame, 200 and up endgame; the reward track, skill points and the loadout cost cap's growth spread over those levels. The exact numbers are Claude's to tune. Today: there is no level cap and each level costs a fixed factor more XP than the one before.

@@ -97,6 +97,56 @@ export function createBuyToggle(): HTMLElement {
   return group;
 }
 
+/** First repeat after this long a button is held, then every REPEAT_MS. */
+export const HOLD_DELAY_MS = 450;
+export const HOLD_REPEAT_MS = 110;
+
+/**
+ * Holding a buy button keeps buying at a steady rate until the press ends, the pointer leaves, or
+ * the button turns unaffordable (`buy` runs the purchase and refreshes the button, whose
+ * aria-disabled says whether another is possible). A short press stays a plain click, so keyboard
+ * and repeated clicks behave as before; the click that ends a hold is swallowed.
+ */
+export function holdToBuy(el: HTMLElement, buy: () => void): void {
+  let delay = 0;
+  let repeat = 0;
+  let held = false;
+  const stop = (): void => {
+    window.clearTimeout(delay);
+    window.clearInterval(repeat);
+    delay = 0;
+    repeat = 0;
+  };
+  const off = (): boolean => el.getAttribute('aria-disabled') === 'true';
+  const tick = (): void => {
+    if (off()) return stop();
+    buy();
+    if (off()) stop();
+  };
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || off()) return;
+    held = false;
+    stop();
+    delay = window.setTimeout(() => {
+      held = true;
+      tick();
+      if (!off()) repeat = window.setInterval(tick, HOLD_REPEAT_MS);
+    }, HOLD_DELAY_MS);
+  });
+  for (const type of ['pointerup', 'pointerleave', 'pointercancel'])
+    el.addEventListener(type, stop);
+  // the click that ends a hold would buy once more
+  el.addEventListener(
+    'click',
+    (e) => {
+      if (!held) return;
+      held = false;
+      e.stopImmediatePropagation();
+    },
+    true,
+  );
+}
+
 export interface BuyButton {
   el: HTMLButtonElement;
   update(view: BuyLineView): void;
@@ -130,6 +180,7 @@ export function createBuyButton(onBuy: () => void, compact = false): BuyButton {
     if (el.getAttribute('aria-disabled') === 'true') return;
     onBuy();
   });
+  holdToBuy(el, () => onBuy());
   const set = (node: HTMLElement, text: string): void => {
     if (node.textContent !== text) node.textContent = text;
   };

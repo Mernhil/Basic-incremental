@@ -93,6 +93,21 @@
 .ur__after {
   color: #8af06a;
 }
+.ur__tag,
+.ur__scope {
+  font-size: 10.5px;
+  color: var(--bi-frame-ink-muted);
+  white-space: nowrap;
+}
+.ur__delta {
+  font-size: 11.5px;
+  color: #8af06a;
+  white-space: nowrap;
+}
+.ur__delta:empty,
+.ur__togo:empty {
+  display: none;
+}
 .ur__arrow {
   color: var(--bi-frame-ink-muted);
 }
