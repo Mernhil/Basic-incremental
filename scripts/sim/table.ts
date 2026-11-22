@@ -25,7 +25,7 @@ import {
   isOnTrip,
   isRestricted,
   isTripDone,
-  activeWorkers,
+  slotWorkers,
   loadoutCards,
   openPlaces,
   resolvePortal,
@@ -35,7 +35,7 @@ import {
   startTrip,
   survivalSeconds,
   teamMaxHealth,
-  workerSlots,
+  openSlots,
   workersUsed,
   type CardLoadout,
   type Difficulty,
@@ -232,7 +232,10 @@ export function teamRoles(state: GameState, content: Content): string {
 export function wantsCardsNow(state: GameState, content: Content): boolean {
   const team = state.cards.loadouts.fighting;
   if (team.slots.some((s) => s === null)) return true;
-  return workersUsed(state, content) < workerSlots(state, content);
+  return (
+    workersUsed(state, content) <
+    openSlots(state, content, 'forest') + openSlots(state, content, 'cave')
+  );
 }
 
 /**
@@ -360,7 +363,7 @@ export function runExpeditions(
   if (current.expeditions.trips.length >= slots) return { state: current, income };
   const busy = new Set<string>([
     ...loadoutCards(current.cards.loadouts.fighting),
-    ...Object.values(activeWorkers(current, content)).flat(),
+    ...slotWorkers(current, content).map((w) => w.card),
   ]);
   const forge = forgeWorker(current, content);
   if (forge) busy.add(forge);

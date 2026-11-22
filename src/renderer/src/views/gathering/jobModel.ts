@@ -1,50 +1,13 @@
 import type { Content } from '../../../../data';
-import {
-  Decimal,
-  forgeStatus,
-  toolLines,
-  type GameState,
-  type Modifier,
-  type ProductionJob,
-} from '../../../../game';
+import { Decimal, forgeStatus, type GameState } from '../../../../game';
 import { ITEM_VIEWBOX } from '../../art/items';
 import { fmt } from '../../settings/numberFormat';
 import { GATHERING_COPY as T } from './copy';
 
 /**
- * View models of the Logging, Mining and Forge views (UI_RULES.md §2; table update 9b). Display
+ * View models of the Forge view (UI_RULES.md §2; table update 9b). Display
  * logic only: the game decides every number; this picks and words them. Pure, no DOM, unit tested.
  */
-
-/** "Tools · 2 ready" for a job's tool lines (how many the held gems can buy now). */
-export function toolsReady(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  mods: readonly Modifier[],
-): number {
-  return toolLines(state, content, job, 1, mods).filter((t) => t.offer.affordable).length;
-}
-
-/** "Worker slots: 4 of 4 in use". */
-export function slotsLine(used: number, total: number): string {
-  return T.slotsInUse(used, total);
-}
-
-/** A worker's one-line power and strike text: "power ×3.2 · strikes every 1 s". */
-export function workerLine(power: string, strikeSeconds: number | null): string {
-  const power_ = T.power(power);
-  if (strikeSeconds === null || !Number.isFinite(strikeSeconds) || strikeSeconds <= 0)
-    return power_;
-  const s = strikeSeconds >= 10 ? Math.round(strikeSeconds) : +strikeSeconds.toFixed(1);
-  return `${power_} · ${T.strikesEvery(s)}`;
-}
-
-/** "gauge 20 / 30": how many of the gauge's steps are filled. */
-export function gaugeLine(gauge: number, size: number): string {
-  const n = Math.min(size, Math.max(0, Math.round(gauge * size)));
-  return T.gauge(n, size);
-}
 
 /** Crafts a minute of the forge, "0.8 crafts a minute", from work per second and the recipe's work. */
 export function craftsPerMinute(speed: Decimal, work: Decimal): string {
@@ -68,20 +31,6 @@ export function forgeFlow(state: GameState, content: Content): ForgeFlow | null 
     inputs: recipe.inputs.map((i) => ({ resource: i.resource, amount: fmt(i.amount) })),
     output: { resource: recipe.output.resource, amount: fmt(recipe.output.amount) },
   };
-}
-
-/**
- * Seconds between a worker's strikes, read from how far the next one is: `inSeconds` is what is
- * left of `1 - progress` of one period. Null with no worker, or near the end of a period (the
- * quotient is unsteady there; the caller keeps its last value).
- */
-export function strikeSeconds(target: {
-  worker: unknown;
-  nextStrike: { progress: number; inSeconds: number };
-}): number | null {
-  const { progress, inSeconds } = target.nextStrike;
-  if (!target.worker || progress >= 0.9 || inSeconds <= 0) return null;
-  return inSeconds / (1 - progress);
 }
 
 /** An item's art markup (the `<g>` of `cardItemArt`) wrapped as a drawing of its own. */

@@ -24,6 +24,8 @@ export const DOCK: readonly ViewId[] = [
   'skills',
   'achievements',
   'shop',
+  'logging',
+  'mining',
   'forge',
   'upgrades',
   'settings',

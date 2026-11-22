@@ -33,6 +33,7 @@ import {
   freshState,
   newGame,
   withDps,
+  withFarmers,
 } from './helpers';
 
 /** Only account levels give skill points here (see `levelPointsOnly`). */
@@ -63,7 +64,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
   });
 
   it('comes from harvests, weighted by gem tier', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     const after = advance(state, content, 10_000, constantRng(0.5)).state;
     const oak = after.mastery.harvested['oak_gem']!.toNumber();
     const copper = after.mastery.harvested['copper_gem']!.toNumber();
@@ -73,7 +74,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
   });
 
   it('comes from kills, more for harder dungeons', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     // The first boss falls within the 3 s (after 2 s), once.
     const hp = content.dungeons[0]!.boss.hp.toNumber();
     const { state: after, report } = advance(
@@ -110,8 +111,9 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
   it('goes through xp.account', () => {
     const state = bareState();
     state.account.skills['collection_s2'] = 2;
+    withFarmers(state);
     const boosted = advance(state, content, 10_000, constantRng(0.5)).state;
-    const plain = advance(bareState(), content, 10_000, constantRng(0.5)).state;
+    const plain = advance(withFarmers(bareState()), content, 10_000, constantRng(0.5)).state;
     expect(boosted.account.xp.div(plain.account.xp).toNumber()).toBeCloseTo(1.1, 6);
   });
 });

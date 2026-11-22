@@ -9,7 +9,6 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
-import { formatWait } from './productionModel';
 
 /**
  * Display logic of the forge panel on the Production page (DESIGN.md §4 The forge): the recipes,
@@ -87,4 +86,22 @@ export function forgeView(state: GameState, content: Content): ForgeView {
     status: line,
     speed: status.worker ? t.speed(fmt(status.speed)) : '',
   };
+}
+
+/**
+ * A wait in seconds as the Next buy column shows it (DESIGN.md §4): days and hours, hours and
+ * minutes, minutes and seconds, or seconds. No income, and absurdly long waits, show a dash.
+ */
+export function formatWait(seconds: number | null): string {
+  const t = COPY.production;
+  if (seconds === null || !Number.isFinite(seconds)) return t.waitNever;
+  const total = Math.max(1, Math.ceil(seconds));
+  const days = Math.floor(total / 86_400);
+  if (days > 999) return t.waitNever;
+  if (days > 0) return t.waitDays(days, Math.floor((total % 86_400) / 3600));
+  const hours = Math.floor(total / 3600);
+  if (hours > 0) return t.waitHours(hours, Math.floor((total % 3600) / 60));
+  const minutes = Math.floor(total / 60);
+  if (minutes > 0) return t.waitMinutes(minutes, total % 60);
+  return t.waitSeconds(total);
 }

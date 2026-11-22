@@ -3,8 +3,7 @@ import {
   activeBonds,
   advance,
   advanceChunked,
-  applyProductionPreset,
-  assignWorker,
+  assignSlotCard,
   bondCodex,
   checkBonds,
   collectModifiers,
@@ -14,7 +13,6 @@ import {
   newOwnedCard,
   pickDungeon,
   recallTrip,
-  saveProductionPreset,
   setLoadoutSlot,
   settleBonds,
   simulateOffline,
@@ -41,6 +39,12 @@ function equip(state: GameState, ...ids: string[]): GameState {
     s = r.state;
   });
   return s;
+}
+
+function assignSlotCardOk(s: GameState, index: number, card: string): GameState {
+  const r = assignSlotCard(s, content, 'forest', index, card);
+  if (!r.ok) throw new Error(r.reason);
+  return r.state;
 }
 
 describe('bonds', () => {
@@ -76,17 +80,11 @@ describe('bonds', () => {
     expect(many.discoveredBonds).toEqual(one.discoveredBonds);
   });
 
-  it('pairs workers of one job at any of their places', () => {
+  it('pairs workers of one job at any of their slots', () => {
     let s = own(bareState(), 'apprentice_feller', 'elder_treant');
-    s.production.unlockedTrees = ['ironbark', 'moonwillow'];
-    for (const [place, card] of [
-      ['ironbark', 'apprentice_feller'],
-      ['moonwillow', 'elder_treant'],
-    ] as const) {
-      const r = assignWorker(s, content, place, card);
-      expect(r.ok).toBe(true);
-      if (r.ok) s = r.state;
-    }
+    s.camp.level = 3;
+    s = assignSlotCardOk(s, 0, 'apprentice_feller');
+    s = assignSlotCardOk(s, 1, 'elder_treant');
     expect(activeBonds(s, content).map((b) => b.id)).toEqual(['old_growth']);
   });
 });
@@ -145,53 +143,6 @@ describe('dungeon presets', () => {
   });
 });
 
-describe('production presets', () => {
-  function working(): GameState {
-    let s = own(bareState(), 'apprentice_feller', 'elder_treant');
-    s.production.unlockedTrees = ['ironbark', 'moonwillow'];
-    for (const [place, card] of [
-      ['ironbark', 'apprentice_feller'],
-      ['moonwillow', 'elder_treant'],
-    ] as const) {
-      const r = assignWorker(s, content, place, card);
-      if (r.ok) s = r.state;
-    }
-    return s;
-  }
-
-  it('saves the job’s workers and puts them back', () => {
-    let s = working();
-    const saved = saveProductionPreset(s, content, 'logging', 1, 'Fast');
-    expect(saved.ok).toBe(true);
-    s = (saved as { state: GameState }).state;
-    expect(s.presets.production.logging[1]).toMatchObject({ name: 'Fast' });
-    s.production.workers = {};
-    const applied = applyProductionPreset(s, content, 'logging', 1);
-    expect(applied.ok && applied.missing).toBe(0);
-    expect((applied as { state: GameState }).state.production.workers).toEqual({
-      ironbark: ['apprentice_feller'],
-      moonwillow: ['elder_treant'],
-    });
-  });
-
-  it('flags what does not fit and leaves the other job alone', () => {
-    let s = working();
-    s = (saveProductionPreset(s, content, 'logging', 0) as { state: GameState }).state;
-    s.production.unlockedTrees = ['ironbark'];
-    s.production.workers['copper_quarry'] = ['cave_digger'];
-    const applied = applyProductionPreset(s, content, 'logging', 0);
-    expect(applied.ok && applied.missing).toBe(1);
-    expect((applied as { state: GameState }).state.production.workers['copper_quarry']).toEqual([
-      'cave_digger',
-    ]);
-    expect(applyProductionPreset(s, content, 'mining', 2)).toEqual({ ok: false, reason: 'empty' });
-    expect(saveProductionPreset(bareState(), content, 'mining', 0)).toEqual({
-      ok: false,
-      reason: 'empty',
-    });
-  });
-});
-
 describe('expeditions', () => {
   function ready(): GameState {
     const s = own(bareState(), 'ember_squire', 'dawnblade_regent', 'apprentice_feller');
@@ -237,12 +188,7 @@ describe('expeditions', () => {
       ok: false,
       reason: 'in-loadout',
     });
-    const worker = assignWorker(
-      Object.assign(s, { production: { ...s.production, unlockedTrees: ['oak'] } }),
-      content,
-      'oak',
-      'apprentice_feller',
-    );
+    const worker = assignSlotCard(s, content, 'forest', 0, 'apprentice_feller');
     expect(worker.ok).toBe(true);
     expect(
       startTrip(
@@ -257,7 +203,13 @@ describe('expeditions', () => {
     const away = trip(s, 'ember_squire');
     const r = setLoadoutSlot(away, content, 'fighting', 0, 'ember_squire');
     expect(r).toEqual({ ok: false, reason: 'on-expedition' });
-    const w = assignWorker(trip(s, 'apprentice_feller'), content, 'oak', 'apprentice_feller');
+    const w = assignSlotCard(
+      trip(s, 'apprentice_feller'),
+      content,
+      'forest',
+      0,
+      'apprentice_feller',
+    );
     expect(w).toEqual({ ok: false, reason: 'on-expedition' });
   });
 

@@ -77,12 +77,10 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
   switch (condition.kind) {
     case 'harvested':
     case 'workers':
-    case 'tool_levels':
-    case 'depth':
+    case 'camp_level':
     case 'forge_working':
     case 'expeditions_done':
     case 'producers':
-    case 'milestone':
     case 'gem_mastery':
       return 'gathering';
     case 'kills':

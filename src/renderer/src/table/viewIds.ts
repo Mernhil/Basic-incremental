@@ -10,6 +10,8 @@ export const VIEW_IDS = [
   'achievements',
   'shop',
   'forge',
+  'training',
+  'expeditions',
   'upgrades',
   'settings',
 ] as const;

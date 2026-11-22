@@ -9,7 +9,8 @@ import {
   ascensionPreview,
   collectModifiers,
   Decimal,
-  productionPerSecond,
+  campPerSecond,
+  campLevel,
   secondsPerKill,
   survivalSeconds,
   type GameState,
@@ -45,13 +46,10 @@ function row(state: GameState, t: number): string {
       return `${d.id.slice(0, 5)} ${spk === null ? '-' : sci(spk)}s/${surv === null ? '-' : sci(surv)}s`;
     })
     .join(' | ');
-  const prod = Object.entries(productionPerSecond(state, content, modifiers))
+  const prod = Object.entries(campPerSecond(state, content, modifiers))
     .map(([id, rate]) => `${id.replace('_gem', '')} ${sci(rate)}`)
     .join(', ');
-  const levels = [
-    ...content.trees.map((x) => state.production.treeLevels[x.id] ?? 0),
-    ...content.mines.map((x) => state.production.mineLevels[x.id] ?? 0),
-  ].join('/');
+  const levels = String(campLevel(state));
   const cards = Object.values(state.cards.owned);
   const best = (job: string): string => {
     const c = Object.entries(state.cards.owned)
