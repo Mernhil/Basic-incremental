@@ -14,6 +14,7 @@ import './recipes.css';
 import './frames.css';
 import './shellPictures.css';
 import './shellOak.css';
+import './shellGold.css';
 
 const RECIPE_PREFIX = 'r-';
 

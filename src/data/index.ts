@@ -7,6 +7,7 @@ import {
   cardStyle,
   contentSchemas,
 } from './schemas';
+import { UI_LOOKS_VAULTED, VAULT_TABLE_ID, isUiLookSlot } from './vault';
 import type {
   AscensionChallenge,
   Batch,
@@ -94,6 +95,7 @@ import questsJson from './content/quests.json';
 import webJson from './content/web.json';
 
 export * from './schemas';
+export { UI_LOOKS_VAULTED, UI_LOOK_SLOTS, VAULT_TABLE_ID, isUiLookSlot } from './vault';
 
 export interface Content {
   resources: Resource[];
@@ -178,6 +180,8 @@ export interface Content {
   /** The starter item of each slot (validated: exactly one per slot). */
   /** The starter of each slot that has items; a slot with no items yet (finish, tick, number) has none. */
   starterBySlot: Readonly<Partial<Record<CosmeticSlot, Cosmetic>>>;
+  /** True while the UI look cosmetics are vaulted (data/vault.ts): their slots show the starter. */
+  uiLooksVaulted: boolean;
   /** Bonds between pairs of cards (DESIGN.md §15 Bonds). Save format 27; the rule is not built. */
   bonds: Bond[];
   bondById: ReadonlyMap<string, Bond>;
@@ -333,6 +337,49 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     }),
   ) as Partial<Record<CosmeticSlot, Cosmetic>>;
 
+  // The UI look vault: what is not offered is cut from the lists that offer it, the items turn hidden,
+  // and the table starter is the vault table. The save is not touched (ids stay known).
+  const vaulted = options.uiLooksVaulted ?? UI_LOOKS_VAULTED;
+  const gone = new Set(
+    vaulted ? cosmetics.filter((c) => isUiLookSlot(c.slot)).map((c) => c.id) : [],
+  );
+  if (vaulted) {
+    const table = cosmetics.find((c) => c.id === VAULT_TABLE_ID);
+    if (table) starterBySlot.table = table;
+  }
+  const keep = (id: string) => !gone.has(id);
+  const vaultedCosmetics = vaulted
+    ? cosmetics.map((c) => (gone.has(c.id) ? { ...c, hidden: true } : c))
+    : cosmetics;
+  const vaultedAchievements = vaulted
+    ? achievements.map((a) => ({
+        ...a,
+        reward: { ...a.reward, cosmetics: a.reward.cosmetics.filter(keep) },
+      }))
+    : achievements;
+  const vaultedPrestige = vaulted
+    ? {
+        ...prestige,
+        rewards: prestige.rewards
+          .map((r) => ({ ...r, cosmetics: r.cosmetics.filter(keep) }))
+          .filter((r) => r.cosmetics.length > 0),
+      }
+    : prestige;
+  const vaultedAccount = vaulted
+    ? {
+        ...account,
+        rewardTrack: account.rewardTrack.map((r) => ({
+          ...r,
+          cosmetics: r.cosmetics.filter(keep),
+        })),
+      }
+    : account;
+  const vaultedShardShop = vaulted
+    ? shardShop.filter((i) => !(i.reward.kind === 'cosmetic' && gone.has(i.reward.cosmetic)))
+    : shardShop;
+  const vaultPool = (p: Portal): Portal =>
+    vaulted && p.kind === 'cosmetics' ? { ...p, pool: p.pool.filter((e) => keep(e.itemId)) } : p;
+
   return {
     resources,
     trees,
@@ -344,24 +391,25 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     allDungeons: dungeons,
     trials,
     combat,
-    cosmetics,
-    portals: portals.filter((p) => p.enabled),
-    allPortals: portals,
+    cosmetics: vaultedCosmetics,
+    uiLooksVaulted: vaulted,
+    portals: portals.filter((p) => p.enabled).map(vaultPool),
+    allPortals: portals.map(vaultPool),
     rarities,
     batches,
     batchById: new Map(batches.map((b) => [b.id, b])),
     wearRules,
     sets,
     progression,
-    prestige,
+    prestige: vaultedPrestige,
     cosmeticRules,
-    achievements,
+    achievements: vaultedAchievements,
     quests,
     questById: new Map(quests.map((q) => [q.id, q])),
     web,
     webNodeById: new Map(web.nodes.map((n) => [n.id, n])),
-    shardShop,
-    account,
+    shardShop: vaultedShardShop,
+    account: vaultedAccount,
     enhancements,
     perks,
     weaponSkins,
@@ -384,7 +432,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
-    cosmeticById: new Map(cosmetics.map((x) => [x.id, x])),
+    cosmeticById: new Map(vaultedCosmetics.map((x) => [x.id, x])),
     rarityById: new Map(rarities.map((r) => [r.id, r])),
     setById: new Map(sets.map((x) => [x.id, x])),
     weaponSkinsByWeapon: new Map(weaponSkins.map((w) => [w.weapon, w])),
@@ -1510,6 +1558,8 @@ export interface ContentOptions {
   /** Also open the dungeons that wait for their theme (`enabled: false`), with their
    *  placeholder names and drops. For dev builds and the sim only. */
   unreleased?: boolean;
+  /** The UI look vault (data/vault.ts); the default is `UI_LOOKS_VAULTED`. Tests pass false. */
+  uiLooksVaulted?: boolean;
 }
 
 /** Loads and validates the bundled game data. Call once at startup. */

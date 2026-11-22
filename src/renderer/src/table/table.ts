@@ -1,4 +1,4 @@
-import { navPlaque, PLAQUE_VIEWBOX, svg } from '../art/gems';
+import { goldIcon, type GoldIcon } from '../art/goldIcons';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import type { PileHint, TableContext, TablePieceDef, ViewDef, ViewId } from './contract';
@@ -30,6 +30,19 @@ export interface Table {
 }
 
 /** Elements inside a piece that keep their own click (they never open the view). */
+/** The gold icon of each dock pile (art/goldIcons.ts); the pile's id is its view's id. */
+const DOCK_ICON: Partial<Record<ViewId, GoldIcon>> = {
+  cards: 'cards',
+  summon: 'summon',
+  wardrobe: 'wardrobe',
+  skills: 'skill_tree',
+  achievements: 'achievements',
+  shop: 'shop',
+  forge: 'forge',
+  upgrades: 'upgrades',
+  settings: 'settings',
+};
+
 const OWN_CLICK =
   'button, a, input, select, textarea, label, summary, [role="button"], [role="tab"], [role="switch"], [tabindex]:not([tabindex="-1"])';
 
@@ -94,7 +107,7 @@ export function createTable(): Table {
     const stack = h('span', 'tbl-pile__stack');
     stack.setAttribute('aria-hidden', 'true');
     const card = h('span', 'tbl-pile__card');
-    if (def.pile) card.innerHTML = svg(navPlaque(def.pile.glyph), PLAQUE_VIEWBOX);
+    if (def.pile) card.innerHTML = goldIcon(DOCK_ICON[def.id] ?? 'settings', 'dock');
     stack.append(card);
     const name = h('b', 'tbl-pile__name px-display', def.title);
     const hint = h('span', 'tbl-pile__hint');

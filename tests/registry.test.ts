@@ -12,7 +12,8 @@ describe('visual registry', () => {
   it('has a CSS class for every registered recipe', () => {
     const css =
       readFileSync('src/renderer/src/theme/recipes.css', 'utf8') +
-      readFileSync('src/renderer/src/theme/shellOak.css', 'utf8'); // Carved Oak draws `.r-shell-oak`
+      readFileSync('src/renderer/src/theme/shellOak.css', 'utf8') + // Carved Oak draws `.r-shell-oak`
+      readFileSync('src/renderer/src/theme/shellGold.css', 'utf8'); // Charcoal and Gold draws `.r-shell-gold`
     // `shell-<id>` recipes are table pictures: they need a table in content/shellArt.json instead
     const shellIds = new Set(content.shellArt.map((t) => `shell-${t.id}`));
     const missing = RECIPES.filter(

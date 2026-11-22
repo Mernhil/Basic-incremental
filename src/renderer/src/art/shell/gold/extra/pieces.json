@@ -1,0 +1,122 @@
+{
+  "dock": {
+    "w": 245,
+    "h": 56,
+    "corner": 0
+  },
+  "plaque": {
+    "w": 65,
+    "h": 65,
+    "corner": 8
+  },
+  "mini_frame": {
+    "w": 65,
+    "h": 65,
+    "corner": 14
+  },
+  "boss_frame": {
+    "w": 93,
+    "h": 92,
+    "corner": 22
+  },
+  "tab": {
+    "w": 66,
+    "h": 26,
+    "corner": 8
+  },
+  "tab_on": {
+    "w": 66,
+    "h": 26,
+    "corner": 9
+  },
+  "tab_closed": {
+    "w": 67,
+    "h": 27,
+    "corner": 8
+  },
+  "icon_button": {
+    "w": 31,
+    "h": 31,
+    "corner": 8
+  },
+  "icon_hover": {
+    "w": 28,
+    "h": 28,
+    "corner": 8
+  },
+  "icon_pressed": {
+    "w": 28,
+    "h": 28,
+    "corner": 8
+  },
+  "slot": {
+    "w": 35,
+    "h": 35,
+    "corner": 8
+  },
+  "bar-frame": {
+    "w": 161,
+    "h": 19,
+    "corner": 8
+  },
+  "bar_fill": {
+    "w": 151,
+    "h": 15,
+    "corner": 0
+  },
+  "tooltip": {
+    "w": 92,
+    "h": 31,
+    "corner": 6
+  },
+  "divider": {
+    "w": 151,
+    "h": 5,
+    "corner": 0
+  },
+  "checkbox_off": {
+    "w": 29,
+    "h": 29,
+    "corner": 0
+  },
+  "checkbox_on": {
+    "w": 29,
+    "h": 29,
+    "corner": 0
+  },
+  "scroll_thumb": {
+    "w": 15,
+    "h": 61,
+    "corner": 5
+  },
+  "close": {
+    "w": 29,
+    "h": 29,
+    "corner": 0
+  },
+  "arrow_left": {
+    "w": 29,
+    "h": 29,
+    "corner": 0
+  },
+  "arrow_right": {
+    "w": 29,
+    "h": 29,
+    "corner": 0
+  },
+  "toggle_off": {
+    "w": 51,
+    "h": 25,
+    "corner": 0
+  },
+  "toggle_on": {
+    "w": 51,
+    "h": 25,
+    "corner": 0
+  },
+  "slider_knob": {
+    "w": 27,
+    "h": 27,
+    "corner": 0
+  }
+}

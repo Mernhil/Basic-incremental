@@ -1,3 +1,4 @@
+import { goldIcon } from '../art/goldIcons';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { attachTooltip } from '../shell/tooltip';
@@ -12,11 +13,7 @@ export function createMuteToggle(): HTMLButtonElement {
     const muted = soundSettings().muted;
     btn.setAttribute('aria-pressed', String(muted));
     btn.setAttribute('aria-label', muted ? COPY.sound.unmute : COPY.sound.mute);
-    btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4Z"/>${
-      muted
-        ? '<path d="m16.5 9.5 5 5m0-5-5 5"/>'
-        : '<path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/>'
-    }</svg>`;
+    btn.innerHTML = goldIcon(muted ? 'sound_off' : 'sound_on');
   };
   btn.addEventListener('click', () => setSoundSettings({ muted: !soundSettings().muted }));
   attachTooltip(btn, () => (soundSettings().muted ? COPY.sound.unmute : COPY.sound.mute));

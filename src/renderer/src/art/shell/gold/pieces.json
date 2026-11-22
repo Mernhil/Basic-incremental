@@ -1,0 +1,107 @@
+{
+  "sheet": {
+    "w": 119,
+    "h": 67,
+    "corner": 8,
+    "outset": 0,
+    "from": "panel"
+  },
+  "window": {
+    "w": 119,
+    "h": 99,
+    "corner": 18,
+    "outset": 0,
+    "from": "window"
+  },
+  "plate": {
+    "w": 76,
+    "h": 31,
+    "corner": 7,
+    "outset": 0,
+    "from": "plate"
+  },
+  "tile": {
+    "w": 76,
+    "h": 31,
+    "corner": 7,
+    "outset": 0,
+    "from": "plate"
+  },
+  "pill": {
+    "w": 58,
+    "h": 21,
+    "corner": 10,
+    "outset": 0,
+    "from": "chip"
+  },
+  "btn": {
+    "w": 76,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "button"
+  },
+  "btn-hover": {
+    "w": 66,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "button_hover"
+  },
+  "btn-press": {
+    "w": 66,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "button_pressed"
+  },
+  "btn-focus": {
+    "w": 67,
+    "h": 29,
+    "corner": 9,
+    "outset": 0,
+    "from": "button_focus"
+  },
+  "action": {
+    "w": 65,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "main_flat"
+  },
+  "action-hover": {
+    "w": 68,
+    "h": 29,
+    "corner": 9,
+    "outset": 0,
+    "from": "main_hover"
+  },
+  "action-press": {
+    "w": 66,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "main_pressed"
+  },
+  "action-focus": {
+    "w": 67,
+    "h": 29,
+    "corner": 9,
+    "outset": 0,
+    "from": "main_focus"
+  },
+  "unusable": {
+    "w": 76,
+    "h": 28,
+    "corner": 9,
+    "outset": 0,
+    "from": "off_button"
+  },
+  "bar": {
+    "w": 245,
+    "h": 33,
+    "corner": 0,
+    "outset": 0,
+    "from": "header"
+  }
+}

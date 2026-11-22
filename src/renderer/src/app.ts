@@ -65,6 +65,7 @@ import {
 import { createQuestScroll } from './shell/quest';
 import { playTierUps } from './stage/tierUp';
 import { gemCoin, svg } from './art/gems';
+import { goldIcon, type GoldIcon } from './art/goldIcons';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
 import { setNumberMotion, setPixelTick } from './stage/numbers';
@@ -74,6 +75,13 @@ import { showWelcomeBack } from './stage/welcome';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
 import { onPrefs, prefs } from './settings/prefs';
+
+/** The header's Money and scroll chips wear the gold icons (art/goldIcons.ts). */
+const HEADER_GOLD_ICON: Record<string, GoldIcon> = {
+  money: 'money',
+  summon_scroll: 'summon_scroll',
+  glamour_scroll: 'glamour_scroll',
+};
 
 const TICK_INTERVAL_MS = 100;
 const CLEAR_NOTICE_MS = 12_000;
@@ -148,6 +156,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
       ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
       ...(!r.gem && r.kind !== 'prestige' && placeholder ? { art: placeholder } : {}),
+      ...(r.id in HEADER_GOLD_ICON ? { art: goldIcon(HEADER_GOLD_ICON[r.id]!) } : {}),
       tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
     };
   });

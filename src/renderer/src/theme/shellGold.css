@@ -1,0 +1,607 @@
+/* Charcoal and Gold: the table drawn from small tiled 9-slice pieces (UI_RULES.md Shell look). The pieces
+   are the art controller's kit (art/shell/gold/, with art/shell/gold/extra/ for the pieces oak lacks); their
+   sizes and corners are in art/shell/gold/pieces.json and are repeated below as slice numbers.
+
+   Same method as shellOak.css: border-image on a zero-width border (nothing changes size), the middle tiled,
+   never stretched, `image-rendering: pixelated`, `--oa` = one image pixel in whole device pixels.
+   Unlike oak the pieces have no overhang (outset 0): the frame sits exactly on the box.
+
+   Image sizes (px, corner): sheet 119x67 (8), window 119x99 (18), plate and tile 76x31 (7), pill 58x21 (10),
+   buttons 76x28 (9), bar 245x33 (tiled whole). The faces are dark charcoal: this recipe owns the few colours
+   below (--gold-*), which are read with a fallback; the text tokens come from the table item (gold_table). */
+
+/* the gold icons (art/goldIcons.ts): 64 px pictures, drawn pixelated; the dock ones at 1x, the header ones in a
+   32 px slot (half scale, an exact 2 to 1) */
+.gold-icon {
+  display: block;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.gold-icon--dock {
+  --pq-n: max(1, round(down, calc(64 * var(--dpr) / 64), 1));
+  width: calc(64px * var(--pq-n) / var(--dpr));
+  height: calc(64px * var(--pq-n) / var(--dpr));
+}
+.gold-icon--head {
+  width: 32px;
+  height: 32px;
+}
+.shell-currency__art > .gold-icon--head {
+  width: 100%;
+  height: 100%;
+}
+.snd-mute {
+  width: 40px;
+  height: 40px;
+}
+.shell-goals__btn .gold-icon--head,
+.shell-details__glyph .gold-icon--head {
+  width: 32px;
+  height: 32px;
+}
+.shell-details__glyph {
+  width: 32px;
+  height: 32px;
+}
+
+html.r-shell-gold {
+  --oa: calc(max(1, round(var(--dpr), 1)) * var(--px));
+  /* what this table owns beyond the common tokens */
+  --gold-badge-bg: #1c1c1c;
+  --gold-xp-ink: #9fd8ff;
+  --gold-xp-fill: #2f8fd8;
+  --gold-track: #1c1c1c;
+  --gold-wood: #070502;
+  --gold-action-ink: #1c1206;
+  --gold-action-press-ink: #fcea9a;
+  --gold-off-ink: #ffffff;
+}
+
+/* ---- the drawing rule: one set of variables per piece, one rule that draws it -------------------- */
+html.r-shell-gold
+  :is(
+    .frame,
+    .du-sheet,
+    .dv-sheet,
+    .details__panel,
+    .rv__dialog,
+    .wb__dialog,
+    .set-confirm,
+    .sk-confirm,
+    .px-panel.du-sheet
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/sheet.png');
+  --o-bg: #393939;
+  --o-slice: 8;
+  --o-out: 0;
+  --o-fill: fill;
+}
+html.r-shell-gold
+  :is(
+    .px-panel,
+    .shell-track,
+    .shell-tip,
+    .pp-panel,
+    .pp-drawer,
+    .dp-drawer,
+    .hm-stage,
+    .st-toast,
+    .update-notice,
+    .wp-tag
+  ):not(.du-sheet):not(.dv-sheet):not(.du-read):not(.du-plate):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/plate.png');
+  --o-bg: #393939;
+  --o-slice: 7;
+  --o-out: 0;
+  --o-fill: fill;
+}
+html.r-shell-gold
+  :is(
+    .px-tile,
+    .tbl-pile__card,
+    .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .ws-cardbtn,
+    .pp-row,
+    .set-error,
+    .mv-mp-line,
+    .wd-tile
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/tile.png');
+  --o-bg: #393939;
+  --o-slice: 7;
+  --o-out: 0;
+  --o-fill: fill;
+}
+html.r-shell-gold :is(.du-read, .du-plate, .ar__readout):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/pill.png');
+  --o-bg: #393939;
+  --o-slice: 10;
+  --o-out: 0;
+  --o-fill: fill;
+}
+/* buttons: plain (charcoal, gold edge) ... */
+html.r-shell-gold
+  :is(
+    .px-btn,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/btn.png');
+  --o-bg: #393939;
+  --o-slice: 9;
+  --o-out: 0;
+  --o-fill: fill;
+}
+html.r-shell-gold
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .shell-details,
+    .snd-mute
+  ):hover:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/btn-hover.png');
+  --o-bg: #383737;
+}
+html.r-shell-gold
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .shell-details,
+    .snd-mute
+  ):active:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/btn-press.png');
+  --o-bg: #272729;
+}
+html.r-shell-gold
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .shell-details,
+    .snd-mute,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):focus-visible:not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/btn-focus.png');
+  --o-bg: #323337;
+  outline: none;
+}
+/* ... the action that can be used, and the selected tab, chip or choice: gold ... */
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action.png');
+  --o-bg: #e99636;
+}
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):hover:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action-hover.png');
+  --o-bg: #f8e470;
+}
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):active:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action-press.png');
+  --o-bg: #383837;
+}
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):focus-visible:not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action-focus.png');
+  --o-bg: #ecb644;
+}
+/* ... and the button that cannot be used: flat grey (it wins over every other state) */
+html.r-shell-gold
+  :is(
+    .px-btn--dark,
+    .px-btn:disabled,
+    .button:disabled,
+    .button[aria-disabled='true'],
+    .buy-btn[aria-disabled='true'],
+    .sm-pull:disabled,
+    .shop-ascend.is-no,
+    .shop-price.is-no,
+    .wp-go[aria-disabled='true']
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/unusable.png');
+  --o-bg: #686868;
+}
+
+/* the one rule that draws every piece */
+html.r-shell-gold
+  :is(
+    .frame,
+    .du-sheet,
+    .dv-sheet,
+    .details__panel,
+    .rv__dialog,
+    .wb__dialog,
+    .set-confirm,
+    .sk-confirm,
+    .px-panel,
+    .shell-track,
+    .shell-tip,
+    .pp-panel,
+    .pp-drawer,
+    .dp-drawer,
+    .hm-stage,
+    .st-toast,
+    .update-notice,
+    .wp-tag,
+    .px-tile,
+    .tbl-pile__card,
+    .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .ws-cardbtn,
+    .pp-row,
+    .set-error,
+    .mv-mp-line,
+    .wd-tile,
+    .du-read,
+    .du-plate,
+    .ar__readout,
+    .px-btn,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_o):not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-radius: 0;
+  border-image-source: var(--o-src);
+  border-image-slice: var(--o-slice) var(--o-fill);
+  border-image-width: calc(var(--o-slice) * var(--oa));
+  border-image-outset: calc(var(--o-out) * var(--oa));
+  border-image-repeat: repeat;
+  image-rendering: pixelated;
+  /* the piece's own fill colour underneath, so a hairline seam at a fractional device scale shows no gap */
+  background: var(--o-bg, none);
+  box-shadow: none;
+  filter: none;
+  translate: none;
+}
+/* the Summon table is a stage, not a frame; wells are flat and inset */
+html.r-shell-gold .sm-table:not(#_o):not(#_o):not(#_o) {
+  background: transparent;
+  box-shadow: none;
+}
+html.r-shell-gold .px-well:not(#_o):not(#_o):not(#_o) {
+  background: var(--gold-track);
+  box-shadow: inset 0 0 0 var(--fs-sm) var(--gold-wood);
+}
+
+/* ---- the header, the dock, the window and the table ---------------------------------------------- */
+/* the bars are one drawn edge top and bottom and a plain middle: sliced 9-way (1 px ends, the rows of the
+   gold line), so the middle runs the whole width without the tile's seam every 245 px */
+html.r-shell-gold .shell-header:not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-image: url('../art/shell/gold/bar.png') 1 1 5 1 fill / calc(1 * var(--oa))
+    calc(1 * var(--oa)) calc(5 * var(--oa)) calc(1 * var(--oa)) / 0 stretch;
+  image-rendering: pixelated;
+  background: #393939;
+  box-shadow: none;
+}
+html.r-shell-gold .tbl-dock:not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-image: url('../art/shell/gold/extra/dock.png') 5 1 4 1 fill / calc(5 * var(--oa))
+    calc(1 * var(--oa)) calc(4 * var(--oa)) calc(1 * var(--oa)) / 0 stretch;
+  image-rendering: pixelated;
+  background: #222328;
+  box-shadow: none;
+}
+html.r-shell-gold .tbl-window:not(#_o):not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-image: url('../art/shell/gold/window.png') 18 / calc(18 * var(--oa)) / 0 repeat;
+  image-rendering: pixelated;
+  box-shadow: none;
+}
+
+/* ---- the Weapon panel's level badge: dark grey, the number in the card's tier colour ----------- */
+html.r-shell-gold .wp-stage .wp-badge:not(#_o):not(#_o) {
+  background: var(--gold-badge-bg);
+  color: var(--wp-tc);
+}
+html.r-shell-gold .wp-stage .wp-badge :is(b, small):not(#_o) {
+  color: var(--wp-tc);
+  opacity: 1;
+}
+
+/* ---- colour: what this recipe owns beyond the table tokens ------------------------------------- */
+/* gold action buttons carry dark ink (below); the unusable grey button carries near-black ink */
+html.r-shell-gold
+  :is(
+    .px-btn--dark,
+    .px-btn:disabled,
+    .button:disabled,
+    .button[aria-disabled='true'],
+    .buy-btn[aria-disabled='true'],
+    .sm-pull:disabled,
+    .shop-ascend.is-no,
+    .shop-price.is-no,
+    .wp-go[aria-disabled='true']
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  color: var(--gold-off-ink);
+}
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  color: var(--gold-action-ink);
+}
+/* a pressed action is the dark piece: gold ink */
+html.r-shell-gold
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):active:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o):not(#_o):not(
+    #_o
+  ):not(#_o) {
+  color: var(--gold-action-press-ink);
+}
+/* a selected tile (the weapon switch) is the gold action piece too */
+html.r-shell-gold
+  :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true']):not(
+    #_o
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action.png');
+  --o-bg: #e99636;
+  --o-slice: 9;
+  --o-out: 0;
+  color: var(--gold-action-ink);
+}
+
+/* The fight itself (the enemy card, the floating numbers, the deck) is a dark stage inside the window:
+   it keeps the dark surface tokens, and the sheets and readouts laid over it read the light ones. */
+html.r-shell-gold .du-zone {
+  --bi-frame-bg: #2a2238;
+  --bi-frame-raised: #352b48;
+  --bi-frame-ink: #f1e8d6;
+  --bi-frame-ink-muted: #a597bd;
+  --bi-frame-edge: #08060c;
+  --bi-frame-hi: #54456d;
+  --bi-frame-lo: #1d1729;
+  --bi-frame-accent: #f4c14a;
+  --bi-frame-good: #6fdc8c;
+  --bi-frame-bad: #ef8a7a;
+  --px-edge: #08060c;
+  --px-hi: #54456d;
+  --px-lo: #1d1729;
+  --px-body: #2a2238;
+  --px-raised: #352b48;
+  --px-ink: #f1e8d6;
+  --px-muted: #a597bd;
+  --px-dark: #1d1729;
+  --px-dark-hi: #3a2f4f;
+  color: var(--px-ink);
+}
+
+/* the few hardcoded greens of the upgrade rows read the frame's green on a cream sheet */
+html.r-shell-gold .ur__after:not(#_o):not(#_o) {
+  color: var(--bi-frame-good);
+}
+/* inside a gold selected tile, the small lines and stars read dark */
+html.r-shell-gold
+  :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true'])
+  :is(.dp-row__meta, .dp-row__stars):not(#_o):not(#_o) {
+  color: var(--gold-action-ink);
+}
+
+/* The dungeon room keeps its own purple brick: its wall, floor and mortar are mixed from the dark
+   chrome tokens, so the room reads the dark surface set (not the header's grey) */
+html.r-shell-gold .ar__scene {
+  --bi-chrome-bg: #2a2238;
+  --bi-chrome-rail-bg: #17131f;
+  --bi-frame-hi: #54456d;
+}
+
+/* ---- text that sits on the dark table or on a wooden sign, not on a cream sheet ---------------- */
+html.r-shell-gold :is(.cp-sort, .wd-items__count, .wd-coming__row):not(#_o):not(#_o) {
+  color: var(--bi-on-table-muted);
+}
+html.r-shell-gold .wd-coming__row strong:not(#_o):not(#_o) {
+  color: var(--bi-on-table);
+}
+html.r-shell-gold .shop-sign__count:not(#_o):not(#_o) {
+  color: #ffe9b8;
+}
+html.r-shell-gold :is(.wd-maxed, .wd-tile__meta):not(#_o):not(#_o) {
+  color: var(--bi-frame-ink-muted);
+}
+
+/* the rare lines of the Welcome back cards sit on cream paper */
+html.r-shell-gold .wb-card__lines .is-rare:not(#_o):not(#_o) {
+  color: var(--bi-frame-accent);
+}
+
+/* ---- text recoloured by hand for the dark faces (listed in the PR) ------------------------------ */
+/* the shop's rows and tiles had dark brown ink for cream paper: they read the light frame ink now */
+html.r-shell-gold :is(.shop-it, .shop-tile):not(#_o):not(#_o) {
+  --sh-ink: var(--bi-frame-ink);
+  --sh-ink-soft: var(--bi-frame-ink-muted);
+}
+/* a challenge's reward line sits on the shop's wooden board */
+html.r-shell-gold .shop-challenge__reward:not(#_o):not(#_o) {
+  color: #fff1d0;
+}
+/* the sticker book's summary sits on a gold plate */
+html.r-shell-gold .ac-book__summary:not(#_o):not(#_o) {
+  color: #2b1d08;
+}
