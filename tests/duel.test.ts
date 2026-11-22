@@ -246,13 +246,14 @@ describe('who the enemy hits (DESIGN.md §6: the front row first)', () => {
 });
 
 describe('roles by weapon type (skills.json)', () => {
-  it('staffs lean to healers; a unique may break the leaning', () => {
+  it('staffs lean to healers; every card of a type has its kit (DESIGN.md §2 Three attacks)', () => {
     expect(cardSkill(bundled, 'hedge_acolyte').signature.kind).toBe('heal');
-    expect(cardSkill(bundled, 'silver_mage').role).toBe('glass_cannon');
-    expect(cardSkill(bundled, 'hex_warlock').role).toBe('debuffer');
-    // Seraph Lancer carries a lance but heals.
-    expect(cardSkill(bundled, 'seraph_lancer').signature.kind).toBe('heal');
+    // The old per-card leanings of Wood to Prismatic are gone: one kit per weapon type.
+    expect(cardSkill(bundled, 'silver_mage').role).toBe('healer');
     expect(cardSkill(bundled, 'quarry_smasher').role).toBe('tank');
+    // Seraph Lancer carries a lance but its ultimate still heals (its own moves).
+    const lancer = teamOf(['seraph_lancer']);
+    expect(team(lancer)[0]!.heals.some((h) => h.on === 'team')).toBe(true);
     // Every fighting card has a skill.
     for (const card of bundled.cards.filter((c) => c.job === 'fighting')) {
       expect(cardSkill(bundled, card.id)).toBeTruthy();
@@ -278,14 +279,15 @@ describe('roles by weapon type (skills.json)', () => {
   it('a debuffer weakens the enemy while it stands', () => {
     const plain = loadoutHealth(teamOf(['ember_squire']), bundled).incoming;
     const hexed = loadoutHealth(teamOf(['ember_squire', 'hex_warlock']), bundled).incoming;
-    expect(hexed.div(plain).toNumber()).toBeCloseTo(0.8, 9);
+    // Hex is the warlock's ultimate now: its Weaken counts for the share of the time it lasts.
+    expect(hexed.div(plain).toNumber()).toBeLessThan(1);
   });
 
-  it('a glass cannon hits harder on half the health', () => {
+  it('the glass cannon is gone: a Silver staff has its full health', () => {
     const state = teamOf(['silver_mage']);
     const mage = team(state)[0]!;
     expect(mage.maxHealth.toNumber()).toBeCloseTo(
-      cardHealth(bundled, 'silver_mage', state.cards.owned['silver_mage']!).toNumber() * 0.5,
+      cardHealth(bundled, 'silver_mage', state.cards.owned['silver_mage']!).toNumber(),
       6,
     );
   });

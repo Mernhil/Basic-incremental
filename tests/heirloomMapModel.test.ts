@@ -16,6 +16,7 @@ const own = (s: GameState, id: string, stars: number, level: number): void => {
     xp: new Decimal(0),
     starFill: 0,
     enhancements: [],
+    skillOpen: false,
   };
 };
 

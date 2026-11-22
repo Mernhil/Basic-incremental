@@ -55,6 +55,7 @@ import type {
   ItemType,
   Skill,
   SkillsConfig,
+  MovesConfig,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -88,6 +89,7 @@ import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
+import movesJson from './content/moves.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
 import questsJson from './content/quests.json';
@@ -188,6 +190,8 @@ export interface Content {
   /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
   skills: SkillsConfig;
   skillById: ReadonlyMap<string, Skill>;
+  /** Three attacks per card: kits, tiers, layers and named moves (DESIGN.md §2). */
+  moves: MovesConfig;
   /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
   scrolls: ScrollsConfig;
   /** The Heirloom Gate, Heirloom Scroll sources, tree points and the 22 trees (DESIGN.md §3, §7, §10). */
@@ -262,6 +266,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     expeditions,
     challenges,
     skills,
+    moves,
     scrolls,
     heirlooms,
     quests: questsFile,
@@ -299,6 +304,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   }
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
   checkSkills({ cards, skills }, issues);
+  checkMoves({ cards, moves, resources }, issues);
   checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
@@ -400,10 +406,42 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     challenges,
     skills,
     skillById: new Map(skills.skills.map((x) => [x.id, x])),
+    moves,
     scrolls,
     heirlooms,
     heirloomTreeByCard: new Map(heirlooms.trees.map((t) => [t.card, t])),
   };
+}
+
+/**
+ * moves.json (DESIGN.md §2 Three attacks per card): every fighting T6 and Heirloom card has its named
+ * moves and no other card does, no name is used twice, and the Cores that open skills exist.
+ */
+function checkMoves(
+  c: { cards: Card[]; moves: MovesConfig; resources: Resource[] },
+  issues: string[],
+): void {
+  const named = new Set<string>();
+  const top = (card: Card): boolean =>
+    card.job === 'fighting' && (card.tier === 'mythic' || card.tier === 'heirloom');
+  for (const [cardId, m] of Object.entries(c.moves.cards)) {
+    const card = c.cards.find((x) => x.id === cardId);
+    if (!card) issues.push(`moves.json › cards › ${cardId}: unknown card`);
+    else if (!top(card))
+      issues.push(`moves.json › cards › ${cardId}: not a fighting T6 or Heirloom card`);
+    for (const n of [m.skill, m.ult]) {
+      if (named.has(n)) issues.push(`moves.json › cards › ${cardId}: "${n}" is used twice`);
+      named.add(n);
+    }
+  }
+  for (const card of c.cards) {
+    if (top(card) && !c.moves.cards[card.id])
+      issues.push(`moves.json › cards: no moves for "${card.id}"`);
+  }
+  for (const [tier, cost] of Object.entries(c.moves.unlock)) {
+    if (!c.resources.some((r) => r.id === cost.resource))
+      issues.push(`moves.json › unlock › ${tier}: unknown resource "${cost.resource}"`);
+  }
 }
 
 /**
@@ -1097,7 +1135,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       if (!card.heirloom && card.tier !== 'mythic') {
         issues.push(`${where} › batch: only a T6 card has its own weapon`);
       }
-      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
+      if (card.pictureAlt && !card.heirloom) {
+        issues.push(`${where} › pictureAlt: only an Heirloom has a second picture`);
+      }
+      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}${card.pictureAlt ? '/alt' : ''}`;
       if (pictures.has(picture)) issues.push(`${where} › batch: "${picture}" is used twice`);
       pictures.add(picture);
       return;
@@ -1498,6 +1539,7 @@ export function bundledRawContent(): RawContent {
     expeditions: expeditionsJson,
     challenges: challengesJson,
     skills: skillsJson,
+    moves: movesJson,
     scrolls: scrollsJson,
     heirlooms: heirloomsJson,
     quests: questsJson,

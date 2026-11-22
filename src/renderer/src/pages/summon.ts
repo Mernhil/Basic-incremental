@@ -745,6 +745,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       xp: new Decimal(0),
       starFill: 0,
       enhancements: [],
+      skillOpen: false,
     };
     return cardFaceProps(content, ghost, cardId);
   }

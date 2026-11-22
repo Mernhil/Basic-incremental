@@ -158,6 +158,7 @@ describe('hidden weapon circles', () => {
       xp: new Decimal(0),
       starFill: 0,
       enhancements: [],
+      skillOpen: false,
     };
   };
 

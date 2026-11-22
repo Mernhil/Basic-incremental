@@ -37,7 +37,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 40;
+export const CURRENT_SAVE_VERSION = 41;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -153,6 +153,8 @@ export const serializedStateSchema = z.object({
         starFill: z.number().min(0),
         /** v13. */
         enhancements: z.array(z.string()),
+        /** v41: the skill was opened with Cores (DESIGN.md §2 Three attacks per card). */
+        skillOpen: z.boolean().default(false),
       }),
     ),
     /** Only fighting has a loadout; the old logging and mining ones are stripped on parse
@@ -344,6 +346,7 @@ export function serializeState(state: GameState): SerializedState {
             xp: decimalToString(c.xp),
             starFill: c.starFill,
             enhancements: [...c.enhancements],
+            skillOpen: c.skillOpen,
           },
         ]),
       ),
@@ -716,6 +719,7 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       enhancements: c.enhancements.filter((o) =>
         content.enhancements.cards[id]?.some((x) => x.id === o),
       ),
+      skillOpen: c.skillOpen,
     };
   }
   const seen = new Set<string>();
@@ -774,6 +778,7 @@ function deserializeHeirlooms(state: GameState, saved: SerializedState, content:
         xp: new Decimal(0),
         starFill: 0,
         enhancements: [],
+        skillOpen: false,
       };
     } else {
       const worth =
