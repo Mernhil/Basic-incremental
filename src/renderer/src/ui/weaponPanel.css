@@ -541,13 +541,16 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   font-weight: 700;
 }
 
-/* ---- the detail: stats, what it does, what comes next (read-only) ---- */
+/* ---- the detail: stats, abilities, what comes next (read-only), in a game look ----
+   Gold plaque headings, one row per stat (icon chip, small label, big value, green gains), the
+   three attacks as tiles with the picked one read out below, numbers picked out in colour. */
 .wp-detail {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
-.wp--drawer .wp-detail--rest {
+.wp--drawer .wp-detail--rest,
+.wp--drawer .wp-detail--stats {
   flex: 1 0 100%;
 }
 .wp--drawer .wp-side {
@@ -558,37 +561,285 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
 }
 .wp-sec {
   display: grid;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
 }
 .wp-sec__title {
-  margin: 0;
-  font-size: 11px;
+  min-height: 22px;
+  box-sizing: border-box;
+  justify-self: start;
+  margin: 0 0 0 2px;
+  padding: 3px 18px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--bi-frame-ink-muted);
+  color: var(--bi-chrome-accent, #f2c14e);
+  background: #2c2820;
+  box-shadow: 0 0 0 2px #c8a24a;
+}
+.wp-hl {
+  font-weight: 700;
+  color: #ffd86b;
+}
+.wp-hl--up {
+  color: var(--wp-good);
+}
+
+/* stats: icon chip, label, big value, the gains beside it */
+.wp-statbox {
+  display: grid;
+  gap: 8px;
 }
 .wp-stats {
   margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 1px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 4px 8px;
 }
 .wp-stat {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  grid-template-areas: 'chip label value' 'chip ups value';
+  align-items: center;
+  column-gap: 8px;
   min-width: 0;
+  padding: 3px 6px;
+  background: rgba(0, 0, 0, 0.28);
 }
-.wp-stat dt {
+.wp-stat.is-main {
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 3px 0 0 var(--wp-tc);
+}
+.wp-stat__chip {
+  grid-area: chip;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 22px;
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #1b1712;
+  background: var(--chip, #9aa3b2);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+    0 0 0 2px #14120e;
+}
+.wp-stat__chip[data-k='hit'],
+.wp-stat__chip[data-k='dps'],
+.wp-stat__chip[data-k='output'] {
+  --chip: #e8765f;
+}
+.wp-stat__chip[data-k='speed'] {
+  --chip: #6cb8ff;
+}
+.wp-stat__chip[data-k='crit'] {
+  --chip: #f2c14e;
+}
+.wp-stat__chip[data-k='critdmg'] {
+  --chip: #ffa24a;
+}
+.wp-stat__chip[data-k='health'] {
+  --chip: #7fd98c;
+}
+.wp-stat__label {
+  grid-area: label;
+  font-size: 12px;
   color: var(--bi-frame-ink-muted);
 }
-.wp-stat dd {
+.wp-stat__value {
+  grid-area: value;
   margin: 0;
+  font-size: 15px;
   font-weight: 700;
   text-align: right;
+  color: var(--bi-frame-ink);
+}
+.wp-stat.is-main .wp-stat__value {
+  font-size: 19px;
+  color: #fff1c8;
+}
+.wp-ups {
+  grid-area: ups;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+}
+.wp-up {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wp-good);
+}
+.wp-up small {
+  margin-right: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bi-frame-ink-muted);
+}
+.wp-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.wp-tagchip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #1b1712;
+  background: var(--tag, #aab3c2);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+.wp-tagchip small {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.wp-tagchip b {
+  font-weight: 700;
+}
+.wp-tagchip--position,
+.wp-tagchip--cost,
+.wp-tagchip--works {
+  color: var(--bi-frame-ink);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+.wp-tagchip--role[data-v='dps'] {
+  --tag: #ec7a62;
+}
+.wp-tagchip--role[data-v='tank'] {
+  --tag: #6cb8ff;
+}
+.wp-tagchip--role[data-v='support'] {
+  --tag: #7fd98c;
+}
+.wp-tagchip--element[data-v='fire'] {
+  --tag: #ff8a55;
+}
+.wp-tagchip--element[data-v='water'] {
+  --tag: #58b2ff;
+}
+.wp-tagchip--element[data-v='earth'] {
+  --tag: #c29a68;
+}
+.wp-tagchip--element[data-v='light'] {
+  --tag: #ffe27a;
+}
+.wp-tagchip--element[data-v='dark'] {
+  --tag: #b18cff;
+}
+
+/* abilities: the three attacks as tiles, the picked one read out below */
+.wp-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(var(--fs) * 2);
+}
+.wp-move {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 7px 4px 5px;
+  min-width: 0;
+  cursor: pointer;
+  color: var(--bi-frame-ink);
+  font: inherit;
+}
+.wp-move__word {
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--mv, #cfd6e2);
+}
+.wp-move--hit {
+  --mv: #e8c9a0;
+}
+.wp-move--skill {
+  --mv: #6cb8ff;
+}
+.wp-move--ult {
+  --mv: #ff8fd0;
+}
+.wp-move__state {
+  font-size: 11px;
+  color: var(--wp-good);
+}
+.wp-move.is-locked .wp-move__state {
+  color: #ffd86b;
+}
+.wp-move.is-none {
+  opacity: 0.6;
+}
+.wp-move.is-none .wp-move__state {
+  color: var(--bi-frame-ink-muted);
+}
+.wp-move:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.wp-movepane {
+  display: grid;
+  gap: 4px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.32);
+  box-shadow: inset 3px 0 0 var(--mv, #cfd6e2);
+}
+.wp-movepane--hit {
+  --mv: #e8c9a0;
+}
+.wp-movepane--skill {
+  --mv: #6cb8ff;
+}
+.wp-movepane--ult {
+  --mv: #ff8fd0;
+}
+.wp-movepane__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+}
+.wp-movepane__name {
+  font-size: 15px;
+  color: var(--mv);
+}
+.wp-statechip {
+  padding: 0 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1b1712;
+  background: var(--wp-good);
+}
+.wp-statechip.is-locked {
+  background: #ffd86b;
+}
+.wp-statechip.is-none {
+  background: #8a8f99;
+}
+.wp-movepane__text {
+  color: var(--bi-frame-ink);
+  line-height: 1.35;
+}
+.wp-movepane__effects {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  color: var(--bi-frame-ink-muted);
+}
+.wp-do__note {
+  color: var(--bi-frame-ink-muted);
 }
 .wp-does,
 .wp-next {
@@ -596,38 +847,39 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 .wp-do,
 .wp-nx {
   display: grid;
-  gap: 1px;
-  font-size: 12px;
+  gap: 2px;
+  font-size: 12.5px;
   min-width: 0;
+  padding: 5px 8px;
+  background: rgba(0, 0, 0, 0.28);
 }
 .wp-do__head {
   display: flex;
   flex-wrap: wrap;
   gap: 2px 8px;
-  align-items: baseline;
+  align-items: center;
 }
-.wp-do__kind {
-  color: var(--wp-tc);
+.wp-kind {
+  padding: 0 7px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1b1712;
+  background: #c8a24a;
+}
+.wp-kind--team {
+  background: #6cb8ff;
+}
+.wp-kind--bond {
+  background: #ff8fd0;
 }
 .wp-do__name {
   font-weight: 700;
-}
-.wp-do__note,
-.wp-do__effects {
-  margin: 0;
-}
-.wp-do__note {
-  color: var(--bi-frame-ink-muted);
-}
-.wp-do__effects {
-  display: grid;
-  gap: 1px;
-  padding: 0 0 0 12px;
 }
 .wp-do__text {
   color: var(--bi-frame-ink-muted);
@@ -636,21 +888,36 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   display: flex;
   flex-wrap: wrap;
   gap: 2px 10px;
-  font-style: normal;
 }
 .wp-do__value {
   font-style: normal;
   font-weight: 700;
 }
+.wp-do.is-active {
+  box-shadow: inset 3px 0 0 var(--wp-good);
+}
 .wp-do.is-active .wp-do__value {
   color: var(--wp-good);
+}
+.wp-nx {
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 2px 8px;
 }
 .wp-nx__label {
   color: var(--wp-tc);
 }
 .wp-nx__note {
+  grid-column: 1 / -1;
   color: var(--bi-frame-ink-muted);
 }
 .wp-nx.is-end .wp-nx__text {
   color: var(--bi-frame-ink-muted);
+}
+.wp-move.is-selected .wp-move__word,
+.wp-move.is-selected .wp-move__state {
+  color: #2a1c0a;
+}
+.wp--drawer .wp-detail--rest {
+  margin-top: 4px;
 }

@@ -105,3 +105,47 @@ describe('weapon panel detail', () => {
     expect(new Decimal(0).eq(cardStats(freshState(), content, worker.id)!.hit)).toBe(true);
   });
 });
+
+describe('weapon panel detail: what an upgrade adds, beside the stat', () => {
+  it('hit, damage per second and health carry the next level and star gains', () => {
+    const { d } = detail('ember_squire', { level: 5 });
+    for (const label of ['Damage per hit', 'Damage per second', 'Health']) {
+      const up = d.stats.find((s) => s.label === label)?.up;
+      expect(up?.level).toMatch(/^\+\d+%$/);
+      expect(up?.star).toMatch(/^\+\d+%$/);
+    }
+    // the stats an upgrade does not change carry none
+    expect(d.stats.find((s) => s.label === 'Crit chance')?.up).toBeUndefined();
+    expect(d.stats.find((s) => s.label === 'Role')?.up).toBeUndefined();
+  });
+
+  it('every stat has a key; at six stars the star gain is gone', () => {
+    const { d } = detail('ember_squire', { stars: 6 });
+    expect(d.stats.every((s) => s.key)).toBe(true);
+    expect(d.stats.find((s) => s.key === 'hit')?.up?.star).toBeUndefined();
+  });
+
+  it('the three attacks carry their state (open, locked, not at this tier)', () => {
+    const wood = movesView(freshStateWith('ember_squire', {}), content, 'ember_squire')!;
+    expect(wood.rows.map((r) => r.state)).toEqual(['open', 'none', 'open']);
+    const gold = movesView(
+      freshStateWith('storm_duelist', { tier: 'gold' }),
+      content,
+      'storm_duelist',
+    )!;
+    expect(gold.rows[1]!.state).toBe('locked');
+    const opened = movesView(
+      freshStateWith('storm_duelist', { tier: 'gold', skillOpen: true }),
+      content,
+      'storm_duelist',
+    )!;
+    expect(opened.rows[1]!.state).toBe('open');
+    expect(attackEntries(gold).map((e) => e.state)).toEqual(['open', 'locked', 'open']);
+  });
+});
+
+function freshStateWith(id: string, patch: Partial<OwnedCard>) {
+  const state = freshState();
+  state.cards.owned[id] = { ...newOwnedCard(), ...patch };
+  return state;
+}

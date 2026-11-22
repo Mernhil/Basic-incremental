@@ -1267,7 +1267,12 @@ export const COPY = {
     /** The panel's read-only detail (stats, what the card does, what comes next). */
     detail: {
       statsTitle: 'Stats',
-      doesTitle: 'What it does',
+      doesTitle: 'Abilities',
+      stateOpen: 'Ready',
+      stateLocked: 'Locked',
+      stateNone: 'Not at this tier',
+      upLevel: 'Lv',
+      upStar: '★',
       nextTitle: 'What comes next',
       hitDamage: 'Damage per hit',
       hitsPerSecond: 'Hits per second',

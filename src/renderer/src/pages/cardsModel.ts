@@ -92,10 +92,28 @@ export interface StatChange {
 }
 
 /** One number of the weapon panel's stat list. */
+export type DetailStatKey =
+  | 'hit'
+  | 'speed'
+  | 'dps'
+  | 'crit'
+  | 'critdmg'
+  | 'health'
+  | 'role'
+  | 'position'
+  | 'element'
+  | 'cost'
+  | 'output'
+  | 'works';
+
 export interface DetailStat {
+  /** Which stat it is (the panel picks its icon chip and colour by it). */
+  key: DetailStatKey;
   label: string;
   value: string;
   title?: string;
+  /** What the next level and the next star add to this stat, "+12%" (absent when it does not change). */
+  up?: { level?: string; star?: string };
 }
 
 /**
@@ -116,6 +134,8 @@ export interface DetailEntry {
   effects?: string[];
   /** Why an attack does not fire yet. */
   note?: string | null;
+  /** An attack's state: open, locked (Cores open it) or none (no slot at this tier). */
+  state?: 'open' | 'locked' | 'none';
   /** The exact source text, for a tooltip. */
   title?: string;
   active?: boolean;
