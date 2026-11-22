@@ -474,7 +474,7 @@ html.r-shell-gold .wp-stage .wp-badge :is(b, small):not(#_o) {
 }
 
 /* ---- colour: what this recipe owns beyond the table tokens ------------------------------------- */
-/* gold action buttons carry dark ink (below); the unusable grey button carries near-black ink */
+/* gold action buttons carry dark ink (below); the unusable grey button is darkened and carries white ink */
 html.r-shell-gold
   :is(
     .px-btn--dark,
@@ -488,6 +488,9 @@ html.r-shell-gold
     .wp-go[aria-disabled='true']
   ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
   color: var(--gold-off-ink);
+  /* the grey piece is darkened in code (the art controller's call, the PNG is approved art): about #3a3a3a to #444,
+     the contrast lifts the ink back so the text still passes AA */
+  filter: brightness(0.55) contrast(1.6);
 }
 html.r-shell-gold
   :is(
