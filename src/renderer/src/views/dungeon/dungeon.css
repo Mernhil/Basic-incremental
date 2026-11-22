@@ -7,11 +7,11 @@
   min-height: 0;
 }
 
-/* the panel buttons: top left of the window, above the readouts */
+/* the panel buttons: top left of the window, right of the Hub button, above the readouts */
 .dv-buttons {
   position: absolute;
-  top: 8px;
-  left: 8px;
+  top: 12px;
+  left: 84px;
   z-index: 5;
   display: flex;
   gap: 8px;

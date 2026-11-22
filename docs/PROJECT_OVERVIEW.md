@@ -853,7 +853,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 
 ### `views/dungeon`
 
-- `index.ts`: the dungeon window, the table's centre piece and the only dungeon view (there is no full-screen dungeon view and no expand button). It holds the duel element (`stage/arena.ts`, see Fights) with its own Challenge, auto and Speed controls, and the Dungeons, Weapon and Training buttons. Goals that point at the dungeons go to the dungeon screen (`app.ts` `goTo`).
+- `index.ts`: the dungeon window, the only dungeon view, filling the whole area under the header (`table.css`: no wings, no side gaps) (there is no full-screen dungeon view and no expand button). It holds the duel element (`stage/arena.ts`, see Fights) with its own Challenge, auto and Speed controls, and the Dungeons, Weapon and Training buttons. Goals that point at the dungeons go to the dungeon screen (`app.ts` `goTo`).
 - `stage/duelPace.ts` publishes the pace the duel's animations play at while a sped-up Challenge runs (`duelPace`, `paced`, CSS `--pace`); hits, numbers, boss hits and the cut-in follow it. The duel's Speed button (`data-key="arena-speed"`, in `stage/arena.ts`) cycles the open speeds; `app.ts` passes the choice in as `TableContext.duelSpeed`.
 - The window's top left holds three buttons, Dungeons, Weapon and Training (`.dv-buttons`). Each opens its panel (built by `pages/dungeons.ts` `createDungeonPanels`, see Screens) as a sheet over the running fight; the same button, the back button or Esc closes it.
 - `duelModel.ts`: hand layout, slot colours, enemy pips, feed lines, stat sheet rows, skill plate queue; read by `stage/arena.ts`.
