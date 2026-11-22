@@ -1,5 +1,5 @@
 import type { Resource } from '../../../data';
-import { animatedSpriteHtml, spriteImage } from '../art/pixel/sprites';
+import { spriteImage } from '../art/pixel/sprites';
 
 /**
  * Resource icons, in ONE place (DESIGN.md §11). Every resource has a swappable icon id; the
@@ -41,23 +41,55 @@ export const isCrystal = (r: Pick<Resource, 'kind'> | undefined): boolean => r?.
 const px = (name: string): string =>
   `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">${spriteImage(name, 0, 0, 32, 32, 'bi-res')}</svg>`;
 
-const V = (name: string, fallback: string): string => `var(--res-${name},${fallback})`;
-
 /**
- * Pixel icons (32 x 32, `hand/res-*.png`, user-approved 2026-11-09): Money is a coin stack, the Summon
- * and Glamour Crystals the pack's floating sparkle gem, blue and pink (the loop plays while the
- * crystal glows). Starlight stays a
- * placeholder until its set is drawn.
+ * Pixel icons (32 x 32, `hand/res-<resource id>.png`, kept by the user 2026-11-22): every resource
+ * but Money has its own, the six gems, ten materials, three scrolls and Starlight. Adding one is
+ * dropping `res-<id>.png` in `hand/`, baking, and listing the id in `KEPT_ICONS`. Money keeps its
+ * coin ladder (`moneyCoinArt`). The ICON_MARKUP below is only the fallback for an id with no sprite.
  */
+export const KEPT_ICONS: readonly string[] = [
+  'oak_gem',
+  'ironbark_gem',
+  'moonwillow_gem',
+  'copper_gem',
+  'iron_gem',
+  'grotto_gem',
+  'summon_scroll',
+  'glamour_scroll',
+  'heirloom_scroll',
+  'moss_core',
+  'cinder_core',
+  'frost_core',
+  'frost_sigil',
+  'storm_core',
+  'sanctum_core',
+  'void_core',
+  'glimmer_dust',
+  'facet_shard',
+  'star_dust',
+  'starlight',
+];
+
+/** The sprite name of a resource's kept icon, or null when it has none (Money). */
+export const keptIconSprite = (resourceId: string): string | null =>
+  KEPT_ICONS.includes(resourceId) ? `res-${resourceId}` : null;
+
+/** The kept icon as markup (an SVG holding the 32 x 32 sprite), or null. */
+export const keptIconMarkup = (resourceId: string): string | null => {
+  const name = keptIconSprite(resourceId);
+  return name ? px(name) : null;
+};
+
 const ICON_MARKUP: Partial<Record<ResourceIconId, string>> = {
   coin: px('res-money'),
-  'crystal-summon': px('res-summon') + animatedSpriteHtml('res-summon', 1, 'bi-res-spin'),
-  'crystal-glamour': px('res-glamour') + animatedSpriteHtml('res-glamour', 1, 'bi-res-spin'),
-  starlight:
-    `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
-    `<path d="M12 2.5l2.2 7.3 7.3 2.2-7.3 2.2-2.2 7.3-2.2-7.3L2.5 12l7.3-2.2z" fill="${V('starlight', '#f3dc9a')}"/>` +
-    `</svg>`,
 };
+
+/**
+ * A resource's icon markup: its kept icon, else the coin for Money, else null (the cost then shows
+ * the name in words). Every place that draws a resource goes through here.
+ */
+export const resourceIconMarkup = (r: Pick<Resource, 'id' | 'kind'>): string | null =>
+  keptIconMarkup(r.id) ?? iconMarkup(resourceIconId(r));
 
 /** A coin of the ladder (`money-<id>`, 16 x 16 at 2x in the 32 box): its still, for the header. */
 export const moneyCoinArt = (coinId: string): string =>

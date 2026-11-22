@@ -312,7 +312,7 @@ A card is one weapon. The player collects cards, puts fighting cards in a team o
 
 - Jobs (`JOBS`): fighting cards go in the loadout; logging and mining cards are workers (see Production).
 - Roles (`CARD_ROLES`): every fighting card has a `role` in `cards.json`: Tank, DPS or Support. It is a label and a filter on the Cards page; no game rule reads it. `cardRules.json` `weaponRoles` is read by no code.
-- Elements (`ELEMENTS` in `src/data/schemas.ts`): water, fire, earth, light, dark. Only the 111 T6 and 34 Heirloom cards have one (water 24, fire 35, earth 33, light 22, dark 31: the Dragon and Leviathan cards from `design/weapon-elements-2026-11-21.json`, the Wildwood hero side earth and villain side fire; checked by `tests/elements.test.ts`); a Wood to Prismatic card has none and does plain base damage: neutral against every boss, no worker bonus, no expedition doubling. The Wildwood earth logging cards (Grovehewer, Beetlejaw) are the first that get the trees' earth bonus. In `src/game/elements.ts`, a fighting card's element against the dungeon boss's element (the circle: `elementMatchup`) changes that card's own damage there (`elementRelation`, `elementDamagePercent`), and a worker on a tree or mine of its own element gets an output bonus. Places: the trees earth; Iron Deeps and the quarry earth, Crystal Grotto water; the expedition places earth, fire and water.
+- Elements (`ELEMENTS` in `src/data/schemas.ts`): water, fire, earth, light, dark. Only the 111 T6 and 34 Heirloom cards have one (water 24, fire 35, earth 33, light 22, dark 31: the Dragon and Leviathan cards from `design/weapon-elements-2026-11-21.json`, the Wildwood hero side earth and villain side fire; checked by `tests/elements.test.ts`); a Wood to Prismatic card has none and does plain base damage: neutral against every boss, no farming bonus, no expedition doubling. The Wildwood earth logging cards (Grovehewer, Beetlejaw) are the first that get the woods' earth bonus. In `src/game/elements.ts`, a fighting card's element against the dungeon boss's element (the circle: `elementMatchup`) changes that card's own damage there (`elementRelation`, `elementDamagePercent`), and a card on a camp slot farming a material of its own element gets an output bonus (`workerElementModifier`, read by `camp.ts`). Materials: the three woods earth; Copper and Iron earth, Grotto water; the expedition places earth, fire and water.
 
 ### Abilities and team bonuses
 
@@ -830,7 +830,7 @@ The hub is the main screen (DESIGN section 2, Base camp). `hub-wide-640x360.png`
 
 - `prefs.ts`: reduced motion and the autosave interval, in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
 - `motion.ts` applies it: `data-motion` on `<html>`, a wrapped `window.matchMedia`, and every `prefers-reduced-motion` CSS rule switched on or off (`motionRules.ts`).
-- `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money coins, gems, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture yet (Cores, Sigils, Dust, Shards) as the number and its name in words.
+- `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money's coins, and every resource with a kept icon: gems, Cores, Sigil, Dust, Shards, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture as the number and its name in words (none today).
 - `numberFormat.ts` `fmt` is the one number format. `coins.ts` shows Money as a count of the biggest coin it fills, coins from `coins.json`.
 - `logBuffer.ts`, `logRing.ts`: recent console lines and uncaught errors. `issueReport.ts` builds the pre-filled GitHub issue link the Settings view opens.
 
@@ -908,6 +908,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `stars.ts`: stage-star pips and text with "★" drawn as sprites. Used by Cards, `pages/dungeons.ts`, arena, `weaponPanel.ts`.
 - `pixelScale.ts` (maths), `pixelFit.ts` (DOM): keep pixel art at whole device pixels; `fitCard` sizes card hosts; `watchFit` keeps a list of cards at a whole scale as it resizes (Cards page, Forge worker picker). Used wherever cards show.
 - `pixelNumbers.ts`: draws `.bi-num` numbers in the equipped Number cosmetic's pixel font (`art/pixelFont.ts`). Installed by `app.ts`.
+- `resourceIcons.ts`: a resource's icon. Every resource but Money has a kept 32 x 32 icon, `hand/res-<resource id>.png` (user, 2026-11-22), listed in `KEPT_ICONS`; `keptIconMarkup(id)` draws it, `resourceIconMarkup(resource)` is the one call (kept icon, else Money's coin), and Money keeps its coin ladder (`moneyCoinArt`). Used by `app.ts` (header and Details chips), Details, Summon, arena, `resourceArt.ts`, `forge.ts`, the shop (supply lines, Starlight prices) and the Dungeons drop rows. The Achievements tooltip draws a resource reward with it. Icons show at 1x (32 CSS px, a negative margin keeps text lines as tall as before), never shrunk. Gems no longer show their mastery coin (`gemCoin` is only the Skill tree and mastery art now); the Starlight skin of the Wardrobe still shows on the shop's Ascension ring only. Still in words: reward and welcome-back lines, toasts, quest and trip rewards, challenge rewards. Old `res-summon*`, `res-glamour*` and `shop-sup1` to `5` sprites have no caller.
 - `resourceIcons.ts`: a resource's icon. Used by `app.ts`, Details, Summon, arena, `resourceArt.ts`, `forge.ts`.
 - `resourceArt.ts`: a resource's picture for prices. Used by `upgradeRows.ts`.
 - `costMarkup.ts`: one or more prices drawn side by side by the rule in `settings/cost.ts`. Used by the Training upgrade rows and the paid respec button (`pages/skills.ts`). The header, "You hold" strips, Summon pull buttons and shop price chips already drew picture and number.
@@ -966,7 +967,7 @@ Mounted by the `summon` view (`views/collection/index.ts`).
 
 Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view data comes from `ascensionModel.ts` and `achievementsModel.ts`.
 
-- **Starlight.** The items of `prestige.json` `shop`: permanent levels paid in Starlight (`prestige.json` `currency`) (`starlightShop`, `buyStarlightItem`), priced by `starlightPrice`; some stay locked until a condition is met (`starlightItemLocked`). Autobuyer switches show once one is owned (`autobuyerOwned`, `setAutomation`).
+- **Starlight.** The items of `prestige.json` `shop`: permanent levels paid in Starlight (`prestige.json` `currency`) (`starlightShop`, `buyStarlightItem`), priced by `starlightPrice`; some stay locked until a condition is met (`starlightItemLocked`).
 - **Shards.** The items of `achievements.json` `shardShop`, paid in card shards (`state.cards.shards`): Card copies, Supplies (resource bundles) and Exclusive (cosmetics), some with limited stock (`shardShop`, `buyShardItem`).
 - **Ascension.** The Starlight gain, what is still needed, Ascend through ready, confirm, a gate-walking animation and a done screen (`ascensionPreview`, `ascend`, `shop.ts` `Mode`), Kept and Reset lists and the challenges panel (`challengesPanel.ts`). See Ascension; Challenges and trials.
 
@@ -1048,14 +1049,14 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 
 ### Where the pictures live
 
-- `art/pixel/sprites/` holds every sprite (1,538 PNGs). `art/pixel/hand/` holds the 848 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 37 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
+- `art/pixel/sprites/` holds every sprite (1,558 PNGs). `art/pixel/hand/` holds the 868 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 37 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
 - The file name is the key. Counts by prefix in `sprites/`:
   - `item-` 208: weapons, 100 x 120. `item-<type>-t1` to `-t5` (11 types x 5 tiers = 55), `-t6m` and `-t6v` (22), `-heirloom` (11), `item-<type>-leviathan-t6m|t6v|heirloom` (33), `item-<type>-wildwood-t6m|t6v|heirloom` and `item-dagger-wildwood-heirloom-alt` (34), `item-<type>-hm-<letter>` and `-hv-<letter>` (45 recoloured Heirlooms, 13 of them recoloured again with PixelLab on 2026-11-22, see `docs/ASSET_RULES.md` section 5), 6 other bow and maul pictures, 2 motion strips.
   - `skin-` 37 (weapon skins, 19 stills and 18 strips), `evo-` 9.
   - `kit-` 10: card kits, 212 x 256. `frame-` 4.
   - `foe-` 59, all 160 x 172: 23 pack foes with a still and an idle strip each, and 13 approved PixelLab stills with no strip (2026-11-22, see `docs/ASSET_RULES.md` section 5). `boss-` 3: the Crystal Sentinel and its two shards.
   - `bg-` 5, `bgfish-` 64, `bgbig-` 16: Heirloom backdrops and their fish.
-  - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 5, `star-` 11, `shop-` 10, `badge-` 332.
+  - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 25, `star-` 11, `shop-` 10, `badge-` 332.
 - `art/shell/stone/` (34 PNGs) and `art/shell/oak/` (15 PNGs and `pieces.json`) hold the table's pieces; see Shell and table.
 - `art/fx/` holds the 16 drawn sheets of the special attack (see Stage effects): `hit-<weapon>.png` for sword, greatsword, hammer, scythe, staff, lance, dagger, spear and bow, recoloured per material from Wood to Prismatic; `slash-<element>.png` for fire, storm, light, nature, earth, crystal and void, played on Mythic and Heirloom by the sword and the scythe. Since the five elements only fire, light, earth and `slash-void` (for dark) are played; storm, nature and crystal stay unused.
 

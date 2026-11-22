@@ -10,7 +10,8 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
-import { gemCoin, svg } from '../art/gems';
+import { svg } from '../art/gems';
+import { keptIconMarkup } from '../ui/resourceIcons';
 import { ITEM_VIEWBOX } from '../art/items';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { h } from '../shell/shell';
@@ -96,8 +97,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     b.type = 'button';
     const ico = h('span', coin === 'star' ? 'shop-price__ico' : 'shop-price__ico shop-gem');
     ico.setAttribute('aria-hidden', 'true');
-    // a line icon: the coin art (48 px) would have to shrink to fit a chip
-    if (coin === 'star') ico.append(icon('starlight', 'shop-icon'));
+    if (coin === 'star') ico.innerHTML = keptIconMarkup('starlight') ?? '';
     b.append(ico, h('span', 'shop-price__txt'));
     b.addEventListener('click', () => {
       if (b.getAttribute('aria-disabled') === 'true') return;
@@ -190,11 +190,11 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
 
   /** Pixel supply icons by resource: one per supply line, in the order the shop sells them. */
   const SUPPLY_SPRITES: Record<string, string> = {
-    summon_scroll: 'shop-sup1',
-    glamour_scroll: 'shop-sup2',
-    frost_core: 'shop-sup3',
-    glimmer_dust: 'shop-sup4',
-    facet_shard: 'shop-sup5',
+    summon_scroll: 'res-summon_scroll',
+    glamour_scroll: 'res-glamour_scroll',
+    frost_core: 'res-frost_core',
+    glimmer_dust: 'res-glimmer_dust',
+    facet_shard: 'res-facet_shard',
   };
 
   function offerArt(art: OfferArt, s: GameState): string {
@@ -203,8 +203,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
         // a whole-scale weapon in a window that crops what does not fit (shop.css)
         return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId], s), ITEM_VIEWBOX);
       case 'coin': {
-        const gem = content.resourceById.get(art.resource)?.gem;
-        return gem ? svg(gemCoin(gem, 1)) : '';
+        return keptIconMarkup(art.resource) ?? '';
       }
       case 'resource': {
         const sup = SUPPLY_SPRITES[art.resource];
