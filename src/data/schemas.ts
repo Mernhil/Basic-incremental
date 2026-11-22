@@ -15,8 +15,6 @@ const tier = z.number().int().min(1);
 
 /** The five elements (DESIGN.md §2 Fights): water beats fire beats earth beats water; light and dark beat each other. */
 export const ELEMENTS = ['water', 'fire', 'earth', 'light', 'dark'] as const;
-/** The three that a boss can resist: nothing ever resists light or dark. */
-export const RESISTABLE_ELEMENTS = ['water', 'fire', 'earth'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
 
 /**
@@ -866,10 +864,8 @@ export const dungeonSchema = z.strictObject({
     art: z.enum(BOSS_ARTS).optional(),
     /** A boss picture cut from an asset pack (`foe-<sprite>`), used when there is no `art`. */
     sprite: id.optional(),
-    /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
-    weakness: z.enum(ELEMENTS),
-    /** Absent when the boss has none (never light or dark). */
-    resistance: z.enum(RESISTABLE_ELEMENTS).optional(),
+    /** The boss's element; what it is weak to and resists follows the circle (game/elements.ts). */
+    element: z.enum(ELEMENTS),
     hp: positiveDecimal,
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),

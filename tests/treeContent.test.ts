@@ -237,8 +237,8 @@ describe('the stats the new skills read', () => {
     fire.account.skills['elements_s1'] = 4; // Attunement: +5% a rank
     expect(elem(fire)).toBeCloseTo(60);
     const nature = bareState();
-    nature.cards.owned['jade_vanguard'] = newOwnedCard();
-    nature.cards.loadouts.fighting.slots[0] = 'jade_vanguard';
+    nature.cards.owned['cobalt_tyrant'] = newOwnedCard();
+    nature.cards.loadouts.fighting.slots[0] = 'cobalt_tyrant';
     expect(elem(nature)).toBe(-25);
     nature.account.skills['elements_s3'] = 4; // Ward: -5% malus a rank
     expect(elem(nature)).toBeCloseTo(-20);
