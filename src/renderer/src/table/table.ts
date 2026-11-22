@@ -94,29 +94,37 @@ export function createTable(): Table {
 
   function buildPiece(def: TablePieceDef, ctx: TableContext): void {
     const slot = slots[def.slot];
-    slot.dataset.view = def.view;
+    slot.dataset.view = def.view ?? 'dungeon';
     // focus comes back here when its view closes (UI_RULES.md §2, View keys and focus)
     slot.tabIndex = -1;
     slot.setAttribute('aria-label', def.label);
     const body = h('div', 'tbl-piece__body');
+    const view = def.view;
+    if (!view) {
+      // the dungeon window: no corner button and no click-to-open, it is the whole dungeon
+      slot.append(body);
+      slot.style.cursor = 'default';
+      rendered.push(def.mount(body, ctx));
+      return;
+    }
     const openBtn = h('button', 'px-btn tbl-open');
     openBtn.type = 'button';
-    openBtn.dataset.open = def.view;
+    openBtn.dataset.open = view;
     openBtn.setAttribute('aria-label', def.label);
     openBtn.title = def.label;
     // a pixel 'fan out' glyph: two corner brackets
     openBtn.innerHTML =
       '<svg viewBox="0 0 7 7" aria-hidden="true"><path d="M0 0h3v1H1v2H0zM7 7H4V6h2V4h1z"/></svg>';
-    openBtn.addEventListener('click', () => open(def.view, slot));
+    openBtn.addEventListener('click', () => open(view, slot));
     slot.append(body, openBtn);
     // a click anywhere on the piece that is not one of its own controls opens its view
     slot.addEventListener('click', (e) => {
       const t = e.target as Element | null;
       if (!t || t.closest(OWN_CLICK)) return;
       if (window.getSelection()?.toString()) return;
-      open(def.view, slot);
+      open(view, slot);
     });
-    openers.set(def.view, slot);
+    openers.set(view, slot);
     rendered.push(def.mount(body, ctx));
   }
 

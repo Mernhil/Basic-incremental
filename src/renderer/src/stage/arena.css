@@ -515,11 +515,6 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   background: var(--bi-hp-0);
   transform-origin: left;
 }
-/* in the table's window the duel shows without its controls */
-.dv-window .du-ctrl,
-.dv-window .du-timer {
-  display: none;
-}
 
 /* ---- the enemy ahead ---- */
 .du-zone {

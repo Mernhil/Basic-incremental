@@ -1,39 +1,24 @@
-/* Package 9a: the duel in the table's centre window and in the dungeon full view, and the view's
-   panel buttons and sheet (UI_RULES.md §2 The duel's layout, The dungeon full view). The duel's
-   own look is stage/arena.css; these rules fit it to its two homes. */
+/* The duel in the table's centre window, with the panel buttons and the sheet (UI_RULES.md §2 The
+   duel's layout). The duel's own look is stage/arena.css; these rules fit it to the window. */
 
-/* in the window: the duel fills it, without its controls (arena.css hides them under .dv-window) */
+/* the duel fills the window */
 .dv-window > .dv-duel {
   height: 100%;
   min-height: 0;
 }
 
-/* in the view: the duel fills the view's body under its title bar */
-.vh-body > .shell-page.dv-view {
-  display: block;
-}
-.dv-stage {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-}
-.dv-stage > .dv-duel {
-  /* a clear gap under the hand (user, 2026-11-15: the cards sat too close to the bottom edge); the
-     arena reads it for the hand's room (stage/arena.ts fitHand) */
-  --du-hand-gap: 24px;
-  position: absolute;
-  inset: 0;
-  height: auto;
-}
-
-/* the panel buttons, at the right end of the view's title bar (nothing stands under the hand) */
+/* the panel buttons: top left of the window, above the readouts */
 .dv-buttons {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 5;
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 .dv-button {
-  padding: 6px 14px;
-  font-size: 13px;
+  padding: 5px 12px;
+  font-size: 12.5px;
 }
 .dv-button:focus-visible,
 .dv-sheet__back:focus-visible {
@@ -41,13 +26,13 @@
   outline-offset: 3px;
 }
 
-/* the sheet: one framed panel over the fight, under the title bar that holds the buttons */
+/* the sheet: one framed panel over the fight, under the buttons */
 .dv-sheet {
   position: absolute;
-  top: 12px;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
+  top: 44px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
   z-index: 10;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -59,8 +44,8 @@
 .dv-sheet[data-panel='training'] {
   left: auto;
   bottom: auto;
-  max-height: calc(100% - 28px);
-  width: min(560px, calc(100% - 32px));
+  max-height: calc(100% - 56px);
+  width: min(560px, calc(100% - 24px));
 }
 .dv-sheet__head {
   display: flex;

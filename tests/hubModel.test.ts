@@ -65,9 +65,9 @@ describe('hub map', () => {
       if (b.action.kind === 'view') reachable.add(b.action.view);
       if (b.action.kind === 'menu') b.action.choices.forEach((c) => reachable.add(c.view));
     }
-    // Settings is the gear on the hub, the dungeon is the arch
+    // Settings is the gear on the hub; the dungeon is the arch, a screen of its own, not a view
     for (const id of VIEW_IDS) {
-      if (id === 'dungeon' || id === 'settings') continue;
+      if (id === 'settings') continue;
       expect(reachable.has(id), id).toBe(true);
     }
   });
