@@ -11,6 +11,7 @@ import {
   cloneCards,
   cloneFloors,
   cloneHeirlooms,
+  cloneRaids,
   DIFFICULTIES,
   emptyCardLoadout,
   LOADOUT_SLOTS,
@@ -33,7 +34,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 43;
+export const CURRENT_SAVE_VERSION = 44;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -189,6 +190,19 @@ export const serializedStateSchema = z.object({
   }),
   /** v42: the starter weapon's pick (DESIGN.md §2 Starter weapon). */
   starter: z.object({ done: z.boolean(), skippable: z.boolean() }),
+  /** v44: raid tries, best scores and the ladder rewards paid (DESIGN.md §2 Raid bosses). */
+  raids: z
+    .object({
+      day: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .nullable(),
+      used: z.record(z.string(), z.number().int().min(0)),
+      best: z.record(z.string(), z.number().min(0).finite()),
+      paid: z.record(z.string(), z.number().int().min(1)),
+      level: z.record(z.string(), z.number().int().min(0)).default({}),
+    })
+    .default({ day: null, used: {}, best: {}, paid: {}, level: {} }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
   }),
@@ -302,6 +316,7 @@ export function serializeState(state: GameState): SerializedState {
     },
     summon: { ...state.summon },
     starter: { ...state.starter },
+    raids: cloneRaids(state.raids),
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -794,6 +809,13 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
   state.combat.cardsOut = [...new Set(state.combat.cardsOut.filter(isFighting))];
   const focusKind = saved.summon.focusKind;
   state.starter = { ...saved.starter };
+  state.raids = {
+    day: saved.raids.day,
+    used: { ...saved.raids.used },
+    best: { ...saved.raids.best },
+    paid: { ...saved.raids.paid },
+    level: { ...saved.raids.level },
+  };
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,
     dailyClaimedDay: saved.summon.dailyClaimedDay,

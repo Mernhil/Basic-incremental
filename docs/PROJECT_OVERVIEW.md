@@ -186,6 +186,7 @@ Game content is JSON in `src/data/content/`, imported by `src/data/index.ts`. `l
 | `training.json`      | Training lines                                                                                                                    | Fights                                     |
 | `trees.json`         | Tree kinds                                                                                                                        | Production                                 |
 | `trials.json`        | Special dungeons                                                                                                                  | Challenges and trials                      |
+| `raids.json`         | The five raid bosses, their tricks, the AI ladder teams and the rank rewards                                                      | Raid bosses                                |
 | `weaponSkins.json`   | Legacy weapon skins                                                                                                               | Cosmetics and themes                       |
 | `wearRules.json`     | Rank a card needs to show a border, finish or exclusive                                                                           | Cosmetics and themes                       |
 | `web.json`           | Skill web `arms` and `nodes` (`perLevel`, `cost`, `maxLevel`)                                                                     | Skill web                                  |
@@ -550,6 +551,17 @@ A **challenge** is a whole Ascension run played under a handicap for a permanent
 - Each attempt pays every `tiers` entry whose `score` was reached (`trialRewards`); a score of 1 clears the trial. Clearing the trial adds it to `clearedDungeons`, which opens any dungeon or trial whose `unlockedBy` names it.
 - The best score earns medal tiers with bonuses from `progression.json` `trialMastery` (`src/game/mastery.ts`).
 
+## Raid bosses
+
+Five bosses, one for each element, fought with the player's fighting team after the first Ascension. All numbers are in `src/data/content/raids.json` (`raidsSchema`); the rules are `src/game/raids.ts`; tests `tests/raids.test.ts`; sim checks `scripts/sim/raidsCapture.ts` and `raidsCheck.ts`.
+
+- `raidsOpen`: `prestigeCount` at least `unlockAscensions`. `raidTriesLeft`: `triesPerDay` per boss, counted against the local day (`localDay`); `state.raids.day` holds the day the used tries belong to, so a new day (also after time away) gives them all back with no timer.
+- `fightRaid` builds the team with `buildTeam` scoped to the boss id (the element circle works through `elementDamagePercent`, which also knows raid ids, and the modifier scope is the boss id), then steps the fight a quarter second at a time: each card's hits and ultimates on the play-time clock (`cardRun`), heals and shields landing with the ultimates (`healFromMoves`), and the boss attacking one card at a time (`enemyTarget`, `weakenFactor`, `combat.defence`). It ends at a kill, a wiped team or `durationSeconds`. The state is not changed; the same team always gets the same result.
+- Score: the HP taken off the boss as a share of its HP (`combat.bossHp` modifiers apply); a kill ends the fight and scores 1 plus `killBonus` times the share of the time left. Tricks (`bossTrick`): `shield` (Stoneskin) soaks `size` of the team's damage, `mend` gives the boss back `size` of its HP every `every` seconds, `curse` cuts the team's damage by `size`, each by the share `answerAt` of Expose, Wound or Rally (`teamEffectShare`, the moveset's averages) takes away; `rage` grows the boss's attack by `size` a minute; `judgement` makes every `every`-th attack hit all cards for `size` times an attack.
+- Ladder (`raidLadder`, `raidRank`): the `ladder.teams` (four real cards each, a score per boss as a share of the boss's HP) and the player's best on one list, ties to the AI team. `tryRaid` spends a try, keeps the best (`state.raids.best`) and pays each `ladder.rewards` rank once per boss (`state.raids.paid` holds the best rank paid).
+- Raid level: each kill of a boss raises it one level (`state.raids.level`, `raidLevel`): its HP grows by `levelGrowth.hp` and its attack by `levelGrowth.attack` for each level (`raidBossHp`), its best score starts again (`tryRaid` `levelUp`), and the ladder shares apply at every level; the rank rewards paid stay paid once per boss.
+- The screen (`src/renderer/src/views/raids/`: `raids.ts`, `raidsModel.ts`, `copy.ts`, `raids.css`; view id `raids`, registered in `table/registry.ts`): the five bosses (picture, element, weakness, trick, tries left today, best score and rank), the fight played back second by second from `RaidFight.samples` with a timer, running damage, the boss's health bar and the team (a try is spent and saved when the fight starts; Skip jumps to the end), the result with the new rank and rewards, and the ladder with the rank rewards. It is opened from the hub's Raid gate (`hubModel.ts`: `needsAscension`, `sealWhy`; the gate stays sealed with a plate until the first Ascension). The boss pictures are `art/pixel/hand|sprites/foe-raid_*.png` (the kept 160 x 172 stills, `raids.json` `art`), drawn with `foeHtml`. Tests: `tests/raidsModel.test.ts`, `tests/hubModel.test.ts`.
+
 ## Account level and reward track
 
 The save has one account level. Playing fills its XP bar; each level pays skill points and sometimes a reward. Logic: `src/game/account.ts`; numbers: `src/data/content/account.json` (`accountFileSchema` in `src/data/schemas.ts`).
@@ -706,7 +718,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 ### What a save is
 
 - Plain JSON text with three fields: `version` (the save format number), `savedAt` (epoch milliseconds, used for offline progress, see Game core) and `state` (`src/game/save.ts` `createSaveText`). No compression, encryption or checksum.
-- The current save format is **43** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration). Format 42 added the camp and the Training ground dummy. Format 43 added `state.starter` and `OwnedCard.seal` (the starter weapon): a save from before it gets `starter: { done: false, skippable: true }`, so it is offered the pick once on load.
+- The current save format is **44** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration). Format 42 added the camp and the Training ground dummy. Format 43 added `state.starter` and `OwnedCard.seal` (the starter weapon): a save from before it gets `starter: { done: false, skippable: true }`, so it is offered the pick once on load. Format 44 added `raids` (tries used today, best scores, ladder ranks paid, boss levels; empty from the migration).
 - `state` is the whole game state with big numbers as strings (`serializeState`; shape in `serializedStateSchema`). A card's tier is not saved; it is read from the card's data on load.
 
 ### Where and when it is written
@@ -819,7 +831,7 @@ The hub is the main screen (DESIGN section 2, Base camp). `hub-wide-640x360.png`
 
 - `prefs.ts`: reduced motion and the autosave interval, in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
 - `motion.ts` applies it: `data-motion` on `<html>`, a wrapped `window.matchMedia`, and every `prefers-reduced-motion` CSS rule switched on or off (`motionRules.ts`).
-- `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money coins, gems, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture yet (Cores, Sigils, Dust, Shards) as the number and its name in words.
+- `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money's coins, and every resource with a kept icon: gems, Cores, Sigil, Dust, Shards, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture as the number and its name in words (none today).
 - `numberFormat.ts` `fmt` is the one number format. `coins.ts` shows Money as a count of the biggest coin it fills, coins from `coins.json`.
 - `logBuffer.ts`, `logRing.ts`: recent console lines and uncaught errors. `issueReport.ts` builds the pre-filled GitHub issue link the Settings view opens.
 
@@ -897,6 +909,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `stars.ts`: stage-star pips and text with "★" drawn as sprites. Used by Cards, `pages/dungeons.ts`, arena, `weaponPanel.ts`.
 - `pixelScale.ts` (maths), `pixelFit.ts` (DOM): keep pixel art at whole device pixels; `fitCard` sizes card hosts; `watchFit` keeps a list of cards at a whole scale as it resizes (Cards page, Forge worker picker). Used wherever cards show.
 - `pixelNumbers.ts`: draws `.bi-num` numbers in the equipped Number cosmetic's pixel font (`art/pixelFont.ts`). Installed by `app.ts`.
+- `resourceIcons.ts`: a resource's icon. Every resource but Money has a kept 32 x 32 icon, `hand/res-<resource id>.png` (user, 2026-11-22), listed in `KEPT_ICONS`; `keptIconMarkup(id)` draws it, `resourceIconMarkup(resource)` is the one call (kept icon, else Money's coin), and Money keeps its coin ladder (`moneyCoinArt`). Used by `app.ts` (header and Details chips), Details, Summon, arena, `resourceArt.ts`, `forge.ts`, the shop (supply lines, Starlight prices) and the Dungeons drop rows. The Achievements tooltip draws a resource reward with it. Icons show at 1x (32 CSS px, a negative margin keeps text lines as tall as before), never shrunk. Gems no longer show their mastery coin (`gemCoin` is only the Skill tree and mastery art now); the Starlight skin of the Wardrobe still shows on the shop's Ascension ring only. Still in words: reward and welcome-back lines, toasts, quest and trip rewards, challenge rewards. Old `res-summon*`, `res-glamour*` and `shop-sup1` to `5` sprites have no caller.
 - `resourceIcons.ts`: a resource's icon. Used by `app.ts`, Details, Summon, arena, `resourceArt.ts`, `forge.ts`.
 - `resourceArt.ts`: a resource's picture for prices. Used by `upgradeRows.ts`.
 - `costMarkup.ts`: one or more prices drawn side by side by the rule in `settings/cost.ts`. Used by the Training upgrade rows and the paid respec button (`pages/skills.ts`). The header, "You hold" strips, Summon pull buttons and shop price chips already drew picture and number.
@@ -1037,14 +1050,14 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 
 ### Where the pictures live
 
-- `art/pixel/sprites/` holds every sprite (1,538 PNGs). `art/pixel/hand/` holds the 848 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 37 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
+- `art/pixel/sprites/` holds every sprite (1,558 PNGs). `art/pixel/hand/` holds the 868 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 37 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
 - The file name is the key. Counts by prefix in `sprites/`:
   - `item-` 208: weapons, 100 x 120. `item-<type>-t1` to `-t5` (11 types x 5 tiers = 55), `-t6m` and `-t6v` (22), `-heirloom` (11), `item-<type>-leviathan-t6m|t6v|heirloom` (33), `item-<type>-wildwood-t6m|t6v|heirloom` and `item-dagger-wildwood-heirloom-alt` (34), `item-<type>-hm-<letter>` and `-hv-<letter>` (45 recoloured Heirlooms, 13 of them recoloured again with PixelLab on 2026-11-22, see `docs/ASSET_RULES.md` section 5), 6 other bow and maul pictures, 2 motion strips.
   - `skin-` 37 (weapon skins, 19 stills and 18 strips), `evo-` 9.
   - `kit-` 10: card kits, 212 x 256. `frame-` 4.
   - `foe-` 59, all 160 x 172: 23 pack foes with a still and an idle strip each, and 13 approved PixelLab stills with no strip (2026-11-22, see `docs/ASSET_RULES.md` section 5). `boss-` 3: the Crystal Sentinel and its two shards.
   - `bg-` 5, `bgfish-` 64, `bgbig-` 16: Heirloom backdrops and their fish.
-  - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 5, `star-` 11, `shop-` 10, `badge-` 332.
+  - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 25, `star-` 11, `shop-` 10, `badge-` 332.
 - `art/shell/stone/` (34 PNGs) and `art/shell/oak/` (15 PNGs and `pieces.json`) hold the table's pieces; see Shell and table.
 - `art/fx/` holds the 16 drawn sheets of the special attack (see Stage effects): `hit-<weapon>.png` for sword, greatsword, hammer, scythe, staff, lance, dagger, spear and bow, recoloured per material from Wood to Prismatic; `slash-<element>.png` for fire, storm, light, nature, earth, crystal and void, played on Mythic and Heirloom by the sword and the scythe. Since the five elements only fire, light, earth and `slash-void` (for dark) are played; storm, nature and crystal stay unused.
 

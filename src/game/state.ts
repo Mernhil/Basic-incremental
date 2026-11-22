@@ -63,6 +63,8 @@ export interface GameState {
   /** Summoning choices of the table update (DESIGN.md §3 scrolls, §7 Focus Portal). Save format 27;
    *  not read yet. Kept through prestige. */
   summon: SummonState;
+  /** Raid tries today, best scores and ladder rewards paid (DESIGN.md §2 Raid bosses). Save format 44. Kept through prestige. */
+  raids: RaidState;
   /** The starter weapon's pick. Kept through prestige. */
   starter: StarterState;
   /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
@@ -118,6 +120,34 @@ export interface SummonState {
   /** Card tiers (card grades, e.g. "wood", "mythic", "void") whose completion reward was paid, in
    *  the order paid (DESIGN.md §2 Summoning, Tier completion reward). Save format 40. */
   tierRewardsClaimed: string[];
+}
+
+/** Raid progress (raids.ts). Scores are shares of the boss's HP (1 = a kill). */
+export interface RaidState {
+  /** The local day ("YYYY-MM-DD") `used` counts tries of; another day means no tries used. */
+  day: string | null;
+  /** Boss id -> tries used on `day`. */
+  used: Record<string, number>;
+  /** Boss id -> best score so far, as a share of the boss's HP. */
+  best: Record<string, number>;
+  /** Boss id -> best (lowest) ladder rank whose reward is already paid. */
+  paid: Record<string, number>;
+  /** Boss id -> its level, one for each kill so far (0 = never killed). */
+  level: Record<string, number>;
+}
+
+export function initialRaids(): RaidState {
+  return { day: null, used: {}, best: {}, paid: {}, level: {} };
+}
+
+export function cloneRaids(r: RaidState): RaidState {
+  return {
+    day: r.day,
+    used: { ...r.used },
+    best: { ...r.best },
+    paid: { ...r.paid },
+    level: { ...r.level },
+  };
 }
 
 export function initialSummon(): SummonState {
@@ -482,6 +512,7 @@ export function createInitialState(content: Content): GameState {
     account: initialAccount(),
     upgrades: initialUpgrades(),
     summon: initialSummon(),
+    raids: initialRaids(),
     starter: initialStarter(),
     presets: initialPresets(),
     discoveredBonds: [],
@@ -528,6 +559,7 @@ export function cloneState(state: GameState): GameState {
     shardShop: { ...state.shardShop },
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     summon: { ...state.summon, tierRewardsClaimed: [...state.summon.tierRewardsClaimed] },
+    raids: cloneRaids(state.raids),
     starter: { ...state.starter },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],

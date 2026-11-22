@@ -12,6 +12,7 @@ export const VIEW_IDS = [
   'forge',
   'training',
   'expeditions',
+  'raids',
   'upgrades',
   'settings',
 ] as const;

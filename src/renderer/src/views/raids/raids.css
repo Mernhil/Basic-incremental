@@ -1,0 +1,156 @@
+/* the Raids view: the five bosses, the fight and the ladder. Panels and buttons are the shell's. */
+.rd {
+  padding: 16px;
+}
+.rd__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rd p,
+.rd h2,
+.rd h3 {
+  margin: 0;
+}
+.rd-head,
+.rd-stage,
+.rd-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  align-items: flex-start;
+}
+.rd-note {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.rd-warn {
+  color: var(--px-gold, #ffd66e);
+}
+.rd-gold {
+  color: var(--px-gold, #ffd66e);
+}
+.rd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rd-boss {
+  display: flex;
+  gap: 16px;
+  padding: 12px;
+  align-items: flex-start;
+}
+.rd-boss__pic {
+  flex: none;
+  width: 160px;
+  height: 172px;
+}
+.rd-boss__info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  min-width: 0;
+}
+.rd-boss__chips,
+.rd-boss__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rd-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 0.85em;
+  box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
+  background: #1c1c20;
+  color: #d8d2c4;
+}
+.rd-chip--fire {
+  color: #ff9a6e;
+}
+.rd-chip--water {
+  color: #7cc4ff;
+}
+.rd-chip--earth {
+  color: #a8d06a;
+}
+.rd-chip--light {
+  color: #ffe9a0;
+}
+.rd-chip--dark {
+  color: #b48cff;
+}
+.rd-stage__top {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.rd-stage__pic {
+  width: 320px;
+  height: 344px;
+  align-self: center;
+}
+.rd-hp {
+  width: 100%;
+  height: 16px;
+  background: #1c1c20;
+  box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
+}
+.rd-hp > i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold, #d9534f);
+}
+.rd-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rd-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  min-width: 140px;
+}
+.rd-card.is-down {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.rd-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.rd-ladder__rows,
+.rd-ladder__rewards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.rd-ladder__row {
+  display: grid;
+  grid-template-columns: 2.5em 11em 1fr 11em;
+  gap: 8px;
+  padding: 3px 6px;
+  border-bottom: 1px solid #2c2c32;
+}
+.rd-ladder__row.is-you {
+  color: var(--px-gold, #ffd66e);
+  background: #26262c;
+}
+.rd-ladder__cards {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 0.85em;
+}
+.rd-ladder__rewards .is-paid {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+
+.rd-card .rd-chip {
+  align-self: flex-start;
+}

@@ -48,6 +48,8 @@ export interface StickerView {
   dateText: string;
   /** "3 Moss Core", "Gilded Plate, Rare border". */
   rewards: string[];
+  /** The resources among the rewards, as icon and amount (the tooltip draws them with the icon). */
+  rewardResources: { resource: string; amount: string }[];
   /** A small tilt in degrees, fixed per sticker, so the page looks hand-stuck. */
   tilt: number;
 }
@@ -177,6 +179,10 @@ export function stickerView(entry: AchievementEntry, content: Content): StickerV
         ? ''
         : COPY.achievements.unlockedAt(formatDuration(entry.unlockedAt)),
     rewards: rewardLines(content, a),
+    rewardResources: a.reward.resources.map((r) => ({
+      resource: r.resource,
+      amount: fmt(r.amount),
+    })),
     tilt: tiltOf(a.id),
   };
 }

@@ -111,6 +111,8 @@ export const MIGRATIONS: MigrationTable = {
   /** v42 -> v43: the starter weapon (DESIGN.md §2 Starter weapon): a save that began before it is
    *  offered the pick once, and may turn it down. */
   42: v42ToV43,
+  /** v43 -> v44: raid bosses (DESIGN.md §2): no tries used, no best scores, no rewards paid. */
+  43: v43ToV44,
 };
 
 /**
@@ -342,6 +344,11 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
+
+/** v43 -> v44 (DESIGN.md §2 Raid bosses): an empty raid record. */
+function v43ToV44(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
+}
 
 /** v40 -> v41 (DESIGN.md §2 Three attacks per card): every owned card gets `skillOpen: false`. */
 function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {

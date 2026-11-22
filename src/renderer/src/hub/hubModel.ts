@@ -1,3 +1,5 @@
+import type { Content } from '../../../data';
+import { raidsOpen, type GameState } from '../../../game';
 import type { ViewId } from '../table/viewIds';
 
 /**
@@ -32,6 +34,8 @@ export interface HubBuilding {
   id: string;
   name: string;
   action: HubAction;
+  /** The place opens only after the first Ascension (raids): sealed with a plate until then. */
+  needsAscension?: true;
   /** Views whose pile hints say something waits: the gold "!" shows when any of them is ready. */
   marks: readonly ViewId[];
 }
@@ -44,7 +48,8 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
   {
     id: 'raid_gate',
     name: 'Raid gate',
-    action: { kind: 'locked', why: 'Sealed until raids exist' },
+    action: { kind: 'view', view: 'raids' },
+    needsAscension: true,
     marks: [],
   },
   {
@@ -132,6 +137,14 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     marks: ['shop'],
   },
 ];
+
+/** Why a place is sealed now, or null when it opens: a place that is not built yet, or the Raid gate
+ *  before the first Ascension. */
+export function sealWhy(def: HubBuilding, state: GameState, content: Content): string | null {
+  if (def.action.kind === 'locked') return def.action.why;
+  if (def.needsAscension && !raidsOpen(state, content)) return 'Opens after your first Ascension';
+  return null;
+}
 
 /**
  * The whole scale the map is shown at: the largest that fits the width of the area under the
