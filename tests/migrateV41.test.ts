@@ -10,20 +10,20 @@ import {
 
 const content = loadContent();
 
-/** Save format 41, the starter weapon (DESIGN.md §2 Starter weapon): a format 40 save. */
-describe('v40 -> v41', () => {
+/** Save format 42, the starter weapon (DESIGN.md §2 Starter weapon): a format 41 save. */
+describe('v41 -> v42', () => {
   const state = createInitialState(content);
   const parsed = JSON.parse(createSaveText(state, 5_000)) as {
     version: number;
     state: Record<string, unknown>;
   };
-  parsed.version = 40;
+  parsed.version = 41;
   delete parsed.state['starter'];
   const loaded = readSave(JSON.stringify(parsed), content);
 
-  it('is a format 40 save and the game is newer', () => {
-    expect(parsed.version).toBe(40);
-    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(41);
+  it('is a format 41 save and the game is newer', () => {
+    expect(parsed.version).toBe(41);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(42);
   });
 
   it('offers the pick once, and the screen may be closed', () => {

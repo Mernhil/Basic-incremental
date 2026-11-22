@@ -54,9 +54,9 @@ describe('a card arrives at its own tier and stays there (DESIGN.md §5 No tier-
         expect(cards, `${kind} ${tier}`).toHaveLength(1);
       }
     }
-    expect(content.cards.filter((c) => c.tier === 'mythic')).toHaveLength(89);
-    expect(content.cards.filter((c) => c.tier === 'heirloom')).toHaveLength(22);
-    expect(content.cards).toHaveLength(166);
+    expect(content.cards.filter((c) => c.tier === 'mythic')).toHaveLength(111);
+    expect(content.cards.filter((c) => c.tier === 'heirloom')).toHaveLength(34);
+    expect(content.cards).toHaveLength(200);
   });
 
   it('only T6 and Heirloom cards have a side, and the grade is the tier or that side', () => {

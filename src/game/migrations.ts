@@ -103,9 +103,12 @@ export const MIGRATIONS: MigrationTable = {
   /** v39 -> v40: summoning chances (DESIGN.md §2 Summoning): the Card Portal's pity counts toward a
    *  T6 now; a save that made 10 or more pulls has had its first 10-pull; no tier reward is paid yet. */
   39: v39ToV40,
-  /** v40 -> v41: the starter weapon (DESIGN.md §2 Starter weapon): a save that began before it is
-   *  offered the pick once, and may turn it down. */
+  /** v40 -> v41: three attacks per card (DESIGN.md §2): every owned card's skill starts closed;
+   *  it is opened with Cores. */
   40: v40ToV41,
+  /** v41 -> v42: the starter weapon (DESIGN.md §2 Starter weapon): a save that began before it is
+   *  offered the pick once, and may turn it down. */
+  41: v41ToV42,
 };
 
 /**
@@ -202,12 +205,22 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
 
+/** v40 -> v41 (DESIGN.md §2 Three attacks per card): every owned card gets `skillOpen: false`. */
+function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? state['cards'] : null;
+  if (!cards || !isRecord(cards['owned'])) return state;
+  const owned: Record<string, unknown> = {};
+  for (const [id, c] of Object.entries(cards['owned']))
+    owned[id] = isRecord(c) ? { ...c, skillOpen: false } : c;
+  return { ...state, cards: { ...cards, owned } };
+}
+
 /**
- * v40 -> v41: the starter weapon (DESIGN.md §2 Starter weapon). An existing save would never get
+ * v41 -> v42: the starter weapon (DESIGN.md §2 Starter weapon). An existing save would never get
  * the pick otherwise, so it is offered once when the save loads; the screen may be closed without
  * a pick. No card changes.
  */
-function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {
+function v41ToV42(state: Record<string, unknown>): Record<string, unknown> {
   return { ...state, starter: { done: false, skippable: true } };
 }
 

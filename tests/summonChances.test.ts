@@ -386,6 +386,8 @@ describe('Save format 40: summoning chances', () => {
 
   it('is the current format', () => {
     expect(content.portals.find((p) => p.id === PORTAL)).toBeDefined();
+    const { version } = JSON.parse(createSaveText(freshState(), 1)) as { version: number };
+    expect(version).toBeGreaterThanOrEqual(40);
     expect(createSaveText(freshState(), 1)).toContain(`"version":${CURRENT_SAVE_VERSION}`);
   });
 

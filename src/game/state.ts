@@ -674,13 +674,15 @@ export interface OwnedCard {
   starFill: number;
   /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
+  /** Whether its skill was opened with Cores (DESIGN.md §2 Three attacks per card). */
+  skillOpen: boolean;
   /** The starter weapon's seals broken so far (DESIGN.md §2 Starter weapon); absent on every other
    *  card and once the last seal is broken. A sealed card fights as the tier its seals allow
    *  (`starters.json`). */
   seal?: number;
 }
 
-/** The starter weapon's pick (DESIGN.md §2 Starter weapon). Save format 41. */
+/** The starter weapon's pick (DESIGN.md §2 Starter weapon). Save format 42. */
 export interface StarterState {
   /** The pick is made (or turned down): no pick screen. */
   done: boolean;
@@ -746,6 +748,7 @@ export function newOwnedCard(tier: RankTier = 'wood'): OwnedCard {
     xp: new Decimal(0),
     starFill: 0,
     enhancements: [],
+    skillOpen: false,
   };
 }
 

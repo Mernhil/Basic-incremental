@@ -293,7 +293,13 @@ describe('v26 -> v27 (the table update)', () => {
     // format 40: the Card Portal's pity counts toward a T6 and starts again; 10 pulls made means the
     // first 10-pull is behind it; no tier reward is claimed
     (scaled['portals'] as Record<string, Record<string, unknown>>)['card_portal']!['pity'] = 0;
-    // format 41: the starter weapon's pick is offered once to a save that began before it
+    // format 41: every owned card's skill starts closed (DESIGN.md §2 Three attacks per card)
+    for (const card of Object.values(
+      (scaled['cards'] as { owned: Record<string, Record<string, unknown>> }).owned,
+    )) {
+      card['skillOpen'] = false;
+    }
+    // format 42: the starter weapon's pick is offered once to a save that began before it
     scaled['starter'] = { done: false, skippable: true };
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
