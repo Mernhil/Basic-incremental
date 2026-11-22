@@ -924,7 +924,7 @@ export const raidsSchema = z
           name,
           element: z.enum(ELEMENTS),
           /** Picture file name (160 x 172 still) in the boss pictures. */
-          art: z.string().regex(/^raid-[a-z0-9-]+$/),
+          art: z.string().regex(/^raid_[a-z0-9_]+$/),
           hp: positiveDecimal,
           attack: z.strictObject({
             damage: positiveDecimal,

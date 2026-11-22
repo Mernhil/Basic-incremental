@@ -8,7 +8,7 @@
       "id": "rootstone_titan",
       "name": "Rootstone Titan",
       "element": "earth",
-      "art": "raid-earth-colossus",
+      "art": "raid_earth_colossus",
       "hp": "3e7",
       "attack": {
         "damage": "7000",
@@ -16,7 +16,7 @@
       },
       "trick": {
         "kind": "shield",
-        "line": "Stoneskin soaks most of your damage until it is Exposed.",
+        "line": "Soaks most of your damage until it is Exposed.",
         "size": 0.6,
         "every": 0,
         "answerAt": 0.04,
@@ -27,7 +27,7 @@
       "id": "ember_tyrant",
       "name": "Ember Tyrant",
       "element": "fire",
-      "art": "raid-fire-tyrant",
+      "art": "raid_fire_tyrant",
       "hp": "2.5e7",
       "attack": {
         "damage": "3500",
@@ -35,7 +35,7 @@
       },
       "trick": {
         "kind": "rage",
-        "line": "Hits harder every second of the fight; kill it fast or Weaken it.",
+        "line": "Hits harder every second; kill it fast or Weaken it.",
         "size": 1.5,
         "every": 0,
         "answerAt": 0,
@@ -46,7 +46,7 @@
       "id": "tide_queen",
       "name": "Tide Queen",
       "element": "water",
-      "art": "raid-water-queen",
+      "art": "raid_water_queen",
       "hp": "3e7",
       "attack": {
         "damage": "7000",
@@ -54,7 +54,7 @@
       },
       "trick": {
         "kind": "mend",
-        "line": "Mends part of her health every few seconds; Wounds stop it.",
+        "line": "Takes back health every few seconds; Wounds stop it.",
         "size": 0.04,
         "every": 5,
         "answerAt": 0.3,
@@ -65,7 +65,7 @@
       "id": "dread_dragon_lich",
       "name": "Dread Dragon Lich",
       "element": "dark",
-      "art": "raid-dark-dragon-lich",
+      "art": "raid_dark_dragon_lich",
       "hp": "3e7",
       "attack": {
         "damage": "7000",
@@ -73,7 +73,7 @@
       },
       "trick": {
         "kind": "curse",
-        "line": "Curses your team: your damage is cut until Rally lifts it.",
+        "line": "Your damage is cut until Rally lifts it.",
         "size": 0.35,
         "every": 0,
         "answerAt": 0.1,
@@ -84,7 +84,7 @@
       "id": "dawn_seraph",
       "name": "Dawn Seraph",
       "element": "light",
-      "art": "raid-light-dawn-seraph",
+      "art": "raid_light_dawn_seraph",
       "hp": "3e7",
       "attack": {
         "damage": "5000",
@@ -92,7 +92,7 @@
       },
       "trick": {
         "kind": "judgement",
-        "line": "Every fourth strike judges the whole team; Shields and Heals carry it.",
+        "line": "Every fourth strike hits the whole team; Shields and Heals carry it.",
         "size": 1.2,
         "every": 4,
         "answerAt": 0,
