@@ -109,7 +109,7 @@
     {
       "id": "tree_hugger",
       "name": "Tree Hugger",
-      "description": "Unlock all 3 tree kinds.",
+      "description": "Open all 3 woods for a forest slot.",
       "condition": {
         "kind": "producers",
         "job": "logging"
@@ -126,7 +126,7 @@
     {
       "id": "deep_delver",
       "name": "Deep Delver",
-      "description": "Open all 3 mines.",
+      "description": "Open all 3 ores for a cave slot.",
       "condition": {
         "kind": "producers",
         "job": "mining"
@@ -399,10 +399,10 @@
     {
       "id": "first_milestone",
       "name": "First Milestone",
-      "description": "Take a mine to level 25.",
+      "description": "Raise the camp to level 5",
       "condition": {
-        "kind": "milestone",
-        "level": 25
+        "kind": "camp_level",
+        "level": 5
       },
       "reward": {
         "resources": [
@@ -693,10 +693,10 @@
     {
       "id": "sharpening",
       "name": "Sharpening",
-      "description": "Buy 50 tool line levels in one run.",
+      "description": "Raise the camp to level 3",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 50
+        "kind": "camp_level",
+        "level": 3
       },
       "reward": {
         "resources": [
@@ -710,10 +710,10 @@
     {
       "id": "well_equipped",
       "name": "Well Equipped",
-      "description": "Buy 500 tool line levels in one run.",
+      "description": "Raise the camp to level 25",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 500
+        "kind": "camp_level",
+        "level": 25
       },
       "reward": {
         "resources": [
@@ -727,10 +727,10 @@
     {
       "id": "digging_deeper",
       "name": "Digging Deeper",
-      "description": "Break through the first layer or age of a tree or mine.",
+      "description": "Raise the camp to level 8",
       "condition": {
-        "kind": "depth",
-        "layer": 2
+        "kind": "camp_level",
+        "level": 8
       },
       "reward": {
         "resources": [
@@ -744,10 +744,10 @@
     {
       "id": "deep_roots",
       "name": "Deep Roots",
-      "description": "Reach the fourth layer or age of a tree or mine.",
+      "description": "Raise the camp to level 15",
       "condition": {
-        "kind": "depth",
-        "layer": 4
+        "kind": "camp_level",
+        "level": 15
       },
       "reward": {
         "resources": [

@@ -9,9 +9,11 @@ import {
 import { cardDisplayName, grantWorkerXp, loadoutCards, xpToNextLevel } from './cards';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { producerLevel, producerRate, producersOf } from './production';
+import { materialRate } from './camp';
+import { producersOf } from './production';
 import { cloneState, isOnTrip, type ExpeditionTrip, type GameState } from './state';
-import { activeWorkers, forgeWorker } from './workers';
+import { slotWorkers } from './camp';
+import { forgeWorker } from './workers';
 
 /**
  * Expeditions (DESIGN.md §15 Expeditions). A card that is in no loadout and at no work goes on a
@@ -102,14 +104,14 @@ export const isTripDone = (trip: ExpeditionTrip): boolean =>
 export const tripSecondsLeft = (trip: ExpeditionTrip): number =>
   isTripDone(trip) ? 0 : tripSeconds(trip) - trip.elapsedSeconds;
 
-/** Whether a card is at work: in the fighting loadout, on a tree or mine, or at the forge. */
+/** Whether a card is at work: in the fighting loadout, on a camp slot, or at the forge. */
 function busyWith(
   state: GameState,
   content: Content,
   cardId: string,
 ): 'in-loadout' | 'at-work' | null {
   if (loadoutCards(state.cards.loadouts.fighting).includes(cardId)) return 'in-loadout';
-  if (Object.values(activeWorkers(state, content)).some((ids) => ids.includes(cardId))) {
+  if (slotWorkers(state, content).some((w) => w.card === cardId)) {
     return 'at-work';
   }
   return forgeWorker(state, content) === cardId ? 'at-work' : null;
@@ -194,12 +196,7 @@ export function tripRewards(
   for (const g of place.rewards.gems) {
     const found = gemProducer(content, g.resource);
     if (!found) continue;
-    const rate = producerRate(
-      found.producer,
-      found.job,
-      modifiers,
-      producerLevel(state, found.job, found.producer.id),
-    );
+    const rate = materialRate(state, content, found.producer, modifiers);
     const amount = rate.mul(g.secondsPerHour * trip.hours * factor).floor();
     if (amount.gt(0)) out.gems[g.resource] = (out.gems[g.resource] ?? new Decimal(0)).add(amount);
   }

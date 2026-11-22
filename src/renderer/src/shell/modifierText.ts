@@ -21,12 +21,11 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   upgrade: 'Upgrade', // milestone perks, Training and tool lines (DESIGN §4, §6)
 };
 
-/** The name of a perk (`perk:<option>`), a Training line (`training:<id>`) or a tool line (`tool:<id>`). */
+/** The name of a perk (`perk:<option>`) or a Training line (`training:<id>`). */
 function upgradeSourceName(content: Content, id: string): string | undefined {
   const [kind, rest] = [id.slice(0, id.indexOf(':')), id.slice(id.indexOf(':') + 1)];
   if (kind === 'perk') return content.perkOptionById.get(rest)?.option.name;
   if (kind === 'training') return content.trainingById.get(rest)?.name;
-  if (kind === 'tool') return content.production.tools.find((t) => t.id === rest)?.name;
   return undefined;
 }
 

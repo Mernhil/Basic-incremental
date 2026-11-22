@@ -1,17 +1,11 @@
-import type { ProductionJob } from '../../../data';
 import {
   cardDisplayName,
-  applyProductionPreset,
   bondCodex,
   checkAchievements,
-  clearProductionPreset,
   collectTrip,
   expeditionView,
   formatDuration,
-  productionPresetSlots,
   recallTrip,
-  renameProductionPreset,
-  saveProductionPreset,
   startTrip,
   type Decimal,
   type ExpeditionFailure,
@@ -23,8 +17,7 @@ import { modifierText } from '../shell/modifierText';
 import type { PageContext } from './production';
 
 /**
- * Plain working panels of the table update's mechanics packages (DESIGN.md §15): the worker preset
- * buttons of a production band, and the Bonds codex and Expeditions tabs of the Cards page. The
+ * Plain working panels of the table update's mechanics packages (DESIGN.md §15): the Bonds codex and Expeditions tabs of the Cards page. The
  * UI rework replaces the layout; every rule is in game (presets.ts, bonds.ts, expeditions.ts).
  */
 
@@ -83,87 +76,6 @@ function button(label: string, onClick: () => void, cls = 'button'): HTMLButtonE
   b.type = 'button';
   b.addEventListener('click', onClick);
   return b;
-}
-
-// ---- worker presets (a production band) -----------------------------------------------------
-
-export function createPresetsPanel(ctx: PageContext, job: ProductionJob): Panel {
-  const el = h('div', 'tp-presets');
-  el.setAttribute('role', 'group');
-  el.setAttribute('aria-label', TEXT.presets);
-  let last = '';
-  let message = '';
-
-  const signature = (): string => JSON.stringify(ctx.state().presets.production[job]);
-
-  function build(): void {
-    last = signature();
-    const slots = productionPresetSlots(ctx.state(), job);
-    const status = h('p', 'tp-status', message);
-    status.setAttribute('role', 'status');
-    const row = h('div', 'tp-presets__row');
-    row.append(h('span', 'tp-label', TEXT.presets));
-    for (const slot of slots) {
-      const box = h('div', 'tp-preset');
-      const name = h('input', 'tp-preset__name');
-      name.type = 'text';
-      name.maxLength = 24;
-      name.value = slot.name ?? '';
-      name.placeholder = TEXT.empty;
-      name.disabled = slot.name === null;
-      name.setAttribute('aria-label', TEXT.nameLabel(slot.index + 1));
-      name.addEventListener('change', () => {
-        const r = renameProductionPreset(ctx.state(), job, slot.index, name.value);
-        if (r.ok) ctx.apply(r.state);
-      });
-      const use = button(
-        slot.name === null ? TEXT.empty : `${TEXT.apply} (${slot.count})`,
-        () => {
-          const r = applyProductionPreset(ctx.state(), content(), job, slot.index);
-          if (!r.ok) return;
-          ctx.apply(r.state);
-          message = r.missing > 0 ? TEXT.missing(r.missing) : '';
-          build();
-        },
-        'button tp-preset__use',
-      );
-      use.disabled = slot.name === null;
-      const save = button(
-        TEXT.save,
-        () => {
-          const r = saveProductionPreset(ctx.state(), content(), job, slot.index);
-          message = r.ok ? '' : TEXT.nothingToSave;
-          if (r.ok) ctx.apply(r.state);
-          build();
-        },
-        'button button--ghost tp-preset__save',
-      );
-      const clear = button(
-        TEXT.clear,
-        () => {
-          const r = clearProductionPreset(ctx.state(), job, slot.index);
-          if (r.ok) ctx.apply(r.state);
-          message = '';
-          build();
-        },
-        'button button--ghost tp-preset__clear',
-      );
-      clear.disabled = slot.name === null;
-      box.append(name, use, save, clear);
-      row.append(box);
-    }
-    el.replaceChildren(row, status);
-  }
-  const content = () => ctx.content;
-  build();
-
-  return {
-    el,
-    update() {
-      // leave an input alone while it is being typed in
-      if (signature() !== last && !el.contains(document.activeElement)) build();
-    },
-  };
 }
 
 // ---- bonds codex --------------------------------------------------------------------------

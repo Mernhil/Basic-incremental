@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   allGoals,
-  curveBulkPrice,
   Decimal,
   fightStage,
   incomePerSecond,
@@ -19,6 +18,7 @@ import {
   newGame,
   plainContent as plain,
   withDps,
+  withFarmers,
 } from './helpers';
 
 /** The test content deals exactly 100 damage per second to anyone, cards or bare hands. */
@@ -28,13 +28,14 @@ const find = (goals: Goal[], id: string): Goal | undefined => goals.find((g) => 
 
 /** A loadout-free game dealing 100 damage a second, so ETAs are exact and there is no knockout wall. */
 function fighter(): GameState {
-  return bareState();
+  return withFarmers(bareState());
 }
 
 describe('incomePerSecond', () => {
-  it('counts production with the average harvest burst', () => {
-    // Oak 1/s plus a 10 s harvest every 30 ticks: 1 + 10/30.
-    expect(incomePerSecond(bareState(), content, 'oak_gem').toNumber()).toBeCloseTo(4 / 3);
+  it('counts the camp slots', () => {
+    // Oak 1/s from a power-1 card on a forest slot.
+    expect(incomePerSecond(withFarmers(bareState()), content, 'oak_gem').toNumber()).toBeCloseTo(1);
+    expect(incomePerSecond(bareState(), content, 'oak_gem').toNumber()).toBe(0);
   });
 
   it('counts the active dungeon drops per kill and its wages per second', () => {
@@ -100,36 +101,23 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(goal.etaSeconds).toBeNull();
   });
 
-  it('has a tree unlock goal from the gems owned and their income', () => {
-    const state = bareState();
-    state.resources['oak_gem'] = new Decimal(250);
-    const goal = find(allGoals(state, content), 'unlock_tree:ironbark')!;
-    expect(goal).toMatchObject({ title: 'Unlock Ironbark', page: 'production', progress: 0.5 });
-    expect(goal.etaSeconds).toBeCloseTo(250 / (4 / 3));
+  it('has a camp level goal from the woods and ores held and their income', () => {
+    const state = withFarmers(bareState());
+    state.resources['oak_gem'] = new Decimal(600);
+    state.resources['copper_gem'] = new Decimal(300);
+    const goal = find(allGoals(state, content), 'camp_level:camp')!;
+    expect(goal).toMatchObject({ title: 'Camp level 2', page: 'production', progress: 0.5 });
+    expect(goal.etaSeconds).toBeCloseTo(600);
   });
 
   it('says 0 s when a goal is affordable now', () => {
-    const state = bareState();
-    state.resources['oak_gem'] = new Decimal(600);
-    expect(find(allGoals(state, content), 'unlock_tree:ironbark')!).toMatchObject({
+    const state = withFarmers(bareState());
+    state.resources['oak_gem'] = new Decimal(1200);
+    state.resources['copper_gem'] = new Decimal(600);
+    expect(find(allGoals(state, content), 'camp_level:camp')!).toMatchObject({
       progress: 1,
       etaSeconds: 0,
     });
-  });
-
-  it('has the next mine milestone with the price of the levels left', () => {
-    const state = bareState();
-    state.production.mineLevels['copper_quarry'] = 27;
-    const goal = find(allGoals(state, realContent), 'mine_milestone:copper_quarry')!;
-    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 30 (×1.15)', page: 'production' });
-    expect(goal.progress).toBeCloseTo(0.8);
-    const mine = content.mineById.get('copper_quarry')!;
-    const price = curveBulkPrice(mine.level.cost, 27, 3).amount.toNumber();
-    state.resources['money'] = new Decimal(0);
-    const income = incomePerSecond(state, realContent, 'money').toNumber();
-    expect(
-      allGoals(state, realContent).find((g) => g.id === 'mine_milestone:copper_quarry')!.etaSeconds,
-    ).toBeCloseTo(price / income, 3);
   });
 
   it('has no damage line goal any more (damage comes from cards)', () => {
@@ -141,14 +129,14 @@ describe('goal rules (DESIGN.md §10)', () => {
   });
 
   it('shows a gem mastery tier only once it is a quarter of the way', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(100);
     expect(find(allGoals(state, content), 'gem_mastery:oak_gem')).toBeUndefined();
     state.mastery.harvested['oak_gem'] = new Decimal(600);
     const goal = find(allGoals(state, content), 'gem_mastery:oak_gem')!;
     expect(goal).toMatchObject({ title: 'Oak Gem mastery: Bronze', page: 'production' });
     expect(goal.progress).toBeCloseTo(0.6);
-    expect(goal.etaSeconds).toBeCloseTo(400 / (4 / 3));
+    expect(goal.etaSeconds).toBeCloseTo(400);
   });
 
   it('has the next star of the stage being fought, with kills left times the time per kill', () => {
@@ -208,14 +196,14 @@ describe('goal rules (DESIGN.md §10)', () => {
   it('only uses the rules in the data', () => {
     const state = bareState();
     state.resources['oak_gem'] = new Decimal(250);
-    const noTrees: Content = {
+    const noCamp: Content = {
       ...content,
       progression: {
         ...content.progression,
-        goals: content.progression.goals.filter((r) => r.kind !== 'unlock_tree'),
+        goals: content.progression.goals.filter((r) => r.kind !== 'camp_level'),
       },
     };
-    expect(allGoals(state, noTrees).some((g) => g.kind === 'unlock_tree')).toBe(false);
+    expect(allGoals(state, noCamp).some((g) => g.kind === 'camp_level')).toBe(false);
   });
 });
 
@@ -225,7 +213,7 @@ describe('ascension goal', () => {
   const pointsFor = (gain: number) => g.divisor.toNumber() * Math.pow(gain, 1 / g.exponent);
 
   it('shows once the Starlight gain reaches 25% of the minimum, with an ETA', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum * 0.55));
     const goal = find(allGoals(state, realContent), 'ascension:ascension');
     expect(goal).toBeDefined();
@@ -271,10 +259,11 @@ describe('nextGoals', () => {
   it('gives the n nearest goals by estimated time, unknown times last', () => {
     const state = fighter();
     state.portals['card_portal'] = { pity: 1, pulls: 1, pityHits: 0 }; // past the first summon
-    state.resources['oak_gem'] = new Decimal(600);
+    state.resources['oak_gem'] = new Decimal(1200);
+    state.resources['copper_gem'] = new Decimal(600);
     const goals = nextGoals(state, content);
     expect(goals).toHaveLength(3);
-    expect(goals[0]!.id).toBe('unlock_tree:ironbark');
+    expect(goals[0]!.id).toBe('camp_level:camp');
     const etas = allGoals(state, content).map((g) => g.etaSeconds ?? Infinity);
     expect(etas).toEqual([...etas].sort((a, b) => a - b));
     expect(nextGoals(state, content, 1)).toHaveLength(1);

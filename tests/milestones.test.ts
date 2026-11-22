@@ -1,21 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
-  approxEq,
   Decimal,
   growthStage,
-  mineLevelMilestone,
   milestoneInfo,
   milestoneMultiplier,
   milestonesCrossed,
   milestonesReached,
   nextMilestone,
-  producerRate,
-  resetProduction,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content } from './helpers';
 
 const x2 = { every: 25, multiplier: new Decimal(2) };
-const quarry = content.mineById.get('copper_quarry')!;
 
 describe('level milestones (DESIGN.md §4)', () => {
   it('counts one milestone per 25 levels', () => {
@@ -56,31 +51,9 @@ describe('level milestones (DESIGN.md §4)', () => {
     expect(growthStage(x2, 1000)).toBe(4);
   });
 
-  it('is data-driven per line: every mine level has x1.15 every 15 levels', () => {
-    for (const mine of content.mines) {
-      expect(mine.level.milestones.every).toBe(15);
-      expect(mine.level.milestones.multiplier.toNumber()).toBe(1.15);
+  it('is data-driven per line: every Training line has its own ring', () => {
+    for (const line of content.training) {
+      expect(line.milestones.every).toBeGreaterThan(0);
     }
-  });
-
-  it('multiplies a mine level line at level 15', () => {
-    const plain = quarry.baseRate.mul(1 + (15 * 5) / 100);
-    expect(approxEq(producerRate(quarry, 'mining', [], 15), plain.mul(1.15))).toBe(true);
-  });
-
-  it('resets mine level milestones with the production reset of a prestige', () => {
-    const state = freshState();
-    state.production.mineLevels = { copper_quarry: 30 };
-    const after = resetProduction(state);
-    after.prestigeCount = 1;
-    expect(mineLevelMilestone(state, content, 'copper_quarry')!.reached).toBe(2);
-    expect(mineLevelMilestone(after, content, 'copper_quarry')!.reached).toBe(0);
-  });
-
-  it('reports the milestone info of a line by id', () => {
-    const state = freshState();
-    state.production.mineLevels = { copper_quarry: 3 };
-    expect(mineLevelMilestone(state, content, 'copper_quarry')!.levelsToNext).toBe(12);
-    expect(mineLevelMilestone(state, content, 'nope')).toBeNull();
   });
 });

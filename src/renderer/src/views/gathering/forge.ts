@@ -4,12 +4,10 @@ import {
   cardDisplayName,
   Decimal,
   assignForgeWorker,
-  collectModifiers,
   forgeStatus,
   forgeWorker,
   setForgeRecipe,
   workerPower,
-  type ProductionJob,
 } from '../../../../game';
 import { gemCoin, svg } from '../../art/gems';
 import { cardItemArt } from '../../pages/loadoutCards';
@@ -18,19 +16,15 @@ import { COPY } from '../../copy';
 import { fmt } from '../../settings/numberFormat';
 import { workerPickList, workerPickTile } from './workerPick';
 import { h } from '../../shell/shell';
-import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
-import { createBuyToggle } from '../../ui/buy';
+import type { TableContext, ViewHandle } from '../../table/contract';
 import { iconMarkup, resourceIconId } from '../../ui/resourceIcons';
-import { createToolLinesPanel, type ToolLinesPanel } from '../../ui/toolLines';
 import { GATHERING_COPY as T } from './copy';
-import { craftsPerMinute, forgeFlow, itemSvg, toolsReady } from './jobModel';
+import { craftsPerMinute, forgeFlow, itemSvg } from './jobModel';
 import './forge.css';
-import './job.css';
 
 /**
  * The Forge view (UI_RULES.md §2 "The Forge view"; mockup 4f): the recipes, the recipe being
- * forged with its progress and worker, and every tool line of both jobs. The ×1 / ×10 / ×100 / Max
- * toggle in the title bar sets the tool lines' buy amount.
+ * forged with its progress and worker, and the card at work.
  */
 
 const set = (node: HTMLElement, text: string): void => {
@@ -45,10 +39,9 @@ function resourceArt(content: Content, id: string): string {
   return iconMarkup(resourceIconId(res)) ?? iconMarkup('starlight') ?? '';
 }
 
-export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewApi): ViewHandle {
+export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandle {
   const { content } = ctx;
   host.classList.add('gv-forge');
-  api.setTools(createBuyToggle());
 
   const layout = h('div', 'fv-layout');
 
@@ -114,28 +107,10 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     stock,
   );
 
-  // ---- the tool lines of both jobs ----
-  const toolsCol = h('div', 'fv-tools');
-  const panels = (['logging', 'mining'] as const).map((job: ProductionJob) => {
-    const panel: ToolLinesPanel = createToolLinesPanel({
-      content,
-      job,
-      state: ctx.state,
-      apply: ctx.apply,
-      sound: ctx.sound,
-    });
-    panel.el.classList.add('fv-panel', 'px-panel');
-    const ready = h('span', 'gv-ready bi-num');
-    panel.el.querySelector('.tr__head')?.append(ready);
-    return { job, panel, ready };
-  });
-  toolsCol.append(...panels.map((p) => p.panel.el));
-
-  layout.append(recipesPanel, mid, toolsCol);
+  layout.append(recipesPanel, mid);
   host.append(layout);
   recipesPanel.dataset['deal'] = '';
   mid.dataset['deal'] = '';
-  for (const p of panels) p.panel.el.dataset['deal'] = '';
 
   // ---- state ----
   let recipeSig = '';
@@ -288,13 +263,6 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     if (out) {
       const have = s.resources[out.output.resource] ?? new Decimal(0);
       set(stockValue, `${fmt(have)} ${content.resourceById.get(out.output.resource)?.name ?? ''}`);
-    }
-
-    const mods = collectModifiers(s, content);
-    for (const p of panels) {
-      p.panel.update();
-      const n = toolsReady(s, content, p.job, mods);
-      set(p.ready, n > 0 ? T.toolsReadyTag(n) : '');
     }
   }
 

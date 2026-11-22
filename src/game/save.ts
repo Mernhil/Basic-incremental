@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { depthDef } from './depth';
 import type { Content } from '../data';
 import { CARD_GRADES, MAX_STARS, type CardGrade, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
@@ -16,14 +15,11 @@ import {
   emptyCardLoadout,
   LOADOUT_SLOTS,
   type CardState,
-  cloneProduction,
+  cloneCamp,
   clonePresets,
   cloneState,
   createInitialState,
-  initialPresets,
   MAX_CHALLENGE_COMPLETIONS,
-  PRESET_JOBS,
-  PRESETS_PER_JOB,
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
@@ -37,7 +33,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 41;
+export const CURRENT_SAVE_VERSION = 42;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -47,38 +43,30 @@ const cardLoadoutSchema = z.object({
   slots: z.array(z.string().nullable()),
 });
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
+const campSlotSchema = z.object({ material: z.string().nullable(), card: z.string().nullable() });
 /** v26: stage key -> a count (kills, or chests paid). */
 const stageCounts = z.record(z.string(), z.number().int().min(0));
-/** v27: a production preset (DESIGN.md §15 Loadout presets). */
-const productionPresetSchema = z.object({
-  name: z.string(),
-  workers: z.record(z.string(), z.array(z.string())),
-});
-
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
   /** Set by the v33 -> v34 migration only (never written): the loadouts have no formation yet. */
   arrangeFormation: z.boolean().optional(),
   resources: z.record(z.string(), decimalText),
+  /** v42: only the forge is left of production (the camp has its own part). */
   production: z.object({
-    unlockedTrees: z.array(z.string()),
-    mineLevels: counts,
-    /** v15. */
-    treeLevels: counts,
-    /** v26: workers, their harvest gauges, tool lines, depth and the forge (DESIGN.md §4). */
-    workers: z.record(z.string(), z.array(z.string())),
-    harvestGauges: z.record(z.string(), gaugeSchema),
-    tools: counts,
-    depth: z.record(
-      z.string(),
-      z.object({ layer: z.number().int().min(1), progress: decimalText }),
-    ),
     forge: z.object({
       recipe: z.string().nullable(),
       progress: decimalText,
       worker: z.string().nullable(),
     }),
   }),
+  /** v42: the base camp (DESIGN.md section 2): the level and the farming slots. */
+  camp: z.object({
+    level: z.number().int().min(1),
+    forest: z.array(campSlotSchema),
+    cave: z.array(campSlotSchema),
+  }),
+  /** v42: the Training ground's dummy: its damage and the team on trial. */
+  dummy: z.object({ damage: decimalText, team: z.array(z.string().nullable()) }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
     /** v24: floors per dungeon and difficulty (DESIGN.md §6). */
@@ -186,12 +174,6 @@ export const serializedStateSchema = z.object({
   }),
   /** v34: milestone picks (DESIGN.md §4) and the lifetime Money (v15). */
   upgrades: z.object({ picks: z.record(z.string(), z.string()), moneyEarned: decimalText }),
-  /** v26: the autobuyer switches (DESIGN.md §15). */
-  automation: z.object({
-    treeLevels: z.boolean(),
-    mineLevels: z.boolean(),
-    reservePercent: z.number().min(0).max(100),
-  }),
   /** v27: the table update (DESIGN.md §3, §7, §15). */
   summon: z.object({
     focusKind: z.string().nullable(),
@@ -205,10 +187,6 @@ export const serializedStateSchema = z.object({
   }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
-    production: z.object({
-      logging: z.array(productionPresetSchema.nullable()),
-      mining: z.array(productionPresetSchema.nullable()),
-    }),
   }),
   discoveredBonds: z.array(z.string()),
   expeditions: z.object({
@@ -279,6 +257,8 @@ export function serializeState(state: GameState): SerializedState {
   return {
     resources,
     production: serializeProduction(state.production),
+    camp: cloneCamp(state.camp),
+    dummy: { damage: decimalToString(state.dummy.damage), team: [...state.dummy.team] },
     clearedDungeons: [...state.clearedDungeons],
     combat: {
       floors: cloneFloors(state.combat.floors),
@@ -316,7 +296,6 @@ export function serializeState(state: GameState): SerializedState {
       picks: { ...state.upgrades.picks },
       moneyEarned: decimalToString(state.upgrades.moneyEarned),
     },
-    automation: { ...state.automation },
     summon: { ...state.summon },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
@@ -390,17 +369,8 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
   );
-  // The format 26 fields are rebuilt by deserializeWorkers once the cards are known.
-  state.production = {
-    ...base.production,
-    unlockedTrees: saved.production.unlockedTrees.filter((id) => content.treeById.has(id)),
-    mineLevels: Object.fromEntries(
-      Object.entries(saved.production.mineLevels).filter(([id]) => content.mineById.has(id)),
-    ),
-    treeLevels: Object.fromEntries(
-      Object.entries(saved.production.treeLevels).filter(([id]) => content.treeById.has(id)),
-    ),
-  };
+  // The forge is rebuilt by deserializeForge once the cards are known; the camp by deserializeCamp.
+  state.production = { ...base.production };
   state.combat = {
     // Dungeons that left the game are dropped; a floor past a dungeon's last is read back inside
     // its range (floors.ts `floorPosition`).
@@ -496,8 +466,8 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   };
   state.cards = deserializeCards(saved.cards, content);
   pruneCardSkins(state, content);
-  deserializeWorkers(state, saved.production, content);
-  state.automation = { ...saved.automation };
+  deserializeForge(state, saved.production, content);
+  deserializeCamp(state, saved, content);
   deserializeTableUpdate(state, saved, content);
   deserializeHeirlooms(state, saved, content);
   deserializeMastery(state, saved.mastery, content);
@@ -835,22 +805,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
     for (let i = 0; i < LOADOUT_SLOTS; i++) fixed.slots[i] = keep(loadout.slots[i]);
     dungeons[id] = fixed;
   }
-  const production = initialPresets().production;
-  for (const job of PRESET_JOBS) {
-    const places = job === 'logging' ? content.treeById : content.mineById;
-    for (let i = 0; i < PRESETS_PER_JOB; i++) {
-      const preset = saved.presets.production[job][i];
-      if (!preset) continue;
-      const workers: Record<string, string[]> = {};
-      for (const [place, cards] of Object.entries(preset.workers)) {
-        if (!places.has(place)) continue;
-        const kept = cards.filter((c) => owned(c) && content.cardById.get(c)?.job === job);
-        if (kept.length > 0) workers[place] = kept;
-      }
-      production[job][i] = { name: preset.name, workers };
-    }
-  }
-  state.presets = { dungeons, production };
+  state.presets = { dungeons };
   state.discoveredBonds = [...new Set(saved.discoveredBonds)].filter((id) =>
     content.bondById.has(id),
   );
@@ -897,57 +852,16 @@ function knownStages<T>(entries: Record<string, T>, content: Content): Record<st
 }
 
 /**
- * Rebuilds the format 26 production fields (DESIGN.md §4 Workers): trees and mines that left the
- * game are dropped, and so is a worker that is unknown, not owned, of the wrong job (a mining
- * card on a tree, a logging card on a mine) or already working somewhere else (the first place
- * in save order keeps it, then the forge). Needs `state.cards` already rebuilt.
+ * Rebuilds the forge: a recipe that left the game is dropped with its progress, and a forge worker
+ * must be an owned production card (`deserializeCamp` then takes it from the forge if a camp slot
+ * holds the same card).
  */
-function deserializeWorkers(
+function deserializeForge(
   state: GameState,
   saved: SerializedState['production'],
   content: Content,
 ): void {
-  const jobOf = (producerId: string): Job | null =>
-    content.treeById.has(producerId)
-      ? 'logging'
-      : content.mineById.has(producerId)
-        ? 'mining'
-        : null;
-  const known = <T>(entries: Record<string, T>): [string, T][] =>
-    Object.entries(entries).filter(([id]) => jobOf(id) !== null);
-  const working = new Set<string>();
-  const workers: Record<string, string[]> = {};
-  for (const [producerId, cardIds] of Object.entries(saved.workers)) {
-    const job = jobOf(producerId);
-    if (!job) continue;
-    const kept = cardIds.filter((id) => {
-      if (!state.cards.owned[id] || content.cardById.get(id)?.job !== job || working.has(id))
-        return false;
-      working.add(id);
-      return true;
-    });
-    if (kept.length > 0) workers[producerId] = kept;
-  }
   const forgeWorker = saved.forge.worker;
-  state.production.workers = workers;
-  state.production.harvestGauges = Object.fromEntries(
-    known(saved.harvestGauges).map(([id, g]) => [id, { ...g }]),
-  );
-  // Tool lines the content no longer has are dropped.
-  state.production.tools = Object.fromEntries(
-    Object.entries(saved.tools).filter(([id]) => content.production.tools.some((t) => t.id === id)),
-  );
-  state.production.depth = Object.fromEntries(
-    known(saved.depth).map(([id, d]) => [
-      id,
-      {
-        // a layer past the deepest one (a retuned tree) comes back to the deepest
-        layer: Math.max(1, Math.min(d.layer, depthDef(content, id)?.names.length ?? 1)),
-        progress: Decimal.max(new Decimal(d.progress), 0),
-      },
-    ]),
-  );
-  // A recipe that left the game is dropped with its progress; a forge worker is a production card.
   const recipe = content.production.forge.recipes.some((r) => r.id === saved.forge.recipe)
     ? saved.forge.recipe
     : null;
@@ -957,24 +871,68 @@ function deserializeWorkers(
     worker:
       forgeWorker &&
       state.cards.owned[forgeWorker] &&
-      content.cardById.get(forgeWorker)?.job !== 'fighting' &&
-      !working.has(forgeWorker)
+      content.cardById.get(forgeWorker)?.job !== 'fighting'
         ? forgeWorker
         : null,
   };
 }
 
+/**
+ * Rebuilds the camp and the dummy: the level at least 1; a slot's material that left the game, or a
+ * card that is unknown, not owned, of the wrong job or already on another slot (the first slot in
+ * save order keeps it) is dropped, and the forge's worker leaves a slot it shares. Needs
+ * `state.cards` and the forge already rebuilt.
+ */
+function deserializeCamp(state: GameState, saved: SerializedState, content: Content): void {
+  const working = new Set<string>();
+  const slots = (
+    list: { material: string | null; card: string | null }[],
+    job: Job,
+  ): { material: string | null; card: string | null }[] => {
+    const materials = job === 'logging' ? content.treeById : content.mineById;
+    return list.map((slot) => {
+      const card =
+        slot.card &&
+        state.cards.owned[slot.card] &&
+        content.cardById.get(slot.card)?.job === job &&
+        !working.has(slot.card)
+          ? slot.card
+          : null;
+      if (card) working.add(card);
+      return {
+        material: slot.material && materials.has(slot.material) ? slot.material : null,
+        card,
+      };
+    });
+  };
+  state.camp = {
+    level: Math.max(1, saved.camp.level),
+    forest: slots(saved.camp.forest, 'logging'),
+    cave: slots(saved.camp.cave, 'mining'),
+  };
+  if (state.production.forge.worker && working.has(state.production.forge.worker)) {
+    state.production.forge.worker = null;
+  }
+  const team: (string | null)[] = Array<string | null>(LOADOUT_SLOTS).fill(null);
+  const seen = new Set<string>();
+  saved.dummy.team.slice(0, LOADOUT_SLOTS).forEach((id, i) => {
+    if (
+      id &&
+      state.cards.owned[id] &&
+      content.cardById.get(id)?.job === 'fighting' &&
+      !seen.has(id)
+    ) {
+      seen.add(id);
+      team[i] = id;
+    }
+  });
+  state.dummy = {
+    damage: Decimal.min(Decimal.max(new Decimal(saved.dummy.damage), 0), content.dummy.maxDamage),
+    team,
+  };
+}
+
 /** The on-disk shape of the production state: Decimals as strings. */
 function serializeProduction(p: GameState['production']): SerializedState['production'] {
-  const copy = cloneProduction(p);
-  return {
-    ...copy,
-    depth: Object.fromEntries(
-      Object.entries(copy.depth).map(([id, d]) => [
-        id,
-        { layer: d.layer, progress: decimalToString(d.progress) },
-      ]),
-    ),
-    forge: { ...copy.forge, progress: decimalToString(copy.forge.progress) },
-  };
+  return { forge: { ...p.forge, progress: decimalToString(p.forge.progress) } };
 }

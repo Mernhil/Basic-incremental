@@ -3,7 +3,6 @@ import { averageDps, burstStats, loadoutMaxHealth } from './combat';
 import { milestoneInfo, type MilestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { harvestCrit, harvestSpeed, jobProductionPerSecond } from './production';
 import { cloneState, type GameState } from './state';
 import { lineLevel, lineMilestones, pickedOption } from './upgrades';
 
@@ -14,23 +13,12 @@ import { lineLevel, lineMilestones, pickedOption } from './upgrades';
  */
 
 /** What a line's numbers mean. */
-export type LineEffectKind =
-  | 'placeOutput'
-  | 'jobOutput'
-  | 'burstEvery'
-  | 'critChance'
-  | 'critDamage'
-  | 'teamDps'
-  | 'teamHealth'
-  | 'moneyPerKill'
-  | 'hitsPerSignature';
+export type LineEffectKind = 'teamDps' | 'teamHealth' | 'moneyPerKill' | 'hitsPerSignature';
 
 export interface LineEffect {
   kind: LineEffectKind;
   now: Decimal;
   after: Decimal;
-  /** The gem of a place's output. */
-  resource?: string;
 }
 
 /** A copy of the state with the line `levels` higher. */
@@ -38,24 +26,12 @@ export function withLineLevel(state: GameState, line: PerkLine, levels: number):
   const next = cloneState(state);
   const level = lineLevel(state, line) + levels;
   switch (line.kind) {
-    case 'tree':
-      next.production.treeLevels[line.id] = level;
-      break;
-    case 'mine':
-      next.production.mineLevels[line.id] = level;
-      break;
-    case 'tool':
-      next.production.tools[line.id] = level;
-      break;
     case 'training':
       next.combat.training[line.id] = level;
       break;
   }
   return next;
 }
-
-const sum = (rates: Record<string, Decimal>): Decimal =>
-  Object.values(rates).reduce((a, b) => a.add(b), new Decimal(0));
 
 function measure(
   state: GameState,
@@ -65,33 +41,6 @@ function measure(
 ): Decimal {
   const dungeon = state.activeDungeonId;
   switch (line.kind) {
-    case 'tree':
-    case 'mine': {
-      const producer =
-        line.kind === 'tree' ? content.treeById.get(line.id) : content.mineById.get(line.id);
-      const job = line.kind === 'tree' ? 'logging' : 'mining';
-      if (!producer) return new Decimal(0);
-      return (
-        jobProductionPerSecond(state, content, job, modifiers)[producer.resource] ?? new Decimal(0)
-      );
-    }
-    case 'tool': {
-      const tool = content.production.tools.find((t) => t.id === line.id);
-      if (!tool) return new Decimal(0);
-      switch (tool.stat) {
-        case 'harvest.speed': {
-          const stats = burstStats(content, tool.job, modifiers);
-          const perSecond = stats.fill * harvestSpeed(tool.job, modifiers);
-          return perSecond > 0 ? new Decimal(stats.size / perSecond) : new Decimal(0);
-        }
-        case 'harvest.critChance':
-          return new Decimal(harvestCrit(content, tool.job, modifiers).chance);
-        case 'harvest.critDamage':
-          return harvestCrit(content, tool.job, modifiers).damage;
-        default:
-          return sum(jobProductionPerSecond(state, content, tool.job, modifiers));
-      }
-    }
     case 'training': {
       const t = content.trainingById.get(line.id);
       if (!t) return new Decimal(0);
@@ -116,14 +65,6 @@ function measure(
 }
 
 function effectKind(content: Content, line: PerkLine): LineEffectKind {
-  if (line.kind === 'tree' || line.kind === 'mine') return 'placeOutput';
-  if (line.kind === 'tool') {
-    const stat = content.production.tools.find((t) => t.id === line.id)?.stat;
-    if (stat === 'harvest.speed') return 'burstEvery';
-    if (stat === 'harvest.critChance') return 'critChance';
-    if (stat === 'harvest.critDamage') return 'critDamage';
-    return 'jobOutput';
-  }
   const stat = content.trainingById.get(line.id)?.stat;
   if (stat === 'combat.damage') return 'teamDps';
   if (stat === 'combat.health') return 'teamHealth';
@@ -145,29 +86,16 @@ export function lineEffect(
     const next = withLineLevel(state, line, levels);
     after = measure(next, content, line, collectModifiers(next, content));
   }
-  const producer =
-    line.kind === 'tree'
-      ? content.treeById.get(line.id)
-      : line.kind === 'mine'
-        ? content.mineById.get(line.id)
-        : undefined;
   return {
     kind: effectKind(content, line),
     now,
     after,
-    ...(producer ? { resource: producer.resource } : {}),
   };
 }
 
 /** The line's own repeating milestone (a tree's ×1.15 every 15 levels, Training's every 25). */
 export function lineRings(content: Content, line: PerkLine): Milestones | null {
   switch (line.kind) {
-    case 'tree':
-      return content.treeById.get(line.id)?.level.milestones ?? null;
-    case 'mine':
-      return content.mineById.get(line.id)?.level.milestones ?? null;
-    case 'tool':
-      return content.production.tools.find((t) => t.id === line.id)?.milestones ?? null;
     case 'training':
       return content.trainingById.get(line.id)?.milestones ?? null;
   }

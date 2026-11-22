@@ -40,13 +40,11 @@ function progressedRun(): GameState {
   state.resources['oak_gem'] = new Decimal(5000);
   state.resources['summon_scroll'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
-  state.production.mineLevels = { copper_quarry: 30 };
-  state.production.unlockedTrees = ['ironbark'];
+  state.camp.level = 12;
   state.clearedDungeons = ['mossy_cellar'];
   state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
   state.combat.cardDamage = { ember_squire: new Decimal(50) };
   state.bursts.fighting = { gauge: 12, timer: 0.5 };
-  state.production.harvestGauges = { oak: { gauge: 12, timer: 0.5 } };
   state.bossHp = new Decimal(123);
   state.cards.owned['ember_squire']!.level = 15;
   state.portals['card_portal'] = { pity: 33, pulls: 50, pityHits: 0 };
@@ -98,9 +96,7 @@ describe('ascension preview', () => {
   it('lists what resets and what persists, and the gain', () => {
     const preview = ascensionPreview(progressedRun(), content);
     expect(preview.canAscend).toBe(true);
-    expect(preview.resets).toEqual(
-      expect.arrayContaining(['mine_levels', 'tree_levels', 'resources', 'tile_stages']),
-    );
+    expect(preview.resets).toEqual(expect.arrayContaining(['resources']));
     expect(preview.persists).toEqual(
       expect.arrayContaining([
         'cards',
@@ -125,13 +121,12 @@ describe('ascend', () => {
     expect(ascend(runWith(10), content)).toEqual({ ok: false, reason: 'too-early' });
   });
 
-  it('resets mine and tree levels, resources, gauges and the fight', () => {
+  it('resets resources and the fight, and keeps the camp', () => {
     const before = progressedRun();
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.production.mineLevels).toEqual({});
-    expect(s.production.treeLevels).toEqual({});
+    expect(s.camp).toEqual(before.camp);
     for (const [id, amount] of Object.entries(s.resources)) {
       const kind = content.resourceById.get(id)!.kind;
       if (kind === 'prestige' || kind === 'scroll' || content.resourceById.get(id)!.keptOnAscend)
@@ -141,9 +136,6 @@ describe('ascend', () => {
       expect(amount.toNumber(), id).toBe(start);
     }
     expect(s.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
-    expect(s.production.harvestGauges).toEqual({});
-    // the workers stay where they are (DESIGN.md §4)
-    expect(s.production.workers).toEqual(before.production.workers);
     expect(s.bossHp).toBeNull();
     expect(s.combat.cardDamage).toEqual({});
     expect(s.prestigeCount).toBe(1);
@@ -163,31 +155,23 @@ describe('ascend', () => {
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
-  it('keeps the workers, the forge, stage stars and the wishlist; tool lines, depth and gauges start over', () => {
+  it('keeps the camp, the forge, stage stars and the wishlist', () => {
     const before = progressedRun();
-    before.production.workers = { oak: ['apprentice_feller'] };
+    before.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
     before.production.forge = { recipe: 'r', progress: new Decimal(4), worker: 'cave_digger' };
-    before.production.tools = { logging_yield: 3 };
-    before.production.depth = { oak: { layer: 2, progress: new Decimal(1) } };
-    before.production.harvestGauges = { oak: { gauge: 5, timer: 0 } };
     before.combat.stageKills = { 'mossy_cellar:normal:10': 120 };
     before.combat.stageChests = { 'mossy_cellar:normal:10': 3 };
     before.combat.overflow = { 'mossy_cellar:normal:10': true };
     before.cards.wishlist = ['ember_squire'];
-    before.automation = { treeLevels: true, mineLevels: true, reservePercent: 10 };
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.production.workers).toEqual(before.production.workers);
+    expect(s.camp).toEqual(before.camp);
     expect(s.production.forge).toEqual(before.production.forge);
-    expect(s.production.tools).toEqual({});
-    expect(s.production.depth).toEqual({});
-    expect(s.production.harvestGauges).toEqual({});
     expect(s.combat.stageKills).toEqual(before.combat.stageKills);
     expect(s.combat.stageChests).toEqual(before.combat.stageChests);
     expect(s.combat.overflow).toEqual(before.combat.overflow);
     expect(s.cards.wishlist).toEqual(['ember_squire']);
-    expect(s.automation).toEqual(before.automation);
   });
 
   it('keeps the owned legacy weapon skins and the one worn', () => {
@@ -206,7 +190,7 @@ describe('ascend', () => {
     expect(s.cards.owned['ember_squire']!.level).toBe(15);
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);
     expect(s.cosmetics.owned['holo_hex']).toBeDefined();
-    expect(s.production.unlockedTrees).toEqual(['ironbark']);
+    expect(s.camp.level).toBe(12);
     expect(s.clearedDungeons).toEqual(['mossy_cellar']);
     expect(s.mastery).toEqual(before.mastery);
     expect(s.portals).toEqual(before.portals);
