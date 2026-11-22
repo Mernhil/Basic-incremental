@@ -55,6 +55,9 @@ describe('the moves of a card', () => {
     expect(moves('prism_paladin', true).skill?.name).toBe(content.moves.kits.sword.skill.name);
     expect(moves('solaris', true).skill?.name).toBe(content.moves.cards['solaris']!.skill);
     expect(moves('solaris').ult.name).toBe(content.moves.cards['solaris']!.ult);
+    // Wildwood (batch 3): the fox tail dagger is earth, the phoenix feather dagger fire.
+    expect(moves('foxtail', true).skill?.name).toBe('Foxtail Flick');
+    expect(moves('phoenixquill').ult.name).toBe('Rebirth Flurry');
   });
 
   it('Wood has no skill slot and its ultimate only strikes', () => {

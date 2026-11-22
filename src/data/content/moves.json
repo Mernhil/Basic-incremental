@@ -1111,6 +1111,243 @@
         ]
       },
       "note": "Its Renew also Drains: the team heals for 10% of the damage it deals for 5 s."
+    },
+    "runemoss": {
+      "skill": "Moss Edge",
+      "ult": "Rootbreak Cleave",
+      "lean": "reach"
+    },
+    "stonegrove": {
+      "skill": "Boulder Swing",
+      "ult": "Landslide",
+      "lean": "duration"
+    },
+    "runeboulder": {
+      "skill": "Stone Knock",
+      "ult": "Bedrock",
+      "lean": "power"
+    },
+    "spiralhorn": {
+      "skill": "Root Thrust",
+      "ult": "Grove Charge",
+      "lean": "tempo"
+    },
+    "vinepike": {
+      "skill": "Thorn Pin",
+      "ult": "Taproot Lunge",
+      "lean": "reach"
+    },
+    "mossfang": {
+      "skill": "Moss Nick",
+      "ult": "Lichen Flurry",
+      "lean": "duration"
+    },
+    "mossreaper": {
+      "skill": "Fern Sweep",
+      "ult": "Mossreap",
+      "lean": "tempo"
+    },
+    "rootstring": {
+      "skill": "Acorn Shot",
+      "ult": "Canopy Volley",
+      "lean": "power"
+    },
+    "amberbough": {
+      "skill": "Sap Bloom",
+      "ult": "Heartwood",
+      "lean": "reach"
+    },
+    "emberthorn": {
+      "skill": "Thorn Slash",
+      "ult": "Briarfire Cleave",
+      "lean": "tempo"
+    },
+    "thornblaze": {
+      "skill": "Smoulder Swing",
+      "ult": "Wildfire",
+      "lean": "power"
+    },
+    "emberknot": {
+      "skill": "Ember Knock",
+      "ult": "Kindling Quake",
+      "lean": "duration"
+    },
+    "lavahorn": {
+      "skill": "Briar Thrust",
+      "ult": "Burning Charge",
+      "lean": "power"
+    },
+    "flarepike": {
+      "skill": "Redthorn Pin",
+      "ult": "Pyre Lunge",
+      "lean": "duration"
+    },
+    "cindersting": {
+      "skill": "Thorn Prick",
+      "ult": "Cinder Flurry",
+      "lean": "reach"
+    },
+    "ashreaper": {
+      "skill": "Ash Sweep",
+      "ult": "Burnt Harvest",
+      "lean": "power"
+    },
+    "firebriar": {
+      "skill": "Spark Shot",
+      "ult": "Ember Volley",
+      "lean": "tempo"
+    },
+    "emberroot": {
+      "skill": "Kindle",
+      "ult": "Ember Rite",
+      "lean": "reach"
+    },
+    "antlerblade": {
+      "skill": "Antler Cut",
+      "ult": "Stag Crown",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "front",
+            "value": 0.06
+          }
+        ]
+      },
+      "note": "Its Rally also Shields the front row for 6% of their max health."
+    },
+    "elderbark": {
+      "skill": "Bark Swing",
+      "ult": "Treantfall",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.075
+          }
+        ]
+      },
+      "note": "Its own Shield grows back at half strength 5 s after it breaks."
+    },
+    "alicorn": {
+      "skill": "Horn Thrust",
+      "ult": "Unicorn Charge",
+      "extra": {
+        "ult": [
+          {
+            "kind": "regen",
+            "on": "team",
+            "value": 0.01,
+            "seconds": 5
+          }
+        ]
+      },
+      "note": "While a Shield it gave holds, that card also Regens 1% of max health per second."
+    },
+    "toadmaul": {
+      "skill": "Spore Knock",
+      "ult": "Toadstool Quake",
+      "extra": {
+        "ult": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.1,
+            "seconds": 3
+          }
+        ]
+      },
+      "note": "While its Stagger delays the enemy, the enemy is also Weakened by 10%."
+    },
+    "owlwing": {
+      "skill": "Owl Eye",
+      "ult": "Silent Volley",
+      "extra": {
+        "skill": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 10
+          }
+        ]
+      },
+      "note": "The Focus from its Aimed Shot lasts until its next Aimed Shot, so the team never loses it."
+    },
+    "foxtail": {
+      "skill": "Foxtail Flick",
+      "ult": "Vixen Flurry",
+      "extra": {
+        "skill": [
+          {
+            "kind": "charge",
+            "on": "team",
+            "value": 1
+          }
+        ]
+      },
+      "note": "Its Quick Cut Charges the two emptiest gauges instead of one."
+    },
+    "phoenixquill": {
+      "skill": "Feather Cut",
+      "ult": "Rebirth Flurry",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "When it is knocked out, its Wound keeps ticking and the team gets Rally +15% for 6 s."
+    },
+    "bloodrose": {
+      "skill": "Rose Thorn",
+      "ult": "Blood Bloom",
+      "extra": {
+        "ult": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.2,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "Its Wound grows 10% stronger with every tick."
+    },
+    "emberscale": {
+      "skill": "Salamander Sweep",
+      "ult": "Firetail Reap",
+      "extra": {
+        "ult": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 0.2,
+            "below": 0.4
+          }
+        ]
+      },
+      "note": "Its Execute line rises by 5% for each Wound on the enemy."
+    },
+    "emberblossom": {
+      "skill": "Blossom Flame",
+      "ult": "Ember Bloom",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      },
+      "note": "Its Mend also Rallies the team by 10% for 5 s."
     }
   }
 }
