@@ -9161,5 +9161,243 @@
         }
       ]
     }
+  },
+  {
+    "id": "geodefall",
+    "name": "Geodefall",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "ability": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "emberbrand",
+    "name": "Emberbrand",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "tidecaller",
+    "name": "Tidecaller",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "water",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "dawnpiercer",
+    "name": "Dawnpiercer",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "light",
+    "role": "dps",
+    "item": {
+      "kind": "lance"
+    },
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "voidthorn",
+    "name": "Voidthorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "dark",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.materialChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
   }
 ]

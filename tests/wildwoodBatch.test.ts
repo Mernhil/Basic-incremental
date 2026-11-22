@@ -15,7 +15,7 @@ const FIRE_HEIRLOOMS = ['dagger', 'spear', 'scythe', 'staff', 'pickaxe'];
 
 describe('the Wildwood batch (DESIGN.md §2 The Wildwood batch)', () => {
   it('adds a hero (earth) and a villain (fire) T6 card per type and twelve Heirlooms', () => {
-    expect(content.cards).toHaveLength(200);
+    expect(content.cards).toHaveLength(205);
     expect(ww).toHaveLength(34);
     expect(t6).toHaveLength(22);
     expect(heirlooms).toHaveLength(12);

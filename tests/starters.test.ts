@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadContent } from '../src/data';
+import { MANIFEST } from '../src/renderer/src/art/pixel/manifest';
 import {
   addCard,
   breakSeal,
@@ -31,11 +32,11 @@ import {
 const content = loadContent();
 const START = ['ember_squire', 'apprentice_feller', 'cave_digger'];
 const [D1, D2] = content.dungeons;
-const EARTH = 'verdant_smith'; // hammer, tank
-const FIRE = 'moon_reaver'; // sword, dps
-const WATER = 'tide_oracle'; // staff, support
-const LIGHT = 'seraph_lancer'; // lance
-const DARK = 'royal_impaler'; // spear, dps
+const EARTH = 'geodefall'; // hammer, tank
+const FIRE = 'emberbrand'; // sword, dps
+const WATER = 'tidecaller'; // staff, support
+const LIGHT = 'dawnpiercer'; // lance
+const DARK = 'voidthorn'; // spear, dps
 
 function withCores(amounts: Record<string, number>) {
   const state = createInitialState(content);
@@ -348,5 +349,50 @@ describe('the starter in a save', () => {
     const back = readSave(createSaveText(state, 1_000), content).state;
     expect(back.cards.owned['ember_squire']!.seal).toBeUndefined();
     expect(back.cards.owned[FIRE]!.seal).toBeUndefined();
+  });
+});
+
+describe('the five starter cards', () => {
+  const roleOf = (id: string) => {
+    const c = content.cardById.get(id)!;
+    return c.job === 'fighting' ? c.role : null;
+  };
+  const ids = [EARTH, FIRE, WATER, LIGHT, DARK];
+  const types: Record<string, string> = {
+    [EARTH]: 'hammer',
+    [FIRE]: 'sword',
+    [WATER]: 'staff',
+    [LIGHT]: 'lance',
+    [DARK]: 'spear',
+  };
+  const elements: Record<string, string> = {
+    [EARTH]: 'earth',
+    [FIRE]: 'fire',
+    [WATER]: 'water',
+    [LIGHT]: 'light',
+    [DARK]: 'dark',
+  };
+
+  it('are their own cards of the named type, element and role, with their own picture and moves', () => {
+    for (const id of ids) {
+      const card = content.cardById.get(id)!;
+      expect(card.item.kind).toBe(types[id]);
+      expect(card.element).toBe(elements[id]);
+      expect(card.starterArt).toBe(true);
+      expect(card.heirloomName).toBeUndefined(); // the shown name is the only name
+      expect(card.tier).toBe('mythic');
+      expect(MANIFEST[`item-${types[id]}-starter`]).toMatchObject({ w: 100, h: 120 });
+      expect(content.moves.cards[id]).toBeDefined();
+    }
+    expect(roleOf(EARTH)).toBe('tank');
+    expect(roleOf(FIRE)).toBe('dps');
+    expect(roleOf(WATER)).toBe('support');
+    expect(roleOf(LIGHT)).toBe('dps');
+    expect(roleOf(DARK)).toBe('dps');
+  });
+
+  it('come only from the unlocks, never from a portal', () => {
+    const pooled = new Set(content.portals.flatMap((p) => p.pool.map((e) => e.itemId)));
+    for (const id of ids) expect(pooled.has(id)).toBe(false);
   });
 });

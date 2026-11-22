@@ -1,11 +1,43 @@
 {
-  "base": ["verdant_smith", "moon_reaver", "tide_oracle"],
-  "special": ["seraph_lancer", "royal_impaler"],
+  "base": ["geodefall", "emberbrand", "tidecaller"],
+  "special": ["dawnpiercer", "voidthorn"],
   "unsealedTier": "heirloom",
   "seals": [
-    { "tier": "silver", "cost": [{ "resource": "moss_core", "amount": "4" }] },
-    { "tier": "gold", "cost": [{ "resource": "cinder_core", "amount": "6" }] },
-    { "tier": "prismatic", "cost": [{ "resource": "frost_core", "amount": "8" }] },
-    { "tier": "mythic", "cost": [{ "resource": "storm_core", "amount": "10" }] }
+    {
+      "tier": "silver",
+      "cost": [
+        {
+          "resource": "moss_core",
+          "amount": "4"
+        }
+      ]
+    },
+    {
+      "tier": "gold",
+      "cost": [
+        {
+          "resource": "cinder_core",
+          "amount": "6"
+        }
+      ]
+    },
+    {
+      "tier": "prismatic",
+      "cost": [
+        {
+          "resource": "frost_core",
+          "amount": "8"
+        }
+      ]
+    },
+    {
+      "tier": "mythic",
+      "cost": [
+        {
+          "resource": "storm_core",
+          "amount": "10"
+        }
+      ]
+    }
   ]
 }

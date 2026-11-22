@@ -1112,6 +1112,17 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
   const pictures = new Set<string>();
   c.cards.forEach((card, i) => {
     const where = `cards.json › [${i}]`;
+    if (card.starterArt) {
+      // a starter weapon (DESIGN.md §2): its own picture, named by `name` alone
+      if (card.heirloomArt || card.heirloomName || card.batch || card.heirloom) {
+        issues.push(
+          `${where}: a starter weapon has no heirloomArt, heirloomName, batch or Heirloom`,
+        );
+      }
+      if (card.tier !== 'mythic') issues.push(`${where} › starterArt: only a T6 card`);
+      claim(card.name, `${where} › name`);
+      return;
+    }
     if (!card.heirloomArt && !card.heirloomName && !card.batch) return;
     if (card.batch) {
       // a later art batch (DESIGN.md §5 Art batches): its own weapon name, the batch's pictures

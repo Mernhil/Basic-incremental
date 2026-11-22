@@ -515,6 +515,12 @@ const cardBase = {
    */
   heirloomArt: z.enum(['b', 'c', 'd']).optional(),
   /**
+   * One of the five starter weapons (DESIGN.md §2 Starter weapon): a Mythic or Void card whose weapon
+   * picture is the type's starter picture `item-<type>-starter` at every tier, named by `name` alone.
+   * It has no `heirloomArt`, `heirloomName` or `batch`.
+   */
+  starterArt: z.literal(true).optional(),
+  /**
    * A card of a later art batch (DESIGN.md §5 Art batches; batch 1 Dragon is the base roster and has
    * no `batch`, batch 2 is `leviathan`; an id from batches.json): its T6 or Heirloom picture is `item-<type>-<batch>-<t6m|t6v|heirloom>` and
    * its own weapon's name is `heirloomName` (both or neither). A batch card has no `heirloomArt`.

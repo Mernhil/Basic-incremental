@@ -146,10 +146,12 @@ export function itemName(
   kind: ItemKind,
   tier: RankTier,
   side: CardSide | undefined,
-  card?: { heirloomName?: string | undefined },
+  card?: { heirloomName?: string | undefined; starterArt?: true | undefined; name?: string },
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
+  // a starter weapon (DESIGN.md §2) is named by its card, at every tier
+  if (card?.starterArt && card.name) return card.name;
   // a card's own weapon is named at Mythic or Void and as its Heirloom; below that the type's model
   if (card?.heirloomName && (tier === 'mythic' || tier === 'heirloom')) return card.heirloomName;
   switch (tier) {
