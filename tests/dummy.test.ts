@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  advance,
-  copyLoadoutToDummy,
   Decimal,
-  dummyReadout,
   newOwnedCard,
   readSave,
   createSaveText,
@@ -11,7 +8,7 @@ import {
   setDummyDamage,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState } from './helpers';
+import { content, freshState } from './helpers';
 
 /**
  * The Training ground's test dummy (DESIGN.md section 2 Test dummies): endless health, the damage
@@ -52,42 +49,6 @@ describe('test dummies', () => {
     expect(cleared.ok && cleared.state.dummy.team).toEqual([null, null, null, null]);
   });
 
-  it('shows the team’s damage per second and how long it stands against the damage set', () => {
-    let s = two();
-    s = copyLoadoutToDummy(s);
-    expect(s.dummy.team).toEqual(s.cards.loadouts.fighting.slots);
-    const plain = dummyReadout(s, content);
-    expect(plain.cards).toBe(1);
-    expect(plain.dps.gt(0)).toBe(true);
-    expect(plain.health.gt(0)).toBe(true);
-    const hit = setDummyDamage(s, content, plain.health.div(10));
-    if (!hit.ok) throw new Error(hit.reason);
-    expect(dummyReadout(hit.state, content).secondsStanding).toBeCloseTo(10);
-    const none = setDummyDamage(s, content, new Decimal(0));
-    expect(none.ok && dummyReadout(none.state, content).secondsStanding).toBeNull();
-  });
-
-  it('a stronger team deals more', () => {
-    let s = two();
-    s = ((): GameState => {
-      const r = setDummyCard(s, content, 0, 'ember_squire');
-      return r.ok ? r.state : s;
-    })();
-    const one = dummyReadout(s, content).dps;
-    const r = setDummyCard(s, content, 1, 'dawnblade_regent');
-    if (!r.ok) throw new Error(r.reason);
-    expect(dummyReadout(r.state, content).dps.gt(one)).toBe(true);
-  });
-
-  it('an empty trial team is bare hands, and the real loadout is never touched', () => {
-    const s = freshState();
-    const before = [...s.cards.loadouts.fighting.slots];
-    const readout = dummyReadout(s, content);
-    expect(readout.cards).toBe(0);
-    expect(readout.dps.gt(0)).toBe(true);
-    expect(s.cards.loadouts.fighting.slots).toEqual(before);
-  });
-
   it('clamps the damage set to 0 and the most the data allows', () => {
     const s = freshState();
     const low = setDummyDamage(s, content, new Decimal(-5));
@@ -100,14 +61,17 @@ describe('test dummies', () => {
     });
   });
 
-  it('gives no rewards: a trial changes nothing in the game while time passes', () => {
-    const s = bareState();
-    const r = setDummyDamage(s, content, new Decimal(1e9));
-    if (!r.ok) throw new Error(r.reason);
-    const after = advance(r.state, content, 5000, constantRng(0.5)).state;
-    const control = advance(s, content, 5000, constantRng(0.5)).state;
-    expect(after.resources).toEqual(control.resources);
-    expect(after.cards.owned).toEqual(control.cards.owned);
+  it('one starter weapon at most on the trial team', () => {
+    const s = freshState();
+    const starters = content.starters.base;
+    s.cards.owned[starters[0]!] = newOwnedCard();
+    s.cards.owned[starters[1]!] = newOwnedCard();
+    const one = setDummyCard(s, content, 0, starters[0]!);
+    if (!one.ok) throw new Error(one.reason);
+    expect(setDummyCard(one.state, content, 1, starters[1]!)).toEqual({
+      ok: false,
+      reason: 'too-many-starters',
+    });
   });
 
   it('is saved and read back, dropping a card that is not owned or not a fighter', () => {

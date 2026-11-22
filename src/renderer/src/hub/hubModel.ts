@@ -107,7 +107,7 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     action: {
       kind: 'menu',
       choices: [
-        { view: 'training', label: 'Test dummy' },
+        { view: 'training', label: 'Training ground' },
         { view: 'upgrades', label: 'Training upgrades' },
       ],
     },
