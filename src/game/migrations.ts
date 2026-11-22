@@ -108,6 +108,9 @@ export const MIGRATIONS: MigrationTable = {
   40: v40ToV41,
   /** v41 -> v42: the base camp replaces trees, mines, tool lines and the autobuyers (DESIGN.md section 2). */
   41: v41ToV42,
+  /** v42 -> v43: the starter weapon (DESIGN.md §2 Starter weapon): a save that began before it is
+   *  offered the pick once, and may turn it down. */
+  42: v42ToV43,
 };
 
 /**
@@ -348,6 +351,15 @@ function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {
   for (const [id, c] of Object.entries(cards['owned']))
     owned[id] = isRecord(c) ? { ...c, skillOpen: false } : c;
   return { ...state, cards: { ...cards, owned } };
+}
+
+/**
+ * v42 -> v43: the starter weapon (DESIGN.md §2 Starter weapon). An existing save would never get
+ * the pick otherwise, so it is offered once when the save loads; the screen may be closed without
+ * a pick. No card changes.
+ */
+function v42ToV43(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, starter: { done: false, skippable: true } };
 }
 
 /**

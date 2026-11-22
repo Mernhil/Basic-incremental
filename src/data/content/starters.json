@@ -1,0 +1,9 @@
+{
+  "cards": ["moon_reaver", "jade_regent", "dawn_archer", "tide_oracle"],
+  "seals": [
+    { "tier": "silver", "cost": [{ "resource": "moss_core", "amount": "4" }] },
+    { "tier": "gold", "cost": [{ "resource": "cinder_core", "amount": "6" }] },
+    { "tier": "prismatic", "cost": [{ "resource": "frost_core", "amount": "8" }] },
+    { "tier": "mythic", "cost": [{ "resource": "storm_core", "amount": "10" }] }
+  ]
+}

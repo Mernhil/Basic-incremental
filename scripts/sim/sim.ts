@@ -62,7 +62,9 @@ import {
   cardPower,
   cardBaseDamage,
   collectModifiers,
+  breakSeal,
   createInitialState,
+  pickStarter,
   createSeededRng,
   Decimal,
   CAMP_PLACES,
@@ -1604,7 +1606,9 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
   let best: string | null = null;
   for (const card of content.cards) {
     if (card.job !== 'fighting' || !usable(card.id)) continue;
-    if (cardCost(content, card.id) > cap) continue;
+    // a sealed starter weapon stays behind the lead: the player keeps leading with what they know
+    if (state.cards.owned[card.id]!.seal !== undefined) continue;
+    if (cardCost(content, card.id, state.cards.owned[card.id]) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
   const now = leadOf(state, content);
@@ -1613,7 +1617,7 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
     now !== null &&
     now !== best &&
     usable(now) &&
-    cardCost(content, now) <= cap &&
+    cardCost(content, now, state.cards.owned[now]) <= cap &&
     damage(best) < damage(now) * LEAD_SWAP_MARGIN
   )
     return now;
@@ -1649,11 +1653,13 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
   const loadout: CardLoadout = emptyCardLoadout();
   // the first slot takes the hardest-hitting card, the rest the strongest others in order
   loadout.slots[0] = chooseLead(current, content, cap);
-  let cost = loadout.slots[0] ? cardCost(content, loadout.slots[0]) : 0;
+  let cost = loadout.slots[0]
+    ? cardCost(content, loadout.slots[0], current.cards.owned[loadout.slots[0]])
+    : 0;
   let next = 1;
   for (const card of ranked) {
     if (card.id === loadout.slots[0]) continue;
-    const c = cardCost(content, card.id);
+    const c = cardCost(content, card.id, current.cards.owned[card.id]);
     if (cost + c > cap) continue;
     if (card.heirloom && heirloomCount(content, loadout.slots) >= MAX_LOADOUT_HEIRLOOMS) continue;
     if (loadout.slots[0] === null) loadout.slots[0] = card.id;
@@ -2318,6 +2324,9 @@ export interface SimOptions {
   openAllPortals?: boolean;
   /** How the player plays (default `active`). */
   profile?: SimProfile;
+  /** Picks this starter weapon (DESIGN.md §2 Starter weapon) at the start and breaks its seals
+   *  as soon as the Cores pay for them. Default: no pick, as before the starter existed. */
+  starter?: string;
 }
 
 /** `active`: plays every step. `idle`: checks in every 30 min and is offline 8 h a day. */
@@ -2585,6 +2594,10 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     MILESTONES.map((m) => [m.id, null]),
   );
   let state = createInitialState(content);
+  if (options.starter) {
+    const picked = pickStarter(state, content, options.starter);
+    if (picked.ok) state = picked.state;
+  }
   let sinceChoose = Infinity;
   let sinceAscendCheck = 0;
   let runStart = 0;
@@ -2743,6 +2756,13 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       if (fight.id !== null && content.dungeonById.has(fight.id)) {
         const tier = setDifficulty(state, content, fight.id, fight.difficulty);
         if (tier.ok) state = tier.state;
+      }
+      if (options.starter) {
+        for (;;) {
+          const broke = breakSeal(state, content, options.starter);
+          if (!broke.ok) break;
+          state = broke.state;
+        }
       }
       state = optimizeLoadouts(state, content);
       const challenge = chooseAutoChallenge(state, content, t, lastTry, lost);

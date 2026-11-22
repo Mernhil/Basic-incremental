@@ -1,0 +1,69 @@
+/* The starter pick (stage/starterPick.ts): four cards on a dim table, one to take. */
+.sp {
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  background: rgba(8, 6, 4, 0.72);
+  backdrop-filter: blur(3px);
+}
+.sp.is-leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.sp__dialog {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin: 16px;
+  padding: 28px 28px 24px;
+  max-width: min(1100px, 96vw);
+  color: var(--bi-frame-ink);
+}
+.sp__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--bi-frame-ink);
+}
+.sp__lead {
+  margin: 0;
+  max-width: 62ch;
+  text-align: center;
+  color: var(--bi-frame-ink-muted);
+}
+.sp__row {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 34px 52px;
+  padding: 10px 24px 0;
+}
+.sp-choice {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  width: 176px;
+}
+.sp-choice__card {
+  --card-k: 1;
+  /* the card's frame art reaches past its box */
+  margin: 14px 0 26px;
+}
+.sp-choice__kind {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.sp-choice__button {
+  width: 100%;
+}
+.sp__later {
+  margin-top: 4px;
+}

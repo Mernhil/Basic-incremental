@@ -8,6 +8,7 @@ import {
   exportSaveString,
   loadBestSave,
   accountInfo,
+  starterPickDue,
   checkAchievements,
   claimableQuests,
   claimAllQuests,
@@ -69,6 +70,7 @@ import { createDirector } from './stage/director';
 import { setNumberMotion, setPixelTick } from './stage/numbers';
 import { installPixelNumbers, refreshPixelNumbers } from './ui/pixelNumbers';
 import { showWelcomeBack } from './stage/welcome';
+import { showStarterPick } from './stage/starterPick';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
 import { onPrefs, prefs } from './settings/prefs';
@@ -482,5 +484,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   rendered();
   table.enter();
+  // a new game, or a save from before the starter weapon, picks its starter (DESIGN.md §2)
+  if (starterPickDue(loop.state, content)) {
+    showStarterPick(content, { state: () => loop.state, apply: applyAndSave }, () =>
+      playSound('click'),
+    );
+  }
   await save(); // a fresh game gets a save file right away
 }
