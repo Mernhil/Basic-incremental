@@ -1,7 +1,7 @@
 import type { Content } from '../../../data';
 import type { GameState } from '../../../game';
 import { COPY } from '../copy';
-import type { CardEntry, StatChange, WeaponView } from '../pages/cardsModel';
+import type { CardEntry, StatChange, WeaponDetail, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
 import { setStarText } from './stars';
 import './weaponPanel.css';
@@ -85,6 +85,62 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   const starHost = h('div', 'wp-starbtn');
   const tagHost = h('div', 'wp-taghost');
   side.append(starLine, starHost, tagHost);
+
+  // ---- the detail: stats, what it does, what comes next (read-only) ----
+  // the stats sit beside the weapon (in the side); what it does and what comes next below it
+  const statsEl = h('div', 'wp-detail wp-detail--stats');
+  const restEl = h('div', 'wp-detail wp-detail--rest');
+  side.insertBefore(statsEl, tagHost);
+  let detailSig = '';
+  function section(title: string, ...body: HTMLElement[]): HTMLElement {
+    const sec = h('section', 'wp-sec');
+    sec.append(h('h4', 'wp-sec__title', title), ...body);
+    return sec;
+  }
+  function drawDetail(d: WeaponDetail | null): void {
+    const sig = JSON.stringify(d);
+    if (sig === detailSig) return;
+    detailSig = sig;
+    statsEl.replaceChildren();
+    restEl.replaceChildren();
+    statsEl.hidden = !d;
+    restEl.hidden = !d;
+    if (!d) return;
+    const t = COPY.weapon.detail;
+    const stats = h('dl', 'wp-stats');
+    for (const r of d.stats) {
+      const row = h('div', 'wp-stat');
+      if (r.title) row.title = r.title;
+      row.append(h('dt', '', r.label), h('dd', 'bi-num', r.value));
+      stats.append(row);
+    }
+    const does = h('ul', 'wp-does');
+    for (const e of d.does) {
+      const li = h('li', `wp-do wp-do--${e.kind}`);
+      if (e.title) li.title = e.title;
+      li.classList.toggle('is-active', Boolean(e.active));
+      const head = h('span', 'wp-do__head');
+      head.append(h('b', 'wp-do__kind', e.kindLabel));
+      if (e.name) head.append(h('span', 'wp-do__name', e.name));
+      li.append(head, h('span', 'wp-do__text', e.text));
+      if (e.values.length) {
+        const vals = h('span', 'wp-do__values');
+        for (const v of e.values) vals.append(h('i', 'wp-do__value bi-num', v));
+        li.append(vals);
+      }
+      does.append(li);
+    }
+    const next = h('ul', 'wp-next');
+    for (const n of [d.nextLevel, d.nextStar]) {
+      const li = h('li', 'wp-nx');
+      li.classList.toggle('is-end', !n.available);
+      li.append(h('b', 'wp-nx__label', n.label), h('span', 'wp-nx__text bi-num', n.text));
+      if (n.note) li.append(h('small', 'wp-nx__note bi-num', n.note));
+      next.append(li);
+    }
+    statsEl.append(section(t.statsTitle, stats));
+    restEl.append(section(t.doesTitle, does), section(t.nextTitle, next));
+  }
 
   // ---- card variant: the tiles (tier and stars, card XP) ----
   const tierValue = h('b', 'wp-tile__value px-display');
@@ -192,7 +248,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     stage.querySelectorAll('.wp-badge, .wp-xp, .wp-plate').forEach((n) => {
       n.setAttribute('aria-hidden', 'true');
     });
-    root.append(stage, side);
+    root.append(stage, side, restEl);
   } else {
     const tierTile = h('div', 'wp-tile px-tile wp-tile--tier');
     const pipRow = h('span', 'wp-pips');
@@ -211,7 +267,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     );
     const xpTile = h('div', 'wp-tile px-tile wp-tile--xp');
     xpTile.append(h('span', 'wp-tile__label', COPY.weapon.xpLabelShort), xpTileValue, xpBar);
-    root.append(tierTile, xpTile, tagHost);
+    root.append(tierTile, xpTile, statsEl, restEl, tagHost);
   }
 
   // ---- card variant: the overlay (the large level badge) ----
@@ -379,6 +435,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       drawStage(entry, w);
       if (variant === 'card') drawTiles(w);
       drawSide(w);
+      drawDetail(entry.detail);
     },
   };
 }

@@ -32,6 +32,7 @@ import { skinPickerView } from './cardSkinsModel';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
 import { weaponView } from './weaponModel';
+import { weaponDetail } from './weaponDetailModel';
 import type {
   CardEntry,
   CardsModel,
@@ -153,6 +154,7 @@ export function createCardsModel(
       next: owned ? step(info.starUp) : null,
       weapon: weaponView(content, info),
       stats: statTiles(content, state, card.id),
+      detail: weaponDetail(content, state, info),
     };
   }
 

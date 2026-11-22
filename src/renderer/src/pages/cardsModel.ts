@@ -86,6 +86,50 @@ export interface StatChange {
   gain: string;
 }
 
+/** One number of the weapon panel's stat list. */
+export interface DetailStat {
+  label: string;
+  value: string;
+  title?: string;
+}
+
+/**
+ * One thing a card does, for the weapon panel's "What it does" list: an ability, the team bonus,
+ * the signature attack, a bond. The coming moveset's three attacks are entries of the same shape.
+ */
+export interface DetailEntry {
+  kind: 'ability' | 'team' | 'signature' | 'bond';
+  /** The kind's label ("Signature"). */
+  kindLabel: string;
+  /** The entry's own name ("Cleave", "Oath of Dawn"); empty when the kind says it all. */
+  name: string;
+  /** Plain words with the current values filled in. */
+  text: string;
+  /** The key numbers, short ("1,200 damage", "every 8 hits"). */
+  values: string[];
+  /** The exact source text, for a tooltip. */
+  title?: string;
+  active?: boolean;
+}
+
+/** What the next level or the next star adds, as numbers; `text` is plain when there is no next. */
+export interface DetailNext {
+  label: string;
+  text: string;
+  /** The extra line: what the star still needs. */
+  note: string;
+  /** There is a next one (false at the level cap or at six stars). */
+  available: boolean;
+}
+
+/** The weapon panel's read-only detail of an owned card (stats, what it does, what comes next). */
+export interface WeaponDetail {
+  stats: DetailStat[];
+  does: DetailEntry[];
+  nextLevel: DetailNext;
+  nextStar: DetailNext;
+}
+
 /** The four stat tiles of a card and the line comparing it with the weakest other loadout card. */
 export interface StatTiles {
   tiles: Array<{ label: string; value: string; title: string }>;
@@ -142,6 +186,8 @@ export interface CardEntry {
   weapon: WeaponView | null;
   /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
   stats: StatTiles;
+  /** The weapon panel's stats, what it does and what comes next; null when not owned. */
+  detail: WeaponDetail | null;
 }
 
 /** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
