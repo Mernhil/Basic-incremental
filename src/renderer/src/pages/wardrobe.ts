@@ -102,6 +102,8 @@ export function createWardrobePage(
     chipButtons.get(filter)?.focus({ preventScroll: true });
   }
   for (const id of INVENTORY_FILTERS) {
+    // the vault (data/vault.ts) holds back the interface styles: no chip for them
+    if (id === 'interface' && content.uiLooksVaulted) continue;
     const b = h('button', 'cp-chip wd-chip', t.inventoryFilters[id]);
     b.type = 'button';
     b.dataset.key = `filter-${id}`;
@@ -615,7 +617,8 @@ export function createWardrobePage(
     }
     body.append(actions);
     if (d.equip.note) body.append(h('p', 'frame__muted', d.equip.note));
-    body.append(h('h3', 'wd-h', t.sets), setChips(ctx.state()));
+    // no sets while the UI looks are vaulted (every set holds a table piece)
+    if (!content.uiLooksVaulted) body.append(h('h3', 'wd-h', t.sets), setChips(ctx.state()));
     return el;
   }
 

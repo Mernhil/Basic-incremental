@@ -39,7 +39,7 @@
   width: 32px;
   height: 32px;
 }
-.shell-details__glyph {
+.shell-details .shell-details__glyph {
   width: 32px;
   height: 32px;
 }
@@ -331,6 +331,18 @@ html.r-shell-gold
   ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/gold/unusable.png');
   --o-bg: #686868;
+}
+
+/* extra pieces (art/shell/gold/extra/, pieces.json there): the tooltip has its own piece */
+html.r-shell-gold
+  .shell-tip:not(.du-sheet):not(.dv-sheet):not(.du-read):not(.du-plate):not(#_o):not(#_o):not(
+    #_o
+  ):not(#_o) {
+  --o-src: url('../art/shell/gold/extra/tooltip.png');
+  --o-bg: #333436;
+  --o-slice: 6;
+  --o-out: 0;
+  --o-fill: fill;
 }
 
 /* the one rule that draws every piece */

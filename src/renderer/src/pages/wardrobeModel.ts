@@ -546,6 +546,8 @@ export interface SetView {
 }
 
 export function setViews(state: GameState, content: Content): SetView[] {
+  // every set has a table piece: with the UI looks vaulted none can be completed, so none is listed
+  if (content.uiLooksVaulted) return [];
   const global = resolveGlobal(content, state.cosmetics.loadout);
   return setBonuses(state, content).map((s) => ({
     id: s.set.id,
