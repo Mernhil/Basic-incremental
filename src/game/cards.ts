@@ -64,6 +64,8 @@ export type CardFailure =
   | 'over-cost-cap'
   /** More than MAX_LOADOUT_HEIRLOOMS Heirloom cards in the loadout (DESIGN.md §5 Cost). */
   | 'too-many-heirlooms'
+  /** More than MAX_LOADOUT_STARTERS starter weapons in the loadout (DESIGN.md §2 Starter weapon). */
+  | 'too-many-starters'
   /** The card is away on an expedition (DESIGN.md §15). */
   | 'on-expedition'
   /** Not a valid slot. */
@@ -144,10 +146,12 @@ export function itemName(
   kind: ItemKind,
   tier: RankTier,
   side: CardSide | undefined,
-  card?: { heirloomName?: string | undefined },
+  card?: { heirloomName?: string | undefined; starterArt?: true | undefined; name?: string },
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
+  // a starter weapon (DESIGN.md §2) is named by its card, at every tier
+  if (card?.starterArt && card.name) return card.name;
   // a card's own weapon is named at Mythic or Void and as its Heirloom; below that the type's model
   if (card?.heirloomName && (tier === 'mythic' || tier === 'heirloom')) return card.heirloomName;
   switch (tier) {
@@ -250,7 +254,22 @@ export function breakthroughTier(
 export function strengthTier(content: Content, owned: OwnedCard): RankTier {
   if (owned.seal === undefined) return owned.tier;
   if (owned.seal <= 0) return 'wood';
+  // every seal broken: an unsealed starter, fighting as an Heirloom (`starters.unsealedTier`)
+  if (owned.seal >= content.starters.seals.length) return content.starters.unsealedTier;
   return content.starters.seals[owned.seal - 1]?.tier ?? owned.tier;
+}
+
+/** A team holds at most this many starter weapons, of any of the five (DESIGN.md §2). */
+export const MAX_LOADOUT_STARTERS = 1;
+
+/** Whether a card is one of the five starter weapons. */
+export function isStarterCard(content: Content, cardId: string): boolean {
+  return content.starters.base.includes(cardId) || content.starters.special.includes(cardId);
+}
+
+/** How many starter cards a list of card ids holds. */
+export function starterCount(content: Content, ids: readonly (string | null)[]): number {
+  return ids.filter((id) => id !== null && isStarterCard(content, id)).length;
 }
 
 /**
@@ -502,6 +521,7 @@ export function loadoutProblem(
   }
   if (new Set(ids).size !== ids.length) return 'duplicate';
   if (heirloomCount(content, ids) > MAX_LOADOUT_HEIRLOOMS) return 'too-many-heirlooms';
+  if (starterCount(content, ids) > MAX_LOADOUT_STARTERS) return 'too-many-starters';
   if (
     loadoutCost(content, loadout, state.cards.owned) >
     loadoutCostCap(state, content, job, modifiers)

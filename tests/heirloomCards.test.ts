@@ -22,7 +22,7 @@ const recolours = JSON.parse(
 
 const withArt = content.cards.filter((c) => c.heirloomArt);
 // The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
-const ladder = content.cards.filter((c) => !c.heirloom);
+const ladder = content.cards.filter((c) => !c.heirloom && !c.starterArt);
 const byRarity = (r: Rarity) => ladder.filter((c) => cardStyle(c) === r);
 const key = (r: { type: string; side: string; letter: string }) =>
   `${r.type}/${r.side}/${r.letter}`;

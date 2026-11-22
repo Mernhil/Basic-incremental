@@ -1,9 +1,10 @@
 import type { Content } from '../../../data';
 import {
   cardDisplayName,
-  pickStarter,
+  claimStarter,
   skipStarter,
   starterChoices,
+  starterGroup,
   type GameState,
 } from '../../../game';
 import { COPY } from '../copy';
@@ -16,7 +17,7 @@ import './starterPick.css';
  * The starter pick (DESIGN.md §2 Starter weapon): at the start of a new game the four T6 starter
  * weapons are laid out as cards with their name, element and role, and one is taken. It cannot be
  * closed without a pick, except on a save that began before the starter existed, which may turn it
- * down. The card shown is the weapon's own; it arrives sealed (`pickStarter`).
+ * down. The card shown is the weapon's own; it arrives sealed (`claimStarter`).
  */
 
 export interface StarterPickHost {
@@ -25,29 +26,41 @@ export interface StarterPickHost {
   apply: (state: GameState) => void;
 }
 
+let isOpen = false;
+
 export function showStarterPick(content: Content, host: StarterPickHost, sound?: () => void): void {
+  if (isOpen) return;
   const state = host.state();
   const choices = starterChoices(state, content);
   if (choices.length === 0) return;
+  isOpen = true;
+  // the first pick of a new game, or a later unlock of one more starter
+  const first = !state.starter.done;
+  const special = starterGroup(content, choices[0]!.id) === 'special';
 
   const overlay = h('div', 'sp');
   const dialog = h('section', 'sp__dialog px-panel');
   dialog.setAttribute('role', 'dialog');
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-labelledby', 'sp-title');
-  const title = h('h2', 'sp__title', COPY.starter.title);
+  const title = h(
+    'h2',
+    'sp__title',
+    first ? COPY.starter.title : COPY.starter.unlockTitle(special),
+  );
   title.id = 'sp-title';
-  const lead = h('p', 'sp__lead', COPY.starter.lead);
+  const lead = h('p', 'sp__lead', first ? COPY.starter.lead : COPY.starter.unlockLead(special));
   const row = h('ul', 'sp__row');
 
   const close = (): void => {
+    isOpen = false;
     overlay.classList.add('is-leaving');
     window.setTimeout(() => overlay.remove(), 260);
     document.removeEventListener('keydown', onKey, true);
   };
 
   for (const card of choices) {
-    const r = pickStarter(state, content, card.id);
+    const r = claimStarter(state, content, card.id);
     if (!r.ok) continue;
     const props = cardFaceProps(content, r.state, card.id);
     if (!props) continue;
@@ -66,7 +79,7 @@ export function showStarterPick(content: Content, host: StarterPickHost, sound?:
     button.type = 'button';
     button.setAttribute('aria-label', COPY.starter.chooseLabel(name));
     button.addEventListener('click', () => {
-      const picked = pickStarter(host.state(), content, card.id);
+      const picked = claimStarter(host.state(), content, card.id);
       if (!picked.ok) return;
       sound?.();
       host.apply(picked.state);

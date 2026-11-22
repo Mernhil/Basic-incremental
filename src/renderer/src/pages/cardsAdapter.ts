@@ -1,6 +1,7 @@
 import { cardStyle } from '../../../data';
 import { type Content, type Rank } from '../../../data';
 import {
+  isStarterCard,
   LOADOUT_SLOTS,
   cardCollection,
   cardEnhancements,
@@ -131,6 +132,7 @@ export function createCardsModel(
       id: card.id,
       name: cardDisplayName(content, card),
       heirloom: Boolean(card.heirloom),
+      starter: isStarterCard(content, card.id),
       job: card.job,
       rarity: cardStyle(card),
       emblem: JOB_EMBLEM[card.job],

@@ -268,6 +268,9 @@ export {
   ladderTier,
   /** The tier a card's numbers are those of: a sealed starter's is lower than its own. */
   strengthTier,
+  isStarterCard,
+  starterCount,
+  MAX_LOADOUT_STARTERS,
   /** On-screen name of each tier. */
   TIER_LABELS,
   /** On-screen name of a card grade (a tier; Mythic or Void at T6). */
