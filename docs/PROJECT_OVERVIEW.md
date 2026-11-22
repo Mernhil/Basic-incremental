@@ -81,7 +81,8 @@ Run by hand, with Playwright against a running dev app (its `--remote-debugging-
 - **Extra reports** (`npx tsx scripts/sim/<file>`): `breakdown.ts` (damage sources), `timeline.ts` (state over time), `ranges.ts` (number ranges), `tiers.ts` (tier gaps), `quests.ts` (with and without quests).
 - **Cheats**: `src/game/dev.ts` holds pure functions: grant resources, clear a dungeon, set a floor, set a card's stars and level, add account XP, grant a cosmetic, advance time, reset the game.
 - **Panel**: `src/renderer/src/dev/devPanel.ts` calls them and adds game speed buttons (`GAME_SPEEDS` in `src/game/loop.ts`). The Dev button or Ctrl+Shift+D toggles it. Reset first copies the save to `save.before-reset-<time>.json`.
-- `scripts/make-new-save.ts` and `scripts/make-meta-save.ts` write a save text to a given path.
+- The sim player opens the fighting loadout's skills with Cores as soon as it can (`openSkills` in `scripts/sim/sim.ts`).
+- `scripts/make-new-save.ts` and `scripts/make-meta-save.ts` write a save text to a given path. `scripts/shoot-moves.mjs` screenshots the effect words in the duel and the weapon panel's attacks in the running dev app.
 
 Keeping cheats out of releases:
 
@@ -178,6 +179,7 @@ Game content is JSON in `src/data/content/`, imported by `src/data/index.ts`. `l
 | `scrolls.json`       | Scroll sources and the reveal show                                                                                                | Summon and pulls                           |
 | `sets.json`          | Cosmetic sets and bonuses                                                                                                         | Cosmetics and themes                       |
 | `shellArt.json`      | Picture pieces per table                                                                                                          | Shell and table                            |
+| `moves.json`         | Three attacks: kits per weapon type, tier rules, Core prices, T6 and Heirloom layers and named moves                              | Fights                                     |
 | `skills.json`        | Duel skills per weapon type and card                                                                                              | Fights                                     |
 | `training.json`      | Training lines                                                                                                                    | Fights                                     |
 | `trees.json`         | Tree kinds                                                                                                                        | Production                                 |
@@ -426,13 +428,17 @@ The active dungeon is fought automatically: the fighting loadout's cards hit the
 
 - There is one team and one set of card rules (`src/game/duel.ts`: the team, each card's hits, health, targeting), used by both fight loops in `combat.ts`: `fightDungeon` for floors and `fightTrial` for trials. `combat.ts` runs them and pays rewards.
 - `src/game/duelView.ts` is the read-out of that same fight for the screen: `teamView`, `duelEnemy` and an unsaved fight log (`recordDuel`). It changes no state. See Stage effects.
+- The effects a card or the enemy is under show as words (`activeEffects` in `duel.ts`, from the skills and ultimates that fired on the clock; `teamView` `effects`, `enemyEffects`): above each hand card and under the enemy name (`stage/arena.ts`, `.du-card__effects`, `.du-foe__effects`), a plain stand-in until each effect has its art. Show only: the fight deals the averages. The card tooltip names its ultimate and skill; a skill event carries the ultimate name (`SkillEvent.name`).
 
 ### The team
 
 - The team is the fighting loadout's cards, left to right, minus cards an Ascension challenge excludes (`teamPlacements`). Of the four slots the middle two are the front row, the outer two the back row (`src/game/state.ts` `FRONT_SLOTS`).
 - With no card, bare hands deal `combat.json` `unarmedDamage` and are never hit.
 - `buildTeam` gives each card its own numbers: team-wide modifiers apply to every card; a card's Ability, element bonus and Heirloom signature power apply to that card alone (`teamModifiers`).
-- Each card has one skill from `skills.json` (`cardSkill`): an Heirloom's bought tree skill, else the card's own (`cards`), else its weapon type's (`weapons`). A skill can scale damage and health (`damage`, `health`), be a guard (`guard`), weaken enemy attacks while its card stands (`weaken`) or heal with its signature (`signature.kind`, `share`).
+- Each card has one passive skill from `skills.json` (`cardSkill`): an Heirloom's bought tree skill, else its weapon type's (`weapons`); the `cards` map is no longer read. A skill can scale damage and health (`damage`, `health`), be a guard (`guard`) or weaken enemy attacks while its card stands (`weaken`); a tree skill that heals with its signature (`signature.kind`, `share`) heals the team with the ultimate.
+- Three attacks (`src/game/moves.ts`, `moves.json`): every fighting card has its normal hit, a skill on its own timer and an ultimate on the full gauge (`cardMoves`). Wood to Prismatic use their weapon type's kit (`kits`) and the tier opens part of it (`tiers`: Wood has no skill and an ultimate with no effect; Bronze has a skill slot; Silver adds the ultimate's effects; Gold and up shorten the skill and lengthen effects; Prismatic, T6 and Heirloom strengthen the ultimate's effects). A T6 or Heirloom card has its own names (`cards`), its element's skill layer and side layer on the ultimate (`elements`: Mythic its `mythic` list, Void its `void` list, Heirloom both), a Mark of its element (`mark`), a `lean` and an `extra` twist. A support ultimate (strike 0, the staff's Mend) does its effect at every tier. Numbers pass through the `move.*` stats.
+- A skill fires only when it is open: `OwnedCard.skillOpen`, set once by `openCardSkill` for the Cores in `moves.json` `unlock` by tier (`skillUnlockCost`; Wood has none). A closed or missing skill adds nothing.
+- Effects (`MOVE_EFFECT_KINDS`) are dealt as their average, like crits (`applyMoves`): an effect lasting `seconds` of every skill timer or ultimate period counts for that share of the time; one-offs count at their rate. Rally, Expose, Mark (and the resistance it gives back), Focus and Haste change the cards' hit, signature, crit and interval; Wound and the skill's hit are added to the hit; Charge adds gauge fill; Execute raises the ultimate by its health line; Weaken and Stagger become the card's `weaken` (counted in `weakenFactor` while it stands); Heal, Shield, Regen and Drain become `heals` that land when the card's ultimate fires (`healFromMoves`: self, a row, the team or the lowest card). The same effect from two cards does not stack (the strongest counts); Wounds and Charges add up.
 
 ### Our damage
 
@@ -440,7 +446,7 @@ The active dungeon is fought automatically: the fighting loadout's cards hit the
 - Crits are dealt as their average, `1 + chance x (damage - 1)`, from `combat.json` `crit` and the `combat.critChance` / `combat.critDamage` modifiers (`critStats`, `critFactor`). On-screen crits are rolled for show only (`rollHitForShow`).
 - Elements: a card whose element is the dungeon boss's `weakness` or `resistance` (`dungeons.json` `boss`) has its own damage changed in that whole dungeon by `combat.json` `elements.weakness` or `elements.resistance` percent (`src/game/elements.ts`). Every boss has a weakness; `resistance` is optional and only water, fire or earth (nothing resists light or dark); Frostspire Vault, Sunken Sanctum and Hollow of the Void have none. A card with no element is neutral.
 - Card hit number k lands at k x interval seconds of play time (`hitsBy`), worth damage per second x interval; enemy attacks use the same clock. Interval, gauge size, fill and signature power: `combat.json` `bursts.fighting` through the `burst.*` modifiers (`burstStats`).
-- Every hit fills the card's signature gauge; a full gauge fires the signature on that hit: extra damage of `power` hits, or for a healing skill a heal of every standing card by `share` of its max health (`healTeam`) instead. A heal only restores standing cards; a knocked-out card stays out until the floor is cleared (`healTeam` in `src/game/duel.ts`). On screen a signature hit plays the card's special attack (`stage/specialAttack.ts`, see Stage effects).
+- Every hit fills the card's signature gauge; a full gauge fires the signature on that hit: extra damage of `power` hits times the ultimate's `strike` (0 for a support ultimate), and its `heals` land (`healFromMoves`). A heal only restores standing cards; a knocked-out card stays out until the floor is cleared (`healTeam` in `src/game/duel.ts`). On screen a signature hit plays the card's special attack (`stage/specialAttack.ts`, see Stage effects).
 - The stage's star level multiplies all damage on that floor (`stageDamageFactor`).
 
 ### Enemies and health bars
@@ -452,7 +458,7 @@ The active dungeon is fought automatically: the fighting loadout's cards hit the
 ### Enemy attacks
 
 - The floor attacks every `intervalSeconds` of play time (`dungeons.json` `boss.attack`); the damage is the boss's attack on a boss floor, a share of it on a mini-boss or wave floor (`combat.json` `floors`), times the difficulty's attack scale. `src/game/bossAttacks.ts` numbers the attacks: every `attacksPerCycle`-th is a slam, the rest are light hits (`combat.json` `bossPattern` `lightMultiplier`, `slamMultiplier`).
-- Damage is reduced by the `combat.defence` percent (capped in code, `defencePercent`) and by each standing card's `weaken`.
+- Damage is reduced by the `combat.defence` percent (capped in code, `defencePercent`) and by each standing card's skill `weaken` and moves `weaken` (`weakenFactor`).
 - A direct attack hits one card (`enemyTarget`): among the standing front-row cards (the back row only when none stands) the guard first, else a repeatable seeded pick.
 - Boss abilities (`combat.json` `bossAbilities`): each names the floor kinds and difficulties it acts on. Every `every`-th attack (at `offset`, never a slam) becomes the ability's hit instead of a direct one, dealing `multiplier` x a normal attack to each card of its `target`: `front`, `back`, `back-one`, `all` or `lowest` (least health left). `front`, `back` and `back-one` fall to the other row when none of theirs stands. A guard does not redirect it (`abilityTargets`). An ability whose targets include the card under direct attack is skipped.
 - Each card has its own health: `cardHealth` (`cardRules.json` `health`, `weapons.<type>.health`), the `combat.health` modifiers applied to the team's sum and shared in proportion, times the skill's `health`. Damage taken is saved in `state.combat.cardDamage`.
@@ -706,7 +712,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 ### What a save is
 
 - Plain JSON text with three fields: `version` (the save format number), `savedAt` (epoch milliseconds, used for offline progress, see Game core) and `state` (`src/game/save.ts` `createSaveText`). No compression, encryption or checksum.
-- The current save format is **40** (`src/game/save.ts` `CURRENT_SAVE_VERSION`).
+- The current save format is **41** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration).
 - `state` is the whole game state with big numbers as strings (`serializeState`; shape in `serializedStateSchema`). A card's tier is not saved; it is read from the card's data on load.
 
 ### Where and when it is written
@@ -742,7 +748,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ### Tests
 
-- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads.
+- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads; `tests/saveV41.test.ts` covers the step to format 41 (every owned card's skill closed).
 - `tests/saveStore.test.ts` (desktop store), `tests/saveBackup.test.ts` (dev reset backup), `tests/webSaveStore.test.ts` (web store, browser API), `tests/devPaths.test.ts` (folders of a build run from source). Old-format saves: `tests/fixtures/saves/` and its `README.md`.
 
 ### Changing the save format
@@ -879,6 +885,8 @@ One component in two places: the dungeon view's Weapon panel (`drawer`: the weap
 An Heirloom card and a 6-star card show no button, only the notes. The panel also lists what the next star changes (`starStats`); an Heirloom below 6 stars shows the `allStars` line text because it has no star bar.
 
 There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: that its stars come from the Heirloom Gate, or that it is fully upgraded), plus a note while the next level is a breakthrough level. Built by `weaponModel.ts` `weaponView`. See Cards.
+
+**Attacks** (DESIGN.md §2 Three attacks per card; `pages/movesModel.ts` `movesView`, `COPY.moves`): a list of the card's hit, skill and ultimate, each with its name, when it fires, its damage now (the card fighting alone before team effects: `soloCard` in `src/game/duel.ts`) and one line per effect (`effectText`). A skill with no slot at the tier, or not opened yet, carries a note. While the skill can be opened, its row shows the Cores (`costMarkup`, red when short) and **Open skill** (`openCardSkill` through the cards adapter's `upgrade(state, id, 'skill')`), disabled when short. Card variant: a tile before the notes; drawer: in the side column. Read at most twice a second and redrawn only on change.
 
 ### Shared widgets (`ui/`)
 

@@ -29,6 +29,8 @@ export const DUEL_COPY = {
   autoOff: 'Auto: off',
   cardTip: (name: string, skill: string, role: string, desc: string, hp: string, max: string) =>
     `${name}. ${skill} (${role}): ${desc}. ${hp} / ${max} health`,
+  movesTip: (skill: string | null, open: boolean, ult: string) =>
+    `Ultimate: ${ult}.` + (skill ? ` Skill: ${skill}${open ? '' : ' (not opened yet)'}.` : ''),
   cardOut: 'Out until the floor is won',
   targeted: 'The enemy hits this card next',
   heal: 'Heal',
