@@ -23,6 +23,7 @@ import { FRAME_MS, stripStyle } from './pixel/animate';
 import { spriteImage, sprite, strip } from './pixel/sprites';
 import { FONT } from './pixelFont';
 import ZOOM from './foeZoom.json';
+import FIT from './foeFit.json';
 
 export const FOE_W = 160;
 export const FOE_H = 172;
@@ -49,6 +50,14 @@ const FX: Readonly<Record<string, { glow: string; kind: FxKind }>> = {
  */
 export const foeZoom = (id: string): number =>
   FX[id] ? 1 : ((ZOOM as Record<string, number>)[id] ?? 1);
+
+/**
+ * The whole-art-pixel nudge [dx, dy] that centres a still picture and stands it on the ground line
+ * (feet at row 166; a floating ice wisp hangs a little higher). Measured from each picture's own
+ * opaque box, so the file stays exactly as approved. Pictures not listed are already placed.
+ */
+export const foeFit = (id: string): readonly [number, number] =>
+  (FIT as Record<string, [number, number]>)[id] ?? [0, 0];
 
 const zoomStyle = (id: string): string => {
   const z = foeZoom(id);
@@ -225,7 +234,8 @@ export function foeHtml(id: string, scale: number): string {
   const h = FOE_H * scale;
   if (!s) {
     // a still picture: one frame, drawn like the strip but with no animation
-    const zoom = zoomStyle(id);
+    const [dx, dy] = foeFit(id);
+    const zoom = dx || dy ? `transform:translate(${dx * scale}px,${dy * scale}px);` : '';
     return `<div class="bi-foe" data-sprite="foe-${id}" aria-hidden="true" style="width:${w}px;height:${h}px;${zoom}background-image:url(${still!.url});background-size:100% 100%;background-repeat:no-repeat;image-rendering:pixelated"></div>`;
   }
   const fx = FX[id];
