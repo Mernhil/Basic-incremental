@@ -4,7 +4,7 @@ The one document for the interface: screens, layout, the shell, tooltips, on-scr
 
 ## How this document works
 
-Same rules as `docs/DESIGN.md` ("How this document works"): one version of each rule, every rule starts with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]` or `[Default · in game]`, `[Proposed]`), a change rewrites the rule where it lives, tags move with the code in the same PR, only the user decides (gaps are written as `[Default]` and listed under Open questions), and a changed or dropped rule gets one dated line in the Changelog. `npm run lint` runs `scripts/check-design.mjs`, which checks this file too. Section references like "DESIGN §5" point to `docs/DESIGN.md`.
+Same rules as `docs/DESIGN.md` ("How this document works"): one version of each rule, every rule starts with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]` or `[Default · in game]`, `[Proposed]`), a change rewrites the rule where it lives, tags move with the code in the same PR, only the user decides (gaps are written as `[Default]` and listed under Open questions). Git history records every change and its date; the file keeps no changelog. `npm run lint` runs `scripts/check-design.mjs`, which checks this file too. Section references like "DESIGN §5" point to `docs/DESIGN.md`.
 
 ## 1. Working conventions
 
@@ -195,42 +195,3 @@ Defaults by Claude, 2026-11-13 (Heirloom Gate layouts, to confirm):
 Open from the PR 311 build (2026-11-22, asked, not answered): what reduced motion shows for an ultimate (today its still form), and whether the damage number stands fully beside the enemy card (today it overlaps the card's left edge).
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look (the shell's pieces for tooltips, dialogs, scrollbars and the like follow in later waves) and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
-
-## 4. Changelog
-
-- 2026-11-22 — One price display and card pickers (user: "keep the one with the sprite of the materialk needed everywhere"; the worker picker as in the card section; then "OK, merge"): a cost is the material's sprite and amount once, and the worker picker shows card faces (§2).
-- 2026-11-21 — Next tier preview removed (user: "there is still the next tier button on the card list"; click window: "Remove it"): the Cards detail panel has no Next tier button, since a card is pulled at a tier and never tiers up (§2).
-- 2026-11-17 — Options (user, rules rewrite): "five options first" becomes two to five options that differ in kind, on the picker page (`CLAUDE.md` group 2).
-- 2026-11-16 — Scroll and focus are kept across updates (user: the UI snapped back to the top): the Cards and Wardrobe rebuilds restore every scroll position; `ui/keepScroll.ts`, `scripts/check-scroll-keep.mjs`.
-- 2026-11-16 — Carved Oak (user: "Replace starter"): the Shell look becomes flat cream panels with carved wood edges and gilded corners, drawn from tiled 9-slice pieces; Plum Pixel stays as a table every save owns; the Weapon panel's XP text moves clear of the ring.
-- 2026-11-14 — Castle Stone withdrawn (user, release 0.7.9 rejected): the Shell look is Plum Pixel's pixel frames again.
-- 2026-11-13 — Medieval shell (user, PixelLab mockup 1b): the Shell look becomes Castle Stone picture frames in the same layout; Plum Pixel's pixel frames stay for its own table (§2).
-- 2026-11-13 — Heirloom Gate built (pick 3a, 2e): the Summon view stacks the five gates with the open one's content beside it; the Cards view has its Heirlooms tab; the header drops the scroll names below 1400 px wide, as four amounts no longer fit with them (§2).
-- 2026-11-13 — Heirloom Gate layouts (user picks 3a, 3b and 2e; "Yes, build it"): the Summon view stacks the five gates in a left column with the open gate's content beside it, the Cards view gets an Heirlooms tab (grid and the tree as gems around the card) and a Collection relayout in the same look, and cards are grouped by weapon type everywhere they are listed (§2).
-- 2026-11-12 — Heirloom Gate design (user): the Next tier preview stops at Mythic or Void, and the Heirloom Gate deck and the Heirlooms section of the Cards view are to build from a picked preview (§2).
-- 2026-11-11 — Itch asset packs (user): the arena shows the enemy's sprite instead of the labelled box, and Settings > Help gets a Credits section (§2).
-- 2026-11-13 — User: the stage stars are back on the fight (a line in the left column) and the star pips are star shapes, not squares.
-- 2026-11-12 — Table update balance pass 2 (Claude default): toasts moved to a column under the header at the left of the dungeon window, the same spot in a view, so they never cover the enemy card (§2 Toasts).
-- 2026-11-11 — Table update fix pass (Claude defaults): toasts hang from the header's lower edge, centred, no longer bottom-right over the dock and the views (§2 Toasts); Live table is built now that the duel and the wings are in.
-- 2026-11-08 — Created this file: DESIGN section 11 "Interface and screens" and the UI conventions from the `ui` agent and `CLAUDE.md` moved here; no rule changed (user: exactly two graphics documents).
-- 2026-11-10 — Tag drift fixed after the direction review, no rule changed: Buying names the one buy toggle in the goals strip instead of one per level line (§2).
-- 2026-11-10 — UI rework (user, four rounds of mockups): the shell look, the sidebar as a plaque rail, Production as the pixel ledger with one fan per job, the Dungeons main card at 2x from 1280 × 720 and the Hero fan arena, the Shop under signboards instead of awnings, Achievements as a leather book.
-- 2026-11-10 — Scope 1 (user): Buy Max, the Settings layout and Sharp cards confirmed; the unused awning sprites and their rule deleted; the Cards collection shows owned cards first; double-detail sprites cut (§2, §3).
-- 2026-11-10 — Floors, interim (Claude default): a minimal floors readout and controls on the Dungeons screen until the floors UI is designed (§2, §3).
-- 2026-11-10 — Floors, interim: the difficulty selector shows the four tiers with the locked ones greyed out, and an endless depth reads "Depth n" (§2).
-- 2026-11-10 — Playtest (user): the Dungeons main card is 2x wherever the fan fits, not only from 1280 × 720; a struck Production row no longer lights up behind its tile (§2).
-- 2026-11-10 — Playtest (user): the loadout is filled by clicking a slot, then a card; the Dungeons drawer's Upgrades tab leads with Training (§2).
-- 2026-11-10 — Playtest (user): the Wardrobe is an inventory, one grid under filter chips with the item on the right (pick 1e); the header's Money chip counts in coins (§2).
-- 2026-11-11 — Stage stars, interim (Claude default, balance update): the stage line, the Overflow toggle and a plain stage map on the Dungeons screen; dungeon rows show their star totals instead of medals (§2, §3).
-- 2026-11-11 — Table update 9d (Claude defaults on the user's mockups 4j to 4n): the Upgrades view sorts into This run and Permanent with a lifetime-Money foot bar; the Skill Tree, Achievements, Shop and Settings take the view look (subtitle in the title bar, fill the view, dealt in), Settings a two-by-two grid, the Ascension challenges portal cards (§2, §3).
-- 2026-11-11 — One table, no pages (user, layout 1a, mockups 4a to 4n, motion E): the sidebar rail, the Home page and the goals strip are gone; the game is one table with the dungeon window in the centre, the Logging and Mining wings and a dock of piles, each opening its full view; goals moved behind a header button; the buy toggle moved to the job views' title bars; motion E with Claude's tokens, the view keys and the table layout as defaults (§2, §3).
-- 2026-11-11 — The Cards, Summon and Wardrobe views in the table style (user, mockups 4d, 4h, 4i; package 9c): the collection and the inventory sit on the table without a frame, the Summon view has three columns, the reveal show deals its cards out of the portal; the Deck and Table rule is replaced (§2).
-- 2026-11-11 — The duel's look (table update 9a, user mockups 4b and 4g and the user's fight prototype): the Hero fan arena, the dungeon drawer and the interim floor, stage star and team health screens gave way to the first-person duel and the dungeon full view with its Dungeons, Weapon and Training panels; Claude's details as defaults (§2, §3).
-- 2026-11-15 — Milestone picks (user, option 2b): the shelf chips, the Training panel's one-time upgrades and the Upgrades view's tiles give way to milestone picks; every line uses the upgrade row; the Upgrades view lists the picks by place (§2).
-- 2026-11-12 — Readable numbers (user: "we shouldn't be able to reach the scientific numbers ... example 12B 3T 105B 18M 20k 2003"): one short number format everywhere (whole digits below 10,000, then k, M, B, T, Qa, Qi with three significant digits), and the number format setting (scientific default, suffixes, engineering) is removed (§2 Settings, Readable numbers).
-- 2026-11-22 — Upgrades made easy to use (user, "3 a and c"): every upgrade row says what a purchase changes before buying, the buy button always shows its label with Max's count, and holding it keeps buying (§2).
-- 2026-11-22 — Charcoal and gold (user: "yes", "part of 8.0"): the Shell look becomes charcoal and gold on every screen, replacing Carved Oak, to build for 0.8.0; the UI look cosmetics are vaulted (DESIGN §2 Cosmetics) (§2).
-- 2026-11-22 — Weapon tab and loadout drag (user): the Weapon tab is to show the card's stats, what it does and what its next level and star add; loadout cards are to be dragged between slots (§2).
-- 2026-11-22 — Loadout drag built (user: "yes i do"): loadout cards are dragged between slots, from the picker onto a slot and out of the frame to empty a slot (§2).
-- 2026-11-22 — Ultimates one at a time (user: "yes", "go on build it"): every ultimate plays its cut-in in turn, skill banners join the queue, BREAK and CRIT become stamps on the enemy card; to build (§2).
-- 2026-11-22 — Ultimates one at a time built (user: "Approve PR 311"): every ultimate plays its cut-in in firing order, the left-side skill plates are screen-reader only, CRIT! and BREAK! are stamps in their own slots (§2).
