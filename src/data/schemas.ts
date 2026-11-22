@@ -515,6 +515,12 @@ const cardBase = {
    */
   heirloomArt: z.enum(['b', 'c', 'd']).optional(),
   /**
+   * One of the five starter weapons (DESIGN.md §2 Starter weapon): a Mythic or Void card whose weapon
+   * picture is the type's starter picture `item-<type>-starter` at every tier, named by `name` alone.
+   * It has no `heirloomArt`, `heirloomName` or `batch`.
+   */
+  starterArt: z.literal(true).optional(),
+  /**
    * A card of a later art batch (DESIGN.md §5 Art batches; batch 1 Dragon is the base roster and has
    * no `batch`, batch 2 is `leviathan`; an id from batches.json): its T6 or Heirloom picture is `item-<type>-<batch>-<t6m|t6v|heirloom>` and
    * its own weapon's name is `heirloomName` (both or neither). A batch card has no `heirloomArt`.
@@ -2748,7 +2754,14 @@ export type HeirloomsConfig = z.output<typeof heirloomsSchema>;
  * fight as a card of that tier; the last seal makes it the whole T6 card.
  */
 export const startersSchema = z.strictObject({
-  cards: z.array(id).min(1),
+  /** The base starters (earth, fire, water): a new game offers them; each dungeon cleared on
+   *  Nightmare opens one more. */
+  base: z.array(id).min(1),
+  /** The special starters (light, dark): the first and second dungeon reached in the endless
+   *  depths each open one, the player choosing. */
+  special: z.array(id).min(1),
+  /** The tier a starter fights as once every seal is broken (an Heirloom's strength). */
+  unsealedTier: z.enum(RANK_TIERS),
   seals: z
     .array(
       z.strictObject({

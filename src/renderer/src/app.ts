@@ -9,6 +9,7 @@ import {
   loadBestSave,
   accountInfo,
   starterPickDue,
+  starterUnlockDue,
   checkAchievements,
   claimableQuests,
   claimAllQuests,
@@ -431,9 +432,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     }
   };
 
+  let unlockTicks = 0;
   window.setInterval(() => {
     step();
     rendered();
+    // a dungeon cleared on Nightmare or reached in the endless opens one more starter weapon
+    if (++unlockTicks % 10 === 0 && starterUnlockDue(loop.state, content)) {
+      showStarterPick(content, { state: () => loop.state, apply: applyAndSave }, () =>
+        playSound('click'),
+      );
+    }
   }, TICK_INTERVAL_MS);
   director.start();
 

@@ -545,7 +545,7 @@ describe('views for the Cards page', () => {
     ]);
     expect(cardInfo(state, content, 'nope')).toBeNull();
     // 166 ladder cards (22 Leviathan, 22 Wildwood) and the 34 Heirloom cards.
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(200);
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(205);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',

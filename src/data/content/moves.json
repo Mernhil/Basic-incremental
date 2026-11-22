@@ -1348,6 +1348,31 @@
         ]
       },
       "note": "Its Mend also Rallies the team by 10% for 5 s."
+    },
+    "geodefall": {
+      "skill": "Geode Crush",
+      "ult": "Tectonic Fall",
+      "lean": "duration"
+    },
+    "emberbrand": {
+      "skill": "Brand Cut",
+      "ult": "Pyre Cleave",
+      "lean": "power"
+    },
+    "tidecaller": {
+      "skill": "Rising Tide",
+      "ult": "Spring Tide",
+      "lean": "reach"
+    },
+    "dawnpiercer": {
+      "skill": "Dawn Thrust",
+      "ult": "Gleaming Charge",
+      "lean": "tempo"
+    },
+    "voidthorn": {
+      "skill": "Barbed Pin",
+      "ult": "Umbral Lunge",
+      "lean": "power"
     }
   }
 }

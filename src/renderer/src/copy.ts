@@ -392,6 +392,7 @@ export const COPY = {
     pickCurrent: 'In this slot',
     pickSwap: (slot: string) => `In ${slot}: swaps`,
     pickHeirlooms: 'A loadout can hold two Heirlooms',
+    pickStarters: 'A team can hold only one starter weapon',
     /** How the limit grows, next to the cost bar (DESIGN.md §10 Loadout cost cap). */
     capGrows: (next: number, level: number) =>
       `Limit grows with account level · next +${next} at level ${level}`,
@@ -419,6 +420,7 @@ export const COPY = {
       'wrong-job': 'This card belongs to another job.',
       duplicate: 'This card is already in that loadout.',
       'too-many-heirlooms': 'A loadout can hold two Heirlooms',
+      'too-many-starters': 'A team can hold only one starter weapon',
       'over-cost-cap':
         'That loadout would go over its cost cap. Remove a card or pick a cheaper one.',
       'invalid-slot': 'This card is not in a loadout.',
@@ -1130,6 +1132,15 @@ export const COPY = {
     /** The pick screen at the start of a new game (DESIGN.md §2 Starter weapon). */
     title: 'Choose your first weapon',
     lead: 'It arrives sealed and fights like a Wood weapon. Dungeon Cores break its seals until it is the whole weapon.',
+    /** A later unlock: a dungeon cleared on Nightmare, or reached in the endless depths. */
+    unlockTitle: (special: boolean) =>
+      special ? 'A special weapon is yours to choose' : 'Choose another starter weapon',
+    unlockLead: (special: boolean) =>
+      special
+        ? 'Reaching the endless depths opens a weapon of light or dark. It arrives sealed.'
+        : 'A dungeon cleared on Nightmare opens one more starter weapon. It arrives sealed.',
+    /** The card's tier label while it is a starter weapon. */
+    tierLabel: 'Starter',
     choose: 'Choose',
     chooseLabel: (name: string) => `Choose ${name}`,
     later: 'Not now',
