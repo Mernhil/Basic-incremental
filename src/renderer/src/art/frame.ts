@@ -26,8 +26,9 @@ export const KIT = {
 /** Card units (176 x 248 box) per art pixel. */
 const UNIT = 176 / 132;
 
-/** The kit a card wears: its tier's to Prismatic, its batch's `kit` at T6 and as an Heirloom. */
+/** The kit a card wears: its tier's to Prismatic, its batch's `kit` at T6 and as an Heirloom; a starter weapon's own at every tier. */
 export function kitName(tier: RankTier, batchKit: string, windowed = false): string {
+  if (batchKit.startsWith('kit-starter-')) return batchKit; // a starter weapon keeps its own frame at every tier
   if (tier === 'heirloom' && windowed) return `${batchKit}-window`;
   return tier === 'mythic' || tier === 'heirloom' ? batchKit : `kit-${tier}`;
 }
