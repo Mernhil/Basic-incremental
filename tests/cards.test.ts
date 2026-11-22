@@ -403,6 +403,41 @@ describe('loadouts (DESIGN.md §5)', () => {
     });
   });
 
+  it('drags: swaps two filled slots, and refuses a drop the rules refuse without changing anything', () => {
+    let state = own(freshState(), 'storm_duelist');
+    state.account.level = 2; // cap 8: Squire 2 + Duelist 5 fit
+    state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'ember_squire'));
+    state = ok(setLoadoutSlot(state, content, 'fighting', 3, 'storm_duelist'));
+    // drag the Squire (slot 0) onto the Duelist (slot 3): they swap in one step
+    state = ok(setLoadoutSlot(state, content, 'fighting', 3, 'ember_squire'));
+    expect(state.cards.loadouts.fighting.slots).toEqual([
+      'storm_duelist',
+      null,
+      null,
+      'ember_squire',
+    ]);
+    // drag onto an empty slot: it moves
+    state = ok(setLoadoutSlot(state, content, 'fighting', 1, 'storm_duelist'));
+    expect(state.cards.loadouts.fighting.slots).toEqual([
+      null,
+      'storm_duelist',
+      null,
+      'ember_squire',
+    ]);
+    // a card from the picker dropped on a filled slot replaces it; over the cap it is refused
+    const heavy = own(state, 'dawnblade_regent');
+    expect(setLoadoutSlot(heavy, content, 'fighting', 1, 'dawnblade_regent')).toEqual({
+      ok: false,
+      reason: 'over-cost-cap',
+    });
+    expect(heavy.cards.loadouts.fighting.slots).toEqual([
+      null,
+      'storm_duelist',
+      null,
+      'ember_squire',
+    ]);
+  });
+
   it('moves a card already in the loadout and clears slots', () => {
     let state = own(freshState(), 'storm_duelist');
     state.account.level = 2; // room for Squire 2 + Duelist 5

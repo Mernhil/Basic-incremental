@@ -20,6 +20,7 @@ import { teamRows, type TeamRow } from '../views/collection/teamsModel';
 import { createCard, type CardProps } from '../ui/card';
 import { ITEM_VIEWBOX } from '../art/items';
 import { skinTileMarkup } from './loadoutCards';
+import { enableLoadoutDrag } from './loadoutDrag';
 import type { SkinPickerView } from './cardSkinsModel';
 import { watchFit } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
@@ -1009,6 +1010,7 @@ export function createCardsPage(
       const b = h('button', 'cp-tile cp-pick__card');
       b.type = 'button';
       b.dataset.key = `pick-${lo.job}-${c.id}`;
+      b.dataset['dragCard'] = c.id;
       const usable = c.fits && !c.current;
       b.setAttribute('aria-disabled', String(!usable));
       b.setAttribute(
@@ -1081,6 +1083,7 @@ export function createCardsPage(
       lo.slots.forEach((id, i) => {
         const row = i === 1 || i === 2 ? 'front' : 'back';
         const li = h('li', `cp-slot cp-slot--${row}${picking === i ? ' is-picking' : ''}`);
+        li.dataset['slot'] = String(i);
         const label = slotName(i);
         const e = id ? byId.get(id) : undefined;
         // the slot's place in the formation, and the role of the card standing in it
@@ -1098,6 +1101,7 @@ export function createCardsPage(
           const open = h('button', 'cp-tile');
           open.type = 'button';
           open.dataset.key = `slot-${job}-${i}`;
+          open.dataset['dragCard'] = e.id;
           open.setAttribute('aria-label', COPY.cards.changeCard(label, e.name));
           open.setAttribute('aria-pressed', String(picking === i));
           open.append(cardEl(e, state));
@@ -1140,6 +1144,24 @@ export function createCardsPage(
       });
       body.append(meter, slots);
       if (picking !== null) body.append(picker(state, entries, lo, picking, slotName));
+      // Drag a card onto a slot (move, swap or replace), or out of the frame to empty its slot. The
+      // game decides: a refused drop snaps back and shows the game's own reason.
+      enableLoadoutDrag({
+        root: el,
+        check: (id, slot) => {
+          const r = model.place(ctx.state(), slot, id);
+          return r.ok ? null : r.reason;
+        },
+        drop: (id, slot) => {
+          pick = null;
+          act(model.place(ctx.state(), slot, id), `slot-${job}-${slot}`);
+        },
+        refuse: (reason) => act({ ok: false, reason }),
+        dropOut: (id, slot) => {
+          pick = null;
+          act(model.remove(ctx.state(), id), `slot-${job}-${slot}`);
+        },
+      });
       wrap.append(el);
     }
     wrap.append(teamsPanel(teamRows(state, content)));
