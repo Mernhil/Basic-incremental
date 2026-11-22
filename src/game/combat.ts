@@ -1285,6 +1285,7 @@ export function advanceCombat(
   if (pace.speed > 1) {
     next.combat.fightClockBonus = (next.combat.fightClockBonus ?? 0) + left * (pace.speed - 1);
     left *= pace.speed;
+    next.combat.paySlow = pace.speed;
   }
   let mods = modifiers;
   // A rare drop joins the collection and its cosmetic bonus counts at once: the fight stops
@@ -1316,6 +1317,7 @@ function endSpeedUp(next: GameState, pace: { speed: number }, left: number): num
   const real = left / pace.speed;
   next.combat.fightClockBonus = (next.combat.fightClockBonus ?? 0) - (left - real);
   pace.speed = 1;
+  delete next.combat.paySlow;
   return real;
 }
 
@@ -2138,19 +2140,22 @@ function killEnemies(
     state.combat.stageKills[key] = (state.combat.stageKills[key] ?? 0) + bossFloorKills;
     payStageChests(state, content, key, report);
   }
+  // A sped-up Challenge pays what a Challenge at the real pace would per real second.
+  const slow = 1 / (state.combat.paySlow ?? 1);
   drops.currencies.forEach((currency, j) => {
-    const units = purse[j]!;
+    const units = purse[j]! * slow;
     if (units <= 0) return;
     addResource(state, currency.resource, units);
     report.currencies[currency.resource] = (report.currencies[currency.resource] ?? 0) + units;
   });
+  material *= slow;
   if (material > 0) {
     const id = drops.material.resource;
     addResource(state, id, material);
     report.materials[id] = (report.materials[id] ?? 0) + material;
   }
   drops.extraMaterials.forEach((extra, j) => {
-    const units = extras[j]!;
+    const units = extras[j]! * slow;
     if (units <= 0) return;
     addResource(state, extra.resource, units);
     report.materials[extra.resource] = (report.materials[extra.resource] ?? 0) + units;
@@ -2165,12 +2170,18 @@ function killEnemies(
     }
   }
   // Account and card XP per kill, a normal enemy worth its share of a boss kill.
-  grantAccountXp(state, content, killXp(content, dungeon.tier).mul(worth), modifiers, 'fighting');
+  grantAccountXp(
+    state,
+    content,
+    killXp(content, dungeon.tier).mul(worth * slow),
+    modifiers,
+    'fighting',
+  );
   grantLoadoutXp(
     state,
     content,
     'fighting',
-    fightingXpPerKill(content, dungeon, modifiers).mul(worth * stage.scale.xp),
+    fightingXpPerKill(content, dungeon, modifiers).mul(worth * stage.scale.xp * slow),
   );
 }
 

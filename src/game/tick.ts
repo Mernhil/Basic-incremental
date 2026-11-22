@@ -208,6 +208,7 @@ function advanceSpan(
   // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.perks.currency];
   advanceCombat(next, content, seconds, rng, report, modifiers, fightSpeed);
+  delete next.combat.paySlow;
   countMoneyEarned(next, content, moneyBefore);
   // An Ascension challenge is done once the run stands on its target floor.
   settleChallenges(next, content);

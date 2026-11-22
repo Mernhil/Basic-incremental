@@ -128,6 +128,7 @@ Level-ups and unlocks are settled only on a whole-second play-time boundary (`CA
 ### Loop and offline
 
 - `src/game/loop.ts` `GameLoop.step(now)` advances by the real time since the last step, never negative and at most `MAX_STEP_MS` (8 hours). A gap over 5 seconds is caught up in one-minute steps, otherwise one-second steps. `setSpeed` multiplies elapsed time (see Sim and dev tools).
+- `src/game/speed.ts` holds the duel speed rule: `DUEL_SPEEDS` (1, 2, 4), `isSpeedUnlocked` (×2 after the first dungeon clear, ×4 after the first Ascension), `usableSpeed`, `speedLocks` and `fightClock`. `GameLoop.setDuelSpeed` sets the chosen speed; `effectiveDuelSpeed` is what runs, and a gap over 5 seconds always runs at ×1.
 - `src/game/offline.ts` `simulateOffline` runs the time since the last save through the same tick in one-minute steps. Under 10 seconds (`MIN_OFFLINE_MS`) nothing happens. The cap is 8 hours in code (`OFFLINE_CAP_MS`), changed by modifiers on the stat `offline.capHours` (`offlineCapMs`). Expedition trips also advance through the time beyond the cap. It returns an `OfflineSummary` of what was gained.
 
 ### Modifiers (`src/game/modifiers.ts`)
@@ -500,6 +501,7 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 
 - Per dungeon and difficulty the save holds the farmed `floor` and the `best` floor beaten (`floorPosition`).
 - Farming: the loadout fights the farmed floor on a loop. Pushing is a Challenge: a timed fight for the floor after the farmed one (`challengeFloor`), at full health. It starts by button (`startFloorChallenge`) or by auto-challenge, a per-dungeon switch, on by default (`setAutoChallenge`). Timers: `combat.json` `challenge.timerSeconds`.
+- Speed button: `advance` takes a `fightSpeed`. Only a running Challenge uses it: `advanceCombat` gives the fight `seconds × speed` and adds the difference to the runtime-only `combat.fightClockBonus` (the fight clock is `fightClock` in `speed.ts`, play time plus that bonus). Production, farming, income and offline progress keep real time; per-second fighting XP and wage, and kill pay (money, materials, kill XP; `combat.paySlow`), are divided by the speed, so they stay the same per real second. When the Challenge ends inside a step the rest of the step runs at the real pace (`endSpeedUp`).
 - A win raises the best floor and moves farming to it. A loss (timer out, or every card down) returns to farming; with auto-challenge on, the next Challenge waits `challenge.autoWaitSeconds`.
 - A team knocked out while farming drops one floor and sits out `knockoutSeconds`.
 - An Ascension keeps best floors, restarts farming at half of each (`ascensionStartFloor`) and turns auto-challenge back on.
@@ -810,7 +812,7 @@ The game is one screen: a header and, under it, "the table": the fight in the mi
 
 ### Settings (`src/renderer/src/settings/`)
 
-- `prefs.ts`: reduced motion and the autosave interval, in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
+- `prefs.ts`: reduced motion, the autosave interval and the chosen duel speed (`duelSpeed`: 1, 2 or 4), in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
 - `motion.ts` applies it: `data-motion` on `<html>`, a wrapped `window.matchMedia`, and every `prefers-reduced-motion` CSS rule switched on or off (`motionRules.ts`).
 - `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money coins, gems, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture yet (Cores, Sigils, Dust, Shards) as the number and its name in words.
 - `numberFormat.ts` `fmt` is the one number format. `coins.ts` shows Money as a count of the biggest coin it fills, coins from `coins.json`.
@@ -833,6 +835,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 ### `views/dungeon`
 
 - `index.ts`: the table's centre piece and the `dungeon` view share one duel element (`stage/arena.ts`, see Fights), moved between them on open and close.
+- `stage/duelPace.ts` publishes the pace the duel's animations play at while a sped-up Challenge runs (`duelPace`, `paced`, CSS `--pace`); hits, numbers, boss hits and the cut-in follow it. The duel's Speed button (`data-key="arena-speed"`, in `stage/arena.ts`) cycles the open speeds; `app.ts` passes the choice in as `TableContext.duelSpeed`.
 - The view's title bar holds three buttons, Dungeons, Weapon and Training. Each opens its panel (built by `pages/dungeons.ts` `createDungeonPanels`, see Screens) as a sheet over the running fight; the same button, the back button or Esc closes it.
 - `duelModel.ts`: hand layout, slot colours, enemy pips, feed lines, stat sheet rows, skill plate queue; read by `stage/arena.ts`.
 

@@ -404,6 +404,8 @@ export interface CombatState {
    *  fight clock is play time plus this (speed.ts `fightClock`). Runtime only, not saved: a loaded
    *  game only shifts the cards' hit rhythm. */
   fightClockBonus?: number;
+  /** The speed of the Challenge being sped up while a span runs: kill pay is divided by it. Runtime only. */
+  paySlow?: number;
 }
 
 /** A running Challenge (DESIGN.md §6 Farming and Challenge). */

@@ -124,6 +124,19 @@ describe('a Challenge at speed', () => {
   });
 });
 
+describe('kill drops in a sped-up Challenge', () => {
+  it('pay the same per real second as at x1', () => {
+    const content = harmless(withDps(1000, plain));
+    const start = challenging(content, 3);
+    const money = (state: GameState): number => state.resources['silver']?.toNumber() ?? 0;
+    const slow = advance(start, content, 2000, rng(), 1);
+    const fast = advance(start, content, 2000, rng(), 4);
+    expect(slow.report.enemyKills).toBeGreaterThan(0);
+    expect(fast.report.enemyKills).toBeGreaterThanOrEqual(slow.report.enemyKills);
+    expect(money(fast.state)).toBeLessThanOrEqual(money(slow.state) + 1e-6);
+  });
+});
+
 describe('farming ignores the speed', () => {
   const content = harmless(withDps(100, plain));
 
