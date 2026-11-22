@@ -13,6 +13,7 @@ import {
   formatDuration,
   loadoutHealth,
   nextFloorChallenge,
+  Decimal,
   overflowStage,
   recordDuel,
   stageKey,
@@ -496,12 +497,19 @@ export function createArena(ctx: ArenaContext): Arena {
     if (calm() || !live()) return;
     const w = span(`du-word du-word--${kind}`, text);
     w.setAttribute('aria-hidden', 'true');
-    // a word never lands on one still showing (stage/specialQueue.ts)
-    const showing = Array.from(foeZone.querySelectorAll<HTMLElement>('.du-word')).map((n) => ({
-      x: Number(n.dataset['sx']),
-      y: Number(n.dataset['sy']),
-    }));
-    const spot = stampSpot(kind, showing);
+    // a new word replaces the one of its kind still showing and restarts in the same spot, never a
+    // second copy on top; it never lands on a word of the other kind (stage/specialQueue.ts)
+    const same = foeZone.querySelector<HTMLElement>(`.du-word--${kind}`);
+    const others = Array.from(foeZone.querySelectorAll<HTMLElement>('.du-word')).filter(
+      (n) => n !== same,
+    );
+    const spot = same
+      ? { x: Number(same.dataset['sx']), y: Number(same.dataset['sy']) }
+      : stampSpot(
+          kind,
+          others.map((n) => ({ x: Number(n.dataset['sx']), y: Number(n.dataset['sy']) })),
+        );
+    same?.remove();
     w.dataset['sx'] = String(spot.x);
     w.dataset['sy'] = String(spot.y);
     w.style.left = `${(spot.x * 100).toFixed(1)}%`;
@@ -1237,22 +1245,25 @@ export function createArena(ctx: ArenaContext): Arena {
     log = recordDuel(log, e.report, e.seconds, key);
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
-    // every signature attack queues its cut-in (one at a time, in the order they fired); that
-    // cut-in is the signature's skill banner, so a strike never goes to the left-side plates
+    // every ultimate queues its cut-in (one at a time, in the order they fired): a strike, a heal or
+    // a buff alike. The cut-in is the ultimate's banner; the old left-side plates are gone for
+    // sight and only announce the skill to a screen reader
     const queued = new Set<string>();
     if (live())
-      for (const hit of e.report.playerHits) {
-        if (!hit.signature || !hit.cardId) continue;
-        const slot = slots.find((x) => x.cardId === hit.cardId);
+      for (const k of e.report.skills) {
+        const slot = slots.find((x) => x.cardId === k.cardId);
         if (!slot) continue;
-        const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
-        queued.add(hit.cardId);
-        enqueueSpecial({ cardId: hit.cardId, skillId, damage: hit.damage, tries: 0 });
+        const hit = e.report.playerHits.find((h) => h.signature && h.cardId === k.cardId);
+        queued.add(k.cardId);
+        enqueueSpecial({
+          cardId: k.cardId,
+          skillId: k.skillId,
+          damage: hit ? hit.damage : new Decimal(0),
+          tries: 0,
+        });
       }
-    // only heals use the plates: the strike's own banner is its cut-in
-    const plated = e.report.skills.filter((k) => k.kind !== 'strike');
-    if (plated.length > 0) {
-      const q = queuePlates(plateQueue, [...plated], performance.now(), plateId);
+    if (e.report.skills.length > 0) {
+      const q = queuePlates(plateQueue, [...e.report.skills], performance.now(), plateId);
       plateQueue = q.queue.slice(-6);
       plateId = q.nextId;
     }
