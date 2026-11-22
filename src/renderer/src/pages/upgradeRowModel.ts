@@ -4,11 +4,8 @@ import {
   lineBadges,
   lineEffect,
   lineLevel,
-  mineLevelOffer,
   nextLineStep,
-  toolLines,
   trainingLines,
-  treeLevelOffer,
   type BuyCount,
   type BuyOffer,
   type GameState,
@@ -79,7 +76,6 @@ const MAX_SEGMENTS = 25;
 
 /** A multiplier as text: two decimals while small ("1.60"), the number format above that. */
 const times = (d: Decimal): string => (d.lt(100) ? d.toNumber().toFixed(2) : fmt(d));
-const percent = (d: Decimal): string => `${+d.mul(100).toNumber().toFixed(2)}%`;
 const small = (d: Decimal): string => {
   const n = d.toNumber();
   if (Math.abs(n) < 100) return String(+n.toFixed(n < 10 ? 2 : 1));
@@ -88,17 +84,10 @@ const small = (d: Decimal): string => {
 
 function effectText(content: Content, e: LineEffect, d: Decimal): string {
   switch (e.kind) {
-    case 'placeOutput':
-    case 'jobOutput':
     case 'teamDps':
       return `${small(d)}/s`;
     case 'teamHealth':
       return small(d);
-    case 'burstEvery':
-      return `${small(d)} s`;
-    case 'critChance':
-      return percent(d);
-    case 'critDamage':
     case 'moneyPerKill':
       return `×${times(d)}`;
     case 'hitsPerSignature':
@@ -112,16 +101,10 @@ function deltaText(e: LineEffect, d: Decimal): string {
   const sign = d.gt(0) ? '+' : '−';
   const a = d.abs();
   switch (e.kind) {
-    case 'placeOutput':
-    case 'jobOutput':
     case 'teamDps':
       return `${sign}${small(a)}/s`;
     case 'teamHealth':
       return `${sign}${small(a)}`;
-    case 'burstEvery':
-      return `${sign}${small(a)} s`;
-    case 'critChance':
-      return `${sign}${percent(a)}`;
     case 'hitsPerSignature':
       return `${sign}${small(a)} hits`;
     default:
@@ -130,40 +113,20 @@ function deltaText(e: LineEffect, d: Decimal): string {
 }
 
 function lineName(content: Content, line: PerkLine): string {
-  switch (line.kind) {
-    case 'tree':
-      return content.treeById.get(line.id)?.name ?? line.id;
-    case 'mine':
-      return content.mineById.get(line.id)?.name ?? line.id;
-    case 'tool':
-      return content.production.tools.find((t) => t.id === line.id)?.name ?? line.id;
-    case 'training':
-      return content.trainingById.get(line.id)?.name ?? line.id;
-  }
+  return content.trainingById.get(line.id)?.name ?? line.id;
 }
 
 /** The name of a line, for the pick cards and the Upgrades view. */
 export const upgradeLineName = lineName;
 
 function effectLabel(content: Content, line: PerkLine, e: LineEffect): string {
-  const L = COPY.row.effect;
-  switch (e.kind) {
-    case 'placeOutput':
-      return L.placeOutput(lineName(content, line));
-    case 'jobOutput': {
-      const job = content.production.tools.find((t) => t.id === line.id)?.job ?? 'logging';
-      return L.jobOutput(COPY.production[job].title);
-    }
-    default:
-      return L[e.kind];
-  }
+  void content;
+  void line;
+  return COPY.row.effect[e.kind];
 }
 
-/** What the line's ring multiplies: "output", "yield", "damage". */
+/** What the line's ring multiplies: "damage", "health". */
 function ringWhat(content: Content, line: PerkLine): string {
-  if (line.kind === 'tree' || line.kind === 'mine') return 'output';
-  if (line.kind === 'tool')
-    return content.production.tools.find((t) => t.id === line.id)?.effect ?? '';
   return content.trainingById.get(line.id)?.effect ?? '';
 }
 
@@ -181,29 +144,9 @@ function offerOf(
   count: BuyCount,
   mods: readonly Modifier[],
 ): Offered | null {
-  switch (line.kind) {
-    case 'tree': {
-      const offer = treeLevelOffer(state, content, line.id, count, mods);
-      return offer ? { offer, multNow: null, multAfter: null } : null;
-    }
-    case 'mine': {
-      const offer = mineLevelOffer(state, content, line.id, count, mods);
-      return offer ? { offer, multNow: null, multAfter: null } : null;
-    }
-    case 'tool': {
-      const tool = content.production.tools.find((t) => t.id === line.id);
-      const t = tool
-        ? toolLines(state, content, tool.job, count, mods).find((x) => x.line.id === line.id)
-        : undefined;
-      if (!t) return null;
-      return t.line.milestones
-        ? { offer: t.offer, multNow: t.now, multAfter: t.after }
-        : { offer: t.offer, multNow: null, multAfter: null };
-    }
-    case 'training': {
-      const t = trainingLines(state, content, count, mods).find((x) => x.line.id === line.id);
-      return t ? { offer: t.offer, multNow: t.now, multAfter: t.after } : null;
-    }
+  {
+    const t = trainingLines(state, content, count, mods).find((x) => x.line.id === line.id);
+    return t ? { offer: t.offer, multNow: t.now, multAfter: t.after } : null;
   }
 }
 

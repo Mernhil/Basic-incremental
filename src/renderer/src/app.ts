@@ -8,6 +8,8 @@ import {
   exportSaveString,
   loadBestSave,
   accountInfo,
+  starterPickDue,
+  starterUnlockDue,
   checkAchievements,
   claimableQuests,
   claimAllQuests,
@@ -38,11 +40,11 @@ import {
 } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import {
-  iconMarkup,
   isCrystal,
   isHeaderResource,
   moneyCoinArt,
   resourceIconId,
+  resourceIconMarkup,
 } from './ui/resourceIcons';
 import { createShell, h, type Currency } from './shell/shell';
 import { createTable } from './table/table';
@@ -64,13 +66,12 @@ import {
 } from './pages/progressionModel';
 import { createQuestScroll } from './shell/quest';
 import { playTierUps } from './stage/tierUp';
-import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
 import { setNumberMotion, setPixelTick } from './stage/numbers';
-import { starlightSvg } from './ui/skins';
 import { installPixelNumbers, refreshPixelNumbers } from './ui/pixelNumbers';
 import { showWelcomeBack } from './stage/welcome';
+import { showStarterPick } from './stage/starterPick';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
 import { onPrefs, prefs } from './settings/prefs';
@@ -117,10 +118,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick?.visual.effect);
     setPixelTick(getComputedStyle(document.documentElement).getPropertyValue('--bi-tick-px'));
     refreshPixelNumbers();
-    shellRef?.setCurrencyArt(prestigeId, starlightSvg());
   };
-  let shellRef: { setCurrencyArt(id: string, art: string): void } | null = null;
-  const prestigeId = content.resources.find((r) => r.kind === 'prestige')?.id ?? '';
   applyTheme();
 
   // ---- layout ----
@@ -137,7 +135,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   // behind the Details button, where its coins fly. Icons are swappable ids (ui/resourceIcons).
   const currencies: Currency[] = content.resources.map((r) => {
     const iconId = resourceIconId(r);
-    const placeholder = iconMarkup(iconId);
+    const art = resourceIconMarkup(r);
     return {
       id: r.id,
       name: r.name,
@@ -145,9 +143,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       iconId,
       inDetails: !isHeaderResource(r),
       crystal: isCrystal(r),
-      ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
-      ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
-      ...(!r.gem && r.kind !== 'prestige' && placeholder ? { art: placeholder } : {}),
+      ...(art ? { art } : {}),
       tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
     };
   });
@@ -189,7 +185,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     returnFocus: () => shell.levelButton.focus(),
   });
   shell.setLevel(levelBadge(accountInfo(loop.state, content)));
-  shellRef = shell;
   installPixelNumbers(shell.el);
   // the one table (UI_RULES.md §2, "The table"): the window, the wings, the dock and the views
   const table = createTable();
@@ -230,7 +225,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const goalView = (row: GoalRow): ViewId | null => {
     switch (row.page) {
       case 'production':
-        return content.mineById.has(row.id.slice(row.id.indexOf(':') + 1)) ? 'mining' : 'logging';
+        return 'logging';
       case 'dungeons':
         return 'dungeon';
       case 'home':
@@ -388,8 +383,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         s.resources[r.id] ?? new Decimal(0),
         header ? incomePerSecond(s, content, r.id, mods) : null,
       );
-      // the coin shows the gem's mastery metal (E2)
-      if (r.gem) shell.setCurrencyArt(r.id, svg(gemCoin(r.gem, gemMastery(s, content, r.id).tier)));
     }
     shell.setLevel(levelBadge(accountInfo(s, content)));
     details.update();
@@ -439,9 +432,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     }
   };
 
+  let unlockTicks = 0;
   window.setInterval(() => {
     step();
     rendered();
+    // a dungeon cleared on Nightmare or reached in the endless opens one more starter weapon
+    if (++unlockTicks % 10 === 0 && starterUnlockDue(loop.state, content)) {
+      showStarterPick(content, { state: () => loop.state, apply: applyAndSave }, () =>
+        playSound('click'),
+      );
+    }
   }, TICK_INTERVAL_MS);
   director.start();
 
@@ -492,5 +492,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   rendered();
   table.enter();
+  // a new game, or a save from before the starter weapon, picks its starter (DESIGN.md §2)
+  if (starterPickDue(loop.state, content)) {
+    showStarterPick(content, { state: () => loop.state, apply: applyAndSave }, () =>
+      playSound('click'),
+    );
+  }
   await save(); // a fresh game gets a save file right away
 }

@@ -3,6 +3,7 @@ import { COPY } from '../copy';
 import { svg } from '../art/gems';
 import { STICKER_VIEWBOX, stickerArt } from '../art/cosmetics';
 import { skinStyle } from '../ui/skins';
+import { keptIconMarkup } from '../ui/resourceIcons';
 import { h } from '../shell/shell';
 import { attachTooltip } from '../shell/tooltip';
 import { reducedMotion } from '../stage/motion';
@@ -132,7 +133,20 @@ export function createAchievementsPage(
       const r = h('div', 'ac-tip__reward');
       r.append(h('span', 'ac-tip__label', t.reward));
       const list = h('ul');
-      for (const line of s.rewards) list.append(h('li', '', line));
+      const cosmetics = s.rewards.length - s.rewardResources.length;
+      s.rewards.slice(0, cosmetics).forEach((line) => list.append(h('li', '', line)));
+      for (const r of s.rewardResources) {
+        const icon = keptIconMarkup(r.resource);
+        const li = h('li', icon ? 'ac-tip__res' : '');
+        if (icon) {
+          const art = h('span', 'ac-tip__ico');
+          art.innerHTML = icon;
+          li.append(art, h('span', '', r.amount));
+          li.title = content.resourceById.get(r.resource)?.name ?? r.resource;
+        } else
+          li.textContent = `${r.amount} ${content.resourceById.get(r.resource)?.name ?? r.resource}`;
+        list.append(li);
+      }
       r.append(list);
       box.append(r);
     }

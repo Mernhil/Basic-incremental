@@ -3,6 +3,8 @@
  * small counts of the duel, the Challenge button and verdict, and the cells of the stage map in the
  * Dungeons panel. Pure: the views turn game state into these inputs; no game rules here.
  */
+import { resistsElement, weakToElement } from '../../../game';
+import type { CardElement } from '../../../data';
 
 /** Bars of a boss already gone: "2 of 5" is `{ gone: 2, total: 5 }`. */
 export function barsGone(total: number, remaining: number): { gone: number; total: number } {
@@ -101,5 +103,28 @@ export function stageCell(
     kills: info.kills,
     toNext: info.nextKills === null ? null : Math.max(0, info.nextKills - info.kills),
     overflow: overflowSwitch(info),
+  };
+}
+
+/** One element a boss is weak to or resists, with the percent it changes a card's damage by. */
+export interface BossElement {
+  element: string;
+  percent: number;
+}
+
+/**
+ * What the dungeon panel says about a boss's elements (DESIGN.md §2 Fights): its own element, the
+ * one it is weak to and, unless it is light or dark, the one it resists (the circle). `sizes` are
+ * the percents from `combat.json`.
+ */
+export function bossElements(
+  boss: { element: CardElement },
+  sizes: { weakness: number; resistance: number },
+): { own: string; weak: BossElement; resist?: BossElement } {
+  const resisted = resistsElement(boss.element);
+  return {
+    own: boss.element,
+    weak: { element: weakToElement(boss.element), percent: sizes.weakness },
+    ...(resisted ? { resist: { element: resisted, percent: sizes.resistance } } : {}),
   };
 }

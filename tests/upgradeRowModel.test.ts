@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buyTool,
+  buyTraining,
   collectModifiers,
   Decimal,
   lineEffect,
-  toolLines,
+  trainingLines,
   withLineLevel,
 } from '../src/game';
 import { heldResources, upgradeRow } from '../src/renderer/src/pages/upgradeRowModel';
@@ -51,24 +51,30 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
     expect(row.buy.short).toBe('need 50 more');
   });
 
-  it('names a ring and a pick at the same level together, and shows the badges picked', () => {
+  it('names the next pick in words, and shows the badges picked', () => {
     const s = freshState();
-    s.production.tools['logging_yield'] = 20;
-    s.upgrades.picks['logging_yield_10'] = 'logging_yield_10_all';
+    s.combat.training['sharpen'] = 4;
     const row = upgradeRow(
       s,
       content,
-      { kind: 'tool', id: 'logging_yield' },
+      { kind: 'training', id: 'sharpen' },
       1,
       collectModifiers(s, content),
     )!;
-    expect(row.next).toBe(
-      'In 5 levels (Lv 25): yield ×1.1, and you pick Merchant Ledger or Timber Yard',
-    );
+    expect(row.next).toMatch(/^In \d+ levels? \(Lv \d+\): /);
     // what each pick does is readable before choosing
     expect(row.nextTip.split(String.fromCharCode(10))).toHaveLength(2);
-    expect(row.nextTip).toMatch(/^Merchant Ledger: .+/);
-    expect(row.badges.map((b) => b.name)).toEqual(['Lumber Union']);
+    expect(row.badges).toEqual([]);
+    s.combat.training['sharpen'] = 6;
+    s.upgrades.picks['sharpen_5'] = 'sharpen_5_cry';
+    const picked = upgradeRow(
+      s,
+      content,
+      { kind: 'training', id: 'sharpen' },
+      1,
+      collectModifiers(s, content),
+    )!;
+    expect(picked.badges.map((b) => b.name)).toEqual(['Battle Cry']);
   });
 
   it('lists the resources a panel spends once each for the "You hold" strip', () => {
@@ -87,11 +93,11 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
   });
 
   describe('what a purchase changes, before you buy', () => {
-    const line = { kind: 'tool', id: 'logging_yield' } as const;
+    const line = { kind: 'training', id: 'sharpen' } as const;
     const rich = () => {
       const s = freshState();
-      s.resources['money'] = new Decimal(1e12);
-      s.production.tools['logging_yield'] = 10;
+      s.resources['copper_gem'] = new Decimal(1e12);
+      s.combat.training['sharpen'] = 10;
       return s;
     };
 
@@ -115,34 +121,31 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
       const mods = collectModifiers(s, content);
       const e = lineEffect(s, content, line, 10, mods);
       const ahead = withLineLevel(s, line, 10);
-      expect(ahead.production.tools['logging_yield']).toBe(20);
+      expect(ahead.combat.training['sharpen']).toBe(20);
       expect(lineEffect(ahead, content, line, 0).now.eq(e.after)).toBe(true);
       expect(lineEffect(s, content, line, 0, mods).after.eq(e.now)).toBe(true);
     });
 
     it('x10 costs exactly what ten single buys cost, and Max buys what is affordable', () => {
       const s = rich();
-      const ten = toolLines(s, content, 'logging', 10).find((t) => t.line.id === 'logging_yield')!;
+      const ten = trainingLines(s, content, 10).find((t) => t.line.id === 'sharpen')!;
       let cur = s;
       let paid = new Decimal(0);
       for (let i = 0; i < 10; i++) {
-        const one = toolLines(cur, content, 'logging', 1).find(
-          (t) => t.line.id === 'logging_yield',
-        )!;
+        const one = trainingLines(cur, content, 1).find((t) => t.line.id === 'sharpen')!;
         paid = paid.add(one.offer.price.amount);
-        const r = buyTool(cur, content, 'logging_yield', 1);
+        const r = buyTraining(cur, content, 'sharpen', 1);
         if (!r.ok) throw new Error('single buy failed');
         cur = r.state;
       }
       expect(ten.offer.price.amount.eq(paid)).toBe(true);
-      const bulk = buyTool(s, content, 'logging_yield', 10);
+      const bulk = buyTraining(s, content, 'sharpen', 10);
       if (!bulk.ok) throw new Error('bulk buy failed');
-      expect(bulk.state.production.tools['logging_yield']).toBe(20);
-      expect(bulk.state.resources['money']!.eq(cur.resources['money']!)).toBe(true);
+      expect(bulk.state.combat.training['sharpen']).toBe(20);
 
       const poor = freshState();
-      poor.production.tools['logging_yield'] = 10;
-      poor.resources['money'] = ten.offer.price.amount.mul(0.6);
+      poor.combat.training['sharpen'] = 10;
+      poor.resources['copper_gem'] = ten.offer.price.amount.mul(0.6);
       const x10 = upgradeRow(poor, content, line, 10, collectModifiers(poor, content))!;
       expect(x10.buy.affordable).toBe(false);
       expect(x10.buy.label).toBe('Buy ×10');

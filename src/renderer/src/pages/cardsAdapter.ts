@@ -1,6 +1,7 @@
 import { cardStyle } from '../../../data';
 import { type Content, type Rank } from '../../../data';
 import {
+  isStarterCard,
   LOADOUT_SLOTS,
   cardCollection,
   cardEnhancements,
@@ -12,6 +13,7 @@ import {
   loadoutInfo,
   setLoadoutSlot,
   starUp,
+  openCardSkill,
   starUpWithDust,
   type CardFailure,
   type CardInfo,
@@ -131,6 +133,7 @@ export function createCardsModel(
       id: card.id,
       name: cardDisplayName(content, card),
       heirloom: Boolean(card.heirloom),
+      starter: isStarterCard(content, card.id),
       job: card.job,
       rarity: cardStyle(card),
       emblem: JOB_EMBLEM[card.job],
@@ -182,7 +185,7 @@ export function createCardsModel(
           o.enhancements,
         ]),
         state.cards.loadouts,
-        state.production.workers,
+        state.camp,
         state.cardSkins,
         state.legacySkins,
         state.cards.shards,
@@ -209,6 +212,10 @@ export function createCardsModel(
     },
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
+      if (kind === 'skill') {
+        const r = openCardSkill(state, content, id);
+        return r.ok ? r : { ok: false, reason: COPY.moves.reasons[r.reason] };
+      }
       if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
       return wrap(starUp(state, content, id));
     },

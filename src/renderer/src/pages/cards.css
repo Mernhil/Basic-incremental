@@ -797,7 +797,7 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   color: #ff8a8a;
 }
 
-/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 22
+/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 34
    Heirloom cards by weapon type on the left, the selected one large with its tree as gems in an
    arch around it on the right ---- */
 .cp-wrap--heirlooms {
@@ -820,9 +820,11 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-hgroup .cp-group__title {
   font-size: 12px;
 }
+/* a type's Heirlooms sit two to a line and wrap (three in each type, four daggers, with Wildwood) */
 .cp-hgroup__cards {
   display: flex;
-  gap: var(--kit-gutter);
+  flex-wrap: wrap;
+  gap: calc(28px * var(--card-k) + var(--kit-top) + var(--kit-bottom)) var(--kit-gutter);
   /* room for the ★6 crowns above the cards */
   padding-top: calc(28px * var(--card-k));
 }
@@ -1088,4 +1090,47 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   margin: 4px 0 0;
   font-size: 12px;
   color: var(--bi-frame-ink-muted);
+}
+
+/* ---- dragging a card between the loadout slots (pages/loadoutDrag.ts) ---- */
+.cp-job.is-dragging {
+  user-select: none;
+  cursor: grabbing;
+}
+.cp-job [data-drag-card] {
+  touch-action: none;
+}
+.cp-slot.is-drag-from {
+  opacity: 0.45;
+}
+.cp-slot.is-drop-ok {
+  outline: calc(var(--fs-sm) * 2) dashed var(--px-gold);
+  outline-offset: calc(var(--fs-sm) * -1);
+}
+.cp-slot.is-drop-no {
+  opacity: 0.55;
+}
+.cp-slot.is-drop-over.is-drop-ok {
+  outline-style: solid;
+}
+.cp-slot.is-drop-over.is-drop-no {
+  outline: calc(var(--fs-sm) * 2) solid var(--bi-bad, #c0392b);
+  outline-offset: calc(var(--fs-sm) * -1);
+}
+.cp-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.92;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.5));
+}
+.cp-drag-ghost > * {
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-drag-ghost {
+    transition: none !important;
+  }
 }

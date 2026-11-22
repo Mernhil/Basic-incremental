@@ -104,6 +104,8 @@ export interface PlayerHitEvent {
 export interface SkillEvent {
   cardId: string;
   skillId: string;
+  /** The ultimate's name (DESIGN.md §2 Three attacks per card). */
+  name?: string;
   kind: 'strike' | 'heal';
   count: number;
 }

@@ -264,7 +264,7 @@ export function wishlistPanelView(
                 ? t.wishlistDetail(
                     nameOf(c.itemId),
                     kindName(kind),
-                    cap(card.element),
+                    card.element ? cap(card.element) : undefined,
                     cap(card.job),
                   )
                 : nameOf(c.itemId),
@@ -456,10 +456,13 @@ export function heirloomDeckView(info: HeirloomGateInfo, content: Content): Heir
 export function heirloomBoardView(info: HeirloomGateInfo, content: Content): HeirloomBoardView {
   const t = COPY.summon;
   const gate = content.heirlooms.gate;
-  const cell = (kind: string, batch: string): HeirloomCellView | null => {
-    const e = info.entries.find(
+  // a row key is a batch id, or `<batch>#2` for the batch's second Heirloom of a type (Wildwood's
+  // fox tail dagger): that row holds only those cells
+  const cell = (kind: string, rowKey: string): HeirloomCellView | null => {
+    const [batch = '', nth = '1'] = rowKey.split('#');
+    const e = info.entries.filter(
       (x) => x.card.item.kind === kind && (x.card.batch ?? 'base') === batch,
-    );
+    )[Number(nth) - 1];
     if (!e) return null;
     const side = e.side;
     return {
@@ -479,7 +482,7 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     title: t.heirloomBoardTitle(info.total),
     facts: t.heirloomBoardFacts(info.unlocked, info.total, gate.unlockShards),
     columns: kinds.map((k) => ({ kind: k.kind, name: k.noun })),
-    // one row per art batch (Dragon, then Leviathan), a cell per weapon type
+    // one row per art batch (Dragon, Leviathan, Wildwood, and a second Wildwood row for its extra dagger), a cell per weapon type
     rows: Object.entries(t.heirloomRows).map(([batch, name]) => ({
       name,
       cells: kinds.map((k) => cell(k.kind, batch)),
@@ -539,4 +542,109 @@ export function revealSound(rarity: Rarity): string {
     default:
       return 'summonMythic';
   }
+}
+
+// ---- the three doors and the new reveal (DESIGN.md §2 "The reveal is redone") ----
+
+/** The door art a gate shows: the Card Portal, the Focus Portal or the Heirloom Gate. */
+export type DoorKey = 'card_portal' | 'focus_portal' | 'heirloom_gate';
+
+/** The three doors of the page, left to right. */
+export const DOOR_ORDER: readonly DoorKey[] = ['card_portal', 'focus_portal', 'heirloom_gate'];
+
+/**
+ * The door a gate's pull opens. The Wardrobe and Legacy gates have no door art yet: they open the
+ * Card Portal's door.
+ */
+export function doorKeyOf(gateId: string): DoorKey {
+  return gateId === 'focus_portal' || gateId === 'heirloom_gate' ? gateId : 'card_portal';
+}
+
+/** The one line under a door's name: what the gate pulls. */
+export function doorAbout(key: DoorKey, focusName: string | null): string {
+  const t = COPY.summon;
+  if (key === 'card_portal') return t.doorCard;
+  if (key === 'focus_portal') return focusName ? t.doorFocus(focusName) : t.focusNone;
+  return t.doorHeirloom;
+}
+
+/** True for a pull that gets the cut-in: a T6 (Mythic or Void) or a whole Heirloom. */
+export const isCutinRarity = (r: Rarity): boolean => r === 'mythic' || r === 'void';
+
+/** The best card of a pull, known before any card moves: its place, rarity and whether it gets the cut-in. */
+export function bestOfPull(rarities: readonly Rarity[]): {
+  index: number;
+  rarity: Rarity;
+  cutin: boolean;
+} | null {
+  let best = -1;
+  rarities.forEach((r, i) => {
+    if (best < 0 || RARITIES.indexOf(r) > RARITIES.indexOf(rarities[best]!)) best = i;
+  });
+  const rarity = rarities[best];
+  return rarity ? { index: best, rarity, cutin: isCutinRarity(rarity) } : null;
+}
+
+/** One beat of the reveal: a card flies through the door, the cut-in plays for one card, or that card lands at the centre at 2x, holds, and moves into its place (`hero`). */
+export interface RevealStep {
+  kind: 'fly' | 'cutin' | 'hero';
+  index: number;
+  /** Milliseconds from the start of the show when it begins. */
+  at: number;
+}
+
+/** How long one ordinary card takes to cross, how long a cut-in holds everything. */
+export const FLY_MS = 420;
+export const CUTIN_MS = 1800;
+/** The T6 card after its cut-in: lands at 2x (200 ms), holds (450 ms), moves to its slot (250 ms). */
+export const HERO_MS = 900;
+/** All the ordinary cards of a pull leave the door within about this long. */
+export const FLY_SPREAD_MS = 600;
+
+/**
+ * The show's timeline, in pull order: ordinary cards leave the door a few tens of milliseconds
+ * apart so a ten-pull is through in about a second; a T6 or Heirloom stops everything for the
+ * cut-in, then its card flies in and the rest go on.
+ */
+export function revealTimeline(rarities: readonly Rarity[]): {
+  steps: RevealStep[];
+  totalMs: number;
+} {
+  const steps: RevealStep[] = [];
+  const gap = rarities.length > 1 ? Math.min(90, FLY_SPREAD_MS / (rarities.length - 1)) : 0;
+  let clock = 0;
+  rarities.forEach((r, index) => {
+    if (isCutinRarity(r)) {
+      // everything already on its way lands first
+      clock = Math.max(
+        clock,
+        steps.reduce((m, s) => Math.max(m, s.at + (s.kind === 'hero' ? HERO_MS : FLY_MS)), 0),
+      );
+      steps.push({ kind: 'cutin', index, at: clock });
+      clock += CUTIN_MS;
+      steps.push({ kind: 'hero', index, at: clock });
+      clock += HERO_MS + gap;
+    } else {
+      steps.push({ kind: 'fly', index, at: clock });
+      clock += gap;
+    }
+  });
+  return {
+    steps,
+    totalMs: steps.reduce((m, s) => Math.max(m, s.at + (s.kind === 'hero' ? HERO_MS : FLY_MS)), 0),
+  };
+}
+
+/**
+ * A door's size on screen in CSS px: its 160-px picture at a whole number of device pixels per art
+ * pixel (2x on a roomy page), the nearest whole scale to `wantCss`, never below 1.
+ */
+export function doorPx(wantCss: number, dpr: number): number {
+  const n = Math.max(1, Math.round((wantCss * dpr) / 160));
+  return (n * 160) / dpr;
+}
+
+/** The sprite name a weapon's art markup draws (`data-sprite="..."`), or null. */
+export function spriteNameOf(markup: string): string | null {
+  return /data-sprite="([^"]+)"/.exec(markup)?.[1] ?? null;
 }

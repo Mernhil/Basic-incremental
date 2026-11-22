@@ -8,13 +8,10 @@ import scytheSheet from '../art/fx/hit-scythe.png';
 import spearSheet from '../art/fx/hit-spear.png';
 import staffSheet from '../art/fx/hit-staff.png';
 import swordSheet from '../art/fx/hit-sword.png';
-import crystalSlash from '../art/fx/slash-crystal.png';
 import earthSlash from '../art/fx/slash-earth.png';
 import fireSlash from '../art/fx/slash-fire.png';
 import lightSlash from '../art/fx/slash-light.png';
-import natureSlash from '../art/fx/slash-nature.png';
-import stormSlash from '../art/fx/slash-storm.png';
-import voidSlash from '../art/fx/slash-void.png';
+import darkSlash from '../art/fx/slash-void.png';
 import { onFrame } from './motion';
 import {
   effectOf,
@@ -211,12 +208,9 @@ const SHEET_URLS: Record<keyof typeof HIT_SHEETS, string> = {
 };
 const ELEMENT_URLS: Record<string, string> = {
   fire: fireSlash,
-  storm: stormSlash,
   light: lightSlash,
-  nature: natureSlash,
   earth: earthSlash,
-  crystal: crystalSlash,
-  void: voidSlash,
+  dark: darkSlash,
 };
 const sheetImages = new Map<string, HTMLImageElement>();
 /** A sheet's picture once it has loaded (the first call starts the load). */
@@ -1630,15 +1624,17 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
 // ------------------------------------------------------------------------------------------------
 
 export interface SpecialAttack {
-  /** Starts the special attack; false when one is playing or just ended (the caller keeps today's hop). */
+  /** Starts the special attack; false when one is playing or just ended (the arena's queue waits). */
   play(req: SpecialRequest): boolean;
   busy(): boolean;
+  /** Milliseconds until the next one may start (0 when free now). */
+  waitMs(): number;
   /** Stops it at once (the window was hidden, the duel closed). */
   cancel(): void;
 }
 
-/** Milliseconds after one ends before the next may start, so a run of signatures never piles up. */
-const COOLDOWN_MS = 700;
+/** Milliseconds after one ends before the next may start: queued ones play back to back, never over each other. */
+const COOLDOWN_MS = 300;
 
 export function createSpecialAttack(host: HTMLElement): SpecialAttack {
   // start loading the drawn slash sheets, so the first attack already has them
@@ -1666,6 +1662,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
 
   return {
     busy: () => running !== null || performance.now() < freeAt,
+    waitMs: () => (running ? 250 : Math.max(0, freeAt - performance.now())),
     cancel: finish,
     play(req) {
       if (running || performance.now() < freeAt || document.hidden) return false;
@@ -1757,4 +1754,117 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
       return true;
     },
   };
+}
+
+// ------------------------------------------------------------------------------------------------
+// the cut-in alone (the Summon reveal's entrance for a T6 or an Heirloom)
+// ------------------------------------------------------------------------------------------------
+
+export interface CutInRequest {
+  kind: string;
+  element: string;
+  tier?: string;
+  /** The weapon sprite (the card's own picture, loaded). */
+  weapon: HTMLImageElement;
+  /** The small line above the name (the tier word) and the big name. */
+  tag: string;
+  name: string;
+  /** Seconds the band stays before it leaves. */
+  hold?: number;
+}
+
+/**
+ * Plays only the special attack's cut-in (the slanted band, the weapon large, a small line and a
+ * big name) on a canvas laid over `host`, with the same drawing code as the duel's. Null when the
+ * card has no element effect (the caller then shows the result without it). `done` settles when the band
+ * has left or `stop` was called.
+ */
+export function playCutIn(
+  host: HTMLElement,
+  req: CutInRequest,
+): { done: Promise<void>; stop: () => void } | null {
+  // an axe or a pickaxe has no fighting motion, but its cut-in needs only the band's colours and
+  // timing: it borrows the sword's
+  const m = WEAPON_MOTIONS[req.kind] ?? WEAPON_MOTIONS['sword'];
+  const e = effectOf(req.tier, req.element);
+  if (!m || !e || document.hidden) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const u = Math.max(
+    1,
+    Math.round(Math.min(host.clientWidth / 1280, host.clientHeight / 720) * dpr),
+  );
+  const unit = u / dpr;
+  const cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.ceil(host.clientWidth / unit));
+  cv.height = Math.max(1, Math.ceil(host.clientHeight / unit));
+  cv.className = 'sa-canvas';
+  cv.setAttribute('aria-hidden', 'true');
+  cv.style.width = `${cv.width * unit}px`;
+  cv.style.height = `${cv.height * unit}px`;
+  const g = cv.getContext('2d');
+  if (!g) return null;
+  g.imageSmoothingEnabled = false;
+  const none = { x: 0, y: 0, w: 1, h: 1 };
+  const wp = req.weapon;
+  const leave = (req.hold ?? 0.9) + 0.3;
+  const sc: Scene = {
+    g,
+    W: cv.width,
+    H: cv.height,
+    req: {
+      kind: req.kind,
+      element: req.element,
+      weapon: wp,
+      card: req.tag,
+      skill: req.name,
+      line: '',
+      foe: none,
+      rest: none,
+      u,
+      dpr,
+      calm: false,
+      hooks: { dim: () => {}, card: () => {}, foe: () => {}, release: () => {}, done: () => {} },
+    },
+    m: { ...m, times: { ...m.times, leave } },
+    e,
+    f: 1,
+    band: cl(Math.min(cv.width / 1280, cv.height / 720) * 1.15, 0.5, 1),
+    foe: none,
+    fc: { x: 0, y: 0 },
+    rest: { x: 0, y: 0 },
+    s1: 1,
+    wp,
+    white: tinted(wp, '#ffffff'),
+    black: tinted(wp, '#000000'),
+    dark: tinted(wp, e.ink),
+    trail: [],
+  };
+  host.append(cv);
+  let t = 0;
+  let last = -1;
+  let ended = false;
+  let off = (): void => {};
+  let finish = (): void => {};
+  const done = new Promise<void>((res) => {
+    finish = () => {
+      if (ended) return;
+      ended = true;
+      off();
+      cv.remove();
+      res();
+    };
+  });
+  off = onFrame((dt) => {
+    t += dt / 1000;
+    if (t >= leave + 0.12) {
+      finish();
+      return;
+    }
+    const fr = F(t);
+    if (fr === last) return;
+    last = fr;
+    g.clearRect(0, 0, cv.width, cv.height);
+    cutin(sc, t, false);
+  });
+  return { done, stop: finish };
 }

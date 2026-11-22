@@ -1,3 +1,4 @@
+import { keptIconMarkup } from '../ui/resourceIcons';
 import type { Dungeon, Trial } from '../../../data';
 import {
   cardDisplayName,
@@ -33,12 +34,13 @@ import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createTrainingPanel } from '../ui/training';
+import { createSealBlock, type SealBlock } from '../ui/sealBlock';
 import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import { cardItemArt } from './loadoutCards';
 import { ITEM_VIEWBOX } from '../art/items';
 import { DUEL_COPY } from '../views/dungeon/copy';
 import type { CardsModel } from './cardsModel';
-import { stageCell, starTotal } from './dungeonsModel';
+import { bossElements, stageCell, starTotal } from './dungeonsModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import { lightStagePips, setStarText, stagePips } from '../ui/stars';
@@ -258,7 +260,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     head.append(fight);
 
     const body: HTMLElement[] = [head];
-    if (d) body.push(stageGrid(d));
+    if (d) body.push(bossElementNote(d), stageGrid(d));
     else if (t) body.push(trialInfo(t, s));
     const opens = clearUnlocks(content, entry.id);
     const opened = [...opens.dungeons, ...opens.mines].map(
@@ -272,6 +274,26 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       body.push(h('p', 'dp-note', COPY.dungeons.opens(COPY.dungeons.and(opened))));
     body.push(loot(s));
     map.replaceChildren(...body);
+  }
+
+  /** What the boss is weak to and resists, in the element's name. */
+  function bossElementNote(d: Dungeon): HTMLElement {
+    const { weakness, resistance } = content.combat.elements;
+    const e = bossElements(d.boss, {
+      weakness: weakness.toNumber(),
+      resistance: resistance.toNumber(),
+    });
+    const cap = (x: string): string => x.charAt(0).toUpperCase() + x.slice(1);
+    const lines = [
+      COPY.dungeons.bossElement(cap(e.own)),
+      COPY.dungeons.bossWeak(cap(e.weak.element), e.weak.percent),
+      ...(e.resist ? [COPY.dungeons.bossResists(cap(e.resist.element), e.resist.percent)] : []),
+      COPY.dungeons.bossNoneElement,
+    ];
+    const box = h('p', 'dp-note dp-elements');
+    box.dataset.key = 'boss-elements';
+    box.textContent = lines.join(' · ');
+    return box;
   }
 
   /** The stage map of one dungeon: a row per stage, a column per tier (4g). */
@@ -423,9 +445,17 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       new Decimal(n).mul(multiplier).mul(boss?.purseScale ?? 1);
     const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
     const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
-    const row = (label: string, value: string, cls = ''): HTMLElement => {
+    const row = (label: string, value: string, cls = '', resource = ''): HTMLElement => {
       const li = h('li', `dp-drop px-tile ${cls}`.trim());
-      li.append(h('span', '', label), h('span', 'bi-num', value));
+      const name = h('span', 'dp-drop__name', label);
+      const icon = resource ? keptIconMarkup(resource) : null;
+      if (icon) {
+        const art = h('span', 'dp-drop__ico');
+        art.setAttribute('aria-hidden', 'true');
+        art.innerHTML = icon;
+        name.prepend(art);
+      }
+      li.append(name, h('span', 'bi-num', value));
       return li;
     };
     const owned = s.inventory[d.drops.rare.itemId] ?? 0;
@@ -442,21 +472,30 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
           c.min === c.max
             ? amountText(content, c.resource, purse(c.min, c.multiplier))
             : `${amountText(content, c.resource, purse(c.min, c.multiplier))} – ${amountText(content, c.resource, purse(c.max, c.multiplier))}`,
+          '',
+          c.resource,
         ),
       ),
       ...drops.wages.map((w) =>
-        row(COPY.dungeons.wage(resName(w.resource)), COPY.production.rate(fmt(w.perSecond))),
+        row(
+          COPY.dungeons.wage(resName(w.resource)),
+          COPY.production.rate(fmt(w.perSecond)),
+          '',
+          w.resource,
+        ),
       ),
       ...(isDungeonCleared(s, d.id)
         ? []
         : d.drops.firstClear.map((p) =>
-            row(COPY.dungeons.firstClear(resName(p.resource)), fmt(p.amount)),
+            row(COPY.dungeons.firstClear(resName(p.resource)), fmt(p.amount), '', p.resource),
           )),
       row(
         resName(drops.material.resource),
         drops.material.amount > 1
           ? `${pct(drops.material.chance)} ×${drops.material.amount}`
           : pct(drops.material.chance),
+        '',
+        drops.material.resource,
       ),
       ...drops.extraMaterials.map((extra) =>
         row(
@@ -466,6 +505,8 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
             : extra.min === extra.max
               ? fmt(new Decimal(extra.min))
               : `${fmt(new Decimal(extra.min))}–${fmt(new Decimal(extra.max))}`,
+          '',
+          extra.resource,
         ),
       ),
     );
@@ -498,6 +539,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
   weapon.append(weaponTabs, weaponBody);
   let weaponId: string | null | undefined;
   let weaponPanel: WeaponPanel | null = null;
+  let sealBlock: SealBlock | null = null;
   /** The tabs as built: the loadout's cards in order; they rebuild only when it changes. */
   let tabsKey: string | null = null;
   let tabLevels: Array<{ id: string; level: HTMLElement; tab: HTMLButtonElement }> = [];
@@ -544,6 +586,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
   function buildWeapon(mainId: string | null): void {
     weaponId = mainId;
     weaponPanel = null;
+    sealBlock = null;
     weaponNote.textContent = '';
     if (!mainId) {
       weaponBody.replaceChildren(h('p', 'dp-note', COPY.weapon.noMain));
@@ -565,7 +608,15 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
         render();
       },
     });
-    weaponBody.replaceChildren(weaponPanel.el, weaponNote);
+    sealBlock = createSealBlock({
+      content,
+      state: ctx.state,
+      apply: (next) => {
+        ctx.apply(next);
+        render();
+      },
+    });
+    weaponBody.replaceChildren(weaponPanel.el, sealBlock.el, weaponNote);
   }
 
   // ---- Training: a waiting pick, then the repeatable lines (DESIGN.md §4 Milestone picks) ----
@@ -606,6 +657,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     }
     const entry = weaponId ? ctx.cards.entry(s, weaponId) : null;
     if (entry) weaponPanel?.update(entry);
+    if (weaponId) sealBlock?.update(weaponId);
     trainingPanel.update();
   }
 

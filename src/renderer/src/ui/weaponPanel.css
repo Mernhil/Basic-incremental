@@ -230,8 +230,9 @@
 .wp-cost__art {
   display: grid;
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
 }
 .wp-cost__art svg {
   width: 100%;
@@ -507,6 +508,13 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
 }
 
 /* ---- what an upgrade changes: real numbers, now to after, the gain in green ---- */
+.wp-unlock {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
 .wp-changes {
   display: grid;
   gap: 2px;
@@ -608,6 +616,18 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
 }
 .wp-do__name {
   font-weight: 700;
+}
+.wp-do__note,
+.wp-do__effects {
+  margin: 0;
+}
+.wp-do__note {
+  color: var(--bi-frame-ink-muted);
+}
+.wp-do__effects {
+  display: grid;
+  gap: 1px;
+  padding: 0 0 0 12px;
 }
 .wp-do__text {
   color: var(--bi-frame-ink-muted);

@@ -4,7 +4,6 @@ import {
   bondActive,
   bondJob,
   cardNameById,
-  cardSkill,
   cardStatsFor,
   isFrontSlot,
   type CardInfo,
@@ -15,6 +14,7 @@ import {
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import { effectText } from '../shell/modifierText';
+import type { AttackRow, MovesView } from './movesModel';
 import type { DetailEntry, DetailNext, DetailStat, WeaponDetail } from './cardsModel';
 
 /**
@@ -40,10 +40,12 @@ function statRows(info: CardInfo, now: CardStats, fighting: boolean): DetailStat
       { label: t.strikesPerSecond, value: t.perSecond(1 / now.hitSeconds) },
     );
   }
-  rows.push(
-    { label: t.critChance, value: t.percent(now.critChance) },
-    { label: t.critDamage, value: t.times(fmt(now.critDamage)) },
-  );
+  if (fighting) {
+    rows.push(
+      { label: t.critChance, value: t.percent(now.critChance) },
+      { label: t.critDamage, value: t.times(fmt(now.critDamage)) },
+    );
+  }
   if (now.health) rows.push({ label: t.health, value: fmt(now.health) });
   const { card } = info;
   if (card.job === 'fighting') {
@@ -57,17 +59,12 @@ function statRows(info: CardInfo, now: CardStats, fighting: boolean): DetailStat
   } else {
     rows.push({ label: t.worksAt, value: info.workplace ? cap1(info.workplace) : t.notWorking });
   }
-  rows.push({ label: t.element, value: cap1(card.element) });
+  if (card.element) rows.push({ label: t.element, value: cap1(card.element) });
   if (card.job === 'fighting') rows.push({ label: t.cost, value: String(info.cost) });
   return rows;
 }
 
-function doEntries(
-  content: Content,
-  state: GameState,
-  info: CardInfo,
-  now: CardStats,
-): DetailEntry[] {
+function doEntries(content: Content, state: GameState, info: CardInfo): DetailEntry[] {
   const t = COPY.weapon.detail;
   const { card } = info;
   const out: DetailEntry[] = [];
@@ -87,23 +84,6 @@ function doEntries(
       text: team ? t.teamText(team) : card.teamBonus.description,
       values: [],
       title: card.teamBonus.description,
-    });
-    const skill = cardSkill(content, card.id, state);
-    const heal = skill.signature.kind === 'heal' ? skill.signature : null;
-    const never = now.hitsPerSignature <= 0;
-    const pct = heal ? Math.round(heal.share * 100) : 0;
-    out.push({
-      kind: 'signature',
-      kindLabel: t.kinds.signature,
-      name: skill.name,
-      text: never ? t.sigNone : heal ? t.sigHeal(pct) : t.sigStrike(fmt(now.signature)),
-      values: never
-        ? []
-        : [
-            heal ? t.sigHealValue(pct) : t.sigDamage(fmt(now.signature)),
-            t.sigEvery(now.hitsPerSignature),
-          ],
-      title: skill.description,
     });
   } else {
     out.push({
@@ -131,6 +111,20 @@ function doEntries(
     });
   }
   return out;
+}
+
+/** The card's three attacks (hit, skill, ultimate) as entries of the "What it does" list. */
+export function attackEntries(view: MovesView | null): DetailEntry[] {
+  if (!view) return [];
+  return view.rows.map((r: AttackRow): DetailEntry => ({
+    kind: r.kind,
+    kindLabel: r.label,
+    name: r.name,
+    text: r.text,
+    values: [],
+    effects: r.effects,
+    note: r.note,
+  }));
 }
 
 /** "+12%" for a number that grows; empty when nothing grows. */
@@ -189,7 +183,7 @@ export function weaponDetail(
 
   return {
     stats: statRows(info, now, fighting),
-    does: doEntries(content, state, info, now),
+    does: doEntries(content, state, info),
     nextLevel: step(
       t.nextLevel,
       now,

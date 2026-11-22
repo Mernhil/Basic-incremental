@@ -1,9 +1,8 @@
 import type { Content } from '../../../data';
 import type { GameState } from '../../../game';
-import { gemCoin, svg } from '../art/gems';
 import { COPY } from '../copy';
 import { detailsView, type DetailsEntry } from '../pages/detailsModel';
-import { iconMarkup } from '../ui/resourceIcons';
+import { iconMarkup, resourceIconMarkup } from '../ui/resourceIcons';
 import { icon } from './icons';
 import { h } from './shell';
 import './details.css';
@@ -62,10 +61,9 @@ export function createDetailsPanel(opts: {
   const rows = new Map<string, Row>();
   let built = false;
 
-  const artFor = (entry: DetailsEntry, tier: number): string => {
-    const gem = content.resourceById.get(entry.id)?.gem;
-    if (gem) return svg(gemCoin(gem, Math.max(0, tier)));
-    return iconMarkup(entry.icon) ?? '';
+  const artFor = (entry: DetailsEntry): string => {
+    const res = content.resourceById.get(entry.id);
+    return (res ? resourceIconMarkup(res) : null) ?? iconMarkup(entry.icon) ?? '';
   };
 
   function build(): void {
@@ -83,7 +81,7 @@ export function createDetailsPanel(opts: {
           const art = h('span', 'details-row__art');
           art.dataset.icon = entry.icon;
           const tier = opts.masteryTier(entry.id);
-          const markup = artFor(entry, tier);
+          const markup = artFor(entry);
           if (markup) art.innerHTML = markup;
           else art.append(icon('material', 'shell-icon'));
           const text = h('div', 'details-row__text');
@@ -120,11 +118,8 @@ export function createDetailsPanel(opts: {
         row.rate.classList.toggle('is-idle', !entry.rate);
         set(row.mastery, entry.mastery);
         row.mastery.hidden = !entry.mastery;
-        if (entry.masteryTier >= 0 && entry.masteryTier !== row.tier) {
-          row.tier = entry.masteryTier;
-          const markup = artFor(entry, entry.masteryTier);
-          if (markup) row.art.innerHTML = markup;
-        }
+        // the icon is the same at every mastery tier; only the tier text changes
+        if (entry.masteryTier >= 0) row.tier = entry.masteryTier;
       }
     }
   }

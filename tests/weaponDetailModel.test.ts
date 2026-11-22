@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Decimal, cardInfo, cardStats, newOwnedCard, type OwnedCard } from '../src/game';
-import { weaponDetail } from '../src/renderer/src/pages/weaponDetailModel';
+import { movesView } from '../src/renderer/src/pages/movesModel';
+import { attackEntries, weaponDetail } from '../src/renderer/src/pages/weaponDetailModel';
 import { content, freshState } from './helpers';
 
 function detail(id: string, patch: Partial<OwnedCard> = {}, inLoadout = false) {
@@ -32,7 +33,12 @@ describe('weapon panel detail', () => {
     expect(stat(d, 'Crit chance')).toMatch(/%$/);
     expect(stat(d, 'Health')).toBeTruthy();
     expect(stat(d, 'Role')).toBe('DPS');
-    expect(stat(d, 'Element')).toBe('Fire');
+    // only T6 and Heirloom cards have an element
+    expect(stat(d, 'Element')).toBeUndefined();
+    const withElement = content.cards.find((c) => c.job === 'fighting' && c.element)!;
+    expect(stat(detail(withElement.id).d, 'Element')).toBe(
+      withElement.element!.charAt(0).toUpperCase() + withElement.element!.slice(1),
+    );
     expect(stat(d, 'Position')).toMatch(/row/);
     expect(stat(d, 'Loadout cost')).toBeTruthy();
   });
@@ -48,14 +54,15 @@ describe('weapon panel detail', () => {
     expect(stat(detail('storm_duelist', { tier: 'gold' }).d, 'Hits per second')).toBe('2 / s');
   });
 
-  it('what it does lists the ability, the team bonus and the signature as entries', () => {
-    const { d } = detail('dawnblade_regent', { tier: 'prismatic' });
-    expect(d.does.map((e) => e.kind).slice(0, 3)).toEqual(['ability', 'team', 'signature']);
-    const sig = d.does[2]!;
-    expect(sig.name).not.toBe('');
-    expect(sig.text).toMatch(/gauge is full/);
-    expect(sig.values.length).toBe(2);
+  it('what it does lists the ability and the team bonus, then the three attacks come first', () => {
+    const { state, d } = detail('dawnblade_regent', { tier: 'prismatic' });
+    expect(d.does.map((e) => e.kind).slice(0, 2)).toEqual(['ability', 'team']);
     expect(d.does[0]!.text).toBe('Heavy hits every 2 s, signature attack ×15');
+    const attacks = attackEntries(movesView(state, content, 'dawnblade_regent'));
+    expect(attacks.map((e) => e.kind)).toEqual(['hit', 'skill', 'ult']);
+    expect(attacks[2]!.name).not.toBe('');
+    expect(attacks[2]!.text).toMatch(/gauge/);
+    expect(attackEntries(null)).toEqual([]);
   });
 
   it('a bond shows when both cards are in the loadout', () => {
@@ -93,7 +100,7 @@ describe('weapon panel detail', () => {
     expect(stat(d, 'Output')).toMatch(/^×/);
     expect(stat(d, 'Strikes per second')).toBeTruthy();
     expect(stat(d, 'Health')).toBeUndefined();
-    expect(d.does.some((e) => e.kind === 'signature' || e.kind === 'team')).toBe(false);
+    expect(d.does.some((e) => e.kind === 'ult' || e.kind === 'team')).toBe(false);
     expect(d.does[0]!.text).toBe('worker' in worker ? worker.worker.description : '');
     expect(new Decimal(0).eq(cardStats(freshState(), content, worker.id)!.hit)).toBe(true);
   });

@@ -2,15 +2,13 @@ import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   Decimal,
-  activeWorkers,
+  slotWorkers,
+  openSlots,
   cloneState,
   collectModifiers,
   createSeededRng,
   floorPosition,
   forgeWorker,
-  isProducerUnlocked,
-  mineLevel,
-  mineLevelCost,
   stageKey,
   type GameState,
 } from '../src/game';
@@ -36,7 +34,6 @@ import {
   buyerCandidates,
   buildOrder,
   chooseLead,
-  chooseAutomation,
   chooseOverflow,
   chooseRespec,
   fastestFarm,
@@ -49,7 +46,6 @@ import {
   spendShards,
   spendStarDust,
   starFarm,
-  toolGain,
   workerPicks,
 } from '../scripts/sim/sim';
 import {
@@ -121,53 +117,36 @@ describe('sim player: the card it builds', () => {
 });
 
 describe('sim player: workers and the forge', () => {
-  it('puts its strongest worker on the place worth the most, gem tier counted', () => {
+  it('puts its strongest cards on the open slots, on the material the camp level needs', () => {
     const state = freshState();
-    state.production.unlockedTrees = ['oak', 'ironbark', 'moonwillow'];
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    state.camp.level = 9; // the price asks for every wood and ore now
     own(state, 'moonwood_dryad'); // Mythic logging card
     const picks = workerPicks(state, content);
-    expect(picks[0]).toMatchObject({ place: 'moonwillow', card: 'moonwood_dryad' });
+    const forest = picks.filter((p) => p.place === 'forest');
+    expect(forest[0]).toMatchObject({ place: 'forest', card: 'moonwood_dryad' });
+    expect(forest).toHaveLength(Math.min(2, openSlots(state, content, 'forest')));
   });
 
-  it('fills a second worker slot bought with Starlight', () => {
+  it('fills a slot the Starlight item opened', () => {
     const state = freshState();
-    state.prestigeCount = 10; // a first slot on every tree and mine
-    state.prestige.shop['second_hands'] = 1; // Oak gets a second slot
+    state.prestige.shop['second_hands'] = 1; // one more slot in each place
     own(state, 'moss_forager');
     const after = placeBestWorkers(state, content);
-    expect(activeWorkers(after, content)['oak']).toHaveLength(2);
+    expect(slotWorkers(after, content).filter((w) => w.place === 'forest')).toHaveLength(2);
   });
 
   it('runs the forge only for a card that needs stars and with spare gems', () => {
     const state = freshState();
-    state.production.unlockedTrees = ['oak', 'ironbark', 'moonwillow'];
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
     expect(forgePlan(state, content).run).toBe(false); // no gems in hand
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     expect(forgePlan(state, content)).toMatchObject({ recipe: 'star_dust', run: true });
-    // the slots are full and the weakest place worker adds plenty: it stays where it is
-    expect(forgeWorker(placeBestWorkers(state, content), content)).toBeNull();
-    // the weakest worker adds little beside two rich places: it goes to the forge
-    state.prestigeCount = 10;
+    // a card left over with no slot to take it goes to the forge
     own(state, 'moonwood_dryad');
-    own(state, 'core_titan');
-    state.production.treeLevels['moonwillow'] = 200;
-    state.production.mineLevels['crystal_grotto'] = 200;
+    own(state, 'elder_treant');
     expect(forgeWorker(placeBestWorkers(state, content), content)).not.toBeNull();
-  });
-
-  it('values a tool line by what it adds: crit damage is worth nothing without crit chance', () => {
-    const none: never[] = [];
-    expect(toolGain('harvest.critDamage', new Decimal(0), new Decimal(0.05), 'mining', none)).toBe(
-      0,
-    );
-    expect(
-      toolGain('harvest.critChance', new Decimal(0), new Decimal(0.01), 'mining', none),
-    ).toBeCloseTo(0.01);
-    expect(
-      toolGain('production.rate', new Decimal(1), new Decimal(1.08), 'mining', none),
-    ).toBeCloseTo(0.08);
   });
 });
 
@@ -245,16 +224,6 @@ describe('sim player: where to fight', () => {
   });
 });
 
-describe('sim player: autobuyers', () => {
-  it('switches on the autobuyers it owns', () => {
-    const state = freshState();
-    expect(chooseAutomation(state, content)).toBe(state); // none owned
-    state.prestige.shop['timber_steward'] = 1;
-    const on = chooseAutomation(state, content);
-    expect(on.automation).toMatchObject({ treeLevels: true, mineLevels: false, reservePercent: 0 });
-  });
-});
-
 describe('sim player: lead and Ascension', () => {
   it('leads with the card that hits hardest, not the rarest one, and keeps a lead within 10%', () => {
     const state = freshState();
@@ -275,24 +244,24 @@ describe('sim player: lead and Ascension', () => {
 });
 
 describe('sim player: runs of one economy line', () => {
-  const run = (ore: number): number => {
+  const run = (amount: number): number => {
     const state = freshState();
-    const mine = content.mines.find((m) => isProducerUnlocked(state, content, 'mining', m.id))!;
-    const paidIn = mineLevelCost(state, content, mine.id)!.resource;
-    state.resources[paidIn] = new Decimal(ore);
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    for (const r of content.resources) {
+      if (r.kind === 'tree_gem' || r.kind === 'mine_gem')
+        state.resources[r.id] = new Decimal(amount);
+    }
     const modifiers = collectModifiers(state, content);
     const candidate = buyerCandidates(state, content, modifiers).find(
-      (c) => c.id === `mine:${mine.id}`,
+      (c) => c.id === 'camp:level',
     )!;
     const after = buyAgain(state, content, candidate, modifiers, createSeededRng(1), new Map(), []);
-    return mineLevel(after, mine.id) - mineLevel(state, mine.id);
+    return after.camp.level - state.camp.level;
   };
 
-  it('buys more levels of the best line while they stay cheap beside what is left', () => {
-    // a modest purse stops the run within ECONOMY_RUN levels (it runs out or levels get dear)
-    expect(run(1e3)).toBeLessThanOrEqual(ECONOMY_RUN);
-    // a huge purse then bulk-buys as many levels as a 1/ECONOMY_RUN share of it pays for
-    expect(run(1e300)).toBeGreaterThan(ECONOMY_RUN);
+  it('buys more camp levels while they stay cheap beside what is left, at most ECONOMY_RUN', () => {
+    expect(run(1e3)).toBeLessThan(run(1e300));
+    expect(run(1e300)).toBeLessThanOrEqual(ECONOMY_RUN);
   });
 });
 
@@ -355,7 +324,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     // (No guard here: the team is the damage team.)
     const state = withAutoChallenge(atBossWall(), true);
     delete state.cards.owned['bronze_forgehand'];
-    const close = withBossAttack(real, 'mossy_cellar', 85, 2);
+    const close = withBossAttack(real, 'mossy_cellar', 78, 2);
     expect(margin(state, close)).toBeGreaterThan(CHALLENGE_TRY_MARGIN);
     expect(margin(state, close)).toBeLessThan(CHALLENGE_WIN);
     const tried = chooseAutoChallenge(state, close, 1000, null);

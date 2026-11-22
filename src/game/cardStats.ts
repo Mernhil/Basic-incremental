@@ -1,17 +1,10 @@
-import {
-  averageDamage,
-  burstStats,
-  critFactor,
-  critStats,
-  hitDamage,
-  signatureDamage,
-} from './combat';
+import { averageDamage, burstStats, critFactor, critStats, hitDamage } from './combat';
 import type { Content } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth, loadoutCards } from './cards';
 import { Decimal } from './num';
-import { harvestCrit } from './production';
 import { newOwnedCard, type GameState, type OwnedCard } from './state';
-import { activeWorkers, producerJob, workerPower } from './workers';
+import { placeJob, slotWorkers } from './camp';
+import { workerPower } from './workers';
 
 /**
  * The numbers every card shows (DESIGN.md §5 Show the stats): what the card is worth on its own,
@@ -28,11 +21,8 @@ export interface CardStats {
   hitSeconds: number;
   critChance: number;
   critDamage: Decimal;
-  /** Fighting: damage of one hit and of one signature attack (before crits); zero for a worker. */
+  /** Fighting: damage of one hit (before crits); zero for a worker. */
   hit: Decimal;
-  signature: Decimal;
-  /** Fighting: hits it takes to fill the gauge (size / fill); 0 when the gauge never fills. */
-  hitsPerSignature: number;
 }
 
 /** How a card's numbers sit against the card it would replace; each is a fraction (0.12 = +12%). */
@@ -67,22 +57,17 @@ export function cardStatsFor(content: Content, cardId: string, owned: OwnedCard)
       critChance: crit.chance,
       critDamage: crit.damage,
       hit: hitDamage(cardBaseDamage(content, cardId, owned), burst),
-      signature: signatureDamage(cardBaseDamage(content, cardId, owned), burst),
-      hitsPerSignature: burst.fill > 0 ? burst.size / burst.fill : 0,
     };
   }
   const burst = burstStats(content, card.job, mods);
-  const crit = harvestCrit(content, card.job, mods);
   return {
     kind: 'worker',
     output: new Decimal(workerPower(content, cardId, owned)),
     health: null,
     hitSeconds: burst.interval,
-    critChance: crit.chance,
-    critDamage: crit.damage,
+    critChance: 0,
+    critDamage: new Decimal(1),
     hit: new Decimal(0),
-    signature: new Decimal(0),
-    hitsPerSignature: 0,
   };
 }
 
@@ -105,10 +90,7 @@ function comparedWith(state: GameState, content: Content, cardId: string): strin
     }
     return weakest;
   }
-  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
-    if (producerJob(content, place) === card.job && ids[0]) return ids[0];
-  }
-  return null;
+  return slotWorkers(state, content).find((w) => placeJob(w.place) === card.job)?.card ?? null;
 }
 
 /** The compare line's numbers; null when there is nothing to compare with or the card is that card. */

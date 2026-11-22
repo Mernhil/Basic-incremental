@@ -17,13 +17,13 @@ export type CardElement = (typeof ELEMENTS)[number];
 const FRONT_SHARE = 0.22;
 const FPS = 30;
 const FIRE = ['#ff3b2e', '#ff8a1f', '#ffd23a', '#fff6c8'];
-const CRACK: Record<string, string> = { earth: '#ffb347', crystal: '#9fe8ff', void: '#b47cff' };
+const CRACK: Record<string, string> = { dark: '#b47cff' };
 /** Every colour each element's effect may draw: the hardening pass snaps to these. */
 const PALETTE: Partial<Record<CardElement, readonly string[]>> = {
   fire: [INK, ...FIRE],
-  storm: [INK, '#3fd8ff', '#ffffff'],
+  water: [INK, '#3fd8ff', '#ffffff'],
   light: ['#ffe27a', '#fff6c8', '#ffffff'],
-  nature: [INK, '#5fd35a', '#2a7a2e', '#9fe87a'],
+  earth: [INK, '#5fd35a', '#2a7a2e', '#9fe87a'],
 };
 
 interface Particle {
@@ -193,7 +193,7 @@ class Fx {
         }
         break;
       }
-      case 'storm': {
+      case 'water': {
         const every = 0.8 / k;
         if (this.since > every) {
           this.since = 0;
@@ -235,7 +235,7 @@ class Fx {
         }
         break;
       }
-      case 'nature': {
+      case 'earth': {
         const n = 5 * k;
         while (this.ps.length < n)
           this.ps.push({
@@ -288,7 +288,7 @@ class Fx {
       case 'fire':
         for (const p of this.ps) flame(p.front ? fc : bc, p, s);
         break;
-      case 'storm':
+      case 'water':
         for (const b of this.bolts)
           bolt(b.front ? fc : bc, b.pts, s * (this.strength > 1 ? 1.25 : 1), 1 - b.t);
         break;
@@ -298,7 +298,7 @@ class Fx {
         for (const p of this.ps) spark(p.front ? fc : bc, p.x, p.y, p.r * (1 - p.t), 1 - p.t);
         break;
       }
-      case 'nature':
+      case 'earth':
         for (const p of this.ps) {
           const a = p.a ?? 0;
           const x = this.center.x + Math.cos(a) * this.radius * 0.95;

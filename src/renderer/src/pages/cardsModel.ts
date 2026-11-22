@@ -1,6 +1,11 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
 import type { SkinPickerView } from './cardSkinsModel';
-import { MAX_LOADOUT_HEIRLOOMS, type GameState, type TierUp } from '../../../game';
+import {
+  MAX_LOADOUT_HEIRLOOMS,
+  MAX_LOADOUT_STARTERS,
+  type GameState,
+  type TierUp,
+} from '../../../game';
 import type { CardFace } from '../ui/cardFace';
 import type { StarChartView } from './skillsModel';
 export type Job = (typeof JOBS)[number];
@@ -94,19 +99,23 @@ export interface DetailStat {
 }
 
 /**
- * One thing a card does, for the weapon panel's "What it does" list: an ability, the team bonus,
- * the signature attack, a bond. The coming moveset's three attacks are entries of the same shape.
+ * One thing a card does, for the weapon panel's "What it does" list: its three attacks (hit, skill,
+ * ultimate), an ability, the team bonus, a bond.
  */
 export interface DetailEntry {
-  kind: 'ability' | 'team' | 'signature' | 'bond';
-  /** The kind's label ("Signature"). */
+  kind: 'hit' | 'skill' | 'ult' | 'ability' | 'team' | 'bond';
+  /** The kind's label ("Ultimate"). */
   kindLabel: string;
   /** The entry's own name ("Cleave", "Oath of Dawn"); empty when the kind says it all. */
   name: string;
   /** Plain words with the current values filled in. */
   text: string;
-  /** The key numbers, short ("1,200 damage", "every 8 hits"). */
+  /** The key numbers, short ("Active", "needs Golden Axe at work"). */
   values: string[];
+  /** What an attack's effects do, one line each. */
+  effects?: string[];
+  /** Why an attack does not fire yet. */
+  note?: string | null;
   /** The exact source text, for a tooltip. */
   title?: string;
   active?: boolean;
@@ -147,6 +156,8 @@ export interface CardEntry {
   id: string;
   /** An Heirloom card (at most two in a loadout). */
   heirloom: boolean;
+  /** One of the five starter weapons (at most one in a loadout). */
+  starter?: boolean;
   name: string;
   job: Job;
   rarity: Rarity;
@@ -156,7 +167,7 @@ export interface CardEntry {
   itemType: string;
   /** Signature item markup (art/items.ts). */
   item: string;
-  element: CardElement;
+  element?: CardElement;
   owned: boolean;
   /** Owned cards only; unowned cards show their starting rank greyed out. */
   rank: Rank;
@@ -214,6 +225,8 @@ export interface SlotChoice {
   fits: boolean;
   /** A third Heirloom would go in (DESIGN.md §5 Cost): the picker says why it cannot. */
   heirloomBlocked: boolean;
+  /** A second starter weapon would go in (DESIGN.md §2 Starter weapon). */
+  starterBlocked: boolean;
 }
 
 /**
@@ -229,6 +242,7 @@ export function slotChoices(
 ): SlotChoice[] {
   const costOf = new Map(entries.map((e) => [e.id, e.cost]));
   const heirloomIds = new Set(entries.filter((e) => e.heirloom).map((e) => e.id));
+  const starterIds = new Set(entries.filter((e) => e.starter).map((e) => e.id));
   const occupant = loadout.slots[slot] ?? null;
   const occupantCost = occupant ? (costOf.get(occupant) ?? 0) : 0;
   return entries
@@ -240,14 +254,17 @@ export function slotChoices(
       const others = loadout.slots.filter((s) => s !== null && s !== occupant && s !== e.id);
       const heirlooms = others.filter((s) => heirloomIds.has(s as string)).length;
       const heirloomBlocked = e.heirloom && heirlooms + 1 > MAX_LOADOUT_HEIRLOOMS;
+      const starters = others.filter((s) => starterIds.has(s as string)).length;
+      const starterBlocked = Boolean(e.starter) && starters + 1 > MAX_LOADOUT_STARTERS;
       return {
         id: e.id,
         cost: e.cost,
         from,
         current: from === slot,
         costAfter,
-        fits: costAfter <= loadout.cap && !heirloomBlocked,
+        fits: costAfter <= loadout.cap && !heirloomBlocked && !starterBlocked,
         heirloomBlocked,
+        starterBlocked,
       };
     })
     .sort((a, b) => Number(b.fits) - Number(a.fits) || b.cost - a.cost);
@@ -272,7 +289,8 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'dust'): ModelResult;
+  /** Adds a star (from copies or dust), or opens the card's skill with Cores (DESIGN.md §2). */
+  upgrade(state: GameState, id: string, kind: 'star' | 'dust' | 'skill'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */
