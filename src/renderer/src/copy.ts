@@ -435,6 +435,10 @@ export const COPY = {
     fight: 'Fight',
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
+    /** A boss's elements (DESIGN.md §2 Fights): "Weak to Fire (+50% damage)", "Resists Earth (-25% damage)". */
+    bossWeak: (element: string, percent: number) => `Weak to ${element} (+${percent}% damage)`,
+    bossResists: (element: string, percent: number) => `Resists ${element} (${percent}% damage)`,
+    bossNoneElement: 'Wood to Prismatic cards have no element and always do base damage.',
     boss: (name: string, hp: string, bars: number) => `${name} · ${hp} HP in ${bars} bars`,
     /** Stage stars and overflow (DESIGN.md §6): plain working UI until the floors UI is designed. */
     stars: (levels: number, max: number) => `★ ${levels} / ${max}`,
@@ -797,8 +801,8 @@ export const COPY = {
         : full
           ? `${name}, not marked. This tier is full: unmark a card first`
           : `${name}, not marked. Click to mark`,
-    wishlistDetail: (name: string, type: string, element: string, job: string) =>
-      `${name} · ${type} · ${element} · ${job}`,
+    wishlistDetail: (name: string, type: string, element: string | undefined, job: string) =>
+      element ? `${name} · ${type} · ${element} · ${job}` : `${name} · ${type} · ${job}`,
     wishlistHover: 'Hover or focus a card to read its name.',
     wishlistHunting: (names: string) => `Hunting: ${names}`,
     wishlistNone: 'No card marked',
