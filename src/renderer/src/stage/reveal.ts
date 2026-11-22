@@ -16,6 +16,7 @@ import {
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
 import { reducedMotion } from './motion';
+import { holdToasts } from './toast';
 import { playCutIn } from './specialAttack';
 import './reveal.css';
 
@@ -192,6 +193,8 @@ export function showReveal(opts: RevealOptions): void {
   dialog.append(stage);
   overlay.append(dialog);
   document.body.append(overlay);
+  // level-up and goal toasts wait until the reveal is over
+  holdToasts(true);
   fitLine();
   sizeDoor();
   const onResize = (): void => {
@@ -357,6 +360,7 @@ export function showReveal(opts: RevealOptions): void {
   const close = (): void => {
     if (closed) return;
     closed = true;
+    holdToasts(false);
     window.removeEventListener('resize', onResize);
     document.removeEventListener('keydown', onKey, true);
     overlay.classList.add('is-leaving');
