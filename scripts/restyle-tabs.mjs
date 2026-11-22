@@ -10,22 +10,34 @@ const w = Number(process.argv[4] ?? 1920);
 const h = Number(process.argv[5] ?? 1080);
 mkdirSync(out, { recursive: true });
 const browser = await chromium.connectOverCDP(`http://localhost:${port}`);
-const page = browser.contexts().flatMap((c) => c.pages()).find((p) => !p.url().startsWith('devtools'));
+const page = browser
+  .contexts()
+  .flatMap((c) => c.pages())
+  .find((p) => !p.url().startsWith('devtools'));
 await page.waitForSelector('.shell', { timeout: 60000 });
-await page.evaluate(async (t) => window.api.writeSave(t), readFileSync('tests/fixtures/saves/v26-0.6.0.save.txt', 'utf8'));
+await page.evaluate(
+  async (t) => window.api.writeSave(t),
+  readFileSync('tests/fixtures/saves/v26-0.6.0.save.txt', 'utf8'),
+);
 await page.evaluate(() => localStorage.removeItem('bi-dev-table'));
 await page.reload();
 await page.waitForSelector('.tbl-pile', { timeout: 60000 });
 await page.waitForTimeout(3000);
 const cdp = await page.context().newCDPSession(page);
-await cdp.send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
+await cdp.send('Emulation.setDeviceMetricsOverride', {
+  width: w,
+  height: h,
+  deviceScaleFactor: 1,
+  mobile: false,
+});
 for (let i = 0; i < 20; i++) {
   const btn = await page.$('.wb button');
   if (!btn) break;
   await btn.click().catch(() => {});
   await page.waitForTimeout(300);
 }
-const mute = () => page.evaluate(() => document.querySelectorAll('audio,video').forEach((m) => (m.muted = true)));
+const mute = () =>
+  page.evaluate(() => document.querySelectorAll('audio,video').forEach((m) => (m.muted = true)));
 const shot = async (name) => {
   await mute();
   await page.mouse.move(w * 0.5, 4);
@@ -45,7 +57,8 @@ const shot = async (name) => {
 };
 const back = async () => {
   for (let i = 0; i < 5; i++) {
-    if (!(await page.evaluate(() => !!document.querySelector('[data-open]')?.closest('[inert]')))) break;
+    if (!(await page.evaluate(() => !!document.querySelector('[data-open]')?.closest('[inert]'))))
+      break;
     await page.keyboard.press('Escape');
     await page.waitForTimeout(800);
   }
@@ -56,7 +69,10 @@ const tabs = async (view, label, names) => {
   await page.waitForTimeout(1500);
   for (const n of names) {
     const el = page.locator('button', { hasText: new RegExp(`^${n}`) }).first();
-    if ((await el.count()) === 0) { console.log('no tab', n); continue; }
+    if ((await el.count()) === 0) {
+      console.log('no tab', n);
+      continue;
+    }
     await el.click();
     await page.waitForTimeout(900);
     await shot(`${label}-${n.toLowerCase()}`);
