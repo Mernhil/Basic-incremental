@@ -20,10 +20,10 @@ function picture(
   return hasFoeSprite(sprite) ? 'picture' : 'placeholder';
 }
 
-/** Only these two enemies still show the placeholder. */
-const PLACEHOLDERS = new Set(['root_warden', 'glacier_colossus']);
+/** No enemy shows the placeholder today; it stays for an enemy whose picture is removed. */
+const PLACEHOLDERS = new Set<string>();
 
-/** The eleven approved pictures: enemy id -> picture id (stills, art/foes.ts). */
+/** The thirteen approved pictures: enemy id -> picture id (stills, art/foes.ts). */
 const NEW_PICTURES: Record<string, string> = {
   moss_slime: 'moss_slime',
   bramble_beast: 'bramble_beast',
@@ -36,6 +36,8 @@ const NEW_PICTURES: Record<string, string> = {
   shade_mote: 'shade_mote',
   rift_maw: 'rift_maw',
   cinder_lich: 'cinder_lich',
+  root_warden: 'root_warden',
+  glacier_colossus: 'glacier_colossus',
 };
 
 describe('enemy pictures: a picture or the placeholder, never nothing', () => {
@@ -43,7 +45,7 @@ describe('enemy pictures: a picture or the placeholder, never nothing', () => {
     expect(hasFoeSprite('hooded_rogue_assassin')).toBe(true);
   });
 
-  it('resolves every enemy, mini-boss and boss; exactly two bosses are placeholders', () => {
+  it('resolves every enemy, mini-boss and boss; no enemy resolves to the placeholder', () => {
     const got = new Set<string>();
     const mapped: Record<string, string> = {};
     for (const d of content.allDungeons) {
@@ -64,6 +66,12 @@ describe('enemy pictures: a picture or the placeholder, never nothing', () => {
       expect(mapped[id], id).toBe(pic);
       expect(sprite(`foe-${pic}`), pic).toMatchObject({ w: 160, h: 172 });
     }
+  });
+
+  it('an enemy with no picture resolves to the placeholder', () => {
+    const d = content.allDungeons[0]!;
+    expect(picture(d, { sprite: 'no_such_picture' }, false)).toBe('placeholder');
+    expect(picture(d, { sprite: undefined }, false)).toBe('placeholder');
   });
 
   it('shows the Spark Wisp as the Drowned Deckhand, with its id unchanged', () => {

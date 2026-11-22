@@ -8,7 +8,7 @@
     "enemies": [
       {
         "id": "moss_slime",
-        "name": "Woodland Stalker Wolf",
+        "name": "Moss Slime",
         "hpWeight": 1,
         "sprite": "moss_slime"
       },
@@ -20,7 +20,7 @@
       },
       {
         "id": "bramble_beast",
-        "name": "Plague Doctor",
+        "name": "Bramble Beast",
         "hpWeight": 1.5,
         "sprite": "bramble_beast"
       }
@@ -180,13 +180,13 @@
     "enemies": [
       {
         "id": "frost_imp",
-        "name": "Ivory Direwolf",
+        "name": "Frost Imp",
         "hpWeight": 1,
         "sprite": "frost_imp"
       },
       {
         "id": "ice_wisp",
-        "name": "Ice Sorceress",
+        "name": "Ice Wisp",
         "hpWeight": 0.7,
         "sprite": "ice_wisp"
       },
@@ -270,7 +270,7 @@
       },
       {
         "id": "gale_harpy",
-        "name": "Gothic Corsair",
+        "name": "Storm Harpy",
         "hpWeight": 1,
         "sprite": "storm_harpy"
       },
@@ -348,13 +348,13 @@
     "enemies": [
       {
         "id": "lantern_moth",
-        "name": "Golden Cross Novice Priestess",
+        "name": "Lantern Moth",
         "hpWeight": 0.7,
         "sprite": "lantern_moth"
       },
       {
         "id": "gilded_acolyte",
-        "name": "Ivory Sun Priestess",
+        "name": "Gilded Acolyte",
         "hpWeight": 1,
         "sprite": "gilded_acolyte"
       },
@@ -432,7 +432,7 @@
     "enemies": [
       {
         "id": "shade_mote",
-        "name": "Shadow Slime",
+        "name": "Shade Mote",
         "hpWeight": 0.7,
         "sprite": "shade_mote"
       },
@@ -444,7 +444,7 @@
       },
       {
         "id": "rift_maw",
-        "name": "Bloodroot Black",
+        "name": "Rift Maw",
         "hpWeight": 1.5,
         "sprite": "rift_maw"
       }

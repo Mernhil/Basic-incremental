@@ -355,14 +355,9 @@ describe('the three new dungeons', () => {
       ['void_hollow', 'Hollow of the Void', 60, 'sunken_sanctum'],
     ]);
     expect(later.map((d) => [d.boss.name, ...d.enemies.map((e) => e.name)])).toEqual([
-      ['Abyssal Anchor Leviathan', 'Drowned Deckhand', 'Gothic Corsair', 'Obsidian Crab Green'],
-      [
-        'Sanctuary Archangel',
-        'Golden Cross Novice Priestess',
-        'Ivory Sun Priestess',
-        'Cathedral Reliquary',
-      ],
-      ['Faceless Void Reaper', 'Shadow Slime', 'Hooded Rogue Assassin', 'Bloodroot Black'],
+      ['Abyssal Anchor Leviathan', 'Drowned Deckhand', 'Storm Harpy', 'Obsidian Crab Green'],
+      ['Sanctuary Archangel', 'Lantern Moth', 'Gilded Acolyte', 'Cathedral Reliquary'],
+      ['Faceless Void Reaper', 'Shade Mote', 'Hooded Rogue Assassin', 'Rift Maw'],
     ]);
     expect(later.map((d) => d.background)).toEqual(later.map((d) => d.id));
     expect(shipped.allDungeons).toHaveLength(6);

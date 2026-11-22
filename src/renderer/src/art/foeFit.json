@@ -1,12 +1,13 @@
 {
-  "cinder_lich": [-4, 0],
-  "drowned_deckhand": [-2, 0],
-  "frost_imp": [12, 12],
-  "gilded_acolyte": [-4, 0],
-  "ice_wisp": [-2, 22],
-  "lantern_moth": [0, 12],
-  "moss_slime": [0, 12],
-  "rift_maw": [-4, 0],
-  "shade_mote": [0, 4],
+  "bramble_beast": [-2, 0],
+  "cinder_lich": [-3, 0],
+  "drowned_deckhand": [-3, 0],
+  "frost_imp": [8, 12],
+  "gilded_acolyte": [-5, 0],
+  "ice_wisp": [-3, 22],
+  "lantern_moth": [1, 12],
+  "moss_slime": [-1, 12],
+  "rift_maw": [-3, 0],
+  "shade_mote": [1, 4],
   "storm_harpy": [-2, 1]
 }

@@ -22,7 +22,8 @@
   /* the enemy card: its height follows the duel, its width the card shape */
   /* --du-foe-room: what the hand leaves the enemy card (stage/arena.ts fitHand) */
   --du-foe-h: clamp(170px, min(46cqh, var(--du-foe-room, 9999px)), 300px);
-  --du-foe-w: calc(var(--du-foe-h) * 0.74);
+  /* never narrower than a 160 px picture plus its frame, so no picture reaches the card's edge */
+  --du-foe-w: max(calc(var(--du-foe-h) * 0.74), 186px);
   --du-top: 66px;
   /* the room's torches stand either side of the enemy */
   --ar-hpw: calc(var(--du-foe-w) + 220px);
@@ -603,6 +604,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   height: 100%;
   display: grid;
   place-items: center;
+  /* a picture wider than the box overflows on both sides, never only to the right */
+  justify-content: center;
 }
 .du-foe__body svg {
   width: 100%;
