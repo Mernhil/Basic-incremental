@@ -6,34 +6,42 @@ import {
   stampSpot,
 } from '../src/renderer/src/stage/specialQueue';
 
+const job = (cardId: string, n = 0) => ({ cardId, n });
+
 describe('ultimates queue one at a time', () => {
   it('keeps the order they fired in', () => {
-    let waiting: string[] = [];
-    for (const id of ['a', 'b']) waiting = queueSpecial(waiting, id).waiting;
-    expect(waiting).toEqual(['a', 'b']);
+    let waiting = [job('a')];
+    waiting = queueSpecial(waiting, job('b')).waiting;
+    expect(waiting.map((w) => w.cardId)).toEqual(['a', 'b']);
+  });
+
+  it('a card has one waiting: a newer one replaces its older one in its place', () => {
+    let waiting = queueSpecial([job('a', 1)], job('b', 1)).waiting;
+    const q = queueSpecial(waiting, job('a', 2));
+    expect(q.waiting).toEqual([job('a', 2), job('b', 1)]);
+    expect(q.dropped).toEqual([job('a', 1)]);
+    waiting = q.waiting;
+    expect(waiting).toHaveLength(2);
+  });
+
+  it('a flood from one card never crowds the others out', () => {
+    let waiting = [job('sword'), job('bow'), job('hammer')];
+    for (let i = 0; i < 20; i += 1) waiting = queueSpecial(waiting, job('dagger', i)).waiting;
+    expect(waiting.map((w) => w.cardId).sort()).toEqual(['bow', 'dagger', 'hammer', 'sword']);
   });
 
   it('holds at most the cap and drops the oldest waiting, never the newest', () => {
-    let waiting: string[] = [];
-    const dropped: string[] = [];
-    for (const id of ['a', 'b', 'c', 'd', 'e']) {
-      const q = queueSpecial(waiting, id);
-      waiting = q.waiting;
-      dropped.push(...q.dropped);
-    }
-    expect(waiting).toHaveLength(SPECIAL_WAIT_MAX);
-    expect(waiting).toEqual(['d', 'e']);
-    expect(dropped).toEqual(['a', 'b', 'c']);
+    const q = queueSpecial(
+      ['a', 'b', 'c', 'd'].map((id) => job(id)),
+      job('e'),
+    );
+    expect(q.waiting).toHaveLength(SPECIAL_WAIT_MAX);
+    expect(q.waiting.map((w) => w.cardId)).toEqual(['b', 'c', 'd', 'e']);
+    expect(q.dropped.map((w) => w.cardId)).toEqual(['a']);
   });
 
-  it('drops nothing while under the cap', () => {
-    expect(queueSpecial(['a'], 'b').dropped).toEqual([]);
-  });
-
-  it('has no other place to send a dropped ultimate: it comes back as data, not as a banner', () => {
-    const q = queueSpecial(['a', 'b'], 'c');
-    expect(q.dropped).toEqual(['a']);
-    expect(q.waiting).toEqual(['b', 'c']);
+  it('drops nothing while under the cap and the cards differ', () => {
+    expect(queueSpecial([job('a')], job('b')).dropped).toEqual([]);
   });
 });
 

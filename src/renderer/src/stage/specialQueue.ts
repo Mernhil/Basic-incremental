@@ -4,20 +4,31 @@
  *
  * - Ultimates (a card's signature on a full gauge) play their cut-in one at a time, in the order they
  *   fired. The fight does not wait for them: only the showing does.
- * - At most `SPECIAL_WAIT_MAX` wait behind the one playing. When one more arrives (high speed, many
- *   signatures), the oldest waiting is dropped. A dropped ultimate is never shown in another style.
+ * - A card has at most one ultimate waiting: a newer one from the same card replaces its older
+ *   waiting one, in the older one's place in the line, so every card gets its turn when ultimates
+ *   fire faster than cut-ins play (high speed). At most `SPECIAL_WAIT_MAX` wait in all; one more
+ *   drops the oldest waiting. A replaced or dropped ultimate is never shown in another style.
  * - CRIT! and BREAK! are stamps on the enemy card, never in this queue and never waiting.
  */
 
-/** Most ultimates waiting behind the one that plays. */
-export const SPECIAL_WAIT_MAX = 2;
+/** Most ultimates waiting behind the one that plays (a team has four cards). */
+export const SPECIAL_WAIT_MAX = 4;
 
-/** `job` joins the end of the waiting line; the oldest ones beyond the cap leave it. */
-export function queueSpecial<T>(
+/**
+ * `job` joins the waiting line. If its card already has one waiting, `job` takes that one's place and
+ * the older one is dropped; otherwise it joins the end, and the oldest beyond the cap leaves.
+ */
+export function queueSpecial<T extends { cardId: string }>(
   waiting: readonly T[],
   job: T,
   max: number = SPECIAL_WAIT_MAX,
 ): { waiting: T[]; dropped: T[] } {
+  const same = waiting.findIndex((w) => w.cardId === job.cardId);
+  if (same >= 0) {
+    const next = [...waiting];
+    next[same] = job;
+    return { waiting: next, dropped: [waiting[same]!] };
+  }
   const all = [...waiting, job];
   const over = Math.max(0, all.length - max);
   return { waiting: all.slice(over), dropped: all.slice(0, over) };
