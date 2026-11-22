@@ -4,7 +4,8 @@ import type { ViewId } from '../table/viewIds';
 
 /**
  * The hub map (DESIGN.md section 2 Base camp): one painted picture, 640 x 360, shown at a whole
- * scale (2x at 1280 x 720, 3x at 1920 x 1080, nearest neighbour), centred, never scrolled. Each
+ * scale that covers the area under the header (2x at 1280 x 720, 3x at 1920 x 1080, nearest
+ * neighbour), centred with the overflow cut evenly off the edges, never scrolled. Each
  * place is its mask (`masks/<id>.png`, see `hubMasks.ts`): the exact pixels that click, and the shape the
  * hover glow follows. Display logic only: no DOM, unit tested.
  */
@@ -146,16 +147,27 @@ export function sealWhy(def: HubBuilding, state: GameState, content: Content): s
   return null;
 }
 
+/** A window a few pixels short of a whole scale (a frame, a scrollbar) still counts as covered. */
+export const HUB_FILL_SLACK = 8;
+
 /**
- * The whole scale the map is shown at: the largest that fits the width of the area under the
- * header and, in height, loses at most 12 % to the window (a little of the top and bottom edge,
- * which are rock and grass, then falls off the picture; the header takes 64 px at 1280 x 720).
- * 2x at 1280 x 720, 3x at 1920 x 1080; at least 1.
+ * The whole scale the map is shown at: the smallest that covers the area under the header (give or
+ * take `HUB_FILL_SLACK` pixels), so the map always fills it; the overflow is cut evenly off the
+ * edges (see `hubOffset`). 2x at 1280 x 720, 3x at 1920 x 1080; at least 1.
  */
 export function hubScale(width: number, height: number): number {
-  const byWidth = Math.floor(width / HUB_MAP_W);
-  const byHeight = Math.floor((height * 1.12) / HUB_MAP_H);
-  return Math.max(1, Math.min(byWidth, byHeight));
+  const byWidth = Math.ceil((width - HUB_FILL_SLACK) / HUB_MAP_W);
+  const byHeight = Math.ceil((height - HUB_FILL_SLACK) / HUB_MAP_H);
+  return Math.max(1, byWidth, byHeight);
+}
+
+/** Where the scaled map's top left corner sits in the area: centred, so the overflow is cut evenly
+ *  (negative values); a few pixels of slack show as an even edge of background. */
+export function hubOffset(width: number, height: number, scale: number): { x: number; y: number } {
+  return {
+    x: Math.floor((width - HUB_MAP_W * scale) / 2),
+    y: Math.floor((height - HUB_MAP_H * scale) / 2),
+  };
 }
 
 /** A box of the picture in screen pixels at a whole scale (so every edge lands on a pixel). */
