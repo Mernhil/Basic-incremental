@@ -11,7 +11,7 @@ import { COPY } from '../copy';
 import { heldResources, upgradeRows, type UpgradeRowView } from '../pages/upgradeRowModel';
 import { replay } from '../stage/motion';
 import { h } from '../shell/shell';
-import { buyCount, onBuyCount } from './buy';
+import { buyCount, holdToBuy, onBuyCount } from './buy';
 import { resourceArt } from './resourceArt';
 import './upgradeRow.css';
 
@@ -44,7 +44,10 @@ interface RowRef {
   label: HTMLElement;
   now: HTMLElement;
   after: HTMLElement;
+  delta: HTMLElement;
+  scope: HTMLElement;
   mult: HTMLElement;
+  what: HTMLElement;
   button: HTMLButtonElement;
   btnLabel: HTMLElement;
   btnArt: HTMLElement;
@@ -53,6 +56,7 @@ interface RowRef {
   track: HTMLElement;
   pips: HTMLElement[];
   next: HTMLElement;
+  nextLine: HTMLElement;
   toGo: HTMLElement;
   badges: HTMLElement;
   badgeKey: string;
@@ -110,8 +114,10 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
     const after = h('b', 'ur__after bi-num');
     const arrow = h('span', 'ur__arrow', '→');
     arrow.setAttribute('aria-hidden', 'true');
+    const delta = h('b', 'ur__delta bi-num');
+    const scope = h('small', 'ur__scope');
     const mult = h('small', 'ur__mult bi-num');
-    what.append(label, now, arrow, after, mult);
+    what.append(label, now, h('small', 'ur__tag', COPY.row.now), arrow, after, scope, delta, mult);
     const main = h('div', 'ur__main');
     main.append(head, what);
     const button = document.createElement('button');
@@ -125,7 +131,7 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
     fill.className = 'buy-btn__fill';
     fill.setAttribute('aria-hidden', 'true');
     button.append(btnLabel, btnArt, btnPrice, fill);
-    button.addEventListener('click', () => {
+    const buyNow = (): void => {
       if (button.getAttribute('aria-disabled') === 'true') return;
       const next = buyLine(opts.state(), content, row.line);
       if (!next) return;
@@ -133,7 +139,9 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       opts.apply(next);
       replay(button, 'is-bought', 500);
       update();
-    });
+    };
+    button.addEventListener('click', buyNow);
+    holdToBuy(button, buyNow);
     const foot = h('div', 'ur__foot');
     const track = h('div', 'ur__track');
     track.setAttribute('aria-hidden', 'true');
@@ -151,7 +159,10 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       label,
       now,
       after,
+      delta,
+      scope,
       mult,
+      what,
       button,
       btnLabel,
       btnArt,
@@ -160,6 +171,7 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       track,
       pips: [],
       next,
+      nextLine,
       toGo,
       badges,
       badgeKey: '',
@@ -184,12 +196,15 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       set(ref.label, row.effectLabel);
       set(ref.now, row.now);
       set(ref.after, row.after);
+      set(ref.delta, row.delta);
+      set(ref.scope, row.scope);
       set(ref.mult, row.mult);
+      ref.what.title = row.says;
       const ok = row.buy.affordable;
       ref.li.classList.toggle('is-ready', ok);
       ref.button.setAttribute('aria-disabled', String(!ok));
       ref.button.classList.toggle('is-affordable', ok);
-      set(ref.btnLabel, ok ? row.buy.label : '');
+      set(ref.btnLabel, row.buy.label);
       set(ref.btnPrice, ok ? row.buy.price : (row.buy.short ?? row.buy.price));
       ref.btnPrice.title = row.buy.priceLabel;
       const artKey = `${row.buy.resource}:${row.buy.amount.toString()}`;
@@ -201,8 +216,8 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       ref.button.setAttribute(
         'aria-label',
         ok
-          ? `${row.name}: ${row.buy.label}, ${row.buy.priceLabel}`
-          : `${row.name}: ${row.buy.short ?? ''}`,
+          ? `${row.name}: ${row.buy.label}, ${row.buy.priceLabel}. ${row.says}`
+          : `${row.name}: ${row.buy.label}, ${row.buy.short ?? ''}. ${row.says}`,
       );
       if (ref.pips.length !== row.segments.total) {
         ref.pips = Array.from({ length: row.segments.total }, () => document.createElement('i'));
@@ -210,7 +225,8 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       }
       ref.pips.forEach((p, i) => p.classList.toggle('is-on', i < row.segments.filled));
       set(ref.next, row.next);
-      set(ref.toGo, row.toGo);
+      ref.nextLine.title = row.nextTip;
+      set(ref.toGo, '');
       const badgeKey = row.badges.map((b) => b.name).join('|');
       if (ref.badgeKey !== badgeKey) {
         ref.badgeKey = badgeKey;
