@@ -57,7 +57,7 @@ export const foeZoom = (id: string): number =>
  * opaque box, so the file stays exactly as approved. Pictures not listed are already placed.
  */
 export const foeFit = (id: string): readonly [number, number] =>
-  (FIT as Record<string, [number, number]>)[id] ?? [0, 0];
+  ((FIT as Record<string, number[]>)[id] as [number, number] | undefined) ?? [0, 0];
 
 const zoomStyle = (id: string): string => {
   const z = foeZoom(id);
