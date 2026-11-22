@@ -35,8 +35,7 @@
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
-      "weakness": "fire",
-      "resistance": "earth",
+      "element": "earth",
       "hp": "5030",
       "hpBars": 5,
       "attack": {
@@ -117,8 +116,7 @@
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
-      "weakness": "light",
-      "resistance": "fire",
+      "element": "dark",
       "hp": "112000",
       "hpBars": 8,
       "attack": {
@@ -207,7 +205,7 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "weakness": "water",
+      "element": "fire",
       "hp": "4510000",
       "hpBars": 12,
       "attack": {
@@ -290,8 +288,7 @@
       "id": "storm_roc",
       "name": "Abyssal Anchor Leviathan",
       "sprite": "abyssal_anchor_leviathan",
-      "weakness": "earth",
-      "resistance": "water",
+      "element": "water",
       "hp": "17000000",
       "hpBars": 12,
       "attack": {
@@ -374,7 +371,7 @@
       "id": "dawn_hierophant",
       "name": "Sanctuary Archangel",
       "sprite": "sanctuary_archangel",
-      "weakness": "dark",
+      "element": "light",
       "hp": "68900000",
       "hpBars": 12,
       "attack": {
@@ -457,7 +454,7 @@
       "id": "unmade_king",
       "name": "Faceless Void Reaper",
       "sprite": "faceless_void_reaper",
-      "weakness": "light",
+      "element": "dark",
       "hp": "195000000",
       "hpBars": 12,
       "attack": {
