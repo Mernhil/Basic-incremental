@@ -59,8 +59,9 @@ export const collectionViews: ViewPackage = {
       pile: {
         glyph: 'wardrobe',
         hint: (ctx) => {
-          const owned = Object.keys(ctx.state().cosmetics.owned).length;
-          return { text: T.owned(owned, ctx.content.cosmetics.length) };
+          const shown = ctx.content.cosmetics.filter((c) => !c.hidden);
+          const owned = shown.filter((c) => ctx.state().cosmetics.owned[c.id]).length;
+          return { text: T.owned(owned, shown.length) };
         },
       },
       mount: (host, ctx) =>

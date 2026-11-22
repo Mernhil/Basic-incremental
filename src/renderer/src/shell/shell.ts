@@ -1,6 +1,7 @@
 import type { CoinAmount } from '../settings/coins';
 import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { goldIcon } from '../art/goldIcons';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
 import { onFrame, replay } from '../stage/motion';
@@ -161,7 +162,7 @@ export function createShell(opts: {
   detailsBtn.setAttribute('aria-expanded', 'false');
   detailsBtn.setAttribute('aria-label', COPY.details.buttonLabel);
   const detailsGlyph = h('span', 'shell-details__glyph');
-  detailsGlyph.append(icon('details', 'shell-icon'));
+  detailsGlyph.insertAdjacentHTML('afterbegin', goldIcon('details'));
   detailsBtn.append(detailsGlyph, h('span', 'shell-details__label', COPY.details.button));
   for (const c of opts.currencies) {
     if (c.inDetails) {
@@ -213,6 +214,7 @@ export function createShell(opts: {
   goalsBtn.setAttribute('aria-expanded', 'false');
   goalsBtn.setAttribute('aria-controls', 'shell-goals-list');
   const goalsCount = h('span', 'shell-goals__count bi-num');
+  goalsBtn.insertAdjacentHTML('afterbegin', goldIcon('goals'));
   goalsBtn.append(h('span', 'shell-goals__label', COPY.progress.goals), goalsCount);
   const goals = h('div', 'shell-goals__list');
   goals.id = 'shell-goals-list';

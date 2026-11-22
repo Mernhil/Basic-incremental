@@ -1,4 +1,4 @@
-import type { BurstJob, Content, Dungeon, Trial } from '../data';
+import { isUiLookSlot, type BurstJob, type Content, type Dungeon, type Trial } from '../data';
 import { payFloorFirstWin } from './summon';
 import { payHeirloomScrollsForClear } from './heirlooms';
 import { cardBaseDamage, fightingXpPerKill, fightingXpPerSecond, grantLoadoutXp } from './cards';
@@ -2171,7 +2171,9 @@ function killEnemies(
     state.inventory[item] = (state.inventory[item] ?? 0) + rares;
     report.drops[item] = (report.drops[item] ?? 0) + rares;
     // The rare item joins the collection: a cosmetic in the wardrobe (copies feed its levels).
-    if (content.cosmeticById.has(item)) {
+    // (a vaulted UI look, data/vault.ts, is not granted: the drop stays in the inventory)
+    const cosmetic = content.cosmeticById.get(item);
+    if (cosmetic && !(content.uiLooksVaulted && isUiLookSlot(cosmetic.slot))) {
       for (let i = 0; i < rares; i++) grantCosmetic(state, item);
     }
   }

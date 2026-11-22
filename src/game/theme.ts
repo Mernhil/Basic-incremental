@@ -9,6 +9,7 @@ import {
   type CosmeticSlot,
   type Rank,
   type Rarity,
+  isUiLookSlot,
 } from '../data';
 
 /**
@@ -213,6 +214,8 @@ function resolveEquipped(
   eq: Equipped | undefined,
 ): { cosmetic: Cosmetic; level: number } | null {
   const starter = content.starterBySlot[slot];
+  // the UI look vault (data/vault.ts): a worn UI look has no effect, the starter shows
+  if (content.uiLooksVaulted && isUiLookSlot(slot)) eq = undefined;
   const cosmetic = (eq && content.cosmeticById.get(eq.id)) || starter;
   if (!cosmetic) return null;
   const level =
