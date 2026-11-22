@@ -1,11 +1,12 @@
 import type { Content } from '../../../data';
 import type { GameState } from '../../../game';
 import { COPY } from '../copy';
-import type { CardEntry, StatChange, WeaponView } from '../pages/cardsModel';
+import type { CardEntry, StatChange, WeaponDetail, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
 import { setStarText } from './stars';
 import { costMarkup } from './costMarkup';
 import { movesView, type MovesView } from '../pages/movesModel';
+import { attackEntries } from '../pages/weaponDetailModel';
 import './weaponPanel.css';
 
 /**
@@ -87,6 +88,95 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   const starHost = h('div', 'wp-starbtn');
   const tagHost = h('div', 'wp-taghost');
   side.append(starLine, starHost, tagHost);
+
+  // ---- the detail: stats, what it does, what comes next (read-only) ----
+  // the stats sit beside the weapon (in the side); what it does and what comes next below it
+  const statsEl = h('div', 'wp-detail wp-detail--stats');
+  const restEl = h('div', 'wp-detail wp-detail--rest');
+  side.insertBefore(statsEl, tagHost);
+  let detailSig = '';
+  let detailData: WeaponDetail | null = null;
+  let movesData: MovesView | null = null;
+  function section(title: string, ...body: HTMLElement[]): HTMLElement {
+    const sec = h('section', 'wp-sec');
+    sec.append(h('h4', 'wp-sec__title', title), ...body);
+    return sec;
+  }
+  /** The skill's Core price and its Open button (the one thing the panel lets you spend on). */
+  function unlockBox(unlock: NonNullable<MovesView['unlock']>): HTMLElement {
+    const box = h('div', 'wp-unlock');
+    const price = h('span', 'wp-unlock__price');
+    price.innerHTML = costMarkup(opts.content, opts.state(), unlock.cost, () => !unlock.affordable);
+    const b = h('button', 'button wp-add wp-unlock__open', COPY.moves.open);
+    b.type = 'button';
+    b.dataset.key = 'wp-skill';
+    b.setAttribute('aria-label', COPY.moves.openFor);
+    if (!unlock.affordable) {
+      b.setAttribute('aria-disabled', 'true');
+      b.title = COPY.moves.short;
+    }
+    b.addEventListener('click', () => {
+      if (b.getAttribute('aria-disabled') !== 'true') opts.act('skill');
+    });
+    box.append(b, price);
+    return box;
+  }
+  /** Draws stats, what it does (the three attacks first) and what comes next; only on change. */
+  function renderDetail(): void {
+    const d = detailData;
+    const sig = JSON.stringify([d, movesData]);
+    if (sig === detailSig) return;
+    detailSig = sig;
+    const keep = restEl.contains(document.activeElement);
+    statsEl.replaceChildren();
+    restEl.replaceChildren();
+    statsEl.hidden = !d;
+    restEl.hidden = !d;
+    if (!d) return;
+    const t = COPY.weapon.detail;
+    const stats = h('dl', 'wp-stats');
+    for (const r of d.stats) {
+      const row = h('div', 'wp-stat');
+      if (r.title) row.title = r.title;
+      row.append(h('dt', '', r.label), h('dd', 'bi-num', r.value));
+      stats.append(row);
+    }
+    const does = h('ul', 'wp-does');
+    for (const e of [...attackEntries(movesData), ...d.does]) {
+      const li = h('li', `wp-do wp-do--${e.kind}`);
+      if (e.title) li.title = e.title;
+      li.classList.toggle('is-active', Boolean(e.active));
+      const head = h('span', 'wp-do__head');
+      head.append(h('b', 'wp-do__kind', e.kindLabel));
+      if (e.name) head.append(h('span', 'wp-do__name', e.name));
+      li.append(head);
+      if (e.text) li.append(h('span', 'wp-do__text', e.text));
+      if (e.effects?.length) {
+        const ul = h('ul', 'wp-do__effects');
+        for (const f of e.effects) ul.append(h('li', '', f));
+        li.append(ul);
+      }
+      if (e.note) li.append(h('span', 'wp-do__note', e.note));
+      if (e.values.length) {
+        const vals = h('span', 'wp-do__values');
+        for (const v of e.values) vals.append(h('i', 'wp-do__value bi-num', v));
+        li.append(vals);
+      }
+      if (e.kind === 'skill' && movesData?.unlock) li.append(unlockBox(movesData.unlock));
+      does.append(li);
+    }
+    const next = h('ul', 'wp-next');
+    for (const n of [d.nextLevel, d.nextStar]) {
+      const li = h('li', 'wp-nx');
+      li.classList.toggle('is-end', !n.available);
+      li.append(h('b', 'wp-nx__label', n.label), h('span', 'wp-nx__text bi-num', n.text));
+      if (n.note) li.append(h('small', 'wp-nx__note bi-num', n.note));
+      next.append(li);
+    }
+    statsEl.append(section(t.statsTitle, stats));
+    restEl.append(section(t.doesTitle, does), section(t.nextTitle, next));
+    if (keep) restEl.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus();
+  }
 
   // ---- card variant: the tiles (tier and stars, card XP) ----
   const tierValue = h('b', 'wp-tile__value px-display');
@@ -194,7 +284,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     stage.querySelectorAll('.wp-badge, .wp-xp, .wp-plate').forEach((n) => {
       n.setAttribute('aria-hidden', 'true');
     });
-    root.append(stage, side);
+    root.append(stage, side, restEl);
   } else {
     const tierTile = h('div', 'wp-tile px-tile wp-tile--tier');
     const pipRow = h('span', 'wp-pips');
@@ -213,18 +303,8 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     );
     const xpTile = h('div', 'wp-tile px-tile wp-tile--xp');
     xpTile.append(h('span', 'wp-tile__label', COPY.weapon.xpLabelShort), xpTileValue, xpBar);
-    root.append(tierTile, xpTile, tagHost);
+    root.append(tierTile, xpTile, statsEl, restEl, tagHost);
   }
-
-  // ---- both: the card's three attacks and the skill's unlock (DESIGN.md §2 Three attacks) ----
-  const attacks = h('section', 'wp-attacks');
-  attacks.setAttribute('aria-label', COPY.moves.title);
-  const attacksList = h('ul', 'wp-attacks__list');
-  attacks.append(h('span', 'wp-tile__label', COPY.moves.title), attacksList);
-  if (variant === 'card') {
-    attacks.classList.add('wp-tile', 'px-tile');
-    root.insertBefore(attacks, tagHost);
-  } else side.append(attacks);
 
   // ---- card variant: the overlay (the large level badge) ----
   let overlay: HTMLElement | null = null;
@@ -377,65 +457,15 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     if (overlay) overlay.dataset.tier = w.tier;
   }
 
-  let movesSig = '';
   let movesAt = 0;
   let movesFor = '';
-  function drawAttacks(cardId: string): void {
-    // the numbers need the modifiers: read at most twice a second, redrawn only on change
+  /** The three attacks: their numbers need the modifiers, so read at most twice a second. */
+  function readMoves(cardId: string): void {
     const now = Date.now();
     if (cardId === movesFor && now - movesAt < 500) return;
     movesAt = now;
     movesFor = cardId;
-    const state = opts.state();
-    const view: MovesView | null = movesView(state, opts.content, cardId);
-    attacks.hidden = !view;
-    if (!view) return;
-    const sig = JSON.stringify(view);
-    if (sig === movesSig) return;
-    movesSig = sig;
-    const keep = attacks.contains(document.activeElement);
-    attacksList.replaceChildren(
-      ...view.rows.map((row) => {
-        const li = h('li', 'wp-attack');
-        li.dataset['kind'] = row.kind;
-        const head = h('p', 'wp-attack__head');
-        head.append(h('span', 'wp-attack__label', row.label));
-        if (row.name) head.append(h('b', 'wp-attack__name', row.name));
-        li.append(head);
-        if (row.text) li.append(h('p', 'wp-attack__text bi-num', row.text));
-        if (row.effects.length > 0) {
-          const ul = h('ul', 'wp-attack__effects');
-          for (const e of row.effects) ul.append(h('li', '', e));
-          li.append(ul);
-        }
-        if (row.note) li.append(h('p', 'wp-attack__note', row.note));
-        if (row.kind === 'skill' && view.unlock) {
-          const box = h('div', 'wp-unlock');
-          const price = h('span', 'wp-unlock__price');
-          price.innerHTML = costMarkup(
-            opts.content,
-            state,
-            view.unlock.cost,
-            () => !view.unlock!.affordable,
-          );
-          const b = h('button', 'button wp-add wp-unlock__open', COPY.moves.open);
-          b.type = 'button';
-          b.dataset.key = 'wp-skill';
-          b.setAttribute('aria-label', COPY.moves.openFor);
-          if (!view.unlock.affordable) {
-            b.setAttribute('aria-disabled', 'true');
-            b.title = COPY.moves.short;
-          }
-          b.addEventListener('click', () => {
-            if (b.getAttribute('aria-disabled') !== 'true') opts.act('skill');
-          });
-          box.append(b, price);
-          li.append(box);
-        }
-        return li;
-      }),
-    );
-    if (keep) attacks.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus();
+    movesData = movesView(opts.state(), opts.content, cardId);
   }
 
   return {
@@ -452,7 +482,9 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       drawStage(entry, w);
       if (variant === 'card') drawTiles(w);
       drawSide(w);
-      drawAttacks(entry.id);
+      detailData = entry.detail;
+      readMoves(entry.id);
+      renderDetail();
     },
   };
 }

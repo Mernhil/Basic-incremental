@@ -1,4 +1,4 @@
-import { burstStats, averageDamage, critFactor, critStats } from './combat';
+import { averageDamage, burstStats, critFactor, critStats, hitDamage } from './combat';
 import type { Content } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth, loadoutCards } from './cards';
 import { Decimal } from './num';
@@ -21,6 +21,8 @@ export interface CardStats {
   hitSeconds: number;
   critChance: number;
   critDamage: Decimal;
+  /** Fighting: damage of one hit (before crits); zero for a worker. */
+  hit: Decimal;
 }
 
 /** How a card's numbers sit against the card it would replace; each is a fraction (0.12 = +12%). */
@@ -54,6 +56,7 @@ export function cardStatsFor(content: Content, cardId: string, owned: OwnedCard)
       hitSeconds: burst.interval,
       critChance: crit.chance,
       critDamage: crit.damage,
+      hit: hitDamage(cardBaseDamage(content, cardId, owned), burst),
     };
   }
   const burst = burstStats(content, card.job, mods);
@@ -64,6 +67,7 @@ export function cardStatsFor(content: Content, cardId: string, owned: OwnedCard)
     hitSeconds: burst.interval,
     critChance: 0,
     critDamage: new Decimal(1),
+    hit: new Decimal(0),
   };
 }
 
