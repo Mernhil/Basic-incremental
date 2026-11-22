@@ -8,13 +8,10 @@ import scytheSheet from '../art/fx/hit-scythe.png';
 import spearSheet from '../art/fx/hit-spear.png';
 import staffSheet from '../art/fx/hit-staff.png';
 import swordSheet from '../art/fx/hit-sword.png';
-import crystalSlash from '../art/fx/slash-crystal.png';
 import earthSlash from '../art/fx/slash-earth.png';
 import fireSlash from '../art/fx/slash-fire.png';
 import lightSlash from '../art/fx/slash-light.png';
-import natureSlash from '../art/fx/slash-nature.png';
-import stormSlash from '../art/fx/slash-storm.png';
-import voidSlash from '../art/fx/slash-void.png';
+import darkSlash from '../art/fx/slash-void.png';
 import { onFrame } from './motion';
 import {
   effectOf,
@@ -211,12 +208,9 @@ const SHEET_URLS: Record<keyof typeof HIT_SHEETS, string> = {
 };
 const ELEMENT_URLS: Record<string, string> = {
   fire: fireSlash,
-  storm: stormSlash,
   light: lightSlash,
-  nature: natureSlash,
   earth: earthSlash,
-  crystal: crystalSlash,
-  void: voidSlash,
+  dark: darkSlash,
 };
 const sheetImages = new Map<string, HTMLImageElement>();
 /** A sheet's picture once it has loaded (the first call starts the load). */

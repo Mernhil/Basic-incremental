@@ -284,12 +284,11 @@ describe('expeditions', () => {
   });
 
   it('doubles everything for a matching element', () => {
-    const s = ready();
-    const nature = (id: string): number => (content.cardById.get(id)!.element === 'nature' ? 1 : 0);
-    const matching = nature('apprentice_feller') ? 'apprentice_feller' : 'ember_squire';
-    const other = matching === 'apprentice_feller' ? 'ember_squire' : 'apprentice_feller';
+    const s = own(ready(), 'jade_vanguard');
+    const matching = 'jade_vanguard'; // a T6 earth card; a Wood card has no element
+    const other = 'ember_squire';
     const place = content.expeditions.places.find((p) => p.id === 'mossy_outskirts')!;
-    expect(place.element).toBe('nature');
+    expect(place.element).toBe('earth');
     const t = (card: string) => ({ cardId: card, placeId: place.id, hours: 4, elapsedSeconds: 0 });
     const a = tripRewards(s, content, t(matching));
     const b = tripRewards(s, content, t(other));

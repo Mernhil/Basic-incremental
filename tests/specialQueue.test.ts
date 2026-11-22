@@ -69,7 +69,7 @@ describe('every fighting card has a cut-in, so no ultimate needs another style',
     const { hasSpecial } = await import('../src/renderer/src/stage/specialData');
     const missing = loadContent()
       .cards.filter((c) => c.job === 'fighting')
-      .filter((c) => !hasSpecial(c.item?.kind, c.element))
+      .filter((c) => !hasSpecial(c.item?.kind, c.element, c.tier))
       .map((c) => `${c.id} (${c.item?.kind}, ${c.element})`);
     expect(missing).toEqual([]);
   });

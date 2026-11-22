@@ -36,7 +36,7 @@
       "name": "Root Warden",
       "art": "root_warden",
       "weakness": "fire",
-      "resistance": "nature",
+      "resistance": "earth",
       "hp": "5030",
       "hpBars": 5,
       "attack": {
@@ -207,8 +207,7 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "weakness": "storm",
-      "resistance": "crystal",
+      "weakness": "water",
       "hp": "4510000",
       "hpBars": 12,
       "attack": {
@@ -292,7 +291,7 @@
       "name": "Abyssal Anchor Leviathan",
       "sprite": "abyssal_anchor_leviathan",
       "weakness": "earth",
-      "resistance": "storm",
+      "resistance": "water",
       "hp": "17000000",
       "hpBars": 12,
       "attack": {
@@ -375,8 +374,7 @@
       "id": "dawn_hierophant",
       "name": "Sanctuary Archangel",
       "sprite": "sanctuary_archangel",
-      "weakness": "void",
-      "resistance": "light",
+      "weakness": "dark",
       "hp": "68900000",
       "hpBars": 12,
       "attack": {
@@ -460,7 +458,6 @@
       "name": "Faceless Void Reaper",
       "sprite": "faceless_void_reaper",
       "weakness": "light",
-      "resistance": "void",
       "hp": "195000000",
       "hpBars": 12,
       "attack": {
