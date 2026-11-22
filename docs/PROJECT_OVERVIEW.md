@@ -485,6 +485,7 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 ### Dungeons and unlocking
 
 - Six in `dungeons.json`: Mossy Cellar, Ember Crypt, Frostspire Vault, Stormwrack Cove (id `thunderpeak_aerie`), Sunken Sanctum, Hollow of the Void.
+- An enemy's shown `name` matches its picture (`sprite`), the ids stay: Moss Slime, Bramble Beast, Frost Imp, Ice Wisp, Storm Harpy, Drowned Deckhand (id `spark_wisp`), Lantern Moth, Gilded Acolyte, Shade Mote, Rift Maw (2026-11-22). How a picture is drawn: see Where the pictures live.
 - The first is open from the start; each other opens when the dungeon in its `unlockedBy` is cleared (`isDungeonUnlocked`).
 - A dungeon is cleared the first time its Normal last-floor boss is beaten (`markCleared`). That pays `drops.firstClear` and unlocks the mines whose `unlockedByDungeon` names it (see Production).
 
@@ -1031,12 +1032,12 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 
 ### Where the pictures live
 
-- `art/pixel/sprites/` holds every sprite (1,501 PNGs). `art/pixel/hand/` holds the 808 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 40 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
+- `art/pixel/sprites/` holds every sprite (1,503 PNGs). `art/pixel/hand/` holds the 813 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 37 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
 - The file name is the key. Counts by prefix in `sprites/`:
   - `item-` 174: weapons, 100 x 120. `item-<type>-t1` to `-t5` (11 types x 5 tiers = 55), `-t6m` and `-t6v` (22), `-heirloom` (11), `item-<type>-leviathan-t6m|t6v|heirloom` (33), `item-<type>-hm-<letter>` and `-hv-<letter>` (45 recoloured Heirlooms, 13 of them recoloured again with PixelLab on 2026-11-22, see `docs/ASSET_RULES.md` section 5), 6 other bow and maul pictures, 2 motion strips.
   - `skin-` 37 (weapon skins, 19 stills and 18 strips), `evo-` 9.
   - `kit-` 9: card kits, 212 x 256. `frame-` 4.
-  - `foe-` 54 (27 foes, a still and an idle strip each, 160 x 172), `boss-` 6.
+  - `foe-` 59, all 160 x 172: 23 pack foes with a still and an idle strip each, and 13 approved PixelLab stills with no strip (2026-11-22, see `docs/ASSET_RULES.md` section 5). `boss-` 3: the Crystal Sentinel and its two shards.
   - `bg-` 5, `bgfish-` 64, `bgbig-` 16: Heirloom backdrops and their fish.
   - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 5, `star-` 11, `shop-` 10, `badge-` 332.
 - `art/shell/stone/` (34 PNGs) and `art/shell/oak/` (15 PNGs and `pieces.json`) hold the table's pieces; see Shell and table.
@@ -1049,10 +1050,10 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 - Weapons, `art/items.ts`: `cardTierArt(card, tier?)` is the call a card makes. It picks the type's picture for the tier, the Mythic or Void one at T6 by the card's side, and at T6 and Heirloom the card's batch picture or its own `heirloomArt` letter. `itemBoxSprite(name)` draws any 100 x 120 sprite in the 200 x 240 item box with its hidden outline; its branch for pictures 300 px wide or more matches no item, skin or evolution sprite.
 - Card kits, `art/frame.ts`: `cardFrame(tier, batchKit, windowed)` draws the one picture holding frame, name plate, art window and banner. `kitName` picks `kit-<tier>` up to Prismatic and the batch's kit (`batches.json` `kit`) at T6 and Heirloom, plus `-window` (window cut out) for an Heirloom with a backdrop.
 - Icons, `art/gems.ts`: `gemCoin`, `treeTile`, `mineTile`, `navPlaque`, `masteryMedal`. `forgedEdge` has no caller in the game.
-- Foes, `art/foes.ts`: `foeHtml(id, scale)` plays the idle strip; the three bosses in `FX` also get an aura and drifting specks. `art/foeZoom.json` holds a whole-number zoom for small foes. `art/bosses.ts` `bossArt(art, level)` draws the four baked bosses with aura and specks; `bossInItemBox` has no caller. See Fights.
+- Foes, `art/foes.ts`: `foeHtml(id, scale)` plays the idle strip, or draws a still with no strip as one frame (`hasFoeSprite` needs only the still); the three bosses in `FX` also get an aura and drifting specks. `art/foeZoom.json` holds a whole-number zoom for small pack foes; `art/foeFit.json` a whole-pixel nudge [dx, dy] per new still that centres it and stands it on the ground line (row 166), so the files stay as approved. An enemy with no picture gets `placeholderHtml`: the `foe-hooded_rogue_assassin` silhouette in one dark colour with a "?" from the pixel font. That is the per-enemy switch: dropping `hand/foe-<id>.png` (and `-anim.png` for an idle loop) and baking gives the enemy its picture. No enemy shows the placeholder today. A boss with no `sprite` in `dungeons.json` uses `foe-<boss art id>`, which is how the Root Warden, Cinder Lich and Glacier Colossus get their new stills. Six pack pictures have no enemy now and stay for the dungeon rework's stage bosses: `abyssal_sharkfang_raider`, `bloodroot_black`, `ivory_direwolf`, `ivory_sun_priestess`, `plague_doctor`, `woodland_stalker_wolf`. `art/bosses.ts` `bossArt(art, level)` draws the one baked boss, the Crystal Sentinel, with aura and specks (`hasBossSprite`); the three dungeon bosses' vector drawings stay in `art/vector/bosses.ts`, no longer baked; `bossInItemBox` has no caller. See Fights.
 - `art/evolutions.ts` `evolutionArt(id)`: a weapon with its own motion; the game calls it only for the Flameblade skin (`pages/loadoutCards.ts`).
 - `art/cosmetics.ts`: see Cosmetics and themes.
-- `art/pixelFont.ts`: the glyphs of the pixel numerals: digits, signs and every suffix of the short number format (k, M, B, T, U, g and the rest, and ∞). `tests/pixelFont.test.ts` walks the format's `SUFFIXES` and real `formatShort` outputs and fails if a character has no glyph.
+- `art/pixelFont.ts`: the glyphs of the pixel numerals: digits, signs and every suffix of the short number format (k, M, B, T, U, g and the rest, and ∞), plus the "?" of the enemy placeholder. `tests/pixelFont.test.ts` walks the format's `SUFFIXES` and real `formatShort` outputs and fails if a character has no glyph.
 - `art/defs.ts` `installArtDefs` adds shared SVG filters at start; `art/art.css` holds the strip animation; `art/kit.ts` holds SVG helpers.
 
 ### The pixel pipeline
