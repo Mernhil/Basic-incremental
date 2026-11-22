@@ -737,7 +737,11 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ## Shell and table
 
-The game is one screen: a header and, under it, "the table": the fight in the middle, a row of piles along the bottom. Short paths in this section are under `src/renderer/src/`.
+The game has a header and, under it, two main screens that share one element, "the table" (`table.ts`): the hub (the default, a painted map of the base camp, see Hub) and the dungeon (the fight window; a "← Hub" button goes back, `Table.setScreen`). The dock is gone: its piles stay built but hidden, so their hints still feed the hub's "!" marks, and the hub's buildings open the views. Short paths in this section are under `src/renderer/src/`.
+
+### Hub (`src/renderer/src/hub/`)
+
+The hub is the main screen (DESIGN section 2, Base camp). `hub-map-384x688.png` is the approved painted map, copied byte for byte and never altered. `hubModel.ts` (display logic, tested in `tests/hubModel.test.ts`): `HUB_BUILDINGS`, each a click area as a rectangle in the picture's own pixels with its action (open a view, go to the dungeon, a small menu of views, or locked) and the views whose pile hints light its "!"; `hubScale` (3x when the area is at least 1312 px wide, else 2x), `scaled`, `overlappingBuildings`. `hub.ts` `createHub` draws the map with `image-rendering: pixelated` in a scroller (up and down), one button per building (hover and focus highlight, name plate, gold "!" from `pile.hint.ready`, lock plate on the raid gate and the arena), a menu for the buildings with several screens (Armoury and Trophy hall: Cards, Achievements; Training ground: Training, Upgrades) and a Settings button. Selecting the arch calls `Table.setScreen('dungeon')`. Styles `hub.css`.
 
 ### Start-up order
 
@@ -763,18 +767,19 @@ The game is one screen: a header and, under it, "the table": the fight in the mi
 ### The table and its views (`src/renderer/src/table/`)
 
 - `contract.ts`: a view is a `ViewDef` (id, title, optional dock `pile`, `mount(host, ctx, api)` called once at start) returning a `ViewHandle` (`render()`, optional `opened` / `closed`). A `TablePieceDef` is a live table piece (`centre`, `left`, `right`) that opens a view. `TableContext` is what `app.ts` hands every view.
-- `viewIds.ts` lists the twelve ids; `registry.ts` collects the four view packages and fixes the dock order (`DOCK`).
+- `viewIds.ts` lists the fourteen ids (`training` and `expeditions` are new); `registry.ts` collects the four view packages and fixes the dock order (`DOCK`).
 
-| Id                                           | Opened from            | Defined in                  | Drawn by                                                       |
-| -------------------------------------------- | ---------------------- | --------------------------- | -------------------------------------------------------------- |
-| `dungeon`                                    | centre piece           | `views/dungeon/index.ts`    | `stage/arena.ts`, `pages/dungeons.ts`                          |
-| `logging`, `mining`                          | pile (forest and cave) | `views/gathering/index.ts`  | `views/gathering/camp.ts`                                      |
-| `forge`                                      | pile                   | `views/gathering/index.ts`  | `views/gathering/forge.ts`                                     |
-| `cards`, `summon`, `wardrobe`                | piles                  | `views/collection/index.ts` | `pages/cards.ts`, `summon.ts`, `wardrobe.ts`                   |
-| `skills`, `achievements`, `shop`, `settings` | piles                  | `views/meta/index.ts`       | `pages/skills.ts`, `achievements.ts`, `shop.ts`, `settings.ts` |
-| `upgrades`                                   | pile                   | `views/meta/index.ts`       | `views/meta/upgradesView.ts`                                   |
+| Id                                           | Opened from                                  | Defined in                  | Drawn by                                                       |
+| -------------------------------------------- | -------------------------------------------- | --------------------------- | -------------------------------------------------------------- |
+| `dungeon`                                    | centre piece                                 | `views/dungeon/index.ts`    | `stage/arena.ts`, `pages/dungeons.ts`                          |
+| `logging`, `mining`                          | building (forest, mine)                      | `views/gathering/index.ts`  | `views/gathering/camp.ts`                                      |
+| `training`, `expeditions`                    | building (Training ground, Expedition board) | `views/gathering/index.ts`  | `views/gathering/training.ts`, `expeditions.ts`                |
+| `forge`                                      | pile                                         | `views/gathering/index.ts`  | `views/gathering/forge.ts`                                     |
+| `cards`, `summon`, `wardrobe`                | piles                                        | `views/collection/index.ts` | `pages/cards.ts`, `summon.ts`, `wardrobe.ts`                   |
+| `skills`, `achievements`, `shop`, `settings` | piles                                        | `views/meta/index.ts`       | `pages/skills.ts`, `achievements.ts`, `shop.ts`, `settings.ts` |
+| `upgrades`                                   | pile                                         | `views/meta/index.ts`       | `views/meta/upgradesView.ts`                                   |
 
-- `table.ts` `createTable` builds the pieces, the dock and the view host. A click on a piece (outside its own controls), its corner button or a pile opens the view.
+- `table.ts` `createTable` builds the pieces, the dock and the view host. A click on a piece (outside its own controls) or its corner button opens the view; the hub has the `Screen` state and opens views from its buildings.
 - `viewHost.ts` mounts every view once in its own frame and keeps it mounted while closed. One view is open at a time. It closes with the back button, Esc, Alt + Left or the mouse back button; Esc is ignored while a layer in `ESC_FIRST` is on screen (a modal dialog, the reward track, the goal list, a lifted card, the workbench `.wb`, the evolution scene `.st-evo`); in the dungeon view Esc first closes an open panel.
 - Code navigates with `TableContext.open` / `close` / `current`; goals and quests map to views in `goalView` (`app.ts`).
 - `motion.ts` (transform and opacity only): `dealIn` deals items in one by one from the opener, `dealOut` sends a closing view back. Timings are CSS variables in `motion.css`; the stagger is `stagger.ts`. Under reduced motion `dealIn` and `dealOut` do nothing.
@@ -822,7 +827,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 
 ### `views/gathering`
 
-- `index.ts`: the `logging` and `mining` views (the forest and the cave, `camp.ts`) and the `forge` view (a dock pile). The table has no side wings now.
+- `index.ts`: the `logging` and `mining` views (the forest and the cave, `camp.ts`) the `forge` view, the `training` view (`training.ts`: the test dummy: damage field, four trial slots, "Copy my loadout", the readout from `dummyReadout`, and a button to the Training upgrades) and the `expeditions` view (`expeditions.ts`: the Expedition board, `createExpeditionsPanel`). The table has no side wings now.
 - `camp.ts` (`createCampView`): the camp level with its price and a button to raise it, one row per open slot (a material select, a card select, what it brings) and the place's total. A plain working screen: `.camp__scene` holds the place for the painted forest and cave pictures. See Base camp.
 - `forge.ts`: recipe buttons (a click starts or stops a recipe, `setForgeRecipe`), the recipe being forged with progress and its worker (`assignForgeWorker`, picked with `workerPick.ts`).
 - `workerPick.ts`: the worker picker of the Forge: each tool drawn as the Cards collection's card face (`cardFaceProps`, `createCard`) at a whole scale (`watchFit`); the current tool has the gold outline; the list scrolls.
@@ -888,7 +893,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 ### Cards (`cards.ts`)
 
 - Mounted by the `cards` view (`views/collection/index.ts`). It reads the game only through `CardsModel` (`cardsModel.ts`, filled by `cardsAdapter.ts`).
-- Five tabs: Collection, Heirlooms, Loadouts, Bonds, Expeditions. The last two mount `createBondsPanel` and `createExpeditionsPanel` (`tablePanels.ts`).
+- Four tabs: Collection, Heirlooms, Loadouts, Bonds. Bonds mounts `createBondsPanel` (`tablePanels.ts`). The Expeditions tab moved to the Expedition board.
 - **Collection.** Filter chips by job, by role (Tank, DPS, Support) and "Ready n" (a star can be taken). Sort: Tier, Stars, Level, Name. The grid lists every card that is not an Heirloom: "Your cards (n)" first, then the cards not found, grouped by weapon type with a collected count.
 - **Detail panel.** Heading: the name, then "tier · job" (plus the slot name when the card is in the loadout). An owned card shows the weapon panel (`ui/weaponPanel.ts`, see Views and shared widgets), the skin picker (`cardSkinsModel.ts`, `setCardSkin`), stat tiles (`statsModel.ts`) and fact tiles. Buttons on an owned card: Enhancements (when the card has a chart: `cardEnhancements`, `chooseEnhancement`, `resetEnhancements`), Add to loadout (fighting cards not in the loadout) or Remove from loadout (cards in it) (`setLoadoutSlot`); Logging and Mining cards show a hint that they work from the Production page. See Cards.
 - **Heirlooms.** The Heirloom cards by weapon type with their shard bars (`heirloomEntry`); a type's group wraps when it holds three or four cards. The detail shows the card with its tree's six nodes (`heirloomTreeInfo`): a click buys an affordable node (`buyHeirloomNode`), Respec clears the tree (`respecHeirloomTree`). See Heirlooms and batches.
@@ -970,7 +975,7 @@ Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view dat
 - `forgeModel.ts`: `forgeView` for `views/gathering/forge.ts`.
 - `buyModel.ts`: `BuyLineView`, `buyLabel` (used by `upgradeRowModel.ts`), and `formatRate` for the duel. `bestLine` is unused.
 - `upgradeRowModel.ts`: `upgradeRow`, `upgradeRows` shape one repeatable line (a Training line) for `ui/upgradeRows.ts`; `upgradeLineName` for `ui/perkPick.ts` and the Upgrades view. The before and after for n levels come from the game's `lineEffect` and the next milestone from `nextLineStep` (`src/game/lineView.ts`); the model only formats them: `delta` (the signed gain), `scope` ("after 10 levels"), `says` (the whole sentence for the tooltip and aria label) and `nextTip` (what each pick of the next milestone does). Tests: `tests/upgradeRowModel.test.ts`.
-- `tablePanels.ts`: `createBondsPanel` and `createExpeditionsPanel` (the Bonds and Expeditions tabs of the Cards screen). See Expeditions.
+- `tablePanels.ts`: `createBondsPanel` and `createExpeditionsPanel` (the Bonds tab of the Cards screen and the Expedition board). See Expeditions.
 - `challengesPanel.ts`: the Ascension challenges list in the Ascension counter of the Shop screen (`shop.ts`) with Start (clicked twice; `startChallenge`) and Leave (`leaveChallenge`). See Challenges and trials.
 - `ascensionModel.ts`: `gateView`, `starlightViews`, `rewardView` for the Shop screen. See Ascension.
 - `accountModel.ts`: `levelBadge` (header level and XP bar), `trackView` (reward track), `levelUpView` (level-up toast), for `app.ts` and `shell/rewardTrack.ts`.

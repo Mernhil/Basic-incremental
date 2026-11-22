@@ -1,0 +1,138 @@
+/* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, scrolled up and down,
+   with a click area over each building. Colours from the shell tokens so a restyle applies. */
+
+.hub {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  grid-area: 1 / 1 / -1 / -1;
+}
+.hub__scroll {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  background: var(--bi-table-bg, #17131f);
+}
+.hub__stage {
+  position: relative;
+  flex: none;
+}
+.hub__map {
+  display: block;
+  image-rendering: pixelated;
+  user-select: none;
+}
+.hub__outlines {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  overflow: visible;
+}
+/* an outline shows only under the mouse (or with the keyboard on it); until then the picture is clean */
+.hub__shape {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+  outline: none;
+}
+.hub__shape:hover,
+.hub__shape:focus-visible {
+  stroke: var(--hub-gold, #f2c14e);
+  fill: color-mix(in srgb, #fff 10%, transparent);
+  filter: drop-shadow(0 0 4px var(--hub-gold, #f2c14e));
+}
+.hub__shape.is-locked {
+  cursor: not-allowed;
+}
+.hub__shape.is-locked:hover,
+.hub__shape.is-locked:focus-visible {
+  stroke: #8a8a90;
+  fill: color-mix(in srgb, #000 40%, transparent);
+  filter: none;
+}
+.hub__tags {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hub__tag {
+  position: absolute;
+}
+.hub__plate {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translate(-50%, -100%);
+  z-index: 3;
+  padding: 3px 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--hub-gold, #f2c14e);
+  background: var(--hub-charcoal, #1c1c20);
+  box-shadow: 0 0 0 2px var(--hub-gold-dim, #c8a24a);
+  opacity: 0;
+}
+.hub__tag.is-on .hub__plate {
+  opacity: 1;
+}
+.hub__lock {
+  position: absolute;
+  opacity: 0;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: #d8d2c4;
+  background: #1c1c20;
+  box-shadow: 0 0 0 2px #6b6b72;
+  max-width: 90%;
+}
+.hub__tag.is-on .hub__lock {
+  opacity: 1;
+}
+.hub__mark {
+  position: absolute;
+  right: -6px;
+  top: -10px;
+  z-index: 4;
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font: 700 16px/1 var(--bi-font-display, monospace);
+  color: #1c1c20;
+  background: var(--hub-gold, #f2c14e);
+  box-shadow: 0 0 0 2px #1c1c20;
+}
+.hub__mark[hidden] {
+  display: none;
+}
+.hub__menu {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  width: 270px;
+}
+.hub__menu[hidden] {
+  display: none;
+}
+.hub__settings {
+  position: absolute;
+  right: 20px;
+  top: 12px;
+  z-index: 5;
+}

@@ -12,7 +12,7 @@
   min-width: 0;
   display: grid;
   grid-template-columns: var(--wing-w) minmax(0, 1fr) var(--wing-w);
-  grid-template-rows: minmax(0, 1fr) var(--dock-h);
+  grid-template-rows: minmax(0, 1fr) 0;
   grid-template-areas:
     'left window right'
     'dock dock dock';
@@ -209,4 +209,22 @@
   .tbl-pile:focus-visible .tbl-pile__card {
     translate: none;
   }
+}
+
+/* ---- the two main screens: the hub and the dungeon ---- */
+.tbl-dock {
+  display: none;
+}
+.tbl[data-screen='hub'] .tbl-piece,
+.tbl[data-screen='hub'] .tbl-hubback {
+  display: none;
+}
+.tbl[data-screen='dungeon'] .hub {
+  display: none;
+}
+.tbl-hubback {
+  position: absolute;
+  z-index: 3;
+  left: var(--tbl-gap);
+  top: 12px;
 }

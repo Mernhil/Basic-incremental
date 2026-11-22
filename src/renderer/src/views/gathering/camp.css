@@ -41,3 +41,34 @@
 .camp__upgrade.is-no {
   opacity: 0.5;
 }
+
+/* the Training ground and the Expedition board */
+.trg {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.trg__head,
+.trg__team,
+.trg__damage,
+.trg__read {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  align-items: flex-start;
+}
+.trg__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trg__card,
+.trg__damage-in {
+  min-width: 200px;
+  padding: 4px 6px;
+}
+.trg p {
+  margin: 0;
+}

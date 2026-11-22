@@ -1,7 +1,10 @@
+import { isTripDone } from '../../../../game';
 import { COPY } from '../../copy';
 import type { ViewDef, ViewPackage } from '../../table/contract';
 import { GATHERING_COPY as T } from './copy';
+import { createExpeditionBoard } from './expeditions';
 import { createForgeView } from './forge';
+import { createTrainingView } from './training';
 import { createCampView } from './camp';
 import './camp.css';
 import './gathering.css';
@@ -25,6 +28,32 @@ const forgeView: ViewDef = {
   mount: (host, ctx) => createForgeView(host, ctx),
 };
 
+const trainingView: ViewDef = {
+  id: 'training',
+  title: COPY.view.titles.training,
+  pile: { glyph: 'settings' },
+  mount: (host, ctx) => createTrainingView(host, ctx),
+};
+
+const expeditionsView: ViewDef = {
+  id: 'expeditions',
+  title: COPY.view.titles.expeditions,
+  pile: {
+    glyph: 'production',
+    hint: (ctx) =>
+      ctx.state().expeditions.trips.some((t) => isTripDone(t))
+        ? { text: T.tripsDone, ready: true }
+        : null,
+  },
+  mount: (host, ctx) => createExpeditionBoard(host, ctx),
+};
+
 export const gatheringViews: ViewPackage = {
-  views: [campView('logging', 'forest'), campView('mining', 'cave'), forgeView],
+  views: [
+    campView('logging', 'forest'),
+    campView('mining', 'cave'),
+    forgeView,
+    trainingView,
+    expeditionsView,
+  ],
 };

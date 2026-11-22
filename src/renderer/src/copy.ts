@@ -92,6 +92,7 @@ export const COPY = {
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
+    toHub: '← Hub',
     dock: 'Table',
     open: (name: string) => `Open ${name}`,
     boss: 'Boss',
@@ -107,7 +108,7 @@ export const COPY = {
   },
   /** The full views over the table (UI_RULES.md §2, A full view). */
   view: {
-    back: '← Table',
+    back: '← Hub',
     backLabel: 'Back to the table',
     titles: {
       dungeon: 'Dungeon',
@@ -120,6 +121,8 @@ export const COPY = {
       achievements: 'Achievements',
       shop: 'Shop',
       forge: 'Forge',
+      training: 'Training ground',
+      expeditions: 'Expedition board',
       upgrades: 'Upgrades',
       settings: 'Settings',
     },
