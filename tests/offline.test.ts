@@ -1,13 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { MIN_OFFLINE_MS, OFFLINE_CAP_MS, simulateOffline } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
+import {
+  constantRng,
+  bareState,
+  noFarmXp,
+  plainContent,
+  freshState,
+  withDps,
+  withFarmers,
+} from './helpers';
+
+const content = noFarmXp(plainContent);
 
 const HOUR = 3_600_000;
 const rng = constantRng(0.5);
 
 describe('simulateOffline', () => {
   it('simulates the elapsed time and reports gains', () => {
-    const { state, summary } = simulateOffline(bareState(), content, 0, HOUR, rng);
+    const { state, summary } = simulateOffline(withFarmers(bareState()), content, 0, HOUR, rng);
     expect(summary).not.toBeNull();
     expect(summary!.capped).toBe(false);
     expect(summary!.simulatedMs).toBe(HOUR);
@@ -20,7 +30,13 @@ describe('simulateOffline', () => {
   });
 
   it('caps offline progress at 8 hours', () => {
-    const { state, summary } = simulateOffline(bareState(), content, 0, 20 * HOUR, rng);
+    const { state, summary } = simulateOffline(
+      withFarmers(bareState()),
+      content,
+      0,
+      20 * HOUR,
+      rng,
+    );
     expect(OFFLINE_CAP_MS).toBe(8 * HOUR);
     expect(summary!.capped).toBe(true);
     expect(summary!.elapsedMs).toBe(20 * HOUR);

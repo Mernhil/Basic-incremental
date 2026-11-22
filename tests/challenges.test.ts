@@ -19,7 +19,7 @@ import {
   settleChallenges,
   startChallenge,
   statValue,
-  workerSlots,
+  slotWorkers,
   type GameState,
 } from '../src/game';
 import { content, freshState } from './helpers';
@@ -227,8 +227,12 @@ describe('the rules, through modifiers', () => {
   it('Single Post lets one worker work', () => {
     const s = ready();
     s.prestigeCount = 6;
-    expect(workerSlots(s, content)).toBeGreaterThan(1);
-    expect(workerSlots(rule(s, 'single_post'), content)).toBe(1);
+    s.cards.owned['apprentice_feller'] = newOwnedCard();
+    s.cards.owned['cave_digger'] = newOwnedCard();
+    s.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
+    s.camp.cave = [{ material: 'copper_quarry', card: 'cave_digger' }];
+    expect(slotWorkers(s, content)).toHaveLength(2);
+    expect(slotWorkers(rule(s, 'single_post'), content)).toHaveLength(1);
     expect([...activeRestrictions(s, content)]).toEqual(['one_worker']);
   });
 

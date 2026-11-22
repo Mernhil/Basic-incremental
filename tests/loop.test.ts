@@ -1,9 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { approxEq, GameLoop, MAX_STEP_MS } from '../src/game';
-import { constantRng, bareState, content, freshState } from './helpers';
+import {
+  constantRng,
+  bareState,
+  noFarmXp,
+  content as shipped,
+  freshState,
+  withFarmers,
+} from './helpers';
 
-function run(frameMs: number, totalMs: number, start = bareState): GameLoop {
-  const loop = new GameLoop(start(), content, constantRng(0.5), 0);
+const content = noFarmXp(shipped);
+
+function run(
+  frameMs: number,
+  totalMs: number,
+  start = () => withFarmers(bareState()),
+  c = content,
+): GameLoop {
+  const loop = new GameLoop(start(), c, constantRng(0.5), 0);
   for (let t = frameMs; t <= totalMs; t += frameMs) loop.step(t);
   loop.step(totalMs);
   return loop;
@@ -22,11 +36,11 @@ describe('GameLoop', () => {
   });
 
   it('is independent of frame rate while cards level up', () => {
-    const single = run(60_000, 60_000, freshState);
+    const single = run(60_000, 60_000, freshState, shipped);
     const feller = single.state.cards.owned['apprentice_feller']!;
     expect(feller.level).toBeGreaterThan(3); // the main growth changed the rate along the way
     for (const frameMs of [16, 250, 1000, 7000]) {
-      const loop = run(frameMs, 60_000, freshState);
+      const loop = run(frameMs, 60_000, freshState, shipped);
       for (const id of ['oak_gem', 'copper_gem']) {
         expect(approxEq(loop.state.resources[id]!, single.state.resources[id]!)).toBe(true);
       }
@@ -40,7 +54,7 @@ describe('GameLoop', () => {
   });
 
   it('never runs backwards when the clock jumps back', () => {
-    const loop = new GameLoop(bareState(), content, constantRng(0.5), 10_000);
+    const loop = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 10_000);
     loop.step(20_000);
     const before = loop.state;
     loop.step(5_000);
@@ -75,7 +89,7 @@ describe('GameLoop', () => {
 
 describe('GameLoop game speed (dev builds)', () => {
   it('runs at 1x by default and rejects bad speeds', () => {
-    const loop = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    const loop = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 0);
     expect(loop.speed).toBe(1);
     for (const bad of [0, -3, NaN, Infinity]) {
       loop.setSpeed(bad);
@@ -84,8 +98,8 @@ describe('GameLoop game speed (dev builds)', () => {
   });
 
   it('5x gives five times the play time and production for the same clock time', () => {
-    const slow = new GameLoop(bareState(), content, constantRng(0.5), 0);
-    const fast = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    const slow = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 0);
+    const fast = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 0);
     fast.setSpeed(5);
     slow.step(10_000);
     fast.step(10_000);
@@ -95,7 +109,7 @@ describe('GameLoop game speed (dev builds)', () => {
   });
 
   it('a change applies from the next step on; a long sleep is clamped before the speed', () => {
-    const loop = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    const loop = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 0);
     loop.step(10_000);
     loop.setSpeed(2);
     loop.step(20_000);

@@ -6,16 +6,26 @@ import {
   collectModifiers,
   createSaveText,
   Decimal,
+  materialRate,
+  newOwnedCard,
   gemMastery,
   METALS,
   MODIFIER_SOURCE_KINDS,
-  producerRate,
   readSave,
   resetProduction,
   simulateOffline,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState } from './helpers';
+import {
+  bareState,
+  constantRng,
+  noFarmXp,
+  content as shipped,
+  freshState,
+  withFarmers,
+} from './helpers';
+
+const content = noFarmXp(shipped);
 
 const rng = constantRng(0.5);
 /** The mastery thresholds of the data (DESIGN.md §4 Gem mastery). */
@@ -108,42 +118,32 @@ describe('gem mastery bonus', () => {
     expect(mastery[0]!.value.toNumber()).toBe(20);
     const oak = content.treeById.get('oak')!;
     const iron = content.treeById.get('ironbark')!;
-    expect(producerRate(oak, 'logging', mods).toNumber()).toBeCloseTo(1.2);
-    expect(producerRate(iron, 'logging', mods).toNumber()).toBeCloseTo(0.5);
+    expect(materialRate(state, content, oak, mods).toNumber()).toBeCloseTo(1.2);
+    expect(materialRate(state, content, iron, mods).toNumber()).toBeCloseTo(0.5);
   });
 });
 
 describe('counting harvest', () => {
   it('counts normal output into the lifetime total', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
+    state.cards.owned['apprentice_feller'] = newOwnedCard();
+    state.cards.owned['cave_digger'] = newOwnedCard();
+    state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
+    state.camp.cave = [{ material: 'copper_quarry', card: 'cave_digger' }];
     const after = advance(state, content, 10_000, rng).state;
-    // One Oak plot at 1/s and one Copper Quarry slot at 0.5/s, no cards.
+    // One Oak slot at 1/s and one Copper slot at 0.5/s, a power-1 card on each.
     expect(after.mastery.harvested['oak_gem']!.toNumber()).toBeCloseTo(10);
     expect(after.mastery.harvested['copper_gem']!.toNumber()).toBeCloseTo(5);
   });
 
-  it('counts harvest bursts too', () => {
-    const state = bareState();
-    // Oak's worker's gauge is one tick from firing: 10 s of output on top.
-    state.production.workers = { oak: ['apprentice_feller'] };
-    state.production.harvestGauges.oak = {
-      gauge: content.combat.bursts.logging.gaugeSize - 1,
-      timer: 0,
-    };
-    const after = advance(state, content, 1000, rng).state;
-    const power = content.combat.bursts.logging.power.toNumber();
-    expect(after.mastery.harvested['oak_gem']!.toNumber()).toBeCloseTo(1 + power);
-    expect(after.resources['oak_gem']!.toNumber()).toBeCloseTo(1 + power);
-  });
-
   it('counts offline progress', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     const { state: after } = simulateOffline(state, content, 0, 60_000, rng);
     expect(after.mastery.harvested['oak_gem']!.toNumber()).toBeGreaterThanOrEqual(60);
   });
 
   it('keeps counting after the gems are spent', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(500);
     state.resources['oak_gem'] = new Decimal(0);
     const after = advance(state, content, 2000, rng).state;
@@ -153,7 +153,7 @@ describe('counting harvest', () => {
 
 describe('gem tier-ups', () => {
   it('settles on the 1 s grid and reports a unified TierUp', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(999.5);
     const { state: after, report } = advance(state, content, 1000, rng);
     expect(after.mastery.gemTiers['oak_gem']).toBe(1);
@@ -163,7 +163,7 @@ describe('gem tier-ups', () => {
   });
 
   it('gives the same totals however the time is split', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     // Crosses 1e3 mid-second (not on a grid line, where float noise could tip it either way).
     state.mastery.harvested['oak_gem'] = new Decimal(990.5);
     const once = advance(state, content, 30_000, rng).state;
@@ -177,7 +177,7 @@ describe('gem tier-ups', () => {
   });
 
   it('jumps several tiers at once when a total passes them', () => {
-    const state = bareState();
+    const state = withFarmers(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(2 * T[2]!);
     const { report } = advance(state, content, 1000, rng);
     expect(report.tierUps).toEqual([

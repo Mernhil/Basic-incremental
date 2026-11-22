@@ -299,9 +299,11 @@ describe('v26 -> v27 (the table update)', () => {
     )) {
       card['skillOpen'] = false;
     }
-    // format 43: an empty raid record (DESIGN.md §2 Raid bosses)
-    scaled['raids'] = { day: null, used: {}, best: {}, paid: {} };
-    expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
+    // format 42: the camp replaces the trees and mines, and the dummy is new
+    const camped = MIGRATIONS[41]!(scaled) as Record<string, unknown>;
+    // format 44: an empty raid record (DESIGN.md §2 Raid bosses)
+    const raided = { ...camped, raids: { day: null, used: {}, best: {}, paid: {} } };
+    expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
     const resaved = createSaveText(state, 1);
@@ -322,7 +324,7 @@ describe('format 27 state', () => {
       cardDamage: {},
       cardsOut: [],
     });
-    expect(state.presets.production.logging).toEqual([null, null, null]);
+    expect(state.presets.dungeons).toEqual({});
     expect(state.expeditions.trips).toEqual([]);
     expect(state.ascensionChallenges).toEqual({ active: null, completions: {} });
   });
@@ -350,10 +352,6 @@ describe('format 27 state', () => {
       tierRewardsClaimed: [],
     };
     state.presets.dungeons['mossy_cellar'] = { slots: ['ember_squire', null, null, null] };
-    state.presets.production.logging[1] = {
-      name: 'Oaks',
-      workers: { oak: ['apprentice_feller'] },
-    };
     state.discoveredBonds = ['old_growth'];
     state.expeditions.trips = [
       { cardId: 'cave_digger', placeId: 'mossy_outskirts', hours: 4, elapsedSeconds: 100 },
@@ -378,10 +376,6 @@ describe('format 27 state', () => {
       // not a fighting card, a repeat, a repeat, not owned
       slots: ['apprentice_feller', 'ember_squire', 'ember_squire', 'dawnblade_regent'],
     };
-    state.presets.production.mining[0] = {
-      name: 'Mixed',
-      workers: { copper_quarry: ['cave_digger', 'apprentice_feller'], oak: ['cave_digger'] },
-    };
     state.discoveredBonds = ['old_growth', 'old_growth', 'no_such_bond'];
     state.expeditions.trips = [
       { cardId: 'cave_digger', placeId: 'mossy_outskirts', hours: 4, elapsedSeconds: 1 },
@@ -399,10 +393,6 @@ describe('format 27 state', () => {
     expect(loaded.presets.dungeons).toEqual({
       mossy_cellar: { slots: ['ember_squire', null, null, null] },
       ember_crypt: { slots: [null, 'ember_squire', null, null] },
-    });
-    expect(loaded.presets.production.mining[0]).toEqual({
-      name: 'Mixed',
-      workers: { copper_quarry: ['cave_digger'] },
     });
     expect(loaded.discoveredBonds).toEqual(['old_growth']);
     expect(loaded.expeditions.trips).toEqual([

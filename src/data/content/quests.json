@@ -1331,10 +1331,10 @@
     {
       "id": "tools_10",
       "group": "gathering",
-      "name": "Buy 10 tool levels",
+      "name": "Raise the camp to level 3",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 10
+        "kind": "camp_level",
+        "level": 3
       },
       "page": "production",
       "reward": [
@@ -1347,10 +1347,10 @@
     {
       "id": "tools_50",
       "group": "gathering",
-      "name": "Buy 50 tool levels",
+      "name": "Raise the camp to level 5",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 50
+        "kind": "camp_level",
+        "level": 5
       },
       "page": "production",
       "reward": [
@@ -1363,10 +1363,10 @@
     {
       "id": "tools_150",
       "group": "gathering",
-      "name": "Buy 150 tool levels",
+      "name": "Raise the camp to level 8",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 150
+        "kind": "camp_level",
+        "level": 8
       },
       "page": "production",
       "reward": [
@@ -1379,10 +1379,10 @@
     {
       "id": "tools_500",
       "group": "gathering",
-      "name": "Buy 500 tool levels",
+      "name": "Raise the camp to level 12",
       "condition": {
-        "kind": "tool_levels",
-        "amount": 500
+        "kind": "camp_level",
+        "level": 12
       },
       "page": "production",
       "reward": [
@@ -1443,10 +1443,10 @@
     {
       "id": "depth_2",
       "group": "gathering",
-      "name": "Dig to the second layer of a tree or mine",
+      "name": "Raise the camp to level 16",
       "condition": {
-        "kind": "depth",
-        "layer": 2
+        "kind": "camp_level",
+        "level": 16
       },
       "page": "production",
       "reward": [
@@ -1459,10 +1459,10 @@
     {
       "id": "depth_3",
       "group": "gathering",
-      "name": "Dig to the third layer of a tree or mine",
+      "name": "Raise the camp to level 22",
       "condition": {
-        "kind": "depth",
-        "layer": 3
+        "kind": "camp_level",
+        "level": 22
       },
       "page": "production",
       "reward": [

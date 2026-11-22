@@ -58,7 +58,7 @@ describe('details view', () => {
 
   it('derives what a resource is used for from the data', () => {
     const uses = (id: string) => usedFor(content, content.resourceById.get(id)!);
-    expect(uses('oak_gem')).toEqual(expect.arrayContaining(['unlocking Ironbark']));
+    expect(uses('oak_gem')).toEqual(expect.arrayContaining(['the camp level']));
     // nothing is spent on tier-ups any more (DESIGN.md §5 No tier-ups)
     expect(uses('ironbark_gem')).not.toContain('card tier-ups');
     expect(uses('moss_core')).toEqual([]);

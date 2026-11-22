@@ -55,11 +55,7 @@
       "page": "dungeons"
     },
     {
-      "kind": "unlock_tree",
-      "page": "production"
-    },
-    {
-      "kind": "mine_milestone",
+      "kind": "camp_level",
       "page": "production"
     },
     {
@@ -79,11 +75,6 @@
     {
       "kind": "ascension",
       "page": "shop",
-      "minProgress": 0.25
-    },
-    {
-      "kind": "tool_line",
-      "page": "production",
       "minProgress": 0.25
     },
     {

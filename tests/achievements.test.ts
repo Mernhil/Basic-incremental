@@ -78,7 +78,7 @@ describe('achievements (DESIGN.md §10)', () => {
   it('detects harvests by job, kills, unlocks, clears and pulls', () => {
     const state = newGame();
     state.mastery.harvested = { oak_gem: new Decimal(2e4), copper_gem: new Decimal(10) };
-    state.production.unlockedTrees = ['ironbark', 'moonwillow'];
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
     state.portals['card_portal'] = { pity: 0, pulls: 12, pityHits: 1 };
     const got = unlockedBy(state);
     expect(got).toEqual(
@@ -86,13 +86,13 @@ describe('achievements (DESIGN.md §10)', () => {
         'first_harvest',
         'lumberjack_1',
         'tree_hugger',
+        'deep_delver',
         'first_summon',
         'ten_pulls',
         'pity_breaker',
       ]),
     );
     expect(got).not.toContain('prospector_1');
-    expect(got).not.toContain('deep_delver');
   });
 
   it('detects card ranks, loadouts, sets, cosmetics owned, ascensions and mastery', () => {
@@ -117,7 +117,7 @@ describe('achievements (DESIGN.md §10)', () => {
     state.prestigeCount = 1;
     state.mastery.gemTiers = { oak_gem: 3 };
     state.mastery.bossTiers = { mossy_cellar: 2 };
-    state.production.mineLevels = { copper_quarry: 25 };
+    state.camp.level = 5;
     const got = unlockedBy(state);
     expect(got).toEqual(
       expect.arrayContaining([

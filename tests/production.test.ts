@@ -2,27 +2,27 @@ import { describe, expect, it } from 'vitest';
 import type { ModifierData } from '../src/data';
 import {
   advance,
-  buyMineLevel,
-  buyTreeLevel,
+  assignSlotCard,
+  campLevelCost,
+  campPerSecond,
   canAfford,
   clearDungeon,
-  collectModifiers,
   curvePrice,
   effectiveGrowth,
   Decimal,
   isProducerUnlocked,
-  mineLevelCost,
-  producerRate,
-  productionPerSecond,
+  newOwnedCard,
+  openSlots,
   resetProduction,
-  treeUnlockCost,
-  unlockTree,
+  setSlotMaterial,
+  slotWorkers,
   unlockedProducers,
+  upgradeCamp,
+  type CampResult,
   type GameState,
   type Modifier,
-  type ProductionResult,
 } from '../src/game';
-import { constantRng, bareState, content, freshState } from './helpers';
+import { constantRng, bareState, content, freshState, withFarmers } from './helpers';
 
 const mod = (
   stat: ModifierData['stat'],
@@ -41,177 +41,214 @@ function give(state: GameState, resource: string, amount: number | string): Game
   return { ...state, resources: { ...state.resources, [resource]: new Decimal(amount) } };
 }
 
-function ok(result: ProductionResult): GameState {
+function ok2(result: CampResult): GameState {
   if (!result.ok) throw new Error(`expected success, got ${result.reason}`);
   return result.state;
 }
 
-const reason = (result: ProductionResult): string | undefined =>
-  result.ok ? undefined : result.reason;
-
-describe('a new game', () => {
-  it('has only the start tree kind and mine type unlocked', () => {
+describe('materials (DESIGN.md section 2 Base camp)', () => {
+  it('opens Oak and Copper at the start and the rest as dungeons are cleared', () => {
     const state = freshState();
     expect(unlockedProducers(state, content, 'logging').map((p) => p.id)).toEqual(['oak']);
     expect(unlockedProducers(state, content, 'mining').map((p) => p.id)).toEqual(['copper_quarry']);
-    expect(isProducerUnlocked(state, content, 'logging', 'copper_quarry')).toBe(false);
+    const cleared = clearDungeon(state, content, 'mossy_cellar');
+    expect(cleared.unlockedMines).toEqual(['iron_deeps']);
+    expect(isProducerUnlocked(cleared.state, content, 'logging', 'ironbark')).toBe(true);
+    expect(isProducerUnlocked(cleared.state, content, 'logging', 'moonwillow')).toBe(false);
+    expect(clearDungeon(cleared.state, content, 'mossy_cellar').unlockedMines).toEqual([]);
   });
 
-  it('produces Oak Gem and Copper Gem per second', () => {
-    const rates = productionPerSecond(freshState(), content);
-    expect(rates['oak_gem']!.eq(1)).toBe(true);
-    expect(rates['copper_gem']!.eq(0.5)).toBe(true);
-  });
-
-  it('has no plots, slots or expansions in the state', () => {
-    expect(Object.keys(freshState().production).sort()).toEqual([
-      'depth',
-      'forge',
-      'harvestGauges',
-      'mineLevels',
-      'tools',
-      'treeLevels',
-      'unlockedTrees',
-      'workers',
-    ]);
+  it('has three woods and three ores', () => {
+    expect(content.trees).toHaveLength(3);
+    expect(content.mines).toHaveLength(3);
   });
 });
 
-describe('one of each (DESIGN.md §4)', () => {
-  it('an unlocked tree kind produces at once, with nothing to place', () => {
-    const state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
-    const rates = productionPerSecond(state, content);
-    expect(rates['ironbark_gem']!.eq(0.5)).toBe(true);
-    expect(rates['oak_gem']!.eq(1)).toBe(true); // oak still counts once
-  });
-
-  it('a locked tree kind or mine type produces nothing', () => {
-    const rates = productionPerSecond(freshState(), content);
-    expect(rates['ironbark_gem']).toBeUndefined();
-    expect(rates['iron_gem']).toBeUndefined();
-  });
-
-  it('a mine type produces once its dungeon is cleared', () => {
-    const state = clearDungeon(freshState(), content, 'mossy_cellar').state;
-    const mine = content.mineById.get('iron_deeps')!;
-    const rates = productionPerSecond(state, content);
-    expect(
-      rates[mine.resource]!.eq(producerRate(mine, 'mining', collectModifiers(state, content))),
-    ).toBe(true);
-    expect(rates[mine.resource]!.gt(0)).toBe(true);
-  });
-
-  it('each kind yields once, at its own level', () => {
-    let state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
-    state = give(state, 'money', '1e9');
-    state = ok(buyTreeLevel(state, content, 'ironbark'));
-    state = ok(buyTreeLevel(state, content, 'ironbark'));
-    const mods = collectModifiers(state, content);
-    const ironbark = content.treeById.get('ironbark')!;
-    const oak = content.treeById.get('oak')!;
-    const rates = productionPerSecond(state, content);
-    expect(rates['ironbark_gem']!.eq(producerRate(ironbark, 'logging', mods, 2))).toBe(true);
-    expect(rates['oak_gem']!.eq(producerRate(oak, 'logging', mods, 0))).toBe(true);
-    expect(rates['ironbark_gem']!.gt(producerRate(ironbark, 'logging', mods, 0))).toBe(true);
-  });
-});
-
-describe('tree kinds', () => {
-  it('unlock with wood of the tier below and are kept', () => {
-    expect(treeUnlockCost(content, 'ironbark')).toEqual([
-      { resource: 'oak_gem', amount: new Decimal(500) },
-    ]);
-    expect(treeUnlockCost(content, 'moonwillow')[0]!.resource).toBe('ironbark_gem');
-    expect(treeUnlockCost(content, 'oak')).toEqual([]);
-
-    const state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
-    expect(state.resources['oak_gem']!.eq(100)).toBe(true);
-    expect(isProducerUnlocked(state, content, 'logging', 'ironbark')).toBe(true);
-    expect(productionPerSecond(state, content)['ironbark_gem']!.eq(0.5)).toBe(true);
-  });
-
-  it('refuses unknown, already unlocked and unaffordable trees', () => {
-    const rich = give(freshState(), 'oak_gem', '1e9');
-    expect(reason(unlockTree(rich, content, 'nope'))).toBe('unknown');
-    expect(reason(unlockTree(rich, content, 'oak'))).toBe('already-unlocked');
-    expect(reason(unlockTree(rich, content, 'moonwillow'))).toBe('unaffordable');
-    const once = ok(unlockTree(rich, content, 'ironbark'));
-    expect(reason(unlockTree(once, content, 'ironbark'))).toBe('already-unlocked');
-  });
-
-  it('apply cost.multiplier scoped to the producer', () => {
-    const mods = [mod('cost.multiplier', 'percent', '-50', { producer: 'ironbark' })];
-    expect(treeUnlockCost(content, 'ironbark', mods)[0]!.amount.eq(250)).toBe(true);
-    expect(treeUnlockCost(content, 'moonwillow', mods)[0]!.amount.eq(2000)).toBe(true);
-  });
-});
-
-describe('mine types and levels', () => {
-  it('unlock when their dungeon is cleared', () => {
-    const first = clearDungeon(freshState(), content, 'mossy_cellar');
-    expect(first.unlockedMines).toEqual(['iron_deeps']);
-    expect(first.state.clearedDungeons).toEqual(['mossy_cellar']);
-    expect(isProducerUnlocked(first.state, content, 'mining', 'iron_deeps')).toBe(true);
-    expect(isProducerUnlocked(first.state, content, 'mining', 'crystal_grotto')).toBe(false);
-
-    const again = clearDungeon(first.state, content, 'mossy_cellar');
-    expect(again.unlockedMines).toEqual([]);
-    expect(again.state).toBe(first.state);
-    expect(clearDungeon(freshState(), content, 'nope').unlockedMines).toEqual([]);
-    expect(clearDungeon(freshState(), content, 'frostspire_vault').unlockedMines).toEqual([]);
-    expect(clearDungeon(freshState(), content, 'ember_crypt').unlockedMines).toEqual([
-      'crystal_grotto',
+describe('farming slots', () => {
+  it('a new game has one forest slot and one cave slot open, the starter cards on them', () => {
+    const state = freshState();
+    expect(openSlots(state, content, 'forest')).toBe(1);
+    expect(openSlots(state, content, 'cave')).toBe(1);
+    expect(slotWorkers(state, content).map((w) => [w.place, w.card, w.material.id])).toEqual([
+      ['forest', 'apprentice_feller', 'oak'],
+      ['cave', 'cave_digger', 'copper_quarry'],
     ]);
   });
 
-  it('level up with Money and raise that mine only', () => {
-    const quarry = content.mineById.get('copper_quarry')!.level.cost;
-    const base = quarry.base.toNumber();
-    let state = give(freshState(), 'money', base * 10);
-    expect(mineLevelCost(state, content, 'copper_quarry')).toEqual({
-      resource: 'money',
-      amount: new Decimal(base),
-    });
-    state = ok(buyMineLevel(state, content, 'copper_quarry'));
-    state = ok(buyMineLevel(state, content, 'copper_quarry')); // base + ceil(base * growth)
-    const growth = quarry.growth.toNumber();
-    expect(state.resources['money']!.eq(base * 10 - base - Math.ceil(base * growth))).toBe(true);
-    expect(state.production.mineLevels['copper_quarry']).toBe(2);
-    // 0.5 * (1 + 2 * 5%) = 0.55
-    expect(productionPerSecond(state, content)['copper_gem']!.eq(0.55)).toBe(true);
-    expect(mineLevelCost(state, content, 'iron_deeps')!.resource).toBe('money');
+  it('a slot brings its material times the card’s power, and the stock fills by itself', () => {
+    const state = withFarmers(bareState());
+    const rates = campPerSecond(state, content);
+    expect(rates['oak_gem']!.toNumber()).toBeCloseTo(1);
+    expect(rates['copper_gem']!.toNumber()).toBeCloseTo(0.5);
+    const after = advance(state, content, 10_000, constantRng(0.5)).state;
+    // a card may level up on the way (a little more), so only to the nearest unit
+    expect(after.resources['oak_gem']!.toNumber()).toBeCloseTo(10, 0);
+    expect(after.resources['copper_gem']!.toNumber()).toBeCloseTo(5, 0);
   });
 
-  it('refuse locked, unknown and unaffordable levels', () => {
-    const rich = give(freshState(), 'money', '1e9');
-    expect(reason(buyMineLevel(rich, content, 'iron_deeps'))).toBe('locked');
-    expect(reason(buyMineLevel(rich, content, 'nope'))).toBe('unknown');
-    expect(reason(buyMineLevel(give(freshState(), 'money', 0), content, 'copper_quarry'))).toBe(
-      'unaffordable',
+  it('an empty slot brings nothing', () => {
+    expect(campPerSecond(bareState(), content)).toEqual({});
+  });
+
+  it('a stronger card brings more: tier, stars and level count', () => {
+    const state = withFarmers(bareState());
+    const base = campPerSecond(state, content)['oak_gem']!;
+    state.cards.owned['apprentice_feller']!.level = 11;
+    expect(campPerSecond(state, content)['oak_gem']!.gt(base)).toBe(true);
+  });
+
+  it('the camp level lifts every slot a little', () => {
+    const state = withFarmers(bareState());
+    const level1 = campPerSecond(state, content)['oak_gem']!.toNumber();
+    state.camp.level = 6;
+    const lift = content.camp.yieldPercentPerLevel.toNumber() / 100;
+    expect(campPerSecond(state, content)['oak_gem']!.toNumber()).toBeCloseTo(
+      level1 * (1 + lift * 5),
     );
   });
 
-  it('read production.levelBonus before production.rate', () => {
-    const mine = content.mineById.get('copper_quarry')!;
-    const mods = [
-      mod('production.levelBonus', 'flat', '15', { producer: 'copper_quarry' }), // 20% a level
-      mod('production.rate', 'mult', '2'),
+  it('slots open with the camp level and grow with the Starlight item', () => {
+    const state = freshState();
+    state.camp.level = 3;
+    expect(openSlots(state, content, 'forest')).toBe(2);
+    expect(openSlots(state, content, 'cave')).toBe(1);
+    state.camp.level = 28;
+    expect(openSlots(state, content, 'forest')).toBe(6);
+    state.prestige.shop['second_hands'] = 2;
+    expect(openSlots(state, content, 'forest')).toBe(8);
+    expect(openSlots(state, content, 'cave')).toBe(8);
+  });
+
+  it('puts a card on an open slot of its own place, and a card is in one slot at a time', () => {
+    let state = bareState();
+    state.camp.level = 3;
+    state.cards.owned['apprentice_feller'] = newOwnedCard();
+    state.cards.owned['grove_keeper'] = newOwnedCard();
+    state = ok2(assignSlotCard(state, content, 'forest', 0, 'apprentice_feller'));
+    state = ok2(assignSlotCard(state, content, 'forest', 1, 'apprentice_feller'));
+    expect(state.camp.forest[0]!.card).toBeNull();
+    expect(state.camp.forest[1]!.card).toBe('apprentice_feller');
+    // the card it replaces goes back to the collection
+    state = ok2(assignSlotCard(state, content, 'forest', 1, 'grove_keeper'));
+    expect(slotWorkers(state, content).map((w) => w.card)).toEqual(['grove_keeper']);
+    state = ok2(assignSlotCard(state, content, 'forest', 1, null));
+    expect(slotWorkers(state, content)).toEqual([]);
+  });
+
+  it('refuses a closed slot, the wrong job, a card not owned and a card away', () => {
+    const state = bareState();
+    state.cards.owned['apprentice_feller'] = newOwnedCard();
+    state.cards.owned['cave_digger'] = newOwnedCard();
+    expect(assignSlotCard(state, content, 'forest', 3, 'apprentice_feller')).toEqual({
+      ok: false,
+      reason: 'slot-locked',
+    });
+    expect(assignSlotCard(state, content, 'forest', 0, 'cave_digger')).toEqual({
+      ok: false,
+      reason: 'wrong-job',
+    });
+    expect(assignSlotCard(state, content, 'forest', 0, 'grove_keeper')).toEqual({
+      ok: false,
+      reason: 'not-owned',
+    });
+    expect(assignSlotCard(state, content, 'forest', 0, 'nope')).toEqual({
+      ok: false,
+      reason: 'unknown',
+    });
+    state.expeditions.trips = [
+      { cardId: 'apprentice_feller', placeId: 'mossy_outskirts', hours: 1, elapsedSeconds: 0 },
     ];
-    // 0.5 * (1 + 3 * 20%) * 2 = 1.6
-    expect(producerRate(mine, 'mining', mods, 3).eq(1.6)).toBe(true);
-    expect(producerRate(mine, 'mining', [], 0).eq(0.5)).toBe(true);
+    expect(assignSlotCard(state, content, 'forest', 0, 'apprentice_feller')).toEqual({
+      ok: false,
+      reason: 'on-expedition',
+    });
+  });
+
+  it('a fighting card cannot farm', () => {
+    const state = bareState();
+    state.cards.owned['ember_squire'] = newOwnedCard();
+    expect(assignSlotCard(state, content, 'forest', 0, 'ember_squire')).toEqual({
+      ok: false,
+      reason: 'wrong-job',
+    });
+  });
+
+  it('chooses the material of a slot among the open ones', () => {
+    let state = withFarmers(bareState());
+    expect(setSlotMaterial(state, content, 'forest', 0, 'ironbark')).toEqual({
+      ok: false,
+      reason: 'material-locked',
+    });
+    expect(setSlotMaterial(state, content, 'forest', 0, 'iron_deeps')).toEqual({
+      ok: false,
+      reason: 'unknown',
+    });
+    state = clearDungeon(state, content, 'mossy_cellar').state;
+    state = ok2(setSlotMaterial(state, content, 'forest', 0, 'ironbark'));
+    expect(campPerSecond(state, content)['ironbark_gem']!.toNumber()).toBeCloseTo(0.5);
+    expect(campPerSecond(state, content)['oak_gem']).toBeUndefined();
+  });
+
+  it('a card is not also in the fighting loadout, at the forge or away: a slot card leaves the forge', () => {
+    let state = bareState();
+    state.cards.owned['apprentice_feller'] = newOwnedCard();
+    state.production.forge.worker = 'apprentice_feller';
+    state = ok2(assignSlotCard(state, content, 'forest', 0, 'apprentice_feller'));
+    expect(state.production.forge.worker).toBeNull();
+    expect(state.cards.loadouts.fighting.slots).not.toContain('apprentice_feller');
+  });
+
+  it('one worker only under Single Post', () => {
+    const state = withFarmers(bareState());
+    state.ascensionChallenges.active = 'single_post';
+    expect(slotWorkers(state, content).length).toBeLessThanOrEqual(2);
   });
 });
 
-describe('production in the tick', () => {
-  it('every unlocked kind yields its rate per second, once', () => {
-    let state = ok(unlockTree(give(bareState(), 'oak_gem', 600), content, 'ironbark'));
-    state = clearDungeon(state, content, 'mossy_cellar').state;
-    const { state: after } = advance(state, content, 10_000, constantRng(0.5));
-    expect(after.resources['oak_gem']!.sub(100).eq(10)).toBe(true); // 600 held - 500 to unlock Ironbark
-    expect(after.resources['ironbark_gem']!.eq(5)).toBe(true);
-    expect(after.resources['copper_gem']!.eq(5)).toBe(true);
-    expect(after.resources[content.mineById.get('iron_deeps')!.resource]!.gt(0)).toBe(true);
+describe('the camp level', () => {
+  it('costs woods and ores, grows each level and brings in the next materials as it goes', () => {
+    const state = freshState();
+    const first = campLevelCost(state, content);
+    expect(first.map((p) => p.resource)).toEqual(['oak_gem', 'copper_gem']);
+    state.camp.level = 2;
+    const second = campLevelCost(state, content);
+    expect(second[0]!.amount.gt(first[0]!.amount)).toBe(true);
+    state.camp.level = 4;
+    expect(campLevelCost(state, content).map((p) => p.resource)).toContain('ironbark_gem');
+    state.camp.level = 8;
+    expect(campLevelCost(state, content).map((p) => p.resource)).toContain('moonwillow_gem');
+  });
+
+  it('raises the level and pays, or refuses when short', () => {
+    let state = freshState();
+    expect(upgradeCamp(state, content)).toEqual({ ok: false, reason: 'unaffordable' });
+    state = give(give(state, 'oak_gem', 5000), 'copper_gem', 5000);
+    const prices = campLevelCost(state, content);
+    const raised = ok2(upgradeCamp(state, content));
+    expect(raised.camp.level).toBe(2);
+    expect(raised.resources['oak_gem']!.toNumber()).toBe(5000 - prices[0]!.amount.toNumber());
+    expect(state.camp.level).toBe(1); // the input is untouched
+  });
+
+  it('applies cost.multiplier to the price', () => {
+    const state = freshState();
+    const cheaper = campLevelCost(state, content, [mod('cost.multiplier', 'mult', '0.5')]);
+    const plain = campLevelCost(state, content, []);
+    expect(cheaper[0]!.amount.toNumber()).toBeCloseTo(plain[0]!.amount.toNumber() / 2, -1);
+  });
+
+  it('is reachable before the first dungeon clear from what the starter cards farm', () => {
+    // a new game farms Oak and Copper with the starter cards: levels 1 to 3 need only those
+    let state = freshState();
+    for (let level = 1; level < 3; level += 1) {
+      const prices = campLevelCost(state, content);
+      expect(prices.every((p) => p.resource === 'oak_gem' || p.resource === 'copper_gem')).toBe(
+        true,
+      );
+      state = give(give(state, 'oak_gem', 1e9), 'copper_gem', 1e9);
+      state = ok2(upgradeCamp(state, content));
+    }
+    expect(state.camp.level).toBe(3);
   });
 });
 
@@ -228,20 +265,14 @@ describe('canAfford', () => {
 });
 
 describe('prestige reset', () => {
-  it('resets mine and tree levels but keeps unlocked trees and cleared dungeons', () => {
-    let state = give(give(freshState(), 'oak_gem', '1e6'), 'money', '1e6');
-    state = ok(unlockTree(state, content, 'ironbark'));
-    state = ok(buyMineLevel(state, content, 'copper_quarry'));
-    state = ok(buyTreeLevel(state, content, 'oak'));
+  it('keeps the camp and the cleared dungeons', () => {
+    let state = freshState();
+    state.camp.level = 7;
     state = clearDungeon(state, content, 'mossy_cellar').state;
-
     const reset = resetProduction(state);
-    expect(reset.production.mineLevels).toEqual({});
-    expect(reset.production.treeLevels).toEqual({});
-    expect(reset.production.unlockedTrees).toEqual(['ironbark']);
+    expect(reset.camp).toEqual(state.camp);
     expect(reset.clearedDungeons).toEqual(['mossy_cellar']);
     expect(isProducerUnlocked(reset, content, 'mining', 'iron_deeps')).toBe(true);
-    expect(state.production.mineLevels['copper_quarry']).toBe(1); // input untouched
   });
 });
 
