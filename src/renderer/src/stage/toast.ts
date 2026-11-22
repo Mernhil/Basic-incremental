@@ -20,6 +20,18 @@ function region(): HTMLElement {
   return stack;
 }
 
+let holds = 0;
+const waiting: Array<() => void> = [];
+
+/**
+ * Holds toasts back while something fills the screen (the summon reveal): they queue and show,
+ * in order, once every hold is released. Call with `true`, then `false` when it ends.
+ */
+export function holdToasts(on: boolean): void {
+  holds = Math.max(0, holds + (on ? 1 : -1));
+  if (holds === 0) for (const show of waiting.splice(0)) show();
+}
+
 export type ToastKind = 'rare' | 'milestone' | 'info';
 
 export function toast(
@@ -30,6 +42,10 @@ export function toast(
   /** A metal on the ladder (DESIGN.md §12): colours the toast's edge. */
   metal?: string,
 ): void {
+  if (holds > 0) {
+    waiting.push(() => toast(title, detail, kind, metal));
+    return;
+  }
   const box = region();
   const el = document.createElement('div');
   el.className = `st-toast st-toast--${kind}`;
