@@ -9,7 +9,6 @@ import {
   setForgeRecipe,
   workerPower,
 } from '../../../../game';
-import { gemCoin, svg } from '../../art/gems';
 import { cardItemArt } from '../../pages/loadoutCards';
 import { forgeView } from '../../pages/forgeModel';
 import { COPY } from '../../copy';
@@ -17,7 +16,7 @@ import { fmt } from '../../settings/numberFormat';
 import { workerPickList, workerPickTile } from './workerPick';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewHandle } from '../../table/contract';
-import { iconMarkup, resourceIconId } from '../../ui/resourceIcons';
+import { resourceIconMarkup } from '../../ui/resourceIcons';
 import { GATHERING_COPY as T } from './copy';
 import { craftsPerMinute, forgeFlow, itemSvg } from './jobModel';
 import './forge.css';
@@ -31,12 +30,11 @@ const set = (node: HTMLElement, text: string): void => {
   if (node.textContent !== text) node.textContent = text;
 };
 
-/** A resource's picture: its gem coin, else its placeholder icon, else the starlight shard. */
+/** A resource's picture: its kept icon, else Money's coin. */
 function resourceArt(content: Content, id: string): string {
   const res = content.resourceById.get(id);
   if (!res) return '';
-  if (res.gem) return svg(gemCoin(res.gem, 0));
-  return iconMarkup(resourceIconId(res)) ?? iconMarkup('starlight') ?? '';
+  return resourceIconMarkup(res) ?? '';
 }
 
 export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandle {

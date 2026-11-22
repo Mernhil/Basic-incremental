@@ -289,7 +289,7 @@ html .dp-row.is-picked:not(#_px) {
   padding: 5px 9px;
   font-size: 12px;
 }
-.dp-drop--rare span:first-child {
+.dp-drop--rare .dp-drop__name {
   color: var(--bi-frame-accent, var(--px-gold));
   font-weight: 700;
 }
@@ -389,4 +389,21 @@ html .dp-row.is-picked:not(#_px) {
   display: grid;
   gap: 12px;
   align-content: start;
+}
+
+/* a drop of a resource: its 32 x 32 icon at 1x beside the name */
+.dp-drop__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dp-drop__ico {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  margin: -8px 0;
+}
+.dp-drop__ico svg {
+  width: 100%;
+  height: 100%;
 }

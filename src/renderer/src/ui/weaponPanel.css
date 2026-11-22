@@ -230,8 +230,9 @@
 .wp-cost__art {
   display: grid;
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
 }
 .wp-cost__art svg {
   width: 100%;
