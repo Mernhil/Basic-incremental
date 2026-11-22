@@ -1,5 +1,5 @@
 /* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, centred, never scrolled,
-   with a click area over each building. Colours from the shell tokens so a restyle applies. */
+   with a small click square over each place. Colours from the shell tokens so a restyle applies. */
 
 .hub {
   position: absolute;
@@ -20,66 +20,23 @@
   image-rendering: pixelated;
   user-select: none;
 }
-.hub__outlines {
+/* one small invisible click square per place: only the pointer and the name plate show on mouseover */
+.hub__spot {
   position: absolute;
-  left: 0;
-  top: 0;
-  display: block;
-  overflow: visible;
-}
-/* the shapes are only the click areas: nothing is drawn on them. A mouseover dims the rest of the map
-   and lifts the building one picture pixel with a warm glow (hub.ts `lit`). */
-.hub__shape {
-  fill: transparent;
-  stroke: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
   outline: none;
 }
-.hub__shape.is-locked {
+.hub__spot.is-locked {
   cursor: not-allowed;
-}
-.hub__dim,
-.hub__lift {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 120ms ease-out;
-}
-.hub__dim {
-  fill: rgb(8 6 14 / 42%);
-}
-.hub__dim path {
-  fill: rgb(8 6 14 / 44%);
-}
-.hub__dim.is-on,
-.hub__lift.is-on {
-  opacity: 1;
-}
-.hub__lift {
-  filter: drop-shadow(0 0 5px rgb(255 214 120 / 85%)) drop-shadow(0 0 14px rgb(255 190 80 / 45%));
-}
-.hub__lift-img {
-  display: block;
-  image-rendering: pixelated;
-  filter: brightness(1.16) saturate(1.1);
-}
-.hub__tags {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.hub__tag {
-  position: absolute;
 }
 .hub__plate {
   position: absolute;
   left: 50%;
-  top: 0;
-  transform: translate(-50%, -100%);
+  top: 100%;
+  transform: translate(-50%, 4px);
   z-index: 3;
   padding: 3px 8px;
   white-space: nowrap;
@@ -88,13 +45,14 @@
   background: var(--hub-charcoal, #1c1c20);
   box-shadow: 0 0 0 2px var(--hub-gold-dim, #c8a24a);
   opacity: 0;
+  pointer-events: none;
 }
-.hub__tag.is-on .hub__plate {
+.hub__spot:hover .hub__plate,
+.hub__spot:focus-visible .hub__plate {
   opacity: 1;
 }
 .hub__lock {
   position: absolute;
-  opacity: 0;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -106,8 +64,11 @@
   background: #1c1c20;
   box-shadow: 0 0 0 2px #6b6b72;
   max-width: 90%;
+  opacity: 0;
+  pointer-events: none;
 }
-.hub__tag.is-on .hub__lock {
+.hub__spot:hover .hub__lock,
+.hub__spot:focus-visible .hub__lock {
   opacity: 1;
 }
 .hub__mark {

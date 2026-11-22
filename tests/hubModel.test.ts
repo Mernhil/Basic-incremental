@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
-  bounds,
   HUB_BUILDINGS,
   HUB_MAP_H,
   HUB_MAP_W,
@@ -12,7 +11,7 @@ import {
 } from '../src/renderer/src/hub/hubModel';
 import { VIEW_IDS } from '../src/renderer/src/table/viewIds';
 
-/** The hub map (DESIGN.md section 2 Base camp): whole scales, click areas on the picture, every dock screen reachable. */
+/** The hub map (DESIGN.md section 2 Base camp): whole scales, click squares on the picture, every dock screen reachable. */
 describe('hub map', () => {
   it('is the approved 640 x 360 picture, shown at a whole scale and never scrolled', () => {
     const png = readFileSync(resolve(__dirname, '../src/renderer/src/hub/hub-wide-640x360.png'));
@@ -36,19 +35,19 @@ describe('hub map', () => {
     }
   });
 
-  it('puts every click area on whole screen pixels at either scale', () => {
+  it('puts every click square on whole screen pixels at either scale', () => {
     for (const scale of [2, 3]) {
       for (const b of HUB_BUILDINGS) {
-        const r = scaled(bounds(b.shape), scale);
+        const r = scaled(b.spot, scale);
         for (const n of [r.x, r.y, r.w, r.h]) expect(Number.isInteger(n)).toBe(true);
       }
     }
   });
 
-  it('keeps every click area inside the picture and off every other', () => {
-    for (const { id, shape } of HUB_BUILDINGS) {
-      const rect = bounds(shape);
-      expect(shape.length, id).toBeGreaterThanOrEqual(3);
+  it('keeps every click square inside the picture and off every other', () => {
+    for (const { id, spot: rect } of HUB_BUILDINGS) {
+      expect(rect.w, id).toBeGreaterThan(0);
+      expect(rect.h, id).toBeGreaterThan(0);
       expect(rect.x, id).toBeGreaterThanOrEqual(0);
       expect(rect.y, id).toBeGreaterThanOrEqual(0);
       expect(rect.x + rect.w, id).toBeLessThanOrEqual(HUB_MAP_W);
