@@ -264,7 +264,7 @@ export function wishlistPanelView(
                 ? t.wishlistDetail(
                     nameOf(c.itemId),
                     kindName(kind),
-                    cap(card.element),
+                    card.element ? cap(card.element) : undefined,
                     cap(card.job),
                   )
                 : nameOf(c.itemId),

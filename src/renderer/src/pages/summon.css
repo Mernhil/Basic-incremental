@@ -856,22 +856,17 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 .sm-wish__card[data-element='fire'] .sm-wish__elem {
   --ec: #ff6a2a;
 }
-.sm-wish__card[data-element='storm'] .sm-wish__elem {
+.sm-wish__card[data-element='water'] .sm-wish__elem {
+  /* the old storm blue stands in until water has its own colour */
   --ec: #5ab8ff;
 }
 .sm-wish__card[data-element='light'] .sm-wish__elem {
   --ec: #fff2a0;
 }
-.sm-wish__card[data-element='nature'] .sm-wish__elem {
-  --ec: #5fd45f;
-}
 .sm-wish__card[data-element='earth'] .sm-wish__elem {
   --ec: #b0784a;
 }
-.sm-wish__card[data-element='crystal'] .sm-wish__elem {
-  --ec: #d77bff;
-}
-.sm-wish__card[data-element='void'] .sm-wish__elem {
+.sm-wish__card[data-element='dark'] .sm-wish__elem {
   --ec: #5b2fb0;
 }
 .sm-wish__tick {

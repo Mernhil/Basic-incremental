@@ -38,7 +38,7 @@ import { cardItemArt } from './loadoutCards';
 import { ITEM_VIEWBOX } from '../art/items';
 import { DUEL_COPY } from '../views/dungeon/copy';
 import type { CardsModel } from './cardsModel';
-import { stageCell, starTotal } from './dungeonsModel';
+import { bossElements, stageCell, starTotal } from './dungeonsModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import { lightStagePips, setStarText, stagePips } from '../ui/stars';
@@ -258,7 +258,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     head.append(fight);
 
     const body: HTMLElement[] = [head];
-    if (d) body.push(stageGrid(d));
+    if (d) body.push(bossElementNote(d), stageGrid(d));
     else if (t) body.push(trialInfo(t, s));
     const opens = clearUnlocks(content, entry.id);
     const opened = [...opens.dungeons, ...opens.mines].map(
@@ -272,6 +272,25 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       body.push(h('p', 'dp-note', COPY.dungeons.opens(COPY.dungeons.and(opened))));
     body.push(loot(s));
     map.replaceChildren(...body);
+  }
+
+  /** What the boss is weak to and resists, in the element's name. */
+  function bossElementNote(d: Dungeon): HTMLElement {
+    const { weakness, resistance } = content.combat.elements;
+    const e = bossElements(d.boss, {
+      weakness: weakness.toNumber(),
+      resistance: resistance.toNumber(),
+    });
+    const cap = (x: string): string => x.charAt(0).toUpperCase() + x.slice(1);
+    const lines = [
+      COPY.dungeons.bossWeak(cap(e.weak.element), e.weak.percent),
+      ...(e.resist ? [COPY.dungeons.bossResists(cap(e.resist.element), e.resist.percent)] : []),
+      COPY.dungeons.bossNoneElement,
+    ];
+    const box = h('p', 'dp-note dp-elements');
+    box.dataset.key = 'boss-elements';
+    box.textContent = lines.join(' · ');
+    return box;
   }
 
   /** The stage map of one dungeon: a row per stage, a column per tier (4g). */
