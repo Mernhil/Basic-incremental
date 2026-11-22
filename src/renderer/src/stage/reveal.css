@@ -5,11 +5,11 @@
    transform and opacity only (reveal.ts). --card-n and --card-k come from fitCard() on .rv__line. */
 
 .rv {
-  --rv-common: #c9ced6;
-  --rv-uncommon: #6fdc8c;
-  --rv-rare: #5aa8ff;
-  --rv-epic: #b67bff;
-  --rv-legendary: #ffc23a;
+  --rv-common: #b98a5a;
+  --rv-uncommon: #d08a4a;
+  --rv-rare: #cfd6e0;
+  --rv-epic: #ffd24a;
+  --rv-legendary: #b98cff;
   --rv-mythic: #ff7ab8;
   --rv-void: #9a6ae0;
   position: fixed;
@@ -89,14 +89,27 @@
   user-select: none;
 }
 .rv__door-img--open {
-  opacity: 0;
-  transition: opacity 0.25s ease-out;
+  visibility: hidden;
 }
+/* a hard swap: the two door pictures are never on screen half-transparent together */
 .rv__stage.is-open .rv__door-img--open {
-  opacity: 1;
+  visibility: visible;
 }
 .rv__stage.is-open .rv__door-img--closed {
-  opacity: 0;
+  visibility: hidden;
+}
+.rv__flash {
+  position: absolute;
+  left: 29%;
+  right: 29%;
+  top: 17%;
+  bottom: 9%;
+  border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  background: #fff4c2;
+  display: none;
+}
+.rv__stage.is-flash .rv__flash {
+  display: block;
 }
 .rv__best {
   position: absolute;
@@ -169,6 +182,31 @@
 }
 .rv-slot + .rv-slot {
   margin-left: var(--rv-gap, 6px);
+}
+.rv-slot[data-rarity='common'] {
+  --rv-glow: var(--rv-common);
+}
+.rv-slot[data-rarity='uncommon'] {
+  --rv-glow: var(--rv-uncommon);
+}
+.rv-slot[data-rarity='rare'] {
+  --rv-glow: var(--rv-rare);
+}
+.rv-slot[data-rarity='epic'] {
+  --rv-glow: var(--rv-epic);
+}
+.rv-slot[data-rarity='legendary'] {
+  --rv-glow: var(--rv-legendary);
+}
+.rv-slot[data-rarity='mythic'] {
+  --rv-glow: var(--rv-mythic);
+}
+.rv-slot[data-rarity='void'] {
+  --rv-glow: var(--rv-void);
+}
+/* the T6 card sits above its neighbours, so overlaps never cover it */
+.rv-slot.is-hero {
+  z-index: 3;
 }
 .rv-slot:hover {
   z-index: 2;

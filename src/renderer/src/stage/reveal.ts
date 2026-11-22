@@ -9,6 +9,7 @@ import {
   revealTimeline,
   CUTIN_MS,
   FLY_MS,
+  HERO_MS,
   type DoorKey,
   type RevealView,
 } from '../pages/summonModel';
@@ -104,7 +105,9 @@ export function showReveal(opts: RevealOptions): void {
     img.alt = '';
     img.draggable = false;
   }
-  door.append(closedImg, openImg);
+  // a solid light shape fills the doorway for two frames between the closed and the open picture
+  const flash = el('i', 'rv__flash');
+  door.append(closedImg, openImg, flash);
   const mark = el(
     'p',
     'rv__best',
@@ -251,6 +254,52 @@ export function showReveal(opts: RevealOptions): void {
     if (flash) later(flash, delay + FLY_MS + 150);
   };
 
+  /** The T6 card after its cut-in: lands at the stage's centre at 2x with its tier glow, holds, then moves into its slot at 1x. */
+  const hero = (i: number, delay: number): void => {
+    const li = slots[i]!;
+    li.classList.add('is-hero');
+    if (typeof Element.prototype.animate !== 'function') return;
+    const from = door.getBoundingClientRect();
+    const box = stage.getBoundingClientRect();
+    const to = li.getBoundingClientRect();
+    const tx = to.left + to.width / 2;
+    const ty = to.top + to.height / 2;
+    const dx = from.left + from.width / 2 - tx;
+    const dy = from.top + from.height * 0.62 - ty;
+    const cx = box.left + box.width / 2 - tx;
+    const cy = box.top + box.height * 0.42 - ty;
+    const glow = 'drop-shadow(0 0 28px var(--rv-glow))';
+    anims.push(
+      li.animate(
+        [
+          {
+            transform: `translate(${dx}px, ${dy}px) scale(0.5)`,
+            opacity: 0,
+            easing: 'cubic-bezier(0.2, 0.8, 0.25, 1)',
+          },
+          {
+            transform: `translate(${cx}px, ${cy}px) scale(2)`,
+            opacity: 1,
+            filter: glow,
+            offset: 0.22,
+            easing: 'linear',
+          },
+          {
+            transform: `translate(${cx}px, ${cy}px) scale(2)`,
+            opacity: 1,
+            filter: glow,
+            offset: 0.72,
+            easing: 'ease-in-out',
+          },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: HERO_MS, delay, fill: 'backwards' },
+      ),
+    );
+    const f = flashes[i];
+    if (f) later(f, delay + HERO_MS + 150);
+  };
+
   const playCut = async (i: number): Promise<void> => {
     const v = views[i]!;
     stage.classList.add('is-cut');
@@ -286,9 +335,19 @@ export function showReveal(opts: RevealOptions): void {
     // the door opens and the best tier lights on it, then the cards go through
     const OPEN_MS = 450;
     mark.classList.add('is-on');
-    later(() => stage.classList.add('is-open'), 120);
+    // the closed door holds, a two-frame flash, then a hard swap to the open picture and a small settle
+    later(() => stage.classList.add('is-flash'), 150);
+    later(() => {
+      stage.classList.remove('is-flash');
+      stage.classList.add('is-open');
+      door.animate?.([{ transform: 'scale(1.03)' }, { transform: 'none' }], {
+        duration: 120,
+        easing: 'ease-out',
+      });
+    }, 234);
     for (const step of timeline.steps) {
       if (step.kind === 'fly') fly(step.index, OPEN_MS + step.at);
+      else if (step.kind === 'hero') hero(step.index, OPEN_MS + step.at);
       else later(() => void playCut(step.index), OPEN_MS + step.at);
     }
     if (!best?.cutin) opts.sound?.(revealSound(best?.rarity ?? 'common'));

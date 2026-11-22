@@ -12,6 +12,7 @@ import {
   DECK_MAX_LAYERS,
   DOOR_ORDER,
   FLY_MS,
+  HERO_MS,
   bestOfPull,
   doorAbout,
   doorKeyOf,
@@ -320,9 +321,13 @@ describe('the new reveal', () => {
     for (const s of t.steps.filter((x) => x.kind === 'fly' && x.index < 2)) {
       expect(s.at + FLY_MS).toBeLessThanOrEqual(cut.at);
     }
+    // its card lands at 2x, holds and settles before anything else moves
+    const hero = t.steps.find((x) => x.kind === 'hero')!;
+    expect(hero.index).toBe(2);
+    expect(hero.at).toBeGreaterThanOrEqual(cut.at + CUTIN_MS);
     // nothing after it moves until it is over
     const after = t.steps.filter((x) => x.kind === 'fly' && x.index >= 2);
-    for (const s of after) expect(s.at).toBeGreaterThanOrEqual(cut.at + CUTIN_MS);
+    for (const s of after) expect(s.at).toBeGreaterThanOrEqual(hero.at + HERO_MS);
     expect(t.totalMs).toBeGreaterThan(cut.at + CUTIN_MS);
   });
 

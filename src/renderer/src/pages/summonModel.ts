@@ -585,9 +585,9 @@ export function bestOfPull(rarities: readonly Rarity[]): {
   return rarity ? { index: best, rarity, cutin: isCutinRarity(rarity) } : null;
 }
 
-/** One beat of the reveal: a card flies through the door, or the cut-in plays for one card. */
+/** One beat of the reveal: a card flies through the door, the cut-in plays for one card, or that card lands at the centre at 2x, holds, and moves into its place (`hero`). */
 export interface RevealStep {
-  kind: 'fly' | 'cutin';
+  kind: 'fly' | 'cutin' | 'hero';
   index: number;
   /** Milliseconds from the start of the show when it begins. */
   at: number;
@@ -596,6 +596,8 @@ export interface RevealStep {
 /** How long one ordinary card takes to cross, how long a cut-in holds everything. */
 export const FLY_MS = 420;
 export const CUTIN_MS = 1800;
+/** The T6 card after its cut-in: lands at 2x (200 ms), holds (450 ms), moves to its slot (250 ms). */
+export const HERO_MS = 900;
 /** All the ordinary cards of a pull leave the door within about this long. */
 export const FLY_SPREAD_MS = 600;
 
@@ -616,18 +618,21 @@ export function revealTimeline(rarities: readonly Rarity[]): {
       // everything already on its way lands first
       clock = Math.max(
         clock,
-        steps.reduce((m, s) => Math.max(m, s.at + FLY_MS), 0),
+        steps.reduce((m, s) => Math.max(m, s.at + (s.kind === 'hero' ? HERO_MS : FLY_MS)), 0),
       );
       steps.push({ kind: 'cutin', index, at: clock });
       clock += CUTIN_MS;
-      steps.push({ kind: 'fly', index, at: clock });
-      clock += gap;
+      steps.push({ kind: 'hero', index, at: clock });
+      clock += HERO_MS + gap;
     } else {
       steps.push({ kind: 'fly', index, at: clock });
       clock += gap;
     }
   });
-  return { steps, totalMs: steps.reduce((m, s) => Math.max(m, s.at + FLY_MS), 0) };
+  return {
+    steps,
+    totalMs: steps.reduce((m, s) => Math.max(m, s.at + (s.kind === 'hero' ? HERO_MS : FLY_MS)), 0),
+  };
 }
 
 /**
