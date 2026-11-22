@@ -632,6 +632,8 @@ export interface OwnedCard {
   starFill: number;
   /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
+  /** Whether its skill was opened with Cores (DESIGN.md §2 Three attacks per card). */
+  skillOpen: boolean;
 }
 
 /** The account (DESIGN.md §10a, 16 E7). Kept through prestige. */
@@ -690,6 +692,7 @@ export function newOwnedCard(tier: RankTier = 'wood'): OwnedCard {
     xp: new Decimal(0),
     starFill: 0,
     enhancements: [],
+    skillOpen: false,
   };
 }
 

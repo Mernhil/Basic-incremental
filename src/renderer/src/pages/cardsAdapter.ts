@@ -12,6 +12,7 @@ import {
   loadoutInfo,
   setLoadoutSlot,
   starUp,
+  openCardSkill,
   starUpWithDust,
   type CardFailure,
   type CardInfo,
@@ -207,6 +208,10 @@ export function createCardsModel(
     },
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
+      if (kind === 'skill') {
+        const r = openCardSkill(state, content, id);
+        return r.ok ? r : { ok: false, reason: COPY.moves.reasons[r.reason] };
+      }
       if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
       return wrap(starUp(state, content, id));
     },

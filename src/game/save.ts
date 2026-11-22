@@ -33,7 +33,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 41;
+export const CURRENT_SAVE_VERSION = 42;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -51,7 +51,7 @@ export const serializedStateSchema = z.object({
   /** Set by the v33 -> v34 migration only (never written): the loadouts have no formation yet. */
   arrangeFormation: z.boolean().optional(),
   resources: z.record(z.string(), decimalText),
-  /** v41: only the forge is left of production (the camp has its own part). */
+  /** v42: only the forge is left of production (the camp has its own part). */
   production: z.object({
     forge: z.object({
       recipe: z.string().nullable(),
@@ -59,13 +59,13 @@ export const serializedStateSchema = z.object({
       worker: z.string().nullable(),
     }),
   }),
-  /** v41: the base camp (DESIGN.md section 2): the level and the farming slots. */
+  /** v42: the base camp (DESIGN.md section 2): the level and the farming slots. */
   camp: z.object({
     level: z.number().int().min(1),
     forest: z.array(campSlotSchema),
     cave: z.array(campSlotSchema),
   }),
-  /** v41: the Training ground's dummy: its damage and the team on trial. */
+  /** v42: the Training ground's dummy: its damage and the team on trial. */
   dummy: z.object({ damage: decimalText, team: z.array(z.string().nullable()) }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
@@ -141,6 +141,8 @@ export const serializedStateSchema = z.object({
         starFill: z.number().min(0),
         /** v13. */
         enhancements: z.array(z.string()),
+        /** v41: the skill was opened with Cores (DESIGN.md §2 Three attacks per card). */
+        skillOpen: z.boolean().default(false),
       }),
     ),
     /** Only fighting has a loadout; the old logging and mining ones are stripped on parse
@@ -323,6 +325,7 @@ export function serializeState(state: GameState): SerializedState {
             xp: decimalToString(c.xp),
             starFill: c.starFill,
             enhancements: [...c.enhancements],
+            skillOpen: c.skillOpen,
           },
         ]),
       ),
@@ -686,6 +689,7 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       enhancements: c.enhancements.filter((o) =>
         content.enhancements.cards[id]?.some((x) => x.id === o),
       ),
+      skillOpen: c.skillOpen,
     };
   }
   const seen = new Set<string>();
@@ -744,6 +748,7 @@ function deserializeHeirlooms(state: GameState, saved: SerializedState, content:
         xp: new Decimal(0),
         starFill: 0,
         enhancements: [],
+        skillOpen: false,
       };
     } else {
       const worth =

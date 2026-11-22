@@ -9,7 +9,7 @@ import {
 import { content, freshState } from './helpers';
 
 /**
- * Save format 41 (DESIGN.md section 2 Base camp): the camp replaces trees, mines, tool lines, the
+ * Save format 42 (DESIGN.md section 2 Base camp): the camp replaces trees, mines, tool lines, the
  * milestone picks on them, the production presets and the autobuyers. The conversion is
  * level = 1 + floor(worth / 10), worth = tree and mine levels + half the tool levels + 5 a pick
  * that is not a Training line's, at most 40.
@@ -50,11 +50,11 @@ function old(extra: Raw = {}): Raw {
   };
 }
 
-describe('v40 -> v41: the base camp', () => {
-  const migrate = MIGRATIONS[40]!;
+describe('v41 -> v42: the base camp', () => {
+  const migrate = MIGRATIONS[41]!;
 
   it('is the current format or older', () => {
-    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(41);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(42);
   });
 
   it('turns the levels, tool lines and picks into a camp level', () => {
@@ -105,7 +105,7 @@ describe('v40 -> v41: the base camp', () => {
 
   it('a whole old save reads at the current format with its stock, camp and working cards', () => {
     const base = JSON.parse(createSaveText(freshState(), 1));
-    base.version = 40;
+    base.version = 41;
     const o = old();
     base.state.resources = { ...base.state.resources, ...o['resources'] };
     base.state.production = o['production'];

@@ -293,8 +293,14 @@ describe('v26 -> v27 (the table update)', () => {
     // format 40: the Card Portal's pity counts toward a T6 and starts again; 10 pulls made means the
     // first 10-pull is behind it; no tier reward is claimed
     (scaled['portals'] as Record<string, Record<string, unknown>>)['card_portal']!['pity'] = 0;
-    // format 41: the camp replaces the trees and mines, and the dummy is new
-    const camped = MIGRATIONS[40]!(scaled) as Record<string, unknown>;
+    // format 41: every owned card's skill starts closed (DESIGN.md §2 Three attacks per card)
+    for (const card of Object.values(
+      (scaled['cards'] as { owned: Record<string, Record<string, unknown>> }).owned,
+    )) {
+      card['skillOpen'] = false;
+    }
+    // format 42: the camp replaces the trees and mines, and the dummy is new
+    const camped = MIGRATIONS[41]!(scaled) as Record<string, unknown>;
     expect(again).toEqual({ ...camped, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

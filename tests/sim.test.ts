@@ -135,7 +135,7 @@ describe('balance sim: greedy buyer', () => {
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card upgrades', () => {
+  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card skills', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
@@ -149,7 +149,13 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
     expect(bought).toContain('train:sharpen');
     expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
-    expect(after.resources['moss_core']!.toNumber()).toBe(10);
+    // Cores only open skills (DESIGN.md §2 Three attacks per card): nothing else spends them.
+    const opened = Object.entries(after.cards.owned).filter(([, c]) => c.skillOpen);
+    const paid = opened.reduce(
+      (a, [id]) => a + (content.moves.unlock[content.cardById.get(id)!.tier]?.amount ?? 0),
+      0,
+    );
+    expect(after.resources['moss_core']!.toNumber()).toBe(10 - paid);
   });
 
   it('never offers a tier-up: a card stays the tier it is (DESIGN.md §5 No tier-ups)', () => {

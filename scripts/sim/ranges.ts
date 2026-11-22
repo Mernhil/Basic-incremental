@@ -169,6 +169,7 @@ export function endOfContent(state: GameState, content: Content): GameState {
       xp: new Decimal(0),
       starFill: 0,
       enhancements: [],
+      skillOpen: false,
     };
   }
   next.cards.loadouts.fighting.slots = tops.slice(0, 4);
