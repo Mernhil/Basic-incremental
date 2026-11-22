@@ -303,7 +303,9 @@ describe('v26 -> v27 (the table update)', () => {
     const camped = MIGRATIONS[41]!(scaled) as Record<string, unknown>;
     // format 43: the starter weapon's pick is offered once to a save that began before it
     camped['starter'] = { done: false, skippable: true };
-    expect(again).toEqual({ ...camped, bossHp: null, activeDungeonId: 'mossy_cellar' });
+    // format 44: an empty raid record (DESIGN.md §2 Raid bosses)
+    const raided = { ...camped, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
+    expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
     const resaved = createSaveText(state, 1);

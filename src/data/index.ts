@@ -59,6 +59,8 @@ import type {
   Skill,
   SkillsConfig,
   MovesConfig,
+  RaidsConfig,
+  RaidBoss,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -95,6 +97,7 @@ import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
 import movesJson from './content/moves.json';
+import raidsJson from './content/raids.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
 import startersJson from './content/starters.json';
@@ -120,6 +123,8 @@ export interface Content {
   allDungeons: Dungeon[];
   /** Special dungeons (strength tests). Their ids share the dungeon id space. */
   trials: Trial[];
+  /** Raid bosses and their ladder (DESIGN.md §2 Raid bosses). */
+  raids: RaidsConfig;
   combat: CombatConfig;
   cosmetics: Cosmetic[];
   portals: Portal[];
@@ -163,6 +168,7 @@ export interface Content {
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
+  raidById: ReadonlyMap<string, RaidBoss>;
   perkMilestoneById: ReadonlyMap<string, PerkMilestone>;
   /** Every perk option by id, with the milestone it belongs to. */
   perkOptionById: ReadonlyMap<string, { milestone: PerkMilestone; option: PerkOption }>;
@@ -253,6 +259,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     cardRules,
     dungeons,
     trials,
+    raids,
     combat,
     cosmetics,
     portals,
@@ -317,6 +324,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
   checkSkills({ cards, skills }, issues);
   checkMoves({ cards, moves, resources }, issues);
+  checkRaids({ cards, raids, resources, dungeons, trials }, issues);
   checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
   checkStarters({ cards, resources, starters }, issues);
   checkWeaponSkins(weaponSkins, issues);
@@ -364,6 +372,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     dungeons: openDungeons,
     allDungeons: dungeons,
     trials,
+    raids,
     combat,
     cosmetics,
     portals: portals.filter((p) => p.enabled),
@@ -391,6 +400,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(openDungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
+    raidById: new Map(raids.bosses.map((b) => [b.id, b])),
     perkMilestoneById: new Map(perks.milestones.map((m) => [m.id, m])),
     perkOptionById: new Map(
       perks.milestones.flatMap((m) =>
@@ -1537,6 +1547,7 @@ export function bundledRawContent(): RawContent {
     cardRules: cardRulesJson,
     dungeons: dungeonsJson,
     trials: trialsJson,
+    raids: raidsJson,
     combat: combatJson,
     cosmetics: cosmeticsJson,
     portals: portalsJson,
@@ -1580,4 +1591,46 @@ export interface ContentOptions {
 /** Loads and validates the bundled game data. Call once at startup. */
 export function loadContent(options: ContentOptions = {}): Content {
   return validateContent(bundledRawContent(), options);
+}
+
+/** raids.json (DESIGN.md §2 Raid bosses): ids are unique and not a dungeon's, ladder cards are real
+ *  fighting cards, every ladder score names a boss, and rewards pay real resources. */
+function checkRaids(
+  c: Pick<Content, 'cards' | 'raids' | 'resources' | 'dungeons' | 'trials'>,
+  issues: string[],
+): void {
+  const bosses = new Set<string>();
+  const taken = new Set([...c.dungeons, ...c.trials].map((x) => x.id));
+  c.raids.bosses.forEach((b, i) => {
+    if (bosses.has(b.id)) issues.push(`raids.json › bosses › [${i}] › id: "${b.id}" is used twice`);
+    if (taken.has(b.id))
+      issues.push(`raids.json › bosses › [${i}] › id: "${b.id}" is a dungeon id`);
+    bosses.add(b.id);
+    if ((b.trick.kind === 'shield' || b.trick.kind === 'curse') && b.trick.size > 1)
+      issues.push(`raids.json › bosses › [${i}] › trick › size: "${b.id}" must be at most 1`);
+  });
+  const resources = new Set(c.resources.map((r) => r.id));
+  const cards = new Map(c.cards.map((x) => [x.id, x]));
+  c.raids.ladder.teams.forEach((t, i) => {
+    t.cards.forEach((cardId) => {
+      if (cards.get(cardId)?.job !== 'fighting')
+        issues.push(
+          `raids.json › ladder › teams › [${i}] › cards: "${cardId}" is not a fighting card`,
+        );
+    });
+    for (const boss of Object.keys(t.scores))
+      if (!bosses.has(boss))
+        issues.push(`raids.json › ladder › teams › [${i}] › scores: unknown boss "${boss}"`);
+    for (const boss of bosses)
+      if (t.scores[boss] === undefined)
+        issues.push(`raids.json › ladder › teams › [${i}] › scores: no score for "${boss}"`);
+  });
+  c.raids.ladder.rewards.forEach((e, i) =>
+    e.rewards.forEach((r) => {
+      if (!resources.has(r.resource))
+        issues.push(
+          `raids.json › ladder › rewards › [${i}] › rewards: unknown resource "${r.resource}"`,
+        );
+    }),
+  );
 }

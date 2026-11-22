@@ -72,9 +72,10 @@ describe('hub map', () => {
     }
   });
 
-  it('seals the raid gate and the arena and goes to the dungeon from the arch', () => {
+  it('seals the arena, opens the raid gate after the first Ascension and goes to the dungeon from the arch', () => {
     const by = (id: string) => HUB_BUILDINGS.find((b) => b.id === id)!;
-    expect(by('raid_gate').action.kind).toBe('locked');
+    expect(by('raid_gate').action).toEqual({ kind: 'view', view: 'raids' });
+    expect(by('raid_gate').needsAscension).toBe(true);
     expect(by('arena').action.kind).toBe('locked');
     expect(by('dungeon_arch').action).toEqual({ kind: 'dungeon' });
     expect(by('armoury').action.kind).toBe('menu');

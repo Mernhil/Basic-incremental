@@ -9,6 +9,7 @@ import {
   HUB_MAP_W,
   hubScale,
   scaled,
+  sealWhy,
   type HubBuilding,
 } from './hubModel';
 import './hub.css';
@@ -35,6 +36,9 @@ interface Place {
   /** A button over the mask's box: the keyboard's way in (Tab, Enter) and the plate's anchor. */
   spot: HTMLButtonElement;
   mark: HTMLElement;
+  lock: HTMLElement;
+  /** Why the place is sealed now (hubModel `sealWhy`), or null. */
+  why: string | null | undefined;
 }
 
 export function createHub(
@@ -77,26 +81,33 @@ export function createHub(
   let mapPixels: ImageData | null = null;
   let hovered: Place | null = null;
 
+  /** Brings a place's seal (the lock plate, its label and the cursor) up to date with the game. */
+  function seal(p: Place): void {
+    const why = sealWhy(p.def, ctx.state(), ctx.content);
+    if (why === p.why) return;
+    p.why = why;
+    p.spot.classList.toggle('is-locked', why !== null);
+    p.spot.setAttribute('aria-label', why !== null ? `${p.def.name}: ${why}` : p.def.name);
+    p.lock.textContent = why ?? '';
+    p.lock.hidden = why === null;
+  }
+
   const places: Place[] = HUB_BUILDINGS.map((def) => {
     const spot = h('button', 'hub__spot') as HTMLButtonElement;
     spot.type = 'button';
     spot.dataset['building'] = def.id;
-    const why = def.action.kind === 'locked' ? def.action.why : null;
-    spot.classList.toggle('is-locked', why !== null);
-    spot.setAttribute('aria-label', why !== null ? `${def.name}: ${why}` : def.name);
     const plate = h('span', 'hub__plate px-display', def.name);
     plate.setAttribute('aria-hidden', 'true');
     spot.append(plate);
-    if (why !== null) {
-      const lock = h('span', 'hub__lock', why);
-      lock.setAttribute('aria-hidden', 'true');
-      spot.append(lock);
-    }
+    const lock = h('span', 'hub__lock');
+    lock.setAttribute('aria-hidden', 'true');
+    spot.append(lock);
     const mark = h('span', 'hub__mark', '!');
     mark.hidden = true;
     mark.setAttribute('aria-hidden', 'true');
     spot.append(mark);
-    const place: Place = { def, mask: null, spot, mark };
+    const place: Place = { def, mask: null, spot, mark, lock, why: undefined };
+    seal(place);
     spot.addEventListener('click', () => select(def, spot));
     spot.addEventListener('focus', () => light(place));
     spot.addEventListener('blur', () => {
@@ -138,7 +149,7 @@ export function createHub(
       }
       glow.classList.add('is-on');
     }
-    stage.style.cursor = place.def.action.kind === 'locked' ? 'not-allowed' : 'pointer';
+    stage.style.cursor = place.why !== null ? 'not-allowed' : 'pointer';
   }
 
   /** The place whose mask is under a point of the screen, if any. */
@@ -165,7 +176,7 @@ export function createHub(
 
   function select(def: HubBuilding, from: HTMLElement): void {
     const a = def.action;
-    if (a.kind === 'locked') return;
+    if (a.kind === 'locked' || sealWhy(def, ctx.state(), ctx.content) !== null) return;
     closeMenu();
     if (a.kind === 'dungeon') actions.goDungeon();
     else if (a.kind === 'view') actions.open(a.view, from);
@@ -236,6 +247,7 @@ export function createHub(
     render() {
       layout();
       for (const p of places) {
+        seal(p);
         const ready = p.def.marks.some((id) => hintOf(id)?.ready);
         if (p.mark.hidden === ready) p.mark.hidden = !ready;
       }
