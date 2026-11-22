@@ -49,6 +49,13 @@ export function createSealBlock(opts: SealBlockOptions): SealBlock {
     const parts = cost.map((p) => ({ resource: p.resource, amount: p.amount }));
     const can = canAfford(state, cost);
 
+    if (broken >= total) {
+      root.replaceChildren(
+        h('strong', 'sealblock__title', COPY.starter.unsealed),
+        h('p', 'sealblock__now', COPY.starter.unsealedNote),
+      );
+      return;
+    }
     const head = h('div', 'sealblock__head');
     head.append(
       h('strong', 'sealblock__title', COPY.starter.sealTitle),

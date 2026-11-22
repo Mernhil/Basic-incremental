@@ -1158,7 +1158,9 @@ function checkStarters(
   c: { cards: Card[]; resources: { id: string }[]; starters: StartersConfig },
   issues: string[],
 ): void {
-  for (const id of c.starters.cards) {
+  const all = [...c.starters.base, ...c.starters.special];
+  if (new Set(all).size !== all.length) issues.push('starters.json: a card is listed twice');
+  for (const id of all) {
     const card = c.cards.find((x) => x.id === id);
     if (!card) issues.push(`starters.json › cards: unknown card "${id}"`);
     else if (card.tier !== 'mythic' || card.heirloom || card.job !== 'fighting') {

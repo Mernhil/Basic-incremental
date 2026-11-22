@@ -102,7 +102,9 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
 
   // A card never changes tier (DESIGN.md §5 No tier-ups): the panel has no tier-up step, only a
   // note under the stars.
-  const tierName = tierLabel(rank.tier, card.side);
+  // a starter weapon is labelled so (DESIGN.md §2 Starter weapon), a label only: it keeps its tier
+  const tierName =
+    owned.seal !== undefined ? COPY.starter.tierLabel : tierLabel(rank.tier, card.side);
   const endNote =
     rank.tier === 'heirloom'
       ? // An Heirloom card: its stars come from the gate's shards.

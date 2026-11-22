@@ -1015,11 +1015,13 @@ export function createCardsPage(
         ? COPY.cards.pickCurrent
         : c.heirloomBlocked
           ? COPY.cards.pickHeirlooms
-          : !c.fits
-            ? COPY.cards.pickOver(c.costAfter, lo.cap)
-            : c.from !== null
-              ? COPY.cards.pickSwap(slotName(c.from))
-              : '';
+          : c.starterBlocked
+            ? COPY.cards.pickStarters
+            : !c.fits
+              ? COPY.cards.pickOver(c.costAfter, lo.cap)
+              : c.from !== null
+                ? COPY.cards.pickSwap(slotName(c.from))
+                : '';
       const b = h('button', 'cp-tile cp-pick__card');
       b.type = 'button';
       b.dataset.key = `pick-${lo.job}-${c.id}`;

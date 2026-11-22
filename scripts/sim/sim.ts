@@ -64,7 +64,7 @@ import {
   collectModifiers,
   breakSeal,
   createInitialState,
-  pickStarter,
+  claimStarter,
   createSeededRng,
   Decimal,
   CAMP_PLACES,
@@ -1607,7 +1607,8 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
   for (const card of content.cards) {
     if (card.job !== 'fighting' || !usable(card.id)) continue;
     // a sealed starter weapon stays behind the lead: the player keeps leading with what they know
-    if (state.cards.owned[card.id]!.seal !== undefined) continue;
+    const seal = state.cards.owned[card.id]!.seal;
+    if (seal !== undefined && seal < content.starters.seals.length) continue;
     if (cardCost(content, card.id, state.cards.owned[card.id]) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
@@ -2595,7 +2596,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   );
   let state = createInitialState(content);
   if (options.starter) {
-    const picked = pickStarter(state, content, options.starter);
+    const picked = claimStarter(state, content, options.starter);
     if (picked.ok) state = picked.state;
   }
   let sinceChoose = Infinity;

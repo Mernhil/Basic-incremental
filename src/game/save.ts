@@ -23,7 +23,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { arrangeSavedFormations, levelCap } from './cards';
+import { arrangeSavedFormations, isStarterCard, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { settleTierRewards } from './tierRewards';
 import { pruneCardSkins } from './cardSkins';
@@ -698,8 +698,8 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       skillOpen: c.skillOpen,
       // A seal only holds a starter card, and no further than its last step.
       ...(c.seal !== undefined &&
-      c.seal < content.starters.seals.length &&
-      content.starters.cards.includes(id)
+      c.seal <= content.starters.seals.length &&
+      isStarterCard(content, id)
         ? { seal: c.seal }
         : {}),
     };

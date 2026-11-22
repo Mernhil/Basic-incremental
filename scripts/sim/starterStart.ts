@@ -13,7 +13,7 @@ const content = loadContent();
 const mins = (s: number | null | undefined): string =>
   s == null ? '-' : `${(s / 60).toFixed(1)}m`;
 
-for (const starter of [undefined, ...content.starters.cards]) {
+for (const starter of [undefined, ...content.starters.base]) {
   const seals: string[] = [];
   let last = -1;
   const result = runSim(content, {
