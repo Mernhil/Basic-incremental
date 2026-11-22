@@ -1624,15 +1624,17 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
 // ------------------------------------------------------------------------------------------------
 
 export interface SpecialAttack {
-  /** Starts the special attack; false when one is playing or just ended (the caller keeps today's hop). */
+  /** Starts the special attack; false when one is playing or just ended (the arena's queue waits). */
   play(req: SpecialRequest): boolean;
   busy(): boolean;
+  /** Milliseconds until the next one may start (0 when free now). */
+  waitMs(): number;
   /** Stops it at once (the window was hidden, the duel closed). */
   cancel(): void;
 }
 
-/** Milliseconds after one ends before the next may start, so a run of signatures never piles up. */
-const COOLDOWN_MS = 700;
+/** Milliseconds after one ends before the next may start: queued ones play back to back, never over each other. */
+const COOLDOWN_MS = 300;
 
 export function createSpecialAttack(host: HTMLElement): SpecialAttack {
   // start loading the drawn slash sheets, so the first attack already has them
@@ -1660,6 +1662,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
 
   return {
     busy: () => running !== null || performance.now() < freeAt,
+    waitMs: () => (running ? 250 : Math.max(0, freeAt - performance.now())),
     cancel: finish,
     play(req) {
       if (running || performance.now() < freeAt || document.hidden) return false;
