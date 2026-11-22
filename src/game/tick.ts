@@ -41,6 +41,7 @@ export function advance(
   content: Content,
   dtMs: number,
   rng: Rng,
+  fightSpeed = 1,
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   if (!Number.isFinite(dtMs) || dtMs <= 0) return { state, report };
@@ -65,11 +66,11 @@ export function advance(
           ? 1
           : firstDueBoundary(current, content, toBoundary, boundaries);
     if (first === 0) {
-      current = advanceSpan(current, content, remaining, rng, report);
+      current = advanceSpan(current, content, remaining, rng, report, fightSpeed);
       break;
     }
     const until = toBoundary + (first - 1) * CARD_LEVEL_STEP_MS;
-    current = advanceSpan(current, content, until, rng, report);
+    current = advanceSpan(current, content, until, rng, report, fightSpeed);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
     settleAccount(current, content, report);
@@ -139,6 +140,7 @@ function advanceSpan(
   dtMs: number,
   rng: Rng,
   report: TickReport,
+  fightSpeed = 1,
 ): GameState {
   const next = cloneState(state);
   const seconds = dtMs / 1000;
@@ -182,7 +184,8 @@ function advanceSpan(
 
   // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.perks.currency];
-  advanceCombat(next, content, seconds, rng, report, modifiers);
+  advanceCombat(next, content, seconds, rng, report, modifiers, fightSpeed);
+  delete next.combat.paySlow;
   countMoneyEarned(next, content, moneyBefore);
   // An Ascension challenge is done once the run stands on its target floor.
   settleChallenges(next, content);
@@ -197,13 +200,14 @@ export function advanceChunked(
   totalMs: number,
   rng: Rng,
   chunkMs: number,
+  fightSpeed = 1,
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   let current = state;
   let remaining = totalMs;
   while (remaining > 0) {
     const step = Math.min(chunkMs, remaining);
-    const result = advance(current, content, step, rng);
+    const result = advance(current, content, step, rng, fightSpeed);
     current = result.state;
     mergeReports(report, result.report);
     remaining -= step;

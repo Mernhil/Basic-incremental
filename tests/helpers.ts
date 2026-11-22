@@ -163,7 +163,7 @@ function pinRuleNumbers(bundled: Content): Content {
 
 /** The pinned content with the shipped floors of every dungeon back in. */
 export const floorsContent: Content = pinRuleNumbers(
-  pinNoElements(pinStarBar(pinProductionRates(loadContent()))),
+  pinNoElements(pinStarBar(pinProductionRates(loadContent({ uiLooksVaulted: false })))),
 );
 
 export const content: Content = pinOneFloor(floorsContent);

@@ -129,6 +129,7 @@ Level-ups and unlocks are settled only on a whole-second play-time boundary (`CA
 ### Loop and offline
 
 - `src/game/loop.ts` `GameLoop.step(now)` advances by the real time since the last step, never negative and at most `MAX_STEP_MS` (8 hours). A gap over 5 seconds is caught up in one-minute steps, otherwise one-second steps. `setSpeed` multiplies elapsed time (see Sim and dev tools).
+- `src/game/speed.ts` holds the duel speed rule: `DUEL_SPEEDS` (1, 2, 4), `isSpeedUnlocked` (×2 after the first dungeon clear, ×4 after the first Ascension), `usableSpeed`, `speedLocks` and `fightClock`. `GameLoop.setDuelSpeed` sets the chosen speed; `effectiveDuelSpeed` is what runs, and a gap over 5 seconds always runs at ×1.
 - `src/game/offline.ts` `simulateOffline` runs the time since the last save through the same tick in one-minute steps. Under 10 seconds (`MIN_OFFLINE_MS`) nothing happens. The cap is 8 hours in code (`OFFLINE_CAP_MS`), changed by modifiers on the stat `offline.capHours` (`offlineCapMs`). Expedition trips also advance through the time beyond the cap. It returns an `OfflineSummary` of what was gained.
 
 ### Modifiers (`src/game/modifiers.ts`)
@@ -504,6 +505,7 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 
 - Per dungeon and difficulty the save holds the farmed `floor` and the `best` floor beaten (`floorPosition`).
 - Farming: the loadout fights the farmed floor on a loop. Pushing is a Challenge: a timed fight for the floor after the farmed one (`challengeFloor`), at full health. It starts by button (`startFloorChallenge`) or by auto-challenge, a per-dungeon switch, on by default (`setAutoChallenge`). Timers: `combat.json` `challenge.timerSeconds`.
+- Speed button: `advance` takes a `fightSpeed`. Only a running Challenge uses it: `advanceCombat` gives the fight `seconds × speed` and adds the difference to the runtime-only `combat.fightClockBonus` (the fight clock is `fightClock` in `speed.ts`, play time plus that bonus). Production, farming, income and offline progress keep real time; per-second fighting XP and wage, and kill pay (money, materials, kill XP; `combat.paySlow`), are divided by the speed, so they stay the same per real second. When the Challenge ends inside a step the rest of the step runs at the real pace (`endSpeedUp`).
 - A win raises the best floor and moves farming to it. A loss (timer out, or every card down) returns to farming; with auto-challenge on, the next Challenge waits `challenge.autoWaitSeconds`.
 - A team knocked out while farming drops one floor and sits out `knockoutSeconds`.
 - An Ascension keeps best floors, restarts farming at half of each (`ascensionStartFloor`) and turns auto-challenge back on.
@@ -696,7 +698,8 @@ Cosmetics are kept through an ascension (`ASCENSION_PERSISTS` in `src/game/prest
 - `applyGlobalTheme` in `theme/apply.ts` puts the global slots on `<html>` (called from `src/renderer/src/app.ts`). `applyCardTheme` puts a card's variables and classes on its element and marks `data-lv-<slot>` and `data-max-<slot>`.
 - `theme/registry.ts` lists every recipe and effect the page implements, with the generated ids of `art/cosmeticIds.ts`. `assertVisualsImplemented` stops the game at start if the data names a missing one.
 - CSS: `theme/base.css` (card and table from tokens), `recipes.css` (recipe classes), `frames.css` (panel and button frames from table tokens), `effects.css` with `effects.ts` (floating numbers).
-- The table item also themes the shell (see Shell and table). The `shell-oak` recipe is drawn by `theme/shellOak.css`. `shell-stone` is drawn by `theme/shellPictures.css` from `shellArt.json` (`applyShellArt` sets `--sh-<piece>-*`); no item in `cosmetics.json` uses it.
+- The UI look vault: `src/data/vault.ts` `UI_LOOKS_VAULTED` (on) holds back the `table`, `starlight`, `sticker`, `nodes` and `wardrobe` slots, like `BACKDROP_MOTION` for backdrops. `validateContent` (`loadContent({ uiLooksVaulted })` in tests) marks those items `hidden` and cuts them from portal pools, the shard shop and the prestige, achievement and reward-track rewards; `resolveGlobal` shows the slot's starter whatever is worn (the table slot shows the hidden `gold_table`); a vaulted dungeon rare drop stays in the inventory and grants no cosmetic (`combat.ts`); the Wardrobe lists no sets and no Interface chip. Saves are untouched, so owned items keep their `ownedModifiers`; no set can be completed. `tests/uiLookVault.test.ts`.
+- The table item also themes the shell (see Shell and table). The shell look is Charcoal and Gold: the `shell-gold` recipe, drawn by `theme/shellGold.css` from `art/shell/gold/` (`pieces.json` gives each piece's size and corner; `extra/` holds kit pieces, only the tooltip is used). `shell-oak` (`theme/shellOak.css`) stays in the code, unused by default. `shell-stone` is drawn by `theme/shellPictures.css` from `shellArt.json` (`applyShellArt` sets `--sh-<piece>-*`); no item in `cosmetics.json` uses it.
 - UI-skin recipes set `--bi-skin-<slot>` to a style letter; `skinStyle` in `ui/skins.ts` reads it (`ui/skillArt.ts` reads the `nodes` recipe from the loadout instead) and pages draw that style with `art/cosmetics.ts`.
 
 ### Effect on game numbers
@@ -829,7 +832,7 @@ The hub is the main screen (DESIGN section 2, Base camp). `hub-wide-640x360.png`
 
 ### Settings (`src/renderer/src/settings/`)
 
-- `prefs.ts`: reduced motion and the autosave interval, in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
+- `prefs.ts`: reduced motion, the autosave interval and the chosen duel speed (`duelSpeed`: 1, 2 or 4), in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
 - `motion.ts` applies it: `data-motion` on `<html>`, a wrapped `window.matchMedia`, and every `prefers-reduced-motion` CSS rule switched on or off (`motionRules.ts`).
 - `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money's coins, and every resource with a kept icon: gems, Cores, Sigil, Dust, Shards, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture as the number and its name in words (none today).
 - `numberFormat.ts` `fmt` is the one number format. `coins.ts` shows Money as a count of the biggest coin it fills, coins from `coins.json`.
@@ -852,6 +855,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 ### `views/dungeon`
 
 - `index.ts`: the table's centre piece and the `dungeon` view share one duel element (`stage/arena.ts`, see Fights), moved between them on open and close.
+- `stage/duelPace.ts` publishes the pace the duel's animations play at while a sped-up Challenge runs (`duelPace`, `paced`, CSS `--pace`); hits, numbers, boss hits and the cut-in follow it. The duel's Speed button (`data-key="arena-speed"`, in `stage/arena.ts`) cycles the open speeds; `app.ts` passes the choice in as `TableContext.duelSpeed`.
 - The view's title bar holds three buttons, Dungeons, Weapon and Training. Each opens its panel (built by `pages/dungeons.ts` `createDungeonPanels`, see Screens) as a sheet over the running fight; the same button, the back button or Esc closes it.
 - `duelModel.ts`: hand layout, slot colours, enemy pips, feed lines, stat sheet rows, skill plate queue; read by `stage/arena.ts`.
 
@@ -922,6 +926,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `costMarkup.ts`: one or more prices drawn side by side by the rule in `settings/cost.ts`. Used by the Training upgrade rows and the paid respec button (`pages/skills.ts`). The header, "You hold" strips, Summon pull buttons and shop price chips already drew picture and number.
 - `skillArt.ts`: skill node gems and the star chart in the equipped nodes style. Used by `pages/skills.ts`, `pages/cards.ts`.
 - `webGlyphs.ts`: placeholder icons for skill web nodes. Used by `pages/skills.ts`, `pages/heirloomsMap.ts`.
+- `art/goldIcons.ts`: the gold icons (`art/icons-gold/`, 64 px): the nine dock plaques (`DOCK_ICON` in `table/table.ts`), Goals, Details and the sound button; the header's Money and scroll chips use the resource icons.
 - `skins.ts`: the worn UI-skin style; Starlight coin and shard icons. Used by `app.ts`, Achievements, Shop, Wardrobe.
 - `cosmeticSwatch.ts`: a small sample of one cosmetic. Used by Wardrobe, Summon, `shell/rewardTrack.ts`.
 - `keepScroll.ts`: keeps scroll and focus across a rebuild. Used by Cards and Wardrobe.

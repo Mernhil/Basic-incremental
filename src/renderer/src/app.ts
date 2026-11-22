@@ -74,7 +74,8 @@ import { showWelcomeBack } from './stage/welcome';
 import { showStarterPick } from './stage/starterPick';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
-import { onPrefs, prefs } from './settings/prefs';
+import { onPrefs, prefs, setPrefs } from './settings/prefs';
+import { setDuelPace } from './stage/duelPace';
 
 const TICK_INTERVAL_MS = 100;
 const CLEAR_NOTICE_MS = 12_000;
@@ -113,6 +114,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     summary = offline.summary;
   }
   const loop = new GameLoop(state, content, defaultRng, startedAt);
+  loop.setDuelSpeed(prefs().duelSpeed);
   const applyTheme = (): void => {
     applyGlobalTheme(content, withDevTable(loop.state.cosmetics.loadout));
     setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick?.visual.effect);
@@ -338,6 +340,15 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     cards: cardsModel,
     applyTheme,
     version,
+    duelSpeed: {
+      chosen: () => prefs().duelSpeed,
+      set: (speed) => {
+        step(); // the time so far runs at the old speed
+        setPrefs({ duelSpeed: speed });
+        loop.setDuelSpeed(speed);
+        syncDuelPace();
+      },
+    },
     save: {
       exportText: () => {
         step();
@@ -390,10 +401,15 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     table.render(performance.now());
   };
 
+  /** The duel's animations follow the speed a Challenge runs at; farming plays at the real pace. */
+  const syncDuelPace = (): void =>
+    setDuelPace(loop.state.combat.challenge ? loop.effectiveDuelSpeed : 1);
+
   /** Steps the loop, announces first clears and hands the report to the stage director. */
   const step = (): void => {
     const before = loop.state;
     const report = loop.step(Date.now());
+    syncDuelPace();
     announce(report);
     if (report.accountLevel) {
       if (document.hidden) {

@@ -38,6 +38,8 @@ export interface TableContext {
     replace(state: GameState): void;
     lastSavedAt(): number | null;
   };
+  /** The duel's chosen speed, remembered in the display preferences (DESIGN.md §2 Speed button). */
+  duelSpeed: { chosen(): number; set(speed: number): void };
   /** Opens a full view (replaces the open one). */
   open(id: ViewId): void;
   /** Closes the open view, back to the table. */
