@@ -224,7 +224,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   // the goal list under the header's Goals button (DESIGN.md §10); a goal opens its view.
   // Goals worked out once a second.
-  const goalView = (row: GoalRow): ViewId | null => {
+  const goalView = (row: GoalRow): ViewId | 'dungeon' | null => {
     switch (row.page) {
       case 'production':
         return 'logging';
@@ -236,10 +236,17 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         return row.page;
     }
   };
+  /** A goal's place: a view over the table, the dungeon screen (the one dungeon view), or just the table. */
+  const goTo = (id: ViewId | 'dungeon' | null): void => {
+    if (id === 'dungeon') {
+      table.host.close();
+      table.setScreen('dungeon');
+    } else if (id) table.open(id, shell.goalsButton);
+    else table.host.close();
+  };
   const openPage = (page: QuestRow['page'], target = ''): void => {
     const id = goalView({ id: target, page } as GoalRow);
-    if (id) table.open(id, shell.goalsButton);
-    else table.host.close();
+    goTo(id);
   };
   const claimQuests = (ids: readonly string[] | null): void => {
     const r = ids ? claimQuest(loop.state, content, ids[0]!) : claimAllQuests(loop.state, content);
@@ -261,11 +268,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     claim: (id) => claimQuests([id]),
     claimAll: () => claimQuests(null),
     open: (page, id) => openPage(page, id),
-    openHint: (row) => {
-      const id = goalView(row);
-      if (id) table.open(id, shell.goalsButton);
-      else table.host.close();
-    },
+    openHint: (row) => goTo(goalView(row)),
   });
   let questAt = 0;
   function renderQuest(now: number, force = false): void {
