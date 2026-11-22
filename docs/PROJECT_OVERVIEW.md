@@ -257,7 +257,18 @@ A card is one weapon. The player collects cards, puts fighting cards in a team o
 - Wood to Prismatic: exactly one card per weapon type per tier, 55 cards (`checkCards` in `src/data/index.ts` refuses any other count).
 - Mythic (T6): 111 cards (53 Mythic, 58 Void). Each has a `side`, `mythic` or `void`; a `void` card shows its tier as "Void". Only T6 and Heirloom cards have a side. A card's grade (`cardGrade`, `CARD_GRADES`) is its tier, with T6 and Heirloom cards taking their side.
 - Heirloom: 34 cards with `heirloom: true` at the tier `heirloom`, which no other card has. They are separate cards in the same list, not a stage of another card: one per weapon type with no `batch`, one per type in the Leviathan batch, and twelve in the Wildwood batch (two daggers). See Heirlooms and batches.
-- A new game owns the cards in `cardRules.json` `startCards` (`initialCards` in `src/game/state.ts`).
+- A new game owns the cards in `cardRules.json` `startCards` (`initialCards` in `src/game/state.ts`) and picks one starter weapon (see The starter weapon).
+
+### The starter weapon
+
+- A new game offers four Mythic cards to pick one from: `src/data/content/starters.json` `cards` (Crimsonfall `moon_reaver`, Jadecleaver `jade_regent`, Sunweaver `dawn_archer`, Tideseer `tide_oracle`), checked by `checkStarters` in `src/data/index.ts`. Rules in `src/game/starters.ts`: `starterChoices` (the ones not owned yet), `starterPickDue`, `pickStarter`, `skipStarter`. `state.starter` (`done`, `skippable`) holds the pick.
+- `pickStarter` makes the card owned at its own tier, ★1 Lv 1, with `OwnedCard.seal` 0, and puts it in the first free fighting loadout slot. The start cards and the Summon Scroll stay.
+- Sealed means it fights as a weaker tier: `strengthTier` in `src/game/cards.ts` is Wood with no seal broken, then the `tier` of the last broken step of `starters.json` `seals`. `cardBaseDamage`, `cardHealth`, `cardPower`, `cardStatPower` and `cardCost` read it (loadout cost goes by that tier too); level caps, stars and shards go by the card's own tier.
+- `breakSeal` pays the next step's Cores (`nextSealCost`, through `cost.multiplier`): Silver for 4 Moss Cores, Gold for 6 Cinder, Prismatic for 8 Frost, Mythic for 10 Storm; the last step removes `seal` and the card is the whole T6 card. This is the one case where a card's strength is held below its tier (see A card never changes tier).
+- A copy of an owned starter is an ordinary copy: a star bar fill (`grantCard`); the seals stay.
+- Screens: the pick is `stage/starterPick.ts` (shown by `app.ts` after the first render when `starterPickDue`; Esc does not close it; a save that began before the starter has a "Not now" button); the seals are `ui/sealBlock.ts`, beside the weapon panel in the Cards detail and the dungeon's Weapon tab (the Cores' amounts and names, one button).
+- The sim (`scripts/sim/sim.ts` `options.starter`, `scripts/sim/starterStart.ts`) picks a starter and breaks seals as soon as the Cores pay.
+- Tests: `tests/starters.test.ts`, `tests/migrateV42.test.ts`.
 
 ### A card never changes tier
 
@@ -694,7 +705,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 ### What a save is
 
 - Plain JSON text with three fields: `version` (the save format number), `savedAt` (epoch milliseconds, used for offline progress, see Game core) and `state` (`src/game/save.ts` `createSaveText`). No compression, encryption or checksum.
-- The current save format is **42** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration). Format 42 added the camp and the Training ground dummy.
+- The current save format is **43** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration). Format 42 added the camp and the Training ground dummy. Format 43 added `state.starter` and `OwnedCard.seal` (the starter weapon): a save from before it gets `starter: { done: false, skippable: true }`, so it is offered the pick once on load.
 - `state` is the whole game state with big numbers as strings (`serializeState`; shape in `serializedStateSchema`). A card's tier is not saved; it is read from the card's data on load.
 
 ### Where and when it is written
@@ -731,7 +742,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ### Tests
 
-- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts`, `tests/migrateV41.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads.
+- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts`, `tests/migrateV41.test.ts`, `tests/migrateV42.test.ts` (one step each; V42 is the starter pick offered once); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads.
 - `tests/saveStore.test.ts` (desktop store), `tests/saveBackup.test.ts` (dev reset backup), `tests/webSaveStore.test.ts` (web store, browser API), `tests/devPaths.test.ts` (folders of a build run from source). Old-format saves: `tests/fixtures/saves/` and its `README.md`.
 
 ### Changing the save format

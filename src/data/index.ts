@@ -12,6 +12,7 @@ import type {
   Batch,
   ScrollsConfig,
   HeirloomsConfig,
+  StartersConfig,
   HeirloomTree,
   Bond,
   CampConfig,
@@ -96,6 +97,7 @@ import skillsJson from './content/skills.json';
 import movesJson from './content/moves.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
+import startersJson from './content/starters.json';
 import questsJson from './content/quests.json';
 import webJson from './content/web.json';
 
@@ -202,6 +204,7 @@ export interface Content {
   scrolls: ScrollsConfig;
   /** The Heirloom Gate, Heirloom Scroll sources, tree points and the 22 trees (DESIGN.md §3, §7, §10). */
   heirlooms: HeirloomsConfig;
+  starters: StartersConfig;
   /** Heirloom card id -> its tree. */
   heirloomTreeByCard: ReadonlyMap<string, HeirloomTree>;
 }
@@ -277,6 +280,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     moves,
     scrolls,
     heirlooms,
+    starters,
     quests: questsFile,
     web,
   } = parsed;
@@ -314,6 +318,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkSkills({ cards, skills }, issues);
   checkMoves({ cards, moves, resources }, issues);
   checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
+  checkStarters({ cards, resources, starters }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -419,6 +424,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     moves,
     scrolls,
     heirlooms,
+    starters,
     heirloomTreeByCard: new Map(heirlooms.trees.map((t) => [t.card, t])),
   };
 }
@@ -1147,6 +1153,34 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
   });
 }
 
+/** starters.json: the starters are T6 fighting cards, the seals rise in tier and cost known resources. */
+function checkStarters(
+  c: { cards: Card[]; resources: { id: string }[]; starters: StartersConfig },
+  issues: string[],
+): void {
+  for (const id of c.starters.cards) {
+    const card = c.cards.find((x) => x.id === id);
+    if (!card) issues.push(`starters.json › cards: unknown card "${id}"`);
+    else if (card.tier !== 'mythic' || card.heirloom || card.job !== 'fighting') {
+      issues.push(`starters.json › cards: "${id}" is not a Mythic or Void fighting card`);
+    }
+  }
+  let last = 0;
+  c.starters.seals.forEach((seal, i) => {
+    const at = RANK_TIERS.indexOf(seal.tier);
+    if (at <= last) issues.push(`starters.json › seals › [${i}]: tiers must rise from Wood`);
+    last = at;
+    for (const cost of seal.cost) {
+      if (!c.resources.some((r) => r.id === cost.resource)) {
+        issues.push(`starters.json › seals › [${i}]: unknown resource "${cost.resource}"`);
+      }
+    }
+  });
+  if (last !== RANK_TIERS.indexOf('mythic')) {
+    issues.push('starters.json › seals: the last seal must lead to the Mythic tier');
+  }
+}
+
 /**
  * heirlooms.json and the Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
  * trees): one base Heirloom card per item type (and one more per later art batch), named as items.json names that Heirloom, of
@@ -1530,6 +1564,7 @@ export function bundledRawContent(): RawContent {
     moves: movesJson,
     scrolls: scrollsJson,
     heirlooms: heirloomsJson,
+    starters: startersJson,
     quests: questsJson,
     web: webJson,
   };

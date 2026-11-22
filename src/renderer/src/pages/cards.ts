@@ -23,6 +23,7 @@ import { skinTileMarkup } from './loadoutCards';
 import { enableLoadoutDrag } from './loadoutDrag';
 import type { SkinPickerView } from './cardSkinsModel';
 import { watchFit } from '../ui/pixelFit';
+import { createSealBlock } from '../ui/sealBlock';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
 import {
@@ -720,10 +721,20 @@ export function createCardsPage(
         },
       });
       if (panel.overlay) face.append(panel.overlay);
-      side.append(panel.el);
+      const seals = createSealBlock({
+        content,
+        state: ctx.state,
+        apply: (next) => {
+          ctx.apply(next);
+          build();
+        },
+      });
+      // the seals come first: a sealed starter's one thing to do, beside its weapon panel
+      side.append(seals.el, panel.el);
       const update = (): void => {
         const entry = entryOf(e.id);
         if (entry) panel.update(entry);
+        seals.update(e.id);
       };
       ticks.push(update);
       update();

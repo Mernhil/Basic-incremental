@@ -301,6 +301,8 @@ describe('v26 -> v27 (the table update)', () => {
     }
     // format 42: the camp replaces the trees and mines, and the dummy is new
     const camped = MIGRATIONS[41]!(scaled) as Record<string, unknown>;
+    // format 43: the starter weapon's pick is offered once to a save that began before it
+    camped['starter'] = { done: false, skippable: true };
     expect(again).toEqual({ ...camped, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
