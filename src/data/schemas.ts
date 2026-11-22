@@ -1262,6 +1262,17 @@ export const combatSchema = z.strictObject({
    */
   stageStars: stageStarsSchema,
   /**
+   * What each difficulty adds to its loot, in star levels of `stageStars.lootPerLevel` (the loot
+   * the stage stars used to give now belongs to the difficulty, DESIGN.md §2 Dungeons): 3 with a
+   * step of 0.1 is +30% Money purses and material chances on every floor of that difficulty.
+   */
+  difficultyLoot: z.strictObject({
+    normal: z.number().min(0),
+    hard: z.number().min(0),
+    nightmare: z.number().min(0),
+    endless: z.number().min(0),
+  }),
+  /**
    * Elements in combat (DESIGN.md §6), as percents added to damage or output: the main card on the
    * boss's weakness, on its resistance (negative), each support on the weakness, and a worker on a
    * matching tree or mine.
