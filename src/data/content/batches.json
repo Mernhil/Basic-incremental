@@ -3,7 +3,10 @@
     "id": "dragon",
     "name": "Dragon",
     "kit": "kit-t6-dragon",
-    "backdrop": { "mythic": "bg-hero", "void": "bg-villain" }
+    "backdrop": {
+      "mythic": "bg-hero",
+      "void": "bg-villain"
+    }
   },
   {
     "id": "leviathan",
@@ -15,5 +18,10 @@
       "front": "bg-sea-front",
       "motion": "sea"
     }
+  },
+  {
+    "id": "wildwood",
+    "name": "Wildwood",
+    "kit": "kit-t6-wildwood"
   }
 ]

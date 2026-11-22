@@ -29,19 +29,6 @@ const late = JSON.parse(fixture('v28-late-game.save.txt')) as {
   state: Raw;
 };
 
-/** The level prices of format 28 (a snapshot): base × growth^level, before modifiers. */
-const OLD_CURVES: Record<string, [number, number]> = {
-  oak: [200, 1.13],
-  ironbark: [2500, 1.14],
-  moonwillow: [30000, 1.15],
-  copper_quarry: [150, 1.13],
-  iron_deeps: [2000, 1.14],
-  crystal_grotto: [25000, 1.15],
-};
-const levelOf = (state: Raw, id: string): number =>
-  state.production.treeLevels[id] ?? state.production.mineLevels[id] ?? 0;
-const newCurve = (id: string) => (content.treeById.get(id) ?? content.mineById.get(id))!.level.cost;
-
 describe('v28 -> v29 (readable numbers)', () => {
   it('is at least format 31, and the late-game fixture is format 28', () => {
     expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(31);
@@ -59,23 +46,11 @@ describe('v28 -> v29 (readable numbers)', () => {
     }
   });
 
-  it('moves Money the way the level prices moved: whoever could afford the next level still can', () => {
+  it('moves Money with the Money map', () => {
     const migrated = MIGRATIONS[28]!(late.state) as Raw;
     const oldMoney = Number(late.state.resources.money);
     const newMoney = Number(migrated.resources.money);
     expect(newMoney).toBeCloseTo(V29_SCALE.moneyFactor * Math.pow(oldMoney, V29_SCALE.k), -1);
-    for (const [id, [base, growth]] of Object.entries(OLD_CURVES)) {
-      const level = levelOf(late.state, id);
-      const oldPrice = base * Math.pow(growth, level);
-      const curve = newCurve(id);
-      const newPrice = curve.base.mul(curve.growth.pow(level)).toNumber();
-      // the new price is the old one through the same map (the data rounds its base)
-      const mapped = V29_SCALE.moneyFactor * Math.pow(oldPrice, V29_SCALE.k);
-      expect(Math.abs(Math.log(newPrice / mapped)), id).toBeLessThan(0.08);
-      // affordability keeps its side unless the two were within the rounding
-      if (Math.abs(Math.log(oldMoney / oldPrice)) > 0.1)
-        expect(newMoney >= newPrice, id).toBe(oldMoney >= oldPrice);
-    }
   });
 
   it('maps gems held and harvested with the gem map, so mastery tiers stay or rise by one', () => {

@@ -6,6 +6,7 @@ import {
   bossMaxHp,
   Decimal,
   MAX_KILLS_PER_ADVANCE,
+  newOwnedCard,
 } from '../src/game';
 import {
   constantRng,
@@ -23,16 +24,16 @@ const rng = constantRng(0.5);
 const maxHp = bossMaxHp(dungeon);
 
 describe('advance (tick math)', () => {
-  it('produces rate * seconds for each unlocked kind, once', () => {
-    const { state } = advance(bareState(), content, 10_000, rng);
-    expect(state.resources['oak_gem']!.eq(10)).toBe(true);
-    expect(state.resources['copper_gem']!.eq(5)).toBe(true); // 0.5/s
-
-    const two = bareState();
-    two.production.unlockedTrees = ['ironbark'];
-    const result = advance(two, content, 10_000, rng);
-    expect(result.state.resources['oak_gem']!.eq(10)).toBe(true);
-    expect(result.state.resources['ironbark_gem']!.eq(5)).toBe(true);
+  it('farms rate * seconds on every slot with a card, once', () => {
+    const farming = bareState();
+    farming.cards.owned['apprentice_feller'] = newOwnedCard();
+    farming.cards.owned['cave_digger'] = newOwnedCard();
+    farming.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
+    farming.camp.cave = [{ material: 'copper_quarry', card: 'cave_digger' }];
+    const { state } = advance(farming, content, 10_000, rng);
+    expect(state.resources['oak_gem']!.toNumber()).toBeGreaterThan(9);
+    expect(state.resources['copper_gem']!.toNumber()).toBeGreaterThan(4);
+    expect(advance(bareState(), content, 10_000, rng).state.resources['oak_gem']!.eq(0)).toBe(true);
   });
 
   it('applies damage to the boss without killing it', () => {

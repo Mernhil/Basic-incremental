@@ -18,9 +18,9 @@ describe('signature items (DESIGN.md §12)', () => {
 
   it('matches the card table: element and item type per card', () => {
     const byId = Object.fromEntries(content.cards.map((c) => [c.id, [c.element, c.item.kind]]));
-    expect(byId['ember_squire']).toEqual(['fire', 'sword']);
-    expect(byId['storm_duelist']).toEqual(['storm', 'dagger']);
-    expect(byId['core_titan']).toEqual(['void', 'pickaxe']);
+    expect(byId['ember_squire']).toEqual([undefined, 'sword']);
+    expect(byId['storm_duelist']).toEqual([undefined, 'dagger']);
+    expect(byId['core_titan']).toEqual(['fire', 'pickaxe']);
   });
 
   it('shows the Wood picture, for every type when no tier is given (the gallery)', () => {

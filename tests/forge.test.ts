@@ -6,7 +6,7 @@ import {
   advance,
   advanceChunked,
   assignForgeWorker,
-  assignWorker,
+  assignSlotCard,
   Decimal,
   deserializeState,
   forgeStatus,
@@ -16,6 +16,7 @@ import {
   serializeState,
   setForgeRecipe,
   workersUsed,
+  slotWorkers,
   type GameState,
 } from '../src/game';
 import { bareState, constantRng, content as pinned } from './helpers';
@@ -69,8 +70,8 @@ describe('forge data', () => {
   });
 });
 
-describe('the worker slot', () => {
-  it('uses one of the shared slots', () => {
+describe('the forge worker', () => {
+  it('is a production card that works no camp slot', () => {
     const c = pinned;
     let state = bareState();
     state.cards.owned['apprentice_feller'] = newOwnedCard();
@@ -79,36 +80,28 @@ describe('the worker slot', () => {
     if (!hired.ok) throw new Error(hired.reason);
     state = hired.state;
     expect(forgeWorker(state, c)).toBe('cave_digger');
-    expect(workersUsed(state, c)).toBe(1);
-    // one slot is left (2 in a new game): the tree worker takes it, then no third
-    const placed = assignWorker(state, c, 'oak', 'apprentice_feller');
-    if (!placed.ok) throw new Error(placed.reason);
-    expect(workersUsed(placed.state, c)).toBe(2);
-    state = placed.state;
-    // the forge worker is the mining card: sent to the mine it moves, it is not a third worker
-    const third = assignWorker(state, c, 'copper_quarry', 'cave_digger');
-    expect(third.ok).toBe(true);
-    if (third.ok) {
-      expect(forgeWorker(third.state, c)).toBe(null);
-      expect(workersUsed(third.state, c)).toBe(2);
+    // a camp slot takes the card away from the forge: a card is in one place at a time
+    const placed = assignSlotCard(state, c, 'cave', 0, 'cave_digger');
+    expect(placed.ok).toBe(true);
+    if (placed.ok) {
+      expect(forgeWorker(placed.state, c)).toBe(null);
+      expect(workersUsed(placed.state, c)).toBe(1);
+      // and the forge takes it back off the slot
+      const back = assignForgeWorker(placed.state, c, 'cave_digger');
+      expect(back.ok && forgeWorker(back.state, c)).toBe('cave_digger');
+      expect(back.ok && slotWorkers(back.state, c)).toEqual([]);
     }
   });
 
-  it('refuses a worker when every slot is used, and a fighting card', () => {
+  it('refuses a fighting card, a stranger and a card not owned', () => {
     const c = pinned;
     const state = bareState();
-    state.cards.owned['apprentice_feller'] = newOwnedCard();
-    state.cards.owned['cave_digger'] = newOwnedCard();
-    state.production.workers = { oak: ['apprentice_feller'], copper_quarry: ['cave_digger'] };
-    const extra = c.cards.find(
-      (card) => card.job === 'logging' && card.id !== 'apprentice_feller',
-    )!;
-    state.cards.owned[extra.id] = newOwnedCard();
-    expect(assignForgeWorker(state, c, extra.id)).toEqual({ ok: false, reason: 'no-slot' });
     const fighter = c.cards.find((card) => card.job === 'fighting')!;
     state.cards.owned[fighter.id] = newOwnedCard();
     expect(assignForgeWorker(state, c, fighter.id)).toEqual({ ok: false, reason: 'wrong-job' });
     expect(assignForgeWorker(state, c, 'nope')).toEqual({ ok: false, reason: 'unknown' });
+    delete state.cards.owned['cave_digger'];
+    expect(assignForgeWorker(state, c, 'cave_digger')).toEqual({ ok: false, reason: 'not-owned' });
   });
 
   it('a worker that is gone or placed on a tree leaves the forge, never a broken one', () => {

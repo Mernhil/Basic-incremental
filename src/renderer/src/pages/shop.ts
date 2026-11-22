@@ -1,9 +1,6 @@
 import {
   ascend,
   ascensionPreview,
-  autobuyerOwned,
-  setAutomation,
-  type AutomationState,
   buyShardItem,
   buyStarlightItem,
   collectModifiers,
@@ -13,7 +10,8 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
-import { gemCoin, svg } from '../art/gems';
+import { svg } from '../art/gems';
+import { keptIconMarkup } from '../ui/resourceIcons';
 import { ITEM_VIEWBOX } from '../art/items';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { h } from '../shell/shell';
@@ -99,8 +97,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     b.type = 'button';
     const ico = h('span', coin === 'star' ? 'shop-price__ico' : 'shop-price__ico shop-gem');
     ico.setAttribute('aria-hidden', 'true');
-    // a line icon: the coin art (48 px) would have to shrink to fit a chip
-    if (coin === 'star') ico.append(icon('starlight', 'shop-icon'));
+    if (coin === 'star') ico.innerHTML = keptIconMarkup('starlight') ?? '';
     b.append(ico, h('span', 'shop-price__txt'));
     b.addEventListener('click', () => {
       if (b.getAttribute('aria-disabled') === 'true') return;
@@ -129,41 +126,6 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   const star = stall('shop-stall--starlight', t.shop, ts.boards.starlight);
   const offers = h('ul', 'shop-list');
   star.body.append(offers);
-
-  // Autobuyer switches (DESIGN.md §15): shown once an autobuyer is owned, stored in state.automation.
-  const auto = h('div', 'shop-auto');
-  auto.hidden = true;
-  const autoHead = h('h3', 'shop-head', t.autobuyers);
-  const autoTrees = switchRow(t.autoTrees, (on) => setAuto({ treeLevels: on }));
-  const autoMines = switchRow(t.autoMines, (on) => setAuto({ mineLevels: on }));
-  const reserveLabel = h('label', 'shop-auto__row');
-  const reserveIn = h('input', 'shop-auto__reserve bi-num') as HTMLInputElement;
-  reserveIn.type = 'number';
-  reserveIn.min = '0';
-  reserveIn.max = '100';
-  reserveIn.step = '5';
-  reserveIn.addEventListener('change', () => setAuto({ reservePercent: Number(reserveIn.value) }));
-  reserveLabel.append(h('span', '', t.autoReserve + ' (%)'), reserveIn);
-  auto.append(
-    autoHead,
-    autoTrees.row,
-    autoMines.row,
-    reserveLabel,
-    h('p', 'shop-note', t.autoNote),
-  );
-  star.body.append(auto);
-
-  function switchRow(label: string, onChange: (on: boolean) => void) {
-    const row = h('label', 'shop-auto__row');
-    const box = h('input') as HTMLInputElement;
-    box.type = 'checkbox';
-    box.addEventListener('change', () => onChange(box.checked));
-    row.append(box, h('span', '', label));
-    return { row, box };
-  }
-  function setAuto(patch: Partial<AutomationState>): void {
-    ctx.apply(setAutomation(ctx.state(), patch));
-  }
 
   type OfferUi = {
     li: HTMLElement;
@@ -228,11 +190,11 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
 
   /** Pixel supply icons by resource: one per supply line, in the order the shop sells them. */
   const SUPPLY_SPRITES: Record<string, string> = {
-    summon_scroll: 'shop-sup1',
-    glamour_scroll: 'shop-sup2',
-    frost_core: 'shop-sup3',
-    glimmer_dust: 'shop-sup4',
-    facet_shard: 'shop-sup5',
+    summon_scroll: 'res-summon_scroll',
+    glamour_scroll: 'res-glamour_scroll',
+    frost_core: 'res-frost_core',
+    glimmer_dust: 'res-glimmer_dust',
+    facet_shard: 'res-facet_shard',
   };
 
   function offerArt(art: OfferArt, s: GameState): string {
@@ -241,8 +203,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
         // a whole-scale weapon in a window that crops what does not fit (shop.css)
         return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId], s), ITEM_VIEWBOX);
       case 'coin': {
-        const gem = content.resourceById.get(art.resource)?.gem;
-        return gem ? svg(gemCoin(gem, 1)) : '';
+        return keptIconMarkup(art.resource) ?? '';
       }
       case 'resource': {
         const sup = SUPPLY_SPRITES[art.resource];
@@ -545,15 +506,6 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
         );
       }
     }
-
-    const ownTrees = autobuyerOwned(s, content, 'treeLevels');
-    const ownMines = autobuyerOwned(s, content, 'mineLevels');
-    auto.hidden = !ownTrees && !ownMines;
-    autoTrees.row.hidden = !ownTrees;
-    autoMines.row.hidden = !ownMines;
-    autoTrees.box.checked = s.automation.treeLevels;
-    autoMines.box.checked = s.automation.mineLevels;
-    if (document.activeElement !== reserveIn) reserveIn.value = String(s.automation.reservePercent);
 
     // ---- Shard shop ----
     if (shardUis.size === 0) buildShards(s);

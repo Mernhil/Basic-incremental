@@ -6,6 +6,7 @@ import {
   bossStatus,
   collectModifiers,
   duelEnemy,
+  enemyEffects,
   duelFightKey,
   duelSheet,
   emptyDuelLog,
@@ -13,6 +14,7 @@ import {
   formatDuration,
   loadoutHealth,
   nextFloorChallenge,
+  Decimal,
   overflowStage,
   recordDuel,
   stageKey,
@@ -73,6 +75,7 @@ import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
 import { createSpecialAttack, hasSpecial, type Box } from './specialAttack';
+import { queueSpecial, stampSpot } from './specialQueue';
 import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
 import { lightStagePips, stagePips } from '../ui/stars';
@@ -247,7 +250,10 @@ export function createArena(ctx: ArenaContext): Arena {
   const foeName = document.createElement('h2');
   foeName.className = 'du-foe__name';
   const foeKind = span('du-foe__kind');
-  foeHead.append(foeName, foeKind);
+  // the effects on the enemy, as words until each has its art (DESIGN.md §2 Three attacks)
+  const foeEffects = span('du-foe__effects');
+  foeEffects.setAttribute('aria-live', 'off');
+  foeHead.append(foeName, foeKind, foeEffects);
   const foeArt = div('du-foe__art');
   const foeBody = div('du-foe__body');
   const foeFx = div('du-foe__fx');
@@ -436,7 +442,8 @@ export function createArena(ctx: ArenaContext): Arena {
       const grey = div('du-card__grey');
       const mark = div('du-card__mark');
       mark.setAttribute('aria-hidden', 'true');
-      wrap.append(glow, body, grey, mark);
+      const effects = div('du-card__effects');
+      wrap.append(glow, body, grey, mark, effects);
       hand.append(wrap);
       const entry: HandSlot = {
         cardId: c.cardId,
@@ -468,6 +475,8 @@ export function createArena(ctx: ArenaContext): Arena {
       slot.crit = c.critChance;
       slot.hopMs = hopMs(c.hitSeconds);
       slot.el.classList.toggle('is-targeted', c.targeted);
+      const fx = slot.el.querySelector<HTMLElement>('.du-card__effects');
+      if (fx) setText(fx, c.effects.join(' · '));
       // a knocked-out card fades to grey and stays grey until the floor is won
       if (c.knockedOut !== slot.out) {
         slot.out = c.knockedOut;
@@ -483,6 +492,7 @@ export function createArena(ctx: ArenaContext): Arena {
           fmt(c.health),
           fmt(c.maxHealth),
         ),
+        ...(c.moves ? [DUEL_COPY.movesTip(c.moves.skill, c.moves.skillOpen, c.moves.ult)] : []),
         ...(c.knockedOut ? [DUEL_COPY.cardOut] : []),
         ...(c.targeted ? [DUEL_COPY.targeted] : []),
       ].join(' ');
@@ -495,12 +505,25 @@ export function createArena(ctx: ArenaContext): Arena {
     if (calm() || !live()) return;
     const w = span(`du-word du-word--${kind}`, text);
     w.setAttribute('aria-hidden', 'true');
-    const jx = kind === 'crit' ? 0.55 + Math.random() * 0.2 : 0.1 + Math.random() * 0.15;
-    const jy = kind === 'crit' ? 0.5 + Math.random() * 0.15 : 0.12 + Math.random() * 0.1;
-    w.style.left = `${(jx * 100).toFixed(1)}%`;
-    w.style.top = `${(jy * 100).toFixed(1)}%`;
+    // a new word replaces the one of its kind still showing and restarts in the same spot, never a
+    // second copy on top; it never lands on a word of the other kind (stage/specialQueue.ts)
+    const same = foeZone.querySelector<HTMLElement>(`.du-word--${kind}`);
+    const others = Array.from(foeZone.querySelectorAll<HTMLElement>('.du-word')).filter(
+      (n) => n !== same,
+    );
+    const spot = same
+      ? { x: Number(same.dataset['sx']), y: Number(same.dataset['sy']) }
+      : stampSpot(
+          kind,
+          others.map((n) => ({ x: Number(n.dataset['sx']), y: Number(n.dataset['sy']) })),
+        );
+    same?.remove();
+    w.dataset['sx'] = String(spot.x);
+    w.dataset['sy'] = String(spot.y);
+    w.style.left = `${(spot.x * 100).toFixed(1)}%`;
+    w.style.top = `${(spot.y * 100).toFixed(1)}%`;
     foeZone.append(w);
-    const r = 'rotate(-8deg)';
+    const r = 'translate(-50%, -50%) rotate(-8deg)';
     w.animate(
       [
         { transform: `scale(3) ${r}`, opacity: 0 },
@@ -665,6 +688,7 @@ export function createArena(ctx: ArenaContext): Arena {
             : '',
       );
       foe.setAttribute('aria-label', `${DUEL_COPY.enemy}: ${view.enemy.name}`);
+      setText(foeEffects, enemyEffects(s, content, mods).join(' · '));
       hp.update(
         status.bars,
         fmt(status.hp),
@@ -1047,17 +1071,22 @@ export function createArena(ctx: ArenaContext): Arena {
     w: r.width,
     h: r.height,
   });
-  /** Plays a card's special attack; false when it cannot (the normal hop shows instead). */
-  function playSpecial(slot: HandSlot, skillId: string, damage: Total): boolean {
+  /**
+   * Plays a card's special attack: 'played', 'wait' (its weapon picture is still loading, try again
+   * soon) or 'no' (it cannot: the normal hop shows instead).
+   */
+  function playSpecial(slot: HandSlot, skillId: string, damage: Total): 'played' | 'wait' | 'no' {
     const card = content.cardById.get(slot.cardId);
     const kind = card?.item?.kind;
-    if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
+    if (!card || slot.out || !hasSpecial(kind, card.element, card.tier) || document.hidden)
+      return 'no';
     const item = slot.body.querySelector<HTMLElement>('.bi-card__item [data-sprite]');
-    const pic = weaponPic(item?.dataset['sprite'] ?? '');
-    if (!item || !pic) return false;
+    if (!item) return 'no';
+    const pic = weaponPic(item.dataset['sprite'] ?? '');
+    if (!pic) return 'wait';
     const host = el.getBoundingClientRect();
     const cardBox = foe.getBoundingClientRect();
-    if (host.width === 0 || cardBox.width === 0) return false;
+    if (host.width === 0 || cardBox.width === 0) return 'no';
     const u = Number(hand.style.getPropertyValue('--card-n')) || 1;
     const dpr = screenDpr();
     const unit = u / dpr;
@@ -1074,11 +1103,11 @@ export function createArena(ctx: ArenaContext): Arena {
             .join(' ')
         : '';
     const itemEl = slot.body.querySelector<HTMLElement>('.bi-card__item');
-    // the tag holds the total from before the attack and takes this hit's damage as it lands
-    const before = tagShown;
+    // the tag holds the total from before the first queued attack and takes each hit's damage as it
+    // lands (specialTotal)
     const played = special.play({
       kind: kind!,
-      element: card.element,
+      element: card.element ?? '',
       tier: card.tier,
       weapon: pic,
       card: cardNameById(content, slot.cardId) ?? slot.cardId,
@@ -1090,8 +1119,9 @@ export function createArena(ctx: ArenaContext): Arena {
       dpr,
       calm: calm(),
       hooks: {
+        // the dim holds one steady level while more cut-ins wait, and lifts once after the last
         dim: (on) => {
-          el.classList.toggle('is-special', on);
+          if (on || specialWaiting.length === 0) el.classList.toggle('is-special', on);
           slot.el.classList.toggle('is-special-src', on);
         },
         card: (o) => {
@@ -1109,20 +1139,94 @@ export function createArena(ctx: ArenaContext): Arena {
           // no number pops on the enemy (the user, 2026-11-21): the damage is shown beside the enemy
           // card, so as the hit lands the big tag with the total pops, and under it the signature's
           // own line in the hit feed
-          if (before) showTag(before.add(damage));
+          if (specialTotal) {
+            specialTotal = specialTotal.add(damage);
+            showTag(specialTotal);
+          }
           if (!calm()) {
             replay(foeTag, 'is-landed', 460);
             replay(feed.querySelector('.du-feed__line.is-signature'), 'is-landed', 460);
           }
           play('hit');
         },
+        // the cooldown starts after this hook, so the next one is looked at a moment later
         done: () => {
-          tagHeld = false;
+          specialPlaying = false;
+          window.setTimeout(pumpSpecials, 0);
         },
       },
     });
-    if (played) tagHeld = true;
-    return played;
+    if (played) specialPlaying = true;
+    return played ? 'played' : 'no';
+  }
+
+  // Ultimates wait in line and play one at a time, in the order they fired. The fight does not wait,
+  // only the showing does. More than SPECIAL_WAIT_MAX waiting: the oldest waiting is dropped, and a
+  // dropped or impossible one shows nothing more than the card's hop: never another banner style.
+  interface SpecialJob {
+    cardId: string;
+    skillId: string;
+    damage: Total;
+    tries: number;
+  }
+  let specialWaiting: SpecialJob[] = [];
+  let specialPlaying = false;
+  let specialTotal: Total | null = null;
+  let specialTimer = 0;
+
+  /** A cut-in that will not show: its damage still lands on the tag, the card hops instead. */
+  function skipSpecial(job: SpecialJob): void {
+    if (specialTotal) {
+      specialTotal = specialTotal.add(job.damage);
+      showTag(specialTotal);
+    }
+    const slot = slots.find((x) => x.cardId === job.cardId);
+    if (slot) hop(slot);
+  }
+
+  function pumpSpecials(): void {
+    window.clearTimeout(specialTimer);
+    if (specialPlaying) return;
+    const job = specialWaiting[0];
+    if (!job) {
+      // nothing left: the tag follows the enemy's health again
+      specialTotal = null;
+      tagHeld = false;
+      el.classList.remove('is-special');
+      return;
+    }
+    if (special.busy()) {
+      specialTimer = window.setTimeout(pumpSpecials, special.waitMs() + 20);
+      return;
+    }
+    const slot = slots.find((x) => x.cardId === job.cardId);
+    const result = slot ? playSpecial(slot, job.skillId, job.damage) : 'no';
+    if (result === 'wait' && job.tries < 4) {
+      job.tries += 1;
+      specialTimer = window.setTimeout(pumpSpecials, 120);
+      return;
+    }
+    specialWaiting = specialWaiting.slice(1);
+    if (result !== 'played') {
+      skipSpecial(job);
+      pumpSpecials();
+    }
+  }
+
+  function enqueueSpecial(job: SpecialJob): void {
+    if (!tagHeld) {
+      tagHeld = true;
+      specialTotal = tagShown;
+    }
+    const q = queueSpecial(specialWaiting, job);
+    specialWaiting = q.waiting;
+    for (const old of q.dropped) skipSpecial(old);
+    weaponPic(
+      slots
+        .find((x) => x.cardId === job.cardId)
+        ?.body.querySelector<HTMLElement>('.bi-card__item [data-sprite]')?.dataset['sprite'] ?? '',
+    ); // start loading the picture while it waits
+    pumpSpecials();
   }
 
   // ---- the director's reports ----
@@ -1150,21 +1254,25 @@ export function createArena(ctx: ArenaContext): Arena {
     log = recordDuel(log, e.report, e.seconds, key);
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
-    // a lone signature attack plays its special attack; one at a time, the rest keep the hop
-    let specialCard = '';
+    // every ultimate queues its cut-in (one at a time, in the order they fired): a strike, a heal or
+    // a buff alike. The cut-in is the ultimate's banner; the old left-side plates are gone for
+    // sight and only announce the skill to a screen reader
+    const queued = new Set<string>();
     if (live())
-      for (const hit of e.report.playerHits) {
-        if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
-        const slot = slots.find((x) => x.cardId === hit.cardId);
-        const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
-        if (slot && playSpecial(slot, skillId, hit.damage)) specialCard = hit.cardId;
+      for (const k of e.report.skills) {
+        const slot = slots.find((x) => x.cardId === k.cardId);
+        if (!slot) continue;
+        const hit = e.report.playerHits.find((h) => h.signature && h.cardId === k.cardId);
+        queued.add(k.cardId);
+        enqueueSpecial({
+          cardId: k.cardId,
+          skillId: k.skillId,
+          damage: hit ? hit.damage : new Decimal(0),
+          tries: 0,
+        });
       }
-    // the special attack's cut-in takes the place of that signature's skill banner
-    const plated = e.report.skills.filter(
-      (k) => !(k.cardId === specialCard && k.kind === 'strike'),
-    );
-    if (plated.length > 0) {
-      const q = queuePlates(plateQueue, [...plated], performance.now(), plateId);
+    if (e.report.skills.length > 0) {
+      const q = queuePlates(plateQueue, [...e.report.skills], performance.now(), plateId);
       plateQueue = q.queue.slice(-6);
       plateId = q.nextId;
     }
@@ -1173,17 +1281,13 @@ export function createArena(ctx: ArenaContext): Arena {
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
       if (!slot) continue;
-      if (id !== specialCard) hop(slot);
+      if (!queued.has(id)) hop(slot);
       const n = e.report.playerHits.find((h) => h.cardId === id)?.hits ?? 1;
       if (!critRolled && Math.random() < 1 - (1 - slot.crit) ** n) {
         critRolled = true;
         popWord(DUEL_COPY.critWord, 'crit');
       }
     }
-    // a burst without a special attack (several at once, or one while another still plays): the
-    // enemy's total pops all the same (the user, 2026-11-21: it pops when bursts happen)
-    const plain = e.report.playerHits.some((h) => h.signature && h.cardId !== specialCard);
-    if (plain && !tagHeld && !calm()) replay(foeTag, 'is-landed', 460);
     if (hitters.size > 0) play('hit');
   });
 

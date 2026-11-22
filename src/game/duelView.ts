@@ -1,6 +1,7 @@
 import type { Content, Skill } from '../data';
 import { fightStage, bossStatus } from './combat';
 import {
+  activeEffects,
   buildTeam,
   cardAverageDps,
   damageTaken,
@@ -14,6 +15,7 @@ import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import type { SkillEvent, TickReport } from './report';
 import type { GameState } from './state';
+import { EFFECT_WORDS } from './moves';
 
 /**
  * What the card duel shows (DESIGN.md §6 "What the duel shows"), as pure selectors for the UI: the
@@ -49,6 +51,11 @@ export interface TeamCardView {
   critChance: number;
   /** Its signature gauge, 0..1. */
   gauge: number;
+  /** Its three attacks (DESIGN.md §2): the skill's name (null with no skill slot) and whether it is
+   *  open, and the ultimate's name. */
+  moves: { skill: string | null; skillOpen: boolean; ult: string } | null;
+  /** The effects it is under right now, as words (the plain stand-in until each has its art). */
+  effects: string[];
 }
 
 /** The team in hand order, against the active dungeon; empty with no card in the loadout. */
@@ -61,6 +68,7 @@ export function teamView(
   const out = state.combat.knockoutSeconds > 0;
   const target = out ? null : enemyTarget(state, team);
   const clock = state.stats.playTimeMs / 1000;
+  const fx = activeEffects(team, clock);
   return team.map((card: TeamCard): TeamCardView => {
     const down = out || !isStanding(state, card);
     const health = down
@@ -89,8 +97,27 @@ export function teamView(
       hitSeconds: card.interval,
       critChance: card.crit.chance,
       gauge: gaugeAt(card, clock),
+      moves: card.moves
+        ? {
+            skill: card.moves.skill?.name ?? null,
+            skillOpen: card.moves.skill?.open === true,
+            ult: card.moves.ult.name,
+          }
+        : null,
+      effects: out ? [] : (fx.cards[card.id] ?? []).map((k) => EFFECT_WORDS[k]),
     };
   });
+}
+
+/** The effects on the enemy right now, as words (DESIGN.md §2; the plain stand-in for their art). */
+export function enemyEffects(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): string[] {
+  if (state.combat.knockoutSeconds > 0) return [];
+  const team = buildTeam(state, content, modifiers, state.activeDungeonId).filter((c) => c.id);
+  return activeEffects(team, state.stats.playTimeMs / 1000).enemy.map((k) => EFFECT_WORDS[k]);
 }
 
 /** The enemy standing ahead and the deck of the wave waiting behind it. */

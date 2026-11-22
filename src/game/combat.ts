@@ -47,7 +47,7 @@ import {
   DUE_HIT_SECONDS,
   enemyTarget,
   gaugeAt,
-  healTeam,
+  healFromMoves,
   isStanding,
   knockOut,
   reviveTeam,
@@ -1325,8 +1325,14 @@ function landTeamHits(
     dealt = dealt.add(hit.mul(run.hits));
     if (run.bursts <= 0) continue;
     report.bursts.fighting += run.bursts;
-    const kind = card.heal > 0 ? 'heal' : 'strike';
-    pushSkill(report.skills, { cardId: card.id, skillId: card.skill.id, kind, count: run.bursts });
+    const kind = card.signature.gt(0) ? 'strike' : 'heal';
+    pushSkill(report.skills, {
+      cardId: card.id,
+      skillId: card.skill.id,
+      ...(card.moves ? { name: card.moves.ult.name } : {}),
+      kind,
+      count: run.bursts,
+    });
     if (kind === 'heal') continue;
     const signature = factor === 1 ? card.signature : card.signature.mul(factor);
     pushPlayerHit(report.playerHits, {
@@ -1415,8 +1421,8 @@ function fightDungeon(
   /** The healers among `cards` heal for the signatures they fired in (from, to]. */
   const applyHeals = (cards: readonly TeamCard[], from: number, to: number): void => {
     for (const card of cards) {
-      if (card.heal <= 0 || !isStanding(next, card)) continue;
-      healTeam(next, team, card.heal, cardRun(card, from, to).bursts);
+      if (card.heals.length === 0 || !isStanding(next, card)) continue;
+      healFromMoves(next, team, card, cardRun(card, from, to).bursts);
     }
   };
   /** An attack's damage lands on a card's health. */

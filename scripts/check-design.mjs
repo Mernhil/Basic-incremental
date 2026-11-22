@@ -11,12 +11,13 @@
 // in the overview. The file also has a size limit, so it cannot grow back into a second overview.
 //
 // docs/UI_RULES.md keeps its own older shape: every rule carries a status tag, no amendment-style
-// section, an Open questions section and a dated Changelog.
+// section, and an Open questions section. It keeps no changelog: git history records every change
+// (user, 2026-11-22: "all of them").
 import { readFileSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-// Raised from 60_000 on the user's word, 2026-11-22: "raise the design limit to 70 KB".
-export const DESIGN_MAX_BYTES = 70_000;
+// Raised from 70_000 on the user's word, 2026-11-22: "Raise to 80 KB" (the base camp rules did not fit).
+export const DESIGN_MAX_BYTES = 80_000;
 
 // Headings that mean "an old rule plus a patch": rewrite the rule in place instead.
 const BANNED_HEADING =
@@ -130,17 +131,17 @@ export function checkDesign(text, sections) {
 }
 
 const UI_TAG = /^\[(Built|Differs|To build|Proposed|Default(?:\s*[·-]\s*in game)?)\]\s/;
-const UI_UNTAGGED_SECTIONS = /^(\d+\.\s*)?(How this document works|Open questions|Changelog)\b/i;
+const UI_UNTAGGED_SECTIONS = /^(\d+\.\s*)?(How this document works|Open questions)\b/i;
 const UI_BANNED_HEADING =
-  /\b(amendments?|addend(um|a)|errata|defaults for|updates?|changes since|patch notes|revisions?)\b/i;
+  /\b(amendments?|addend(um|a)|errata|defaults for|updates?|changes since|patch notes|revisions?|changelog)\b/i;
 
-/** Errors in UI_RULES.md (its older shape: a tag on every rule, Open questions, a dated Changelog). */
+/** Errors in UI_RULES.md (its older shape: a tag on every rule and an Open questions section). */
 export function checkUiRules(text) {
   const errors = [];
   const lines = text.split(/\r?\n/);
   let section = null;
   let checked = false;
-  const required = { open: false, changelog: false };
+  const required = { open: false };
 
   lines.forEach((raw, i) => {
     const n = i + 1;
@@ -157,16 +158,6 @@ export function checkUiRules(text) {
         section = title;
         checked = !UI_UNTAGGED_SECTIONS.test(title);
         if (/open questions/i.test(title)) required.open = true;
-        if (/changelog/i.test(title)) required.changelog = true;
-      }
-      return;
-    }
-    if (section && /changelog/i.test(section) && /^[-*] /.test(line)) {
-      if (
-        !/^[-*] \d{4}-\d{2}-\d{2} /.test(line) &&
-        !/^[-*] \d{4}-\d{2}-\d{2} and earlier/.test(line)
-      ) {
-        errors.push(`${n}: changelog lines start with a date (YYYY-MM-DD)`);
       }
       return;
     }
@@ -184,7 +175,6 @@ export function checkUiRules(text) {
   });
 
   if (!required.open) errors.push('0: missing the "Open questions" section');
-  if (!required.changelog) errors.push('0: missing the "Changelog" section');
   return errors;
 }
 

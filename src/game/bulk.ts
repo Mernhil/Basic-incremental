@@ -1,25 +1,11 @@
-import type { Content, CostCurve } from '../data';
-import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
+import type { CostCurve } from '../data';
+import { statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
-import {
-  canAfford,
-  ceilPrice,
-  effectiveGrowth,
-  isProducerUnlocked,
-  mineLevel,
-  pay,
-  treeLevel,
-  type Price,
-  type ProductionFailure,
-} from './production';
-import type { TierUp } from './report';
-import { milestoneTierUps } from './stages';
-import type { GameState } from './state';
+import { ceilPrice, effectiveGrowth, type Price } from './production';
 
 /**
  * Bulk buying (DESIGN.md §11, "Buy x1 / x10 / x100 / Max"): prices of several levels on an
- * exponential cost curve, the most a budget affords, and the buy offers and purchases of the
- * mine levels and tree levels.
+ * exponential cost curve and the most a budget affords. Used by the Training lines.
  *
  * Every level is priced exactly like a single buy (`curvePrice`, rounded up per level), so a
  * bulk buy costs the same as buying the levels one at a time.
@@ -45,17 +31,6 @@ export interface BuyOffer {
    */
   progress: number;
 }
-
-/** A bulk purchase: the new state and the levels bought, or why it failed. */
-export type BulkBuyResult<F extends string> =
-  | {
-      ok: true;
-      state: GameState;
-      bought: number;
-      /** Milestones crossed (mine level, tree level). */
-      tierUps: TierUp[];
-    }
-  | { ok: false; reason: F };
 
 /** The per-level price terms of a curve: growth and cost multiplier after modifiers. */
 function curveTerms(
@@ -138,109 +113,4 @@ export function curveOffer(
   const price = curveBulkPrice(curve, owned, count, modifiers, context);
   const affordable = budget.gte(price.amount);
   return { count, price, affordable, progress: affordable ? 1 : fraction(budget, price.amount) };
-}
-
-const budgetOf = (state: GameState, resource: string): Decimal =>
-  state.resources[resource] ?? new Decimal(0);
-
-// ---- mine levels -----------------------------------------------------------------------------
-
-/** The buy offer of a mine type's levels (null for an unknown mine or an invalid count). Not
- *  affordable while the mine is locked. */
-export function mineLevelOffer(
-  state: GameState,
-  content: Content,
-  mineId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BuyOffer | null {
-  const mine = content.mineById.get(mineId);
-  if (!mine) return null;
-  const ctx: StatContext = { job: 'mining', producer: mine.id, resource: mine.resource };
-  const budget = budgetOf(state, mine.level.cost.resource);
-  const offer = curveOffer(
-    mine.level.cost,
-    mineLevel(state, mineId),
-    count,
-    budget,
-    modifiers,
-    ctx,
-  );
-  if (offer && !isProducerUnlocked(state, content, 'mining', mineId)) offer.affordable = false;
-  return offer;
-}
-
-/** Buys mine levels: xN buys exactly N or fails as unaffordable; Max buys as many as affordable (at least 1). Only for unlocked mine types; reset on prestige. */
-export function buyMineLevels(
-  state: GameState,
-  content: Content,
-  mineId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BulkBuyResult<ProductionFailure> {
-  if (!content.mineById.has(mineId)) return { ok: false, reason: 'unknown' };
-  if (!isProducerUnlocked(state, content, 'mining', mineId)) return { ok: false, reason: 'locked' };
-  const offer = mineLevelOffer(state, content, mineId, count, modifiers);
-  if (!offer) return { ok: false, reason: 'invalid-count' };
-  if (!offer.affordable || !canAfford(state, [offer.price])) {
-    return { ok: false, reason: 'unaffordable' };
-  }
-  const next = pay(state, [offer.price]);
-  const from = mineLevel(state, mineId);
-  next.production.mineLevels[mineId] = from + offer.count;
-  const milestones = content.mineById.get(mineId)!.level.milestones;
-  const tierUps = milestoneTierUps('mine_milestone', mineId, milestones, from, from + offer.count);
-  return { ok: true, state: next, bought: offer.count, tierUps };
-}
-
-// ---- tree levels -----------------------------------------------------------------------------
-
-/** The buy offer of a tree kind's levels (null for an unknown tree or an invalid count). Not
- *  affordable while the tree kind is locked. */
-export function treeLevelOffer(
-  state: GameState,
-  content: Content,
-  treeId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BuyOffer | null {
-  const tree = content.treeById.get(treeId);
-  if (!tree) return null;
-  const ctx: StatContext = { job: 'logging', producer: tree.id, resource: tree.resource };
-  const budget = budgetOf(state, tree.level.cost.resource);
-  const offer = curveOffer(
-    tree.level.cost,
-    treeLevel(state, treeId),
-    count,
-    budget,
-    modifiers,
-    ctx,
-  );
-  if (offer && !isProducerUnlocked(state, content, 'logging', treeId)) offer.affordable = false;
-  return offer;
-}
-
-/** Buys tree levels like `buyMineLevels`. Only for unlocked tree kinds; reset on prestige. */
-export function buyTreeLevels(
-  state: GameState,
-  content: Content,
-  treeId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BulkBuyResult<ProductionFailure> {
-  if (!content.treeById.has(treeId)) return { ok: false, reason: 'unknown' };
-  if (!isProducerUnlocked(state, content, 'logging', treeId)) {
-    return { ok: false, reason: 'locked' };
-  }
-  const offer = treeLevelOffer(state, content, treeId, count, modifiers);
-  if (!offer) return { ok: false, reason: 'invalid-count' };
-  if (!offer.affordable || !canAfford(state, [offer.price])) {
-    return { ok: false, reason: 'unaffordable' };
-  }
-  const next = pay(state, [offer.price]);
-  const from = treeLevel(state, treeId);
-  next.production.treeLevels[treeId] = from + offer.count;
-  const milestones = content.treeById.get(treeId)!.level.milestones;
-  const tierUps = milestoneTierUps('tree_milestone', treeId, milestones, from, from + offer.count);
-  return { ok: true, state: next, bought: offer.count, tierUps };
 }

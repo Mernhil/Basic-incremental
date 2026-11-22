@@ -4,7 +4,6 @@
     "name": "Ember Squire",
     "job": "fighting",
     "tier": "wood",
-    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -38,7 +37,6 @@
     "name": "Storm Duelist",
     "job": "fighting",
     "tier": "gold",
-    "element": "storm",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -80,7 +78,6 @@
     "name": "Dawnblade Regent",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -127,7 +124,6 @@
     "name": "Apprentice Feller",
     "job": "logging",
     "tier": "wood",
-    "element": "nature",
     "item": {
       "kind": "logging_axe"
     },
@@ -152,7 +148,6 @@
     "name": "Grove Keeper",
     "job": "logging",
     "tier": "silver",
-    "element": "nature",
     "item": {
       "kind": "logging_axe"
     },
@@ -182,7 +177,6 @@
     "name": "Elder Treant",
     "job": "logging",
     "tier": "gold",
-    "element": "nature",
     "item": {
       "kind": "logging_axe"
     },
@@ -243,7 +237,6 @@
     "name": "Cave Digger",
     "job": "mining",
     "tier": "wood",
-    "element": "earth",
     "item": {
       "kind": "pickaxe"
     },
@@ -268,7 +261,6 @@
     "name": "Gem Cutter",
     "job": "mining",
     "tier": "silver",
-    "element": "crystal",
     "item": {
       "kind": "pickaxe"
     },
@@ -298,7 +290,6 @@
     "name": "Geode Golem",
     "job": "mining",
     "tier": "prismatic",
-    "element": "crystal",
     "item": {
       "kind": "pickaxe"
     },
@@ -329,7 +320,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "item": {
       "kind": "pickaxe"
     },
@@ -359,7 +350,6 @@
     "name": "Dusk Reaper",
     "job": "fighting",
     "tier": "silver",
-    "element": "void",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -411,7 +401,6 @@
     "name": "Hollow Spearman",
     "job": "fighting",
     "tier": "bronze",
-    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -503,7 +492,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -550,7 +539,6 @@
     "name": "Moss Forager",
     "job": "logging",
     "tier": "bronze",
-    "element": "nature",
     "item": {
       "kind": "logging_axe"
     },
@@ -575,7 +563,6 @@
     "name": "Heartwood Warden",
     "job": "logging",
     "tier": "prismatic",
-    "element": "nature",
     "item": {
       "kind": "logging_axe"
     },
@@ -606,7 +593,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "item": {
       "kind": "logging_axe"
     },
@@ -636,7 +623,6 @@
     "name": "Pebble Prospector",
     "job": "mining",
     "tier": "bronze",
-    "element": "earth",
     "item": {
       "kind": "pickaxe"
     },
@@ -661,7 +647,6 @@
     "name": "Prism Delver",
     "job": "mining",
     "tier": "gold",
-    "element": "crystal",
     "item": {
       "kind": "pickaxe"
     },
@@ -722,7 +707,6 @@
     "name": "Brass Vanguard",
     "job": "fighting",
     "tier": "bronze",
-    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -756,7 +740,6 @@
     "name": "Silver Cavalier",
     "job": "fighting",
     "tier": "silver",
-    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -790,7 +773,6 @@
     "name": "Gilded Knight",
     "job": "fighting",
     "tier": "gold",
-    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -824,7 +806,6 @@
     "name": "Prism Paladin",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -904,7 +885,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -943,7 +924,6 @@
     "name": "Rusty Brute",
     "job": "fighting",
     "tier": "wood",
-    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -985,7 +965,6 @@
     "name": "Bronze Warden",
     "job": "fighting",
     "tier": "bronze",
-    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -1027,7 +1006,6 @@
     "name": "Silver Executioner",
     "job": "fighting",
     "tier": "silver",
-    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -1069,7 +1047,6 @@
     "name": "Gold Warlord",
     "job": "fighting",
     "tier": "gold",
-    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -1160,7 +1137,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -1207,7 +1184,6 @@
     "name": "Militia Picket",
     "job": "fighting",
     "tier": "wood",
-    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -1250,7 +1226,6 @@
     "name": "Silver Skirmisher",
     "job": "fighting",
     "tier": "silver",
-    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -1293,7 +1268,6 @@
     "name": "Golden Hoplite",
     "job": "fighting",
     "tier": "gold",
-    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -1336,7 +1310,6 @@
     "name": "Shard Strider",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -1434,7 +1407,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -1482,7 +1455,6 @@
     "name": "Stable Squire",
     "job": "fighting",
     "tier": "wood",
-    "element": "light",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1524,7 +1496,6 @@
     "name": "Bronze Jouster",
     "job": "fighting",
     "tier": "bronze",
-    "element": "light",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1566,7 +1537,6 @@
     "name": "Silver Rider",
     "job": "fighting",
     "tier": "silver",
-    "element": "light",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1608,7 +1578,6 @@
     "name": "Golden Tilter",
     "job": "fighting",
     "tier": "gold",
-    "element": "light",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1650,7 +1619,6 @@
     "name": "Mirror Cavalier",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "light",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1698,7 +1666,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -1745,7 +1713,6 @@
     "name": "Alley Cutpurse",
     "job": "fighting",
     "tier": "wood",
-    "element": "storm",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -1787,7 +1754,6 @@
     "name": "Bronze Sneak",
     "job": "fighting",
     "tier": "bronze",
-    "element": "storm",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -1829,7 +1795,6 @@
     "name": "Silver Shiv",
     "job": "fighting",
     "tier": "silver",
-    "element": "storm",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -1871,7 +1836,6 @@
     "name": "Whisper Assassin",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "storm",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -1967,7 +1931,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -2014,7 +1978,6 @@
     "name": "Quarry Smasher",
     "job": "fighting",
     "tier": "wood",
-    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -2056,7 +2019,6 @@
     "name": "Bronze Forgehand",
     "job": "fighting",
     "tier": "bronze",
-    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -2098,7 +2060,6 @@
     "name": "Silver Sledger",
     "job": "fighting",
     "tier": "silver",
-    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -2140,7 +2101,6 @@
     "name": "Golden Anvilmaster",
     "job": "fighting",
     "tier": "gold",
-    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -2182,7 +2142,6 @@
     "name": "Facet Crusher",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -2277,7 +2236,6 @@
     "name": "Fieldhand Archer",
     "job": "fighting",
     "tier": "wood",
-    "element": "nature",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2329,7 +2287,6 @@
     "name": "Bronze Hunter",
     "job": "fighting",
     "tier": "bronze",
-    "element": "nature",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2381,7 +2338,6 @@
     "name": "Silver Ranger",
     "job": "fighting",
     "tier": "silver",
-    "element": "nature",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2433,7 +2389,6 @@
     "name": "Golden Sharpshot",
     "job": "fighting",
     "tier": "gold",
-    "element": "nature",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2485,7 +2440,6 @@
     "name": "Rainbow Sniper",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "nature",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2601,7 +2555,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -2658,7 +2612,6 @@
     "name": "Hedge Acolyte",
     "job": "fighting",
     "tier": "wood",
-    "element": "crystal",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -2700,7 +2653,6 @@
     "name": "Bronze Mystic",
     "job": "fighting",
     "tier": "bronze",
-    "element": "crystal",
     "role": "dps",
     "item": {
       "kind": "staff"
@@ -2742,7 +2694,6 @@
     "name": "Silver Mage",
     "job": "fighting",
     "tier": "silver",
-    "element": "crystal",
     "role": "dps",
     "item": {
       "kind": "staff"
@@ -2784,7 +2735,6 @@
     "name": "Golden Sage",
     "job": "fighting",
     "tier": "gold",
-    "element": "crystal",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -2826,7 +2776,6 @@
     "name": "Kaleido Weaver",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "crystal",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -2922,7 +2871,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -2969,7 +2918,6 @@
     "name": "Field Reaper",
     "job": "fighting",
     "tier": "wood",
-    "element": "void",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -3021,7 +2969,6 @@
     "name": "Bronze Gleaner",
     "job": "fighting",
     "tier": "bronze",
-    "element": "void",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -3073,7 +3020,6 @@
     "name": "Golden Harvester",
     "job": "fighting",
     "tier": "gold",
-    "element": "void",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -3125,7 +3071,6 @@
     "name": "Halfmoon Reaper",
     "job": "fighting",
     "tier": "prismatic",
-    "element": "void",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -3241,7 +3186,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -3299,7 +3244,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -3341,7 +3286,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -3425,7 +3370,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -3475,7 +3420,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -3525,7 +3470,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "crystal",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -3575,7 +3520,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "nature",
+    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -3625,7 +3570,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -3675,7 +3620,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "fire",
+    "element": "light",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -3726,7 +3671,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "light",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -3777,7 +3722,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -3828,7 +3773,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "fire",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -3879,7 +3824,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "fire",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -3930,7 +3875,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -3980,7 +3925,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -4030,7 +3975,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "nature",
+    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -4080,7 +4025,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4130,7 +4075,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4180,7 +4125,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4230,7 +4175,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "fire",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4280,7 +4225,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4330,7 +4275,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "crystal",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -4380,7 +4325,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "light",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -4430,7 +4375,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -4480,7 +4425,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -4640,7 +4585,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "fire",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -4700,7 +4645,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "storm",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -4820,7 +4765,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -4870,7 +4815,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -4920,7 +4865,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "light",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -4980,7 +4925,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "nature",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -5040,7 +4985,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -5100,7 +5045,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "crystal",
+    "element": "earth",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -5160,7 +5105,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "item": {
       "kind": "pickaxe"
     },
@@ -5193,7 +5138,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "earth",
     "item": {
       "kind": "pickaxe"
     },
@@ -5259,7 +5204,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "item": {
       "kind": "pickaxe"
     },
@@ -5292,7 +5237,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "void",
-    "element": "light",
+    "element": "earth",
     "item": {
       "kind": "pickaxe"
     },
@@ -5325,7 +5270,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "item": {
       "kind": "logging_axe"
     },
@@ -5358,7 +5303,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "dark",
     "item": {
       "kind": "logging_axe"
     },
@@ -5391,7 +5336,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "void",
-    "element": "crystal",
+    "element": "water",
     "item": {
       "kind": "logging_axe"
     },
@@ -5424,7 +5369,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "item": {
       "kind": "logging_axe"
     },
@@ -5458,7 +5403,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "fire",
+    "element": "light",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -5499,7 +5444,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -5548,7 +5493,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "storm",
+    "element": "light",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -5647,7 +5592,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -5696,7 +5641,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "earth",
+    "element": "fire",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -5804,7 +5749,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -5853,7 +5798,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "fire",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -5912,7 +5857,7 @@
     "job": "mining",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "crystal",
+    "element": "light",
     "item": {
       "kind": "pickaxe"
     },
@@ -5944,7 +5889,7 @@
     "job": "logging",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "nature",
+    "element": "light",
     "item": {
       "kind": "logging_axe"
     },
@@ -5975,7 +5920,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -6017,7 +5962,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -6059,7 +6004,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -6109,7 +6054,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -6159,7 +6104,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "crystal",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -6209,7 +6154,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "nature",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -6259,7 +6204,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -6310,7 +6255,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -6361,7 +6306,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -6411,7 +6356,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "storm",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -6461,7 +6406,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "earth",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -6511,7 +6456,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "earth",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -6561,7 +6506,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -6621,7 +6566,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -6681,7 +6626,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -6731,7 +6676,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -6781,7 +6726,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
-    "element": "nature",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -6841,7 +6786,7 @@
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -6901,7 +6846,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "item": {
       "kind": "pickaxe"
     },
@@ -6934,7 +6879,7 @@
     "job": "mining",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "item": {
       "kind": "pickaxe"
     },
@@ -6967,7 +6912,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "item": {
       "kind": "logging_axe"
     },
@@ -7000,7 +6945,7 @@
     "job": "logging",
     "tier": "mythic",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "item": {
       "kind": "logging_axe"
     },
@@ -7034,7 +6979,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "crystal",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "sword"
@@ -7077,7 +7022,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "greatsword"
@@ -7128,7 +7073,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "nature",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "dagger"
@@ -7179,7 +7124,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "spear"
@@ -7231,7 +7176,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "light",
+    "element": "water",
     "role": "tank",
     "item": {
       "kind": "lance"
@@ -7282,7 +7227,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "earth",
+    "element": "dark",
     "role": "tank",
     "item": {
       "kind": "hammer"
@@ -7333,7 +7278,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "storm",
+    "element": "water",
     "role": "dps",
     "item": {
       "kind": "bow"
@@ -7394,7 +7339,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "support",
     "item": {
       "kind": "staff"
@@ -7445,7 +7390,7 @@
     "job": "fighting",
     "tier": "heirloom",
     "side": "void",
-    "element": "void",
+    "element": "dark",
     "role": "dps",
     "item": {
       "kind": "scythe"
@@ -7506,7 +7451,7 @@
     "job": "mining",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "crystal",
+    "element": "water",
     "item": {
       "kind": "pickaxe"
     },
@@ -7540,7 +7485,7 @@
     "job": "logging",
     "tier": "heirloom",
     "side": "mythic",
-    "element": "nature",
+    "element": "water",
     "item": {
       "kind": "logging_axe"
     },
@@ -7566,5 +7511,1893 @@
         }
       ]
     }
+  },
+  {
+    "id": "runemoss",
+    "name": "Wild Runemoss",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Runemoss",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberthorn",
+    "name": "Ash Emberthorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberthorn",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "stonegrove",
+    "name": "Wild Stonegrove",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Stonegrove",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "thornblaze",
+    "name": "Ash Thornblaze",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Thornblaze",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mossfang",
+    "name": "Wild Mossfang",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mossfang",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cindersting",
+    "name": "Ash Cindersting",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Cindersting",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "vinepike",
+    "name": "Wild Vinepike",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Vinepike",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "flarepike",
+    "name": "Ash Flarepike",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Flarepike",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "spiralhorn",
+    "name": "Wild Spiralhorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "support",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Spiralhorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lavahorn",
+    "name": "Ash Lavahorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Lavahorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "runeboulder",
+    "name": "Wild Runeboulder",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Runeboulder",
+    "ability": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberknot",
+    "name": "Ash Emberknot",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberknot",
+    "ability": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "rootstring",
+    "name": "Wild Rootstring",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Rootstring",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "firebriar",
+    "name": "Ash Firebriar",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Firebriar",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "amberbough",
+    "name": "Wild Amberbough",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Amberbough",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberroot",
+    "name": "Ash Emberroot",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberroot",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mossreaper",
+    "name": "Wild Mossreaper",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mossreaper",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ashreaper",
+    "name": "Ash Ashreaper",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Ashreaper",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mosstooth",
+    "name": "Wild Mosstooth",
+    "job": "mining",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mosstooth",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "embertooth",
+    "name": "Ash Embertooth",
+    "job": "mining",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Embertooth",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grovehewer",
+    "name": "Wild Grovehewer",
+    "job": "logging",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Grovehewer",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "charhewer",
+    "name": "Ash Charhewer",
+    "job": "logging",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Charhewer",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "antlerblade",
+    "name": "Antlerblade",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Antlerblade",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "elderbark",
+    "name": "Elderbark",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Elderbark",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "alicorn",
+    "name": "Alicorn",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Alicorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "toadmaul",
+    "name": "Toadmaul",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Toadmaul",
+    "ability": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "owlwing",
+    "name": "Owlwing",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Owlwing",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "beetlejaw",
+    "name": "Beetlejaw",
+    "heirloom": true,
+    "job": "logging",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Beetlejaw",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "phoenixquill",
+    "name": "Phoenixquill",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Phoenixquill",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bloodrose",
+    "name": "Bloodrose",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Bloodrose",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberscale",
+    "name": "Emberscale",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberscale",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberblossom",
+    "name": "Emberblossom",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberblossom",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "drumbeak",
+    "name": "Drumbeak",
+    "heirloom": true,
+    "job": "mining",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Drumbeak",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "foxtail",
+    "name": "Foxtail",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Foxtail",
+    "pictureAlt": true,
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "geodefall",
+    "name": "Geodefall",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "ability": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "emberbrand",
+    "name": "Emberbrand",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "tidecaller",
+    "name": "Tidecaller",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "water",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "dawnpiercer",
+    "name": "Dawnpiercer",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "light",
+    "role": "dps",
+    "item": {
+      "kind": "lance"
+    },
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
+  },
+  {
+    "id": "voidthorn",
+    "name": "Voidthorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "dark",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.materialChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    "starterArt": true
   }
 ]

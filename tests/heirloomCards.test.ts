@@ -22,20 +22,21 @@ const recolours = JSON.parse(
 
 const withArt = content.cards.filter((c) => c.heirloomArt);
 // The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
-const ladder = content.cards.filter((c) => !c.heirloom);
+const ladder = content.cards.filter((c) => !c.heirloom && !c.starterArt);
 const byRarity = (r: Rarity) => ladder.filter((c) => cardStyle(c) === r);
 const key = (r: { type: string; side: string; letter: string }) =>
   `${r.type}/${r.side}/${r.letter}`;
 
 describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
-  it('takes the roster from 77 to 144: 42 Mythic, 47 Void, 11 of every other rarity (22 are Leviathan)', () => {
-    expect(ladder).toHaveLength(144);
+  it('takes the roster to 166: 53 Mythic, 58 Void, 11 of every other rarity (22 are Leviathan, 22 Wildwood)', () => {
+    expect(ladder).toHaveLength(166);
     expect(ladder.filter((c) => c.batch === 'leviathan')).toHaveLength(22);
+    expect(ladder.filter((c) => c.batch === 'wildwood')).toHaveLength(22);
     expect(withArt).toHaveLength(45);
     expect(withArt.filter((c) => cardStyle(c) === 'mythic')).toHaveLength(20);
     expect(withArt.filter((c) => cardStyle(c) === 'void')).toHaveLength(25);
     for (const r of RARITIES) {
-      const want = r === 'mythic' ? 42 : r === 'void' ? 47 : 11;
+      const want = r === 'mythic' ? 53 : r === 'void' ? 58 : 11;
       expect(byRarity(r), r).toHaveLength(want);
     }
   });
@@ -94,8 +95,8 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
 
   it('puts every card in the Card Portal at its rarity, a rarity keeping its whole chance split equally', () => {
     const portal = content.portals.find((p) => p.id === 'card_portal')!;
-    expect(portal.pool).toHaveLength(144);
-    expect(new Set(portal.pool.map((e) => e.itemId)).size).toBe(144);
+    expect(portal.pool).toHaveLength(166);
+    expect(new Set(portal.pool.map((e) => e.itemId)).size).toBe(166);
     const total: Record<string, number> = {
       common: 53.2,
       uncommon: 28,

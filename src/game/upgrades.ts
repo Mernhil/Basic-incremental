@@ -1,14 +1,11 @@
 import type { Content, PerkLine, PerkMilestone, PerkOption } from '../data';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { mineLevel, treeLevel } from './production';
 import { cloneState, type GameState } from './state';
-import { toolLevel } from './toolLines';
 import { trainingLevel } from './training';
 
 /**
- * Milestone picks (DESIGN.md §4 Milestone picks): every repeatable line (a tree's or mine's level,
- * a tool line, a Training line) has milestone levels in `perks.json` where the player picks one of
+ * Milestone picks (DESIGN.md §4 Milestone picks): every Training line has milestone levels in `perks.json` where the player picks one of
  * two perks. A pick is stored for good (`upgrades.picks`, kept through an ascension); its perk's
  * effects are ordinary modifiers (source `upgrade`) and apply only while the line is at or above the
  * milestone's level, so after an ascension the perk comes back when the line reaches it again. A
@@ -38,16 +35,7 @@ export function countMoneyEarned(
 
 /** The level a line stands at this run. */
 export function lineLevel(state: GameState, line: PerkLine): number {
-  switch (line.kind) {
-    case 'tree':
-      return treeLevel(state, line.id);
-    case 'mine':
-      return mineLevel(state, line.id);
-    case 'tool':
-      return toolLevel(state, line.id);
-    case 'training':
-      return trainingLevel(state, line.id);
-  }
+  return trainingLevel(state, line.id);
 }
 
 const sameLine = (a: PerkLine, b: PerkLine): boolean => a.kind === b.kind && a.id === b.id;

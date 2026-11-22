@@ -4,6 +4,8 @@ import { COPY } from '../copy';
 import type { CardEntry, StatChange, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
 import { setStarText } from './stars';
+import { costMarkup } from './costMarkup';
+import { movesView, type MovesView } from '../pages/movesModel';
 import './weaponPanel.css';
 
 /**
@@ -28,7 +30,7 @@ export interface WeaponPanelOptions {
   content: Content;
   state: () => GameState;
   /** Takes the star-up or the tier-up (the page runs the game action and re-renders). */
-  act: (kind: 'star' | 'dust') => void;
+  act: (kind: 'star' | 'dust' | 'skill') => void;
 }
 
 export interface WeaponPanel {
@@ -214,6 +216,16 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     root.append(tierTile, xpTile, tagHost);
   }
 
+  // ---- both: the card's three attacks and the skill's unlock (DESIGN.md §2 Three attacks) ----
+  const attacks = h('section', 'wp-attacks');
+  attacks.setAttribute('aria-label', COPY.moves.title);
+  const attacksList = h('ul', 'wp-attacks__list');
+  attacks.append(h('span', 'wp-tile__label', COPY.moves.title), attacksList);
+  if (variant === 'card') {
+    attacks.classList.add('wp-tile', 'px-tile');
+    root.insertBefore(attacks, tagHost);
+  } else side.append(attacks);
+
   // ---- card variant: the overlay (the large level badge) ----
   let overlay: HTMLElement | null = null;
   if (variant === 'card') {
@@ -365,6 +377,67 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     if (overlay) overlay.dataset.tier = w.tier;
   }
 
+  let movesSig = '';
+  let movesAt = 0;
+  let movesFor = '';
+  function drawAttacks(cardId: string): void {
+    // the numbers need the modifiers: read at most twice a second, redrawn only on change
+    const now = Date.now();
+    if (cardId === movesFor && now - movesAt < 500) return;
+    movesAt = now;
+    movesFor = cardId;
+    const state = opts.state();
+    const view: MovesView | null = movesView(state, opts.content, cardId);
+    attacks.hidden = !view;
+    if (!view) return;
+    const sig = JSON.stringify(view);
+    if (sig === movesSig) return;
+    movesSig = sig;
+    const keep = attacks.contains(document.activeElement);
+    attacksList.replaceChildren(
+      ...view.rows.map((row) => {
+        const li = h('li', 'wp-attack');
+        li.dataset['kind'] = row.kind;
+        const head = h('p', 'wp-attack__head');
+        head.append(h('span', 'wp-attack__label', row.label));
+        if (row.name) head.append(h('b', 'wp-attack__name', row.name));
+        li.append(head);
+        if (row.text) li.append(h('p', 'wp-attack__text bi-num', row.text));
+        if (row.effects.length > 0) {
+          const ul = h('ul', 'wp-attack__effects');
+          for (const e of row.effects) ul.append(h('li', '', e));
+          li.append(ul);
+        }
+        if (row.note) li.append(h('p', 'wp-attack__note', row.note));
+        if (row.kind === 'skill' && view.unlock) {
+          const box = h('div', 'wp-unlock');
+          const price = h('span', 'wp-unlock__price');
+          price.innerHTML = costMarkup(
+            opts.content,
+            state,
+            view.unlock.cost,
+            () => !view.unlock!.affordable,
+          );
+          const b = h('button', 'button wp-add wp-unlock__open', COPY.moves.open);
+          b.type = 'button';
+          b.dataset.key = 'wp-skill';
+          b.setAttribute('aria-label', COPY.moves.openFor);
+          if (!view.unlock.affordable) {
+            b.setAttribute('aria-disabled', 'true');
+            b.title = COPY.moves.short;
+          }
+          b.addEventListener('click', () => {
+            if (b.getAttribute('aria-disabled') !== 'true') opts.act('skill');
+          });
+          box.append(b, price);
+          li.append(box);
+        }
+        return li;
+      }),
+    );
+    if (keep) attacks.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus();
+  }
+
   return {
     el: root,
     overlay,
@@ -379,6 +452,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       drawStage(entry, w);
       if (variant === 'card') drawTiles(w);
       drawSide(w);
+      drawAttacks(entry.id);
     },
   };
 }

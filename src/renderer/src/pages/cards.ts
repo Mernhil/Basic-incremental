@@ -20,8 +20,10 @@ import { teamRows, type TeamRow } from '../views/collection/teamsModel';
 import { createCard, type CardProps } from '../ui/card';
 import { ITEM_VIEWBOX } from '../art/items';
 import { skinTileMarkup } from './loadoutCards';
+import { enableLoadoutDrag } from './loadoutDrag';
 import type { SkinPickerView } from './cardSkinsModel';
 import { watchFit } from '../ui/pixelFit';
+import { createSealBlock } from '../ui/sealBlock';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
 import {
@@ -35,7 +37,7 @@ import {
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
-import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import { createBondsPanel, type Panel } from './tablePanels';
 import { keepScroll } from '../ui/keepScroll';
 import { setStarText } from '../ui/stars';
 import './weaponSkinsTab.css';
@@ -47,7 +49,7 @@ import './cards.css';
  * and three supports under its cost cap). All rules come from the CardsModel.
  */
 
-type Tab = 'collection' | 'heirlooms' | 'loadouts' | 'bonds' | 'trips';
+type Tab = 'collection' | 'heirlooms' | 'loadouts' | 'bonds';
 type Sort = keyof typeof COPY.cards.sortBy;
 
 const JOB_NAMES: Record<Job, string> = {
@@ -127,7 +129,6 @@ export function createCardsPage(
     heirlooms: h('button', 'cp-tab', COPY.cards.heirloomsTab),
     loadouts: h('button', 'cp-tab', COPY.cards.loadoutsTab),
     bonds: h('button', 'cp-tab', 'Bonds'),
-    trips: h('button', 'cp-tab', 'Expeditions'),
   };
   const panel = h('div', 'cp-panel');
   panel.setAttribute('role', 'tabpanel');
@@ -229,8 +230,8 @@ export function createCardsPage(
         (heirlooms.find((e) => e.role) ?? heirlooms.find((e) => e.owned) ?? heirlooms[0])?.id ??
         null;
     }
-    if (tab === 'bonds' || tab === 'trips') {
-      const side: Panel = (tab === 'bonds' ? createBondsPanel : createExpeditionsPanel)(ctx);
+    if (tab === 'bonds') {
+      const side: Panel = createBondsPanel(ctx);
       const head = h('div', 'cp-head');
       tabsInPage(head);
       const wrap = h('div', 'cp-loadouts');
@@ -435,7 +436,7 @@ export function createCardsPage(
     for (const kind of itemOrder) {
       const ofKind = list.filter((e) => e.itemKind === kind);
       if (ofKind.length === 0) continue;
-      // a type's two Heirlooms together under its heading
+      // a type's Heirlooms together under its heading
       const li = h('li', 'cp-hgroup');
       const pair = h('div', 'cp-hgroup__cards');
       li.append(
@@ -504,7 +505,10 @@ export function createCardsPage(
     const info = heirloomEntry(state, content, card);
     const tree = heirloomTreeInfo(state, content, e.id);
     const side = COPY.summon.heirloomSide[info.side] ?? info.side;
-    const { el, body } = frame(e.name, COPY.cards.heirloomSub(e.itemType, side, cap1(e.element)));
+    const { el, body } = frame(
+      e.name,
+      COPY.cards.heirloomSub(e.itemType, side, cap1(e.element ?? '')),
+    );
     el.classList.add('cp-detail', 'cp-heirloom');
     el.dataset['deal'] = '';
     if (tree) body.append(treeHead(e, tree));
@@ -680,7 +684,11 @@ export function createCardsPage(
   // ---- detail panel ----
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
     // "tier · job · role" on the right of the name
-    const parts = [gradeLabel(styleGrade(e.rarity)), JOB_NAMES[e.job]];
+    // a starter weapon is labelled so (DESIGN.md §2 Starter weapon), a label only
+    const parts = [
+      e.starter ? COPY.starter.tierLabel : gradeLabel(styleGrade(e.rarity)),
+      JOB_NAMES[e.job],
+    ];
     if (e.owned && e.role) parts.push(COPY.cards.slotName(e.role.slot));
     const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
@@ -717,10 +725,20 @@ export function createCardsPage(
         },
       });
       if (panel.overlay) face.append(panel.overlay);
-      side.append(panel.el);
+      const seals = createSealBlock({
+        content,
+        state: ctx.state,
+        apply: (next) => {
+          ctx.apply(next);
+          build();
+        },
+      });
+      // the seals come first: a sealed starter's one thing to do, beside its weapon panel
+      side.append(seals.el, panel.el);
       const update = (): void => {
         const entry = entryOf(e.id);
         if (entry) panel.update(entry);
+        seals.update(e.id);
       };
       ticks.push(update);
       update();
@@ -1001,14 +1019,17 @@ export function createCardsPage(
         ? COPY.cards.pickCurrent
         : c.heirloomBlocked
           ? COPY.cards.pickHeirlooms
-          : !c.fits
-            ? COPY.cards.pickOver(c.costAfter, lo.cap)
-            : c.from !== null
-              ? COPY.cards.pickSwap(slotName(c.from))
-              : '';
+          : c.starterBlocked
+            ? COPY.cards.pickStarters
+            : !c.fits
+              ? COPY.cards.pickOver(c.costAfter, lo.cap)
+              : c.from !== null
+                ? COPY.cards.pickSwap(slotName(c.from))
+                : '';
       const b = h('button', 'cp-tile cp-pick__card');
       b.type = 'button';
       b.dataset.key = `pick-${lo.job}-${c.id}`;
+      b.dataset['dragCard'] = c.id;
       const usable = c.fits && !c.current;
       b.setAttribute('aria-disabled', String(!usable));
       b.setAttribute(
@@ -1081,6 +1102,7 @@ export function createCardsPage(
       lo.slots.forEach((id, i) => {
         const row = i === 1 || i === 2 ? 'front' : 'back';
         const li = h('li', `cp-slot cp-slot--${row}${picking === i ? ' is-picking' : ''}`);
+        li.dataset['slot'] = String(i);
         const label = slotName(i);
         const e = id ? byId.get(id) : undefined;
         // the slot's place in the formation, and the role of the card standing in it
@@ -1098,6 +1120,7 @@ export function createCardsPage(
           const open = h('button', 'cp-tile');
           open.type = 'button';
           open.dataset.key = `slot-${job}-${i}`;
+          open.dataset['dragCard'] = e.id;
           open.setAttribute('aria-label', COPY.cards.changeCard(label, e.name));
           open.setAttribute('aria-pressed', String(picking === i));
           open.append(cardEl(e, state));
@@ -1140,6 +1163,24 @@ export function createCardsPage(
       });
       body.append(meter, slots);
       if (picking !== null) body.append(picker(state, entries, lo, picking, slotName));
+      // Drag a card onto a slot (move, swap or replace), or out of the frame to empty its slot. The
+      // game decides: a refused drop snaps back and shows the game's own reason.
+      enableLoadoutDrag({
+        root: el,
+        check: (id, slot) => {
+          const r = model.place(ctx.state(), slot, id);
+          return r.ok ? null : r.reason;
+        },
+        drop: (id, slot) => {
+          pick = null;
+          act(model.place(ctx.state(), slot, id), `slot-${job}-${slot}`);
+        },
+        refuse: (reason) => act({ ok: false, reason }),
+        dropOut: (id, slot) => {
+          pick = null;
+          act(model.remove(ctx.state(), id), `slot-${job}-${slot}`);
+        },
+      });
       wrap.append(el);
     }
     wrap.append(teamsPanel(teamRows(state, content)));

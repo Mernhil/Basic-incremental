@@ -37,7 +37,6 @@ function busyState() {
   };
   state.combat.trialBest = { glimmer_trial: 0.5 };
   state.combat.trialAttempt = { elapsedSeconds: 12.5, dealt: new Decimal('3e400') };
-  state.production.harvestGauges.copper_quarry = { gauge: 7, timer: 0.25 };
   state.pity = { root_warden: 17 };
   return state;
 }
@@ -203,34 +202,37 @@ describe('save format v2: cosmetics', () => {
 });
 
 describe('save format v3: production', () => {
-  it('round-trips unlocked trees, tree and mine levels and cleared dungeons', () => {
+  it('round-trips the camp and cleared dungeons', () => {
     const state = freshState();
-    state.production = {
-      ...state.production,
-      unlockedTrees: ['ironbark'],
-      mineLevels: { copper_quarry: 4, iron_deeps: 1 },
-      treeLevels: { oak: 6 },
+    state.camp = {
+      level: 6,
+      forest: [{ material: 'oak', card: 'apprentice_feller' }],
+      cave: [{ material: 'copper_quarry', card: 'cave_digger' }],
     };
     state.clearedDungeons = ['mossy_cellar'];
     const loaded = readSave(createSaveText(state, NOW), content);
-    expect(loaded.state.production).toEqual(state.production);
+    expect(loaded.state.camp).toEqual(state.camp);
     expect(loaded.state.clearedDungeons).toEqual(['mossy_cellar']);
   });
 
-  it('drops removed ids from unlocks, levels and cleared dungeons', () => {
+  it('drops removed ids from slots and cleared dungeons', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.production.unlockedTrees = ['removed_tree'];
-    json.state.production.mineLevels = { removed_mine: 3, copper_quarry: 2 };
+    json.state.camp.forest = [
+      { material: 'removed_tree', card: 'apprentice_feller' },
+      { material: 'oak', card: 'unknown_card' },
+    ];
     json.state.clearedDungeons = ['removed_dungeon'];
     const loaded = readSave(JSON.stringify(json), content).state;
-    expect(loaded.production.unlockedTrees).toEqual([]);
-    expect(loaded.production.mineLevels).toEqual({ copper_quarry: 2 });
+    expect(loaded.camp.forest).toEqual([
+      { material: null, card: 'apprentice_feller' },
+      { material: 'oak', card: null },
+    ]);
     expect(loaded.clearedDungeons).toEqual([]);
   });
 
   it('rejects malformed production data', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.production.mineLevels = { copper_quarry: -1 };
+    json.state.camp.level = -1;
     expect(codeOf(() => readSave(JSON.stringify(json), content))).toBe('invalid-format');
   });
 
@@ -290,7 +292,7 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     );
     expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
     expect('moss_sigil' in state.resources).toBe(false);
-    expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
+    expect(state.camp.level).toBe(1);
     expect('damageLevels' in state.combat).toBe(false);
     expect(state.account.skills).toEqual({ luck_s1: 2 });
     // Start 100 + two copper levels (15 + 19.5) + a Copper Edge level (10) + the one plot (25),
@@ -362,19 +364,8 @@ describe('save format v16: one of each (DESIGN.md §4)', () => {
     json.state.production.treeLevels = { oak: 4, ironbark: 1 };
     json.state.production.mineLevels = { copper_quarry: 2 };
     const { state } = readSave(JSON.stringify(json), content);
-    expect(Object.keys(state.production).sort()).toEqual([
-      'depth',
-      'forge',
-      'harvestGauges',
-      'mineLevels',
-      'tools',
-      'treeLevels',
-      'unlockedTrees',
-      'workers',
-    ]);
-    expect(state.production.unlockedTrees).toEqual(['ironbark']);
-    expect(state.production.treeLevels).toEqual({ oak: 4, ironbark: 1 });
-    expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
+    expect(Object.keys(state.production)).toEqual(['forge']);
+    expect(state.camp.level).toBe(1);
     // Plots 25 + 35 and one slot 25.
     expect(state.resources['money']!.toNumber()).toBeCloseTo(toV29('money', 100 + 60 + 25), 6);
   });
@@ -434,17 +425,11 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
   function balanceState() {
     const state = freshState();
     state.cards.owned['moss_forager'] = { ...state.cards.owned['apprentice_feller']! };
-    state.production.workers = {
-      oak: ['apprentice_feller'],
-      ironbark: ['moss_forager'],
-      copper_quarry: ['cave_digger'],
-    };
-    state.production.harvestGauges = { oak: { gauge: 12.5, timer: 0.25 } };
-    state.production.tools = { logging_yield: 7 };
-    state.production.depth = {
-      oak: { layer: 3, progress: new Decimal('4.5e300') },
-      copper_quarry: { layer: 1, progress: new Decimal(0) },
-    };
+    state.camp.forest = [
+      { material: 'oak', card: 'apprentice_feller' },
+      { material: 'ironbark', card: 'moss_forager' },
+    ];
+    state.camp.cave = [{ material: 'copper_quarry', card: 'cave_digger' }];
     state.production.forge = {
       recipe: 'star_dust',
       progress: new Decimal('12.5'),
@@ -454,77 +439,66 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
     state.combat.stageKills = { 'mossy_cellar:normal:10': 78, 'ember_crypt:hard:10': 3 };
     state.combat.stageChests = { 'mossy_cellar:normal:10': 2 };
     state.combat.overflow = { 'mossy_cellar:normal:10': true };
-    state.automation = { treeLevels: true, mineLevels: false, reservePercent: 25 };
     return state;
   }
 
-  it('starts a new game with its start cards as workers and every other new field empty', () => {
+  it('starts a new game with its start cards on the camp slots and every other new field empty', () => {
     const state = freshState();
-    expect(state.production).toMatchObject({
-      workers: { oak: ['apprentice_feller'], copper_quarry: ['cave_digger'] },
-      harvestGauges: {},
-      tools: {},
-      depth: {},
-    });
+    expect(state.camp.forest).toEqual([{ material: null, card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: null, card: 'cave_digger' }]);
+    expect(state.camp.level).toBe(1);
     expect(state.production.forge.recipe).toBeNull();
     expect(state.production.forge.worker).toBeNull();
     expect(state.production.forge.progress.eq(0)).toBe(true);
     expect(state.cards.wishlist).toEqual([]);
     expect(state.combat).toMatchObject({ stageKills: {}, stageChests: {}, overflow: {} });
-    expect(state.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
     expect(content.resourceById.get('star_dust')?.kind).toBe('material');
     expect(state.resources['star_dust']!.eq(0)).toBe(true);
   });
 
   it('round-trips every new field exactly, including huge numbers', () => {
     const state = balanceState();
+    state.production.forge.progress = new Decimal('4.5e300');
     const loaded = readSave(createSaveText(state, NOW), content);
     expect(serializeState(loaded.state)).toEqual(serializeState(state));
-    expect(loaded.state.production.depth['oak']!.progress.eq(new Decimal('4.5e300'))).toBe(true);
-    expect(loaded.state.production.forge.progress.eq(new Decimal('12.5'))).toBe(true);
+    expect(loaded.state.production.forge.progress.eq(new Decimal('4.5e300'))).toBe(true);
   });
 
   it('cloneState copies the new containers, so a change never reaches the original', () => {
     const state = balanceState();
     const copy = cloneState(state);
-    copy.production.workers['oak']!.push('x');
-    copy.production.harvestGauges['oak']!.gauge = 0;
-    copy.production.tools['logging_yield'] = 0;
-    copy.production.depth['oak']!.layer = 9;
+    copy.camp.forest[0]!.card = null;
+    copy.camp.level = 9;
+    copy.dummy.team[0] = 'x';
     copy.production.forge.recipe = null;
     copy.cards.wishlist.push('x');
     copy.combat.stageKills['mossy_cellar:normal:10'] = 0;
     copy.combat.stageChests['mossy_cellar:normal:10'] = 0;
     copy.combat.overflow['mossy_cellar:normal:10'] = false;
-    copy.automation.treeLevels = false;
     expect(serializeState(state)).toEqual(serializeState(balanceState()));
   });
 
-  it('drops broken worker assignments on load', () => {
+  it('drops broken slot assignments on load', () => {
     const json = JSON.parse(createSaveText(balanceState(), NOW));
-    json.state.production.workers = {
-      oak: ['apprentice_feller', 'unknown_card'],
-      // A mining card cannot work a tree; an unowned card cannot work at all.
-      ironbark: ['cave_digger', 'pebble_prospector'],
-      // A card works one place only: the first place wins.
-      copper_quarry: ['apprentice_feller', 'cave_digger'],
-      gone_tree: ['moss_forager'],
-      moonwillow: [],
-    };
-    json.state.production.harvestGauges = {
-      oak: { gauge: 1, timer: 0 },
-      gone_tree: { gauge: 1, timer: 0 },
-    };
-    json.state.production.depth = { gone_mine: { layer: 2, progress: '5' } };
+    json.state.camp.forest = [
+      { material: 'oak', card: 'apprentice_feller' },
+      // a mining card cannot farm the forest; an unowned card cannot farm at all
+      { material: 'ironbark', card: 'cave_digger' },
+      { material: 'ironbark', card: 'pebble_prospector' },
+    ];
+    // a card is on one slot only: the first slot wins
+    json.state.camp.cave = [
+      { material: 'copper_quarry', card: 'apprentice_feller' },
+      { material: 'gone_ore', card: 'cave_digger' },
+    ];
     json.state.production.forge.worker = 'cave_digger';
     const { state } = readSave(JSON.stringify(json), content);
-    expect(state.production.workers).toEqual({
-      oak: ['apprentice_feller'],
-      copper_quarry: ['cave_digger'],
-    });
-    expect(Object.keys(state.production.harvestGauges)).toEqual(['oak']);
-    expect(state.production.depth).toEqual({});
-    // The card already works a mine, so it cannot also work the forge.
+    expect(state.camp.forest.map((slot) => slot.card)).toEqual(['apprentice_feller', null, null]);
+    expect(state.camp.cave).toEqual([
+      { material: 'copper_quarry', card: null },
+      { material: null, card: 'cave_digger' },
+    ]);
+    // The card already works a slot, so it cannot also work the forge.
     expect(state.production.forge.worker).toBeNull();
   });
 
@@ -564,13 +538,10 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
       mutate(json.state);
       return codeOf(() => readSave(JSON.stringify(json), content));
     };
-    expect(bad((s) => (s.production.workers = { oak: 'apprentice_feller' }))).toBe(
-      'invalid-format',
-    );
-    expect(bad((s) => (s.production.depth.oak.layer = 0))).toBe('invalid-format');
+    expect(bad((s) => (s.camp.forest = { oak: 'apprentice_feller' }))).toBe('invalid-format');
+    expect(bad((s) => (s.camp.level = 0))).toBe('invalid-format');
     expect(bad((s) => (s.production.forge.progress = 'lots'))).toBe('invalid-format');
-    expect(bad((s) => (s.automation.reservePercent = 101))).toBe('invalid-format');
-    expect(bad((s) => delete s.automation)).toBe('invalid-format');
+    expect(bad((s) => delete s.camp)).toBe('invalid-format');
     expect(bad((s) => (s.combat.stageKills['mossy_cellar:normal:10'] = -1))).toBe('invalid-format');
   });
 });

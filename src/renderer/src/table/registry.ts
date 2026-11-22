@@ -2,6 +2,7 @@ import { collectionViews } from '../views/collection';
 import { dungeonViews } from '../views/dungeon';
 import { gatheringViews } from '../views/gathering';
 import { metaViews } from '../views/meta';
+import { raidsViews } from '../views/raids';
 import type { TablePieceDef, ViewDef, ViewId, ViewPackage } from './contract';
 
 /**
@@ -14,6 +15,7 @@ export const PACKAGES: readonly ViewPackage[] = [
   gatheringViews, // 9b: the Logging and Mining wings and views, Forge
   collectionViews, // 9c: Cards, Summon, Wardrobe
   metaViews, // 9d: Skill Tree, Achievements, Shop, Upgrades, Settings
+  raidsViews, // the Raids view, opened from the hub's Raid gate
 ];
 
 /** The dock, left to right (user, mockup 4a). */
@@ -24,6 +26,8 @@ export const DOCK: readonly ViewId[] = [
   'skills',
   'achievements',
   'shop',
+  'logging',
+  'mining',
   'forge',
   'upgrades',
   'settings',

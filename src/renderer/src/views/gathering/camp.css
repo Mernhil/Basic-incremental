@@ -1,0 +1,74 @@
+.camp__scene {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #1b1b1f;
+}
+.camp__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+.camp__next {
+  margin: 0;
+  flex-basis: 100%;
+  opacity: 0.8;
+}
+.camp__slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.camp__slot {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 2px solid #8a6d2f;
+  background: #25252b;
+}
+.camp__rate,
+.camp__total {
+  text-align: right;
+}
+.camp__upgrade.is-no {
+  opacity: 0.5;
+}
+
+/* the Training ground and the Expedition board */
+.trg {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.trg__head,
+.trg__team,
+.trg__damage,
+.trg__read {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  align-items: flex-start;
+}
+.trg__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trg__card,
+.trg__damage-in {
+  min-width: 200px;
+  padding: 4px 6px;
+}
+.trg p {
+  margin: 0;
+}

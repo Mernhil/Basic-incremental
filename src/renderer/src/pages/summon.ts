@@ -12,7 +12,6 @@ import {
   portalInfo,
   pull,
   resolvePortal,
-  revealPlan,
   setFocusKind,
   setWishlisted,
   wishlistView,
@@ -24,11 +23,12 @@ import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import { h } from '../shell/shell';
 import { hide as hideTip } from '../shell/tooltip';
-import { showReveal } from '../stage/reveal';
+import { showReveal, type CutInInfo } from '../stage/reveal';
+import { DOOR_ART } from '../art/summon/doors';
 import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { createCard, starSpritesHtml, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
-import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
+import { resourceIconMarkup } from '../ui/resourceIcons';
 import { cardTierArt, ITEM_VIEWBOX } from '../art/items';
 import { ITEM_KINDS } from '../../../data';
 
@@ -37,6 +37,11 @@ const WISH_VIEWBOX = ITEM_VIEWBOX;
 import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
+  doorAbout,
+  doorKeyOf,
+  doorPx,
+  DOOR_ORDER,
+  spriteNameOf,
   handSummary,
   heirloomBoardView,
   heirloomDeckView,
@@ -55,13 +60,14 @@ import {
 import './summon.css';
 
 /**
- * Summon page (DESIGN.md §7; UI_RULES §2 The Summon view, pick 3a): the five gates stacked in a
- * left column in a fixed order (Card Portal, Focus Portal, Wardrobe Gate, Legacy Gate, Heirloom
- * Gate). The open gate shows its deck of card backs at 1x (its edge thickens toward its hard pity),
- * its lines, pity bar and Pull 1 / Pull 10 buttons; the others are short rows that open on a click.
- * The rest of the view is the open gate's content: the Wishlist and its odds for the card portals,
- * the odds for the Wardrobe and Legacy Gates, the board of the 11 Heirlooms for the Heirloom Gate.
- * "Your last hand" runs along the bottom. The reveal opens in a modal. The open gate and the last
+ * Summon page (DESIGN.md §2 "The reveal is redone", §7; the user's pick, 2026-11-22: layout 2, the
+ * three doors; the picture is design/options/summon-look/b-page.png). The Card Portal, Focus Portal
+ * and Heirloom Gate stand side by side as doors (the art controller's pictures, closed and open),
+ * each with its name, what it pulls, and its own Pull 1 and Pull 10 with the price. One strip under
+ * them holds the Card Portal's level bar, the first 10-pull line, the T6 pity bar, the chances now
+ * and the Tier collection check boxes. "More from the portals" below keeps everything else: the
+ * daily scrolls, the Wardrobe and Legacy gates, the Wishlist, the odds table, the Heirloom board
+ * and "Your last hand". A pull opens the reveal (stage/reveal.ts). The selected door and the last
  * hand live in UI memory only (no save change).
  */
 
@@ -101,6 +107,26 @@ type DeckUi = {
   ten: PullButton;
 };
 
+type DoorUi = {
+  root: HTMLElement;
+  pic: HTMLButtonElement;
+  about: HTMLElement;
+  /** "Hunting: ..." under the Card Portal's name (a wishlist is marked). */
+  hunt: HTMLElement | null;
+  /** The Focus Portal's item type buttons. */
+  focus: { box: HTMLElement } | null;
+  /** The Heirloom Gate's own pity bar (the Card and Focus portals share the strip's). */
+  pity: {
+    box: HTMLElement;
+    label: HTMLElement;
+    value: HTMLElement;
+    bar: HTMLElement;
+    fill: HTMLElement;
+  } | null;
+  single: PullButton;
+  ten: PullButton;
+};
+
 export function createSummonPage(page: HTMLElement, ctx: SummonContext): { render(): void } {
   const { content } = ctx;
   // the panel carries the sighted headings; the page name stays for screen readers
@@ -109,12 +135,21 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   // the deck backs and the hand's cards are 1x: 132 CSS px on a 100 % screen, whole device pixels
   fitCard(table, { want: 132 });
   page.append(table);
-  // two columns, each dealt in as one section of the view (motion E): the gates on the left, the
-  // open gate's content with the last hand under it on the right
+  // the three doors, then the strip, then "More from the portals" (two columns, each dealt in as one
+  // section of the view, motion E): the Wardrobe and Legacy gates on the left, the open gate's
+  // content with the last hand under it on the right
+  const doorsRow = h('section', 'sm-doors');
+  doorsRow.setAttribute('aria-label', COPY.summon.doorsLabel);
+  doorsRow.dataset['deal'] = '';
+  const strip = h('section', 'sm-strip px-panel');
+  strip.setAttribute('aria-label', COPY.summon.stripLabel);
+  strip.dataset['deal'] = '';
+  const more = h('div', 'sm-more');
   const colDecks = h('div', 'sm-col sm-col--decks');
   const colMain = h('div', 'sm-col sm-col--main');
   for (const col of [colDecks, colMain]) col.dataset['deal'] = '';
   colDecks.setAttribute('aria-label', COPY.summon.gatesLabel);
+  more.append(h('h2', 'sm-more__title px-display', COPY.summon.moreTitle), colDecks, colMain);
   /** The gate whose deck is open: a portal id, `focus_portal`, `heirloom_gate` or the locked gate. */
   let openGate = content.portals[0]?.id ?? FOCUS_PORTAL_ID;
   const gates = new Map<
@@ -203,7 +238,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     if (!info) return;
     const v = wishlistPanelView(info, s, content);
     wishActive = v.active;
-    const hunt = decks.get(wishPortal.id)?.hunt;
+    const hunt = (decks.get(wishPortal.id) ?? doors.get(wishPortal.id))?.hunt;
     if (hunt) set(hunt, v.hunting);
     const key = JSON.stringify(v);
     if (key === wishKey) return;
@@ -266,14 +301,11 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   // ---- the tier collection: a check box per tier ----
-  const tiers = h('section', 'sm-tiers px-panel');
+  const tiers = h('div', 'sm-tiers');
   tiers.setAttribute('aria-label', COPY.summon.tiersTitle);
   let tiersKey = '';
 
   function renderTiers(): void {
-    const isCards = ['card_portal', FOCUS_PORTAL_ID].includes(openGate);
-    tiers.hidden = !isCards;
-    if (!isCards) return;
     const boxes = tierBoxes(ctx.state(), content);
     const key = JSON.stringify(boxes);
     if (key === tiersKey) return;
@@ -285,6 +317,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       li.setAttribute('role', 'checkbox');
       li.setAttribute('aria-checked', String(b.checked));
       li.setAttribute('aria-label', b.label);
+      li.title = `${b.count} · ${b.reward}`;
       const box = h('i', `sm-tiers__box${b.checked ? ' is-checked' : ''}`);
       const name = h('span', 'sm-tiers__name');
       name.append(h('i', 'sm-odds__swatch'), h('span', '', b.name));
@@ -400,25 +433,42 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     renderHand();
     showReveal({
       portalName: portal.name,
+      gateId: portalId,
       kind: portal.kind,
       views: reveal,
-      plan: revealPlan(
-        reveal.map((v) => v.rarity),
-        content.scrolls.reveal,
-      ),
       face: (id) => (content.cardById.has(id) ? cardFaceProps(content, after, id) : null),
       picture: (id) =>
         content.cosmeticById.has(id)
           ? cosmeticSwatch(content, id, after.cosmetics.owned[id]?.level ?? 1)
           : skinPicture(id),
+      cutin: cutinOf,
+      again: { can: () => canPull(portalId, count), run: () => doPull(portalId, count) },
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
         // the buttons are enabled again before the focus goes back to the one that was used
         render();
-        decks.get(portalId)?.single.el.focus();
+        (decks.get(portalId) ?? doors.get(portalId))?.single.el.focus();
       },
     });
+  }
+
+  /** What the cut-in plays for a card: its weapon type, element, tier and picture. */
+  function cutinOf(itemId: string): CutInInfo | null {
+    const card = content.cardById.get(itemId);
+    if (!card) return null;
+    return {
+      kind: card.item.kind,
+      element: card.element ?? '',
+      tier: card.tier,
+      sprite: spriteNameOf(cardTierArt(card)),
+    };
+  }
+
+  /** Whether a pull can be paid right now (the reveal's Pull again). */
+  function canPull(portalId: string, count: PullCount): boolean {
+    const info = portalInfo(ctx.state(), content, portalId, collectModifiers(ctx.state(), content));
+    return !!info && (count === 1 ? info.single : info.ten).affordable;
   }
 
   // ---- decks ----
@@ -572,53 +622,96 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     return root;
   }
 
-  // ---- the Heirloom Gate (DESIGN.md §7): its deck, and the board of the 11 Heirlooms ----
+  // ---- the three doors (Card Portal, Focus Portal, Heirloom Gate) ----
   const heirloomId = content.heirlooms.gate.id;
-  let heirloomUi: DeckUi | null = null;
-  let heirloomAbout: HTMLElement | null = null;
-  function heirloomDeck(): HTMLElement {
-    const root = deckShell('heirloom', false);
-    root.dataset['portal'] = heirloomId;
-    const stack = buildStack('heirloom');
-    const line = h('p', 'sm-deck__line');
-    heirloomAbout = h('p', 'sm-deck__about');
-    const pityValue = h('b', 'bi-num');
-    const pityTop = h('div', 'sm-pity__top');
-    pityTop.append(h('span', '', COPY.summon.pityLabel), pityValue);
-    const pityFill = h('i');
-    const pityBar = h('div', 'sm-pity__track px-well');
-    pityBar.setAttribute('role', 'meter');
-    pityBar.setAttribute('aria-valuemin', '0');
-    pityBar.setAttribute('aria-label', COPY.summon.pityMeter(content.heirlooms.gate.name));
-    pityBar.append(pityFill);
-    const pity = h('div', 'sm-pity');
-    pity.append(pityTop, pityBar);
-    const buttons = h('div', 'sm-deck__buttons');
-    const single = pullButton(COPY.summon.pullOne, false, () => doHeirloomPull(1));
-    const ten = pullButton(COPY.summon.pullTen, true, () => doHeirloomPull(10));
+  const doors = new Map<string, DoorUi>();
+
+  function pityBlock(label: string, meterLabel: string): NonNullable<DoorUi['pity']> {
+    const value = h('b', 'bi-num');
+    const labelEl = h('span', '', label);
+    const top = h('div', 'sm-pity__top');
+    top.append(labelEl, value);
+    const fill = h('i');
+    const bar = h('div', 'sm-pity__track px-well');
+    bar.setAttribute('role', 'meter');
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-label', meterLabel);
+    bar.append(fill);
+    const box = h('div', 'sm-pity');
+    box.append(top, bar);
+    return { box, label: labelEl, value, bar, fill };
+  }
+
+  function buildDoor(id: string, name: string, heirloom: boolean): HTMLElement {
+    const key = doorKeyOf(id);
+    const art = DOOR_ART[key]!;
+    const root = h('article', 'sm-door');
+    root.dataset['door'] = key;
+    root.dataset['portal'] = id;
+    // the picture selects the door (what the Wishlist, odds and board below show); hover or focus
+    // inside the door opens it a crack
+    const pic = h('button', 'sm-door__pic');
+    pic.type = 'button';
+    const closed = h('img', 'sm-door__img sm-door__img--closed');
+    const open = h('img', 'sm-door__img sm-door__img--open');
+    closed.src = art.closed;
+    open.src = art.open;
+    for (const img of [closed, open]) {
+      img.alt = '';
+      img.draggable = false;
+    }
+    pic.append(closed, open);
+    pic.addEventListener('click', () => {
+      openGate = id;
+      render();
+    });
+    const about = h('p', 'sm-door__about');
+    const buttons = h('div', 'sm-door__buttons');
+    const doPullOf = (n: PullCount): void => (heirloom ? doHeirloomPull(n) : doPull(id, n));
+    const single = pullButton(COPY.summon.pullOne, false, () => doPullOf(1));
+    const ten = pullButton(COPY.summon.pullTen, true, () => doPullOf(10));
     buttons.append(single.el, ten.el);
-    root.append(
-      h('h2', 'sm-deck__name px-display', content.heirlooms.gate.name),
-      line,
-      heirloomAbout,
-      stack,
-      pity,
-      buttons,
-    );
-    heirloomUi = {
-      root,
-      stack,
-      pityValue,
-      pityBar,
-      pityFill,
-      line,
-      level: null,
-      first: null,
-      hunt: null,
-      focus: null,
-      single,
-      ten,
+    root.append(pic, h('h2', 'sm-door__name px-display', name), about);
+    let hunt: HTMLElement | null = null;
+    if (id === 'card_portal' && wishPortal && wishPortal.id === id) {
+      hunt = h('p', 'sm-door__hunt');
+      root.append(hunt);
+    }
+    let focus: DoorUi['focus'] = null;
+    if (id === FOCUS_PORTAL_ID) {
+      // plain controls: one button per item type, the chosen one marked (clear it with a second click)
+      const box = h('div', 'sm-focus');
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', COPY.summon.focusPickLabel);
+      for (const k of focusKinds(content)) {
+        const b = h('button', 'sm-focus__kind px-btn px-btn--quiet', k.name);
+        b.type = 'button';
+        b.dataset['focus'] = k.kind;
+        b.addEventListener('click', () => {
+          const now = ctx.state().summon.focusKind;
+          const result = setFocusKind(ctx.state(), content, now === k.kind ? null : k.kind);
+          if (result.ok) ctx.apply(result.state);
+          render();
+        });
+        box.append(b);
+      }
+      focus = { box };
+      root.append(box);
+    }
+    let pity: DoorUi['pity'] = null;
+    if (heirloom) {
+      pity = pityBlock(COPY.summon.pityLabel, COPY.summon.pityMeter(name));
+      root.append(pity.box);
+    }
+    root.append(buttons);
+    const crack = (on: boolean): void => {
+      root.classList.toggle('is-ajar', on);
     };
+    root.addEventListener('pointerenter', () => crack(true));
+    root.addEventListener('pointerleave', () => crack(false));
+    root.addEventListener('focusin', () => crack(true));
+    root.addEventListener('focusout', () => crack(false));
+    doors.set(id, { root, pic, about, hunt, focus, pity, single, ten });
     return root;
   }
 
@@ -719,18 +812,23 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     renderHand();
     showReveal({
       portalName: content.heirlooms.gate.name,
+      gateId: heirloomId,
       kind: 'heirloom',
       views: reveal,
-      plan: revealPlan(
-        reveal.map((v) => v.rarity),
-        content.scrolls.reveal,
-      ),
       face: (id) => cardFaceProps(content, after, id) ?? heirloomFace(after, id),
+      cutin: cutinOf,
+      again: {
+        can: () => {
+          const info = heirloomGateInfo(ctx.state(), content);
+          return (count === 1 ? info.single : info.ten).affordable;
+        },
+        run: () => doHeirloomPull(count),
+      },
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
         render();
-        heirloomUi?.single.el.focus();
+        doors.get(heirloomId)?.single.el.focus();
       },
     });
   }
@@ -745,11 +843,63 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       xp: new Decimal(0),
       starFill: 0,
       enhancements: [],
+      skillOpen: false,
     };
     return cardFaceProps(content, ghost, cardId);
   }
 
-  // ---- the gate column: the five gates in a fixed order, one open ----
+  // ---- the strip: the Card Portal's level, first 10-pull, T6 pity, chances and tier boxes ----
+  const stripLevel = pityBlock('', '');
+  stripLevel.box.classList.add('sm-level');
+  const stripFirst = h('p', 'sm-deck__first');
+  const stripPity = pityBlock(COPY.summon.pityStripTitle, '');
+  const stripPityLine = h('p', 'sm-strip__line');
+  const stripChances = h('ul', 'sm-chances');
+  const stripLevelCol = h('div', 'sm-strip__col');
+  stripLevelCol.append(stripLevel.box, stripFirst);
+  const stripPityCol = h('div', 'sm-strip__col');
+  stripPityCol.append(
+    stripPity.box,
+    stripPityLine,
+    h('h3', 'sm-strip__head', COPY.summon.chancesTitle),
+    stripChances,
+  );
+  const stripTierCol = h('div', 'sm-strip__col');
+  stripTierCol.append(tiers);
+  strip.append(stripLevelCol, stripPityCol, stripTierCol);
+
+  function renderStrip(v: PortalView): void {
+    if (v.level) {
+      set(stripLevel.value, v.level.value);
+      set(stripLevel.label, v.level.label);
+      stripLevel.fill.style.width = `${Math.round(v.level.progress * 100)}%`;
+      stripLevel.bar.setAttribute('aria-label', COPY.summon.levelMeter(v.name));
+      stripLevel.bar.setAttribute('aria-valuemax', String(v.level.max));
+      stripLevel.bar.setAttribute('aria-valuenow', String(v.level.now));
+    }
+    set(stripFirst, v.firstTen ?? '');
+    stripFirst.hidden = v.firstTen === null;
+    set(stripPity.value, v.pityText);
+    stripPity.fill.style.width = `${Math.round(v.pityProgress * 100)}%`;
+    stripPity.bar.setAttribute('aria-label', COPY.summon.pityMeter(v.name));
+    stripPity.bar.setAttribute('aria-valuemax', String(v.pityThreshold));
+    stripPity.bar.setAttribute('aria-valuenow', String(v.pityCount));
+    set(stripPityLine, v.pity);
+    const key = JSON.stringify(v.odds);
+    if (stripChances.dataset['k'] !== key) {
+      stripChances.dataset['k'] = key;
+      stripChances.replaceChildren(
+        ...v.odds.map((o) => {
+          const li = h('li', 'sm-chances__item');
+          li.dataset['rarity'] = o.rarity;
+          li.append(h('i', 'sm-odds__swatch'), h('span', '', o.name), h('b', 'bi-num', o.chance));
+          return li;
+        }),
+      );
+    }
+  }
+
+  // ---- the gates: three doors, and the other gates in "More" ----
   /** A gate: its short row (closed) and its deck (open). */
   function gate(id: string, name: string, deck: HTMLElement): HTMLElement {
     const root = h('div', 'sm-gate');
@@ -776,22 +926,27 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   // the Wardrobe Gate opens with the Wardrobe (DESIGN.md §7); until then it shows as locked
   const gateOpen = content.portals.some((p) => p.kind === 'cosmetics');
   const byKind = (kind: string) => content.portals.filter((p) => p.kind === kind);
+  const doorNames: Record<string, string> = {
+    card_portal: content.portals.find((p) => p.id === 'card_portal')?.name ?? 'Card Portal',
+    [FOCUS_PORTAL_ID]: 'Focus Portal',
+    [heirloomId]: content.heirlooms.gate.name,
+  };
+  for (const key of DOOR_ORDER) {
+    doorsRow.append(buildDoor(key, doorNames[key] ?? key, key === heirloomId));
+  }
   const order: [string, string, HTMLElement][] = [];
   for (const p of byKind('cards')) {
-    order.push([p.id, p.name, portalDeck(p.id)]);
-    // the Focus Portal stands right after the Card Portal (DESIGN.md §7)
-    if (p.id === 'card_portal')
-      order.push([FOCUS_PORTAL_ID, 'Focus Portal', portalDeck(FOCUS_PORTAL_ID)]);
+    // the Card Portal and the Focus Portal are doors; any other card portal keeps a gate row
+    if (p.id !== 'card_portal') order.push([p.id, p.name, portalDeck(p.id)]);
   }
   for (const p of byKind('cosmetics')) order.push([p.id, p.name, portalDeck(p.id)]);
   if (!gateOpen) order.push(['wardrobe_locked', COPY.summon.gate, lockedDeck()]);
   for (const p of byKind('skins')) order.push([p.id, p.name, portalDeck(p.id)]);
-  order.push([heirloomId, content.heirlooms.gate.name, heirloomDeck()]);
   for (const [id, name, deck] of order) colDecks.append(gate(id, name, deck));
 
   // the open gate's content, then the last hand
   const gateBody = h('div', 'sm-gatebody');
-  gateBody.append(wish, odds, tiers);
+  gateBody.append(wish, odds);
   colMain.append(gateBody, board);
 
   // ---- the daily scrolls ----
@@ -811,53 +966,75 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   });
   colDecks.prepend(daily);
   colMain.append(handBox);
-  table.append(colDecks, colMain);
+  table.append(doorsRow, strip, more);
   renderHand();
+
+  // the doors are shown at a whole pixel scale: 2x on a roomy page, 1x when it is narrow
+  const sizeDoors = (): void => {
+    const room = table.clientWidth;
+    const want = room === 0 || room >= 1000 ? 320 : 160;
+    doorsRow.style.setProperty('--sm-door', `${doorPx(want, screenDpr())}px`);
+  };
+  sizeDoors();
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(sizeDoors).observe(table);
+
+  /** Sets a pull button's price (the scroll's sprite and the amount) and whether it can be paid. */
+  function setPull(
+    b: PullButton,
+    v: { amount: string; price: string; affordable: boolean },
+    resourceId: string,
+    name: string,
+    n: number,
+  ): void {
+    const resource = content.resourceById.get(resourceId);
+    const icon = (resource ? resourceIconMarkup(resource) : null) ?? '';
+    const html = `${icon ? `<span class="sm-pull__icon">${icon}</span>` : ''}${v.amount}`;
+    if (b.cost.dataset['k'] !== html) {
+      b.cost.dataset['k'] = html;
+      b.cost.innerHTML = html;
+    }
+    b.el.disabled = !v.affordable || busy;
+    b.el.classList.toggle('is-affordable', v.affordable);
+    b.el.setAttribute('aria-label', COPY.summon.pullLabel(name, n, v.price));
+  }
 
   function render(): void {
     const s: GameState = ctx.state();
     const mods = collectModifiers(s, content);
-    for (const [id, ui] of decks) {
+    const ids = [...[...doors.keys()].filter((id) => id !== heirloomId), ...decks.keys()];
+    for (const id of ids) {
       const info = portalInfo(s, content, id, mods);
       if (!info) continue;
       const v = portalView(info, content);
       views.set(id, v);
+      const door = doors.get(id);
+      if (door) {
+        set(
+          door.about,
+          doorAbout(
+            doorKeyOf(id),
+            focusKinds(content).find((k) => k.kind === s.summon.focusKind)?.name ?? null,
+          ),
+        );
+        setPull(door.single, v.single, v.resourceId, v.name, 1);
+        setPull(door.ten, v.ten, v.resourceId, v.name, 10);
+        if (id === 'card_portal') renderStrip(v);
+        continue;
+      }
+      const ui = decks.get(id);
+      if (!ui) continue;
       ui.stack.style.setProperty('--layers', String(v.deckLayers));
       ui.stack.setAttribute(
         'aria-label',
         COPY.summon.deckLabel(v.name, v.pityCount, v.pityThreshold, v.pityRarityName),
       );
       set(ui.line, v.line);
-      if (ui.level && v.level) {
-        set(ui.level.label, v.level.label);
-        set(ui.level.value, v.level.value);
-        ui.level.fill.style.width = `${Math.round(v.level.progress * 100)}%`;
-        ui.level.bar.setAttribute('aria-valuemax', String(v.level.max));
-        ui.level.bar.setAttribute('aria-valuenow', String(v.level.now));
-      }
-      if (ui.first) {
-        set(ui.first, v.firstTen ?? '');
-        ui.first.hidden = v.firstTen === null;
-      }
       set(ui.pityValue, v.pityText);
       ui.pityFill.style.width = `${Math.round(v.pityProgress * 100)}%`;
       ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
       ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
-      const resource = content.resourceById.get(v.resourceId);
-      const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
-      for (const [b, o, n] of [
-        [ui.single, v.single, 1],
-        [ui.ten, v.ten, 10],
-      ] as const) {
-        const html = `${icon ? `<span class="sm-pull__icon">${icon}</span>` : ''}${o.amount}`;
-        if (b.cost.dataset['k'] !== html) {
-          b.cost.dataset['k'] = html;
-          b.cost.innerHTML = html;
-        }
-        b.el.disabled = !o.affordable || busy;
-        b.el.classList.toggle('is-affordable', o.affordable);
-        b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
-      }
+      setPull(ui.single, v.single, v.resourceId, v.name, 1);
+      setPull(ui.ten, v.ten, v.resourceId, v.name, 10);
     }
     renderFocus(s);
     renderDaily(s);
@@ -869,46 +1046,31 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   function renderHeirloom(s: GameState): void {
-    if (!heirloomUi) return;
+    const ui = doors.get(heirloomId);
+    if (!ui?.pity) return;
     const v = heirloomDeckView(heirloomGateInfo(s, content), content);
-    const ui = heirloomUi;
-    ui.stack.style.setProperty('--layers', String(v.deckLayers));
-    ui.stack.setAttribute(
-      'aria-label',
-      COPY.summon.deckLabel(v.name, v.pityCount, v.pityThreshold, 'Heirloom'),
-    );
-    set(ui.line, v.line);
-    if (heirloomAbout) set(heirloomAbout, v.about);
-    set(ui.pityValue, v.pityText);
-    ui.pityFill.style.width = `${Math.round(v.pityProgress * 100)}%`;
-    ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
-    ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
-    const resource = content.resourceById.get(v.resourceId);
-    const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
-    for (const [b, o, n] of [
-      [ui.single, v.single, 1],
-      [ui.ten, v.ten, 10],
-    ] as const) {
-      const html = `${icon ? `<span class="sm-pull__icon">${icon}</span>` : ''}${o.amount}`;
-      if (b.cost.dataset['k'] !== html) {
-        b.cost.dataset['k'] = html;
-        b.cost.innerHTML = html;
-      }
-      b.el.disabled = !o.affordable || busy;
-      b.el.classList.toggle('is-affordable', o.affordable);
-      b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
-    }
-    const g = gates.get(heirloomId);
-    if (g) {
-      set(g.rowLine, v.line);
-      set(g.rowPity, v.pityText);
-    }
+    set(ui.about, `${doorAbout('heirloom_gate', null)} · ${v.line}`);
+    set(ui.pity.value, v.pityText);
+    ui.pity.fill.style.width = `${Math.round(v.pityProgress * 100)}%`;
+    ui.pity.bar.setAttribute('aria-valuemax', String(v.pityThreshold));
+    ui.pity.bar.setAttribute('aria-valuenow', String(v.pityCount));
+    setPull(ui.single, v.single, v.resourceId, v.name, 1);
+    setPull(ui.ten, v.ten, v.resourceId, v.name, 10);
     if (openGate === heirloomId) renderBoard(s);
   }
 
-  /** Opens the chosen gate and closes the others; shows the open gate's content. */
+  /** Marks the selected door, opens the chosen other gate and closes the rest; shows the selected gate's content. */
   function renderGates(): void {
-    if (!gates.has(openGate)) openGate = [...gates.keys()][0] ?? openGate;
+    if (!gates.has(openGate) && !doors.has(openGate)) openGate = 'card_portal';
+    for (const [id, d] of doors) {
+      const on = id === openGate;
+      d.root.classList.toggle('is-on', on);
+      d.pic.setAttribute('aria-pressed', String(on));
+      d.pic.setAttribute(
+        'aria-label',
+        COPY.summon.doorSelect(d.root.querySelector('h2')?.textContent ?? id),
+      );
+    }
     for (const [id, g] of gates) {
       const open = id === openGate;
       g.root.classList.toggle('is-open', open);
@@ -937,16 +1099,9 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   function renderFocus(s: GameState): void {
-    const focus = decks.get(FOCUS_PORTAL_ID)?.focus;
+    const focus = doors.get(FOCUS_PORTAL_ID)?.focus;
     if (!focus) return;
     const chosen = s.summon.focusKind;
-    const kinds = focusKinds(content);
-    set(
-      focus.line,
-      chosen
-        ? COPY.summon.focusHunting(kinds.find((k) => k.kind === chosen)?.name ?? chosen)
-        : COPY.summon.focusNone,
-    );
     for (const b of focus.box.querySelectorAll<HTMLButtonElement>('button')) {
       const on = b.dataset['focus'] === chosen;
       b.classList.toggle('is-chosen', on);

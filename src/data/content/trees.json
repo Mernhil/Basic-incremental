@@ -5,31 +5,12 @@
     "tier": 1,
     "resource": "oak_gem",
     "baseRate": "3",
-    "unlockCost": [],
-    "level": {
-      "cost": {
-        "resource": "money",
-        "base": "57",
-        "growth": "1.109"
-      },
-      "ratePercent": "5",
-      "milestones": {
-        "every": 15,
-        "multiplier": "1.15"
-      }
-    },
-    "depth": {
-      "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
-      "hardness": "600",
-      "hardnessGrowth": "1.95",
-      "yieldGrowth": "1.15",
-      "digRate": "1"
-    },
+    "unlockedByDungeon": null,
+    "element": "earth",
     "art": {
       "leaf": ["#8af06a", "#4fc246", "#2e8e36", "#1c6026"],
       "bark": ["#c48a56", "#9a6236", "#6e4020", "#4a2812"]
-    },
-    "element": "nature"
+    }
   },
   {
     "id": "ironbark",
@@ -37,36 +18,12 @@
     "tier": 2,
     "resource": "ironbark_gem",
     "baseRate": "1.5",
-    "unlockCost": [
-      {
-        "resource": "oak_gem",
-        "amount": "500"
-      }
-    ],
-    "level": {
-      "cost": {
-        "resource": "money",
-        "base": "480",
-        "growth": "1.117"
-      },
-      "ratePercent": "5",
-      "milestones": {
-        "every": 15,
-        "multiplier": "1.15"
-      }
-    },
-    "depth": {
-      "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
-      "hardness": "2400",
-      "hardnessGrowth": "1.95",
-      "yieldGrowth": "1.15",
-      "digRate": "1"
-    },
+    "unlockedByDungeon": "mossy_cellar",
+    "element": "earth",
     "art": {
       "leaf": ["#ffc070", "#e88a32", "#b0601e", "#7a3e12"],
       "bark": ["#a8968c", "#7a6a62", "#54463f", "#342a26"]
-    },
-    "element": "nature"
+    }
   },
   {
     "id": "moonwillow",
@@ -74,35 +31,11 @@
     "tier": 3,
     "resource": "moonwillow_gem",
     "baseRate": "0.75",
-    "unlockCost": [
-      {
-        "resource": "ironbark_gem",
-        "amount": "2000"
-      }
-    ],
-    "level": {
-      "cost": {
-        "resource": "money",
-        "base": "4000",
-        "growth": "1.126"
-      },
-      "ratePercent": "5",
-      "milestones": {
-        "every": 15,
-        "multiplier": "1.15"
-      }
-    },
-    "depth": {
-      "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
-      "hardness": "9000",
-      "hardnessGrowth": "1.95",
-      "yieldGrowth": "1.15",
-      "digRate": "1"
-    },
+    "unlockedByDungeon": "ember_crypt",
+    "element": "earth",
     "art": {
       "leaf": ["#eeeaff", "#bdb6f2", "#8a84d4", "#5c56a8"],
       "bark": ["#f4f4fc", "#c8cae0", "#9496b8", "#64668a"]
-    },
-    "element": "nature"
+    }
   }
 ]

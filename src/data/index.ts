@@ -13,8 +13,11 @@ import type {
   Batch,
   ScrollsConfig,
   HeirloomsConfig,
+  StartersConfig,
   HeirloomTree,
   Bond,
+  CampConfig,
+  DummyConfig,
   ExpeditionsConfig,
   Card,
   CardRules,
@@ -56,9 +59,14 @@ import type {
   ItemType,
   Skill,
   SkillsConfig,
+  MovesConfig,
+  RaidsConfig,
+  RaidBoss,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
+import campJson from './content/camp.json';
+import dummyJson from './content/dummy.json';
 import minesJson from './content/mines.json';
 import productionJson from './content/production.json';
 import cardsJson from './content/cards.json';
@@ -89,8 +97,11 @@ import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
+import movesJson from './content/moves.json';
+import raidsJson from './content/raids.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
+import startersJson from './content/starters.json';
 import questsJson from './content/quests.json';
 import webJson from './content/web.json';
 
@@ -99,6 +110,8 @@ export { UI_LOOKS_VAULTED, UI_LOOK_SLOTS, VAULT_TABLE_ID, isUiLookSlot } from '.
 
 export interface Content {
   resources: Resource[];
+  camp: CampConfig;
+  dummy: DummyConfig;
   trees: Tree[];
   mines: Mine[];
   production: ProductionConfig;
@@ -112,6 +125,8 @@ export interface Content {
   allDungeons: Dungeon[];
   /** Special dungeons (strength tests). Their ids share the dungeon id space. */
   trials: Trial[];
+  /** Raid bosses and their ladder (DESIGN.md §2 Raid bosses). */
+  raids: RaidsConfig;
   combat: CombatConfig;
   cosmetics: Cosmetic[];
   portals: Portal[];
@@ -155,6 +170,7 @@ export interface Content {
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
+  raidById: ReadonlyMap<string, RaidBoss>;
   perkMilestoneById: ReadonlyMap<string, PerkMilestone>;
   /** Every perk option by id, with the milestone it belongs to. */
   perkOptionById: ReadonlyMap<string, { milestone: PerkMilestone; option: PerkOption }>;
@@ -192,10 +208,13 @@ export interface Content {
   /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
   skills: SkillsConfig;
   skillById: ReadonlyMap<string, Skill>;
+  /** Three attacks per card: kits, tiers, layers and named moves (DESIGN.md §2). */
+  moves: MovesConfig;
   /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
   scrolls: ScrollsConfig;
   /** The Heirloom Gate, Heirloom Scroll sources, tree points and the 22 trees (DESIGN.md §3, §7, §10). */
   heirlooms: HeirloomsConfig;
+  starters: StartersConfig;
   /** Heirloom card id -> its tree. */
   heirloomTreeByCard: ReadonlyMap<string, HeirloomTree>;
 }
@@ -235,6 +254,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
 
   const {
     resources,
+    camp,
+    dummy,
     trees,
     mines,
     production,
@@ -242,6 +263,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     cardRules,
     dungeons,
     trials,
+    raids,
     combat,
     cosmetics,
     portals,
@@ -266,8 +288,10 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     expeditions,
     challenges,
     skills,
+    moves,
     scrolls,
     heirlooms,
+    starters,
     quests: questsFile,
     web,
   } = parsed;
@@ -275,13 +299,13 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
-  checkProduction({ resources, trees, mines, production }, issues);
+  checkProduction({ resources, trees, mines, production, camp, dungeons }, issues);
   checkBatches(batches, cards, issues);
   checkCosmetics(cosmetics, rarities, issues);
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
   checkItems({ cards, items }, issues);
-  checkPrestige({ resources, cosmetics, prestige, trees, mines }, issues);
+  checkPrestige({ resources, cosmetics, prestige }, issues);
   checkAchievements(
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
@@ -289,7 +313,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkQuests({ resources, dungeons, trials, quests }, issues);
   checkWeb({ resources, web }, issues);
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
-  checkPerks({ resources, trees, mines, production, training, perks }, issues);
+  checkPerks({ resources, training, perks }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
@@ -303,7 +327,10 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   }
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
   checkSkills({ cards, skills }, issues);
+  checkMoves({ cards, moves, resources }, issues);
+  checkRaids({ cards, raids, resources, dungeons, trials }, issues);
   checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
+  checkStarters({ cards, resources, starters }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -382,6 +409,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
 
   return {
     resources,
+    camp,
+    dummy,
     trees,
     mines,
     production,
@@ -390,6 +419,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     dungeons: openDungeons,
     allDungeons: dungeons,
     trials,
+    raids,
     combat,
     cosmetics: vaultedCosmetics,
     uiLooksVaulted: vaulted,
@@ -418,6 +448,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(openDungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
+    raidById: new Map(raids.bosses.map((b) => [b.id, b])),
     perkMilestoneById: new Map(perks.milestones.map((m) => [m.id, m])),
     perkOptionById: new Map(
       perks.milestones.flatMap((m) =>
@@ -448,10 +479,43 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     challenges,
     skills,
     skillById: new Map(skills.skills.map((x) => [x.id, x])),
+    moves,
     scrolls,
     heirlooms,
+    starters,
     heirloomTreeByCard: new Map(heirlooms.trees.map((t) => [t.card, t])),
   };
+}
+
+/**
+ * moves.json (DESIGN.md §2 Three attacks per card): every fighting T6 and Heirloom card has its named
+ * moves and no other card does, no name is used twice, and the Cores that open skills exist.
+ */
+function checkMoves(
+  c: { cards: Card[]; moves: MovesConfig; resources: Resource[] },
+  issues: string[],
+): void {
+  const named = new Set<string>();
+  const top = (card: Card): boolean =>
+    card.job === 'fighting' && (card.tier === 'mythic' || card.tier === 'heirloom');
+  for (const [cardId, m] of Object.entries(c.moves.cards)) {
+    const card = c.cards.find((x) => x.id === cardId);
+    if (!card) issues.push(`moves.json › cards › ${cardId}: unknown card`);
+    else if (!top(card))
+      issues.push(`moves.json › cards › ${cardId}: not a fighting T6 or Heirloom card`);
+    for (const n of [m.skill, m.ult]) {
+      if (named.has(n)) issues.push(`moves.json › cards › ${cardId}: "${n}" is used twice`);
+      named.add(n);
+    }
+  }
+  for (const card of c.cards) {
+    if (top(card) && !c.moves.cards[card.id])
+      issues.push(`moves.json › cards: no moves for "${card.id}"`);
+  }
+  for (const [tier, cost] of Object.entries(c.moves.unlock)) {
+    if (!c.resources.some((r) => r.id === cost.resource))
+      issues.push(`moves.json › unlock › ${tier}: unknown resource "${cost.resource}"`);
+  }
 }
 
 /**
@@ -547,7 +611,7 @@ function checkTableUpdate(
 }
 
 function checkProduction(
-  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production'>,
+  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production' | 'camp' | 'dungeons'>,
   issues: string[],
 ): void {
   const resources = new Map(c.resources.map((r) => [r.id, r]));
@@ -558,41 +622,6 @@ function checkProduction(
     if (c.production.forge.recipes.findIndex((o) => o.id === recipe.id) !== i)
       issues.push(`${where}: duplicate recipe id "${recipe.id}"`);
   });
-  c.production.tools.forEach((tool, i) => {
-    if (!resources.has(tool.cost.resource))
-      issues.push(
-        `production.json › tools › [${i}] › cost: unknown resource "${tool.cost.resource}"`,
-      );
-  });
-  const checkCost = (where: string, resource: string, kind: Resource['kind']): void => {
-    const res = resources.get(resource);
-    if (!res) issues.push(`${where}: unknown resource "${resource}"`);
-    else if (res.kind !== kind)
-      issues.push(`${where}: "${resource}" is ${res.kind}, expected ${kind}`);
-  };
-
-  // Tree kinds are unlocked with tree gems (DESIGN.md §4).
-  c.trees.forEach((tree, i) =>
-    tree.unlockCost.forEach((cost, j) =>
-      checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
-    ),
-  );
-  // Tree levels and mine levels are bought with Money (DESIGN.md §4, §3).
-  c.trees.forEach((tree, i) =>
-    checkCost(
-      `trees.json › [${i}] › level › cost › resource`,
-      tree.level.cost.resource,
-      'currency',
-    ),
-  );
-  c.mines.forEach((mine, i) =>
-    checkCost(
-      `mines.json › [${i}] › level › cost › resource`,
-      mine.level.cost.resource,
-      'currency',
-    ),
-  );
-
   // Producer ids are shared by modifier scopes and harvest targets, so they must be unique.
   const treeIds = new Set(c.trees.map((t) => t.id));
   c.mines.forEach((mine, i) => {
@@ -601,13 +630,36 @@ function checkProduction(
     }
   });
 
-  // Every kind produces once it is unlocked, so each job needs one from the start.
-  if (!c.trees.some((t) => t.unlockCost.length === 0)) {
-    issues.push('trees.json: at least one tree must be unlocked from the start (no unlockCost)');
+  // Each place needs one material open from the start, or its slots would be empty.
+  if (!c.trees.some((t) => t.unlockedByDungeon === null)) {
+    issues.push(
+      'trees.json: at least one wood must be open from the start (unlockedByDungeon null)',
+    );
   }
   if (!c.mines.some((m) => m.unlockedByDungeon === null)) {
-    issues.push('mines.json: at least one mine must be available from the start');
+    issues.push('mines.json: at least one ore must be open from the start');
   }
+  const dungeonIds = new Set(c.dungeons.map((d) => d.id));
+  for (const [file, list] of [
+    ['trees', c.trees],
+    ['mines', c.mines],
+  ] as const) {
+    list.forEach((m, i) => {
+      if (m.unlockedByDungeon && !dungeonIds.has(m.unlockedByDungeon)) {
+        issues.push(
+          `${file}.json › [${i}] › unlockedByDungeon: unknown dungeon "${m.unlockedByDungeon}"`,
+        );
+      }
+    });
+  }
+  c.camp.levelCost.forEach((cost, i) => {
+    const kind = resources.get(cost.resource)?.kind;
+    if (kind && kind !== 'tree_gem' && kind !== 'mine_gem') {
+      issues.push(
+        `camp.json › levelCost › [${i}] › resource: "${cost.resource}" must be a wood or an ore`,
+      );
+    }
+  });
 }
 
 /** Batch ids and kits are unique, and every card's `batch` names a later batch (the first has none). */
@@ -682,18 +734,12 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
 
 /** Milestone pick rules (DESIGN.md §4): every milestone names a line that exists, each line's
  *  levels are distinct, and ids are unique across milestones and options. */
-function checkPerks(
-  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production' | 'training' | 'perks'>,
-  issues: string[],
-): void {
+function checkPerks(c: Pick<Content, 'resources' | 'training' | 'perks'>, issues: string[]): void {
   const currency = c.resources.find((r) => r.id === c.perks.currency);
   if (currency?.kind !== 'currency') {
     issues.push(`perks.json › currency: "${c.perks.currency}" must be a currency resource`);
   }
   const lines: Record<string, Set<string>> = {
-    tree: new Set(c.trees.map((t) => t.id)),
-    mine: new Set(c.mines.map((m) => m.id)),
-    tool: new Set(c.production.tools.map((t) => t.id)),
     training: new Set(c.training.map((t) => t.id)),
   };
   const ids = new Set<string>();
@@ -997,7 +1043,7 @@ function checkAchievements(
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
 function checkPrestige(
-  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige' | 'trees' | 'mines'>,
+  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige'>,
   issues: string[],
 ): void {
   const currency = c.resources.find((r) => r.id === c.prestige.currency);
@@ -1021,14 +1067,8 @@ function checkPrestige(
       issues.push(`prestige.json › shop › [${i}]: needs perLevel modifiers or a grants rule`);
     }
   });
-  const slotItems = c.prestige.shop.filter((x) => x.grants === 'second_worker_slots');
-  if (slotItems.length > 1) issues.push('prestige.json › shop: only one second-slot item');
-  const places = c.trees.length + c.mines.length;
-  if (slotItems[0] && slotItems[0].maxLevel > places) {
-    issues.push(
-      `prestige.json › shop › ${slotItems[0].id} › maxLevel: ${slotItems[0].maxLevel} is more than the ${places} trees and mines`,
-    );
-  }
+  const slotItems = c.prestige.shop.filter((x) => x.grants === 'camp_slots');
+  if (slotItems.length > 1) issues.push('prestige.json › shop: only one camp-slot item');
   const cosmetics = new Set(c.cosmetics.map((x) => x.id));
   c.prestige.rewards.forEach((reward, i) =>
     reward.cosmetics.forEach((id, j) => {
@@ -1130,6 +1170,17 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
   const pictures = new Set<string>();
   c.cards.forEach((card, i) => {
     const where = `cards.json › [${i}]`;
+    if (card.starterArt) {
+      // a starter weapon (DESIGN.md §2): its own picture, named by `name` alone
+      if (card.heirloomArt || card.heirloomName || card.batch || card.heirloom) {
+        issues.push(
+          `${where}: a starter weapon has no heirloomArt, heirloomName, batch or Heirloom`,
+        );
+      }
+      if (card.tier !== 'mythic') issues.push(`${where} › starterArt: only a T6 card`);
+      claim(card.name, `${where} › name`);
+      return;
+    }
     if (!card.heirloomArt && !card.heirloomName && !card.batch) return;
     if (card.batch) {
       // a later art batch (DESIGN.md §5 Art batches): its own weapon name, the batch's pictures
@@ -1145,7 +1196,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       if (!card.heirloom && card.tier !== 'mythic') {
         issues.push(`${where} › batch: only a T6 card has its own weapon`);
       }
-      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
+      if (card.pictureAlt && !card.heirloom) {
+        issues.push(`${where} › pictureAlt: only an Heirloom has a second picture`);
+      }
+      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}${card.pictureAlt ? '/alt' : ''}`;
       if (pictures.has(picture)) issues.push(`${where} › batch: "${picture}" is used twice`);
       pictures.add(picture);
       return;
@@ -1166,6 +1220,36 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
     pictures.add(picture);
     claim(card.heirloomName, `${where} › heirloomName`);
   });
+}
+
+/** starters.json: the starters are T6 fighting cards, the seals rise in tier and cost known resources. */
+function checkStarters(
+  c: { cards: Card[]; resources: { id: string }[]; starters: StartersConfig },
+  issues: string[],
+): void {
+  const all = [...c.starters.base, ...c.starters.special];
+  if (new Set(all).size !== all.length) issues.push('starters.json: a card is listed twice');
+  for (const id of all) {
+    const card = c.cards.find((x) => x.id === id);
+    if (!card) issues.push(`starters.json › cards: unknown card "${id}"`);
+    else if (card.tier !== 'mythic' || card.heirloom || card.job !== 'fighting') {
+      issues.push(`starters.json › cards: "${id}" is not a Mythic or Void fighting card`);
+    }
+  }
+  let last = 0;
+  c.starters.seals.forEach((seal, i) => {
+    const at = RANK_TIERS.indexOf(seal.tier);
+    if (at <= last) issues.push(`starters.json › seals › [${i}]: tiers must rise from Wood`);
+    last = at;
+    for (const cost of seal.cost) {
+      if (!c.resources.some((r) => r.id === cost.resource)) {
+        issues.push(`starters.json › seals › [${i}]: unknown resource "${cost.resource}"`);
+      }
+    }
+  });
+  if (last !== RANK_TIERS.indexOf('mythic')) {
+    issues.push('starters.json › seals: the last seal must lead to the Mythic tier');
+  }
 }
 
 /**
@@ -1515,6 +1599,8 @@ function checkLegacyGates(sets: WeaponSkinSet[], portals: Portal[], issues: stri
 export function bundledRawContent(): RawContent {
   return {
     resources: resourcesJson,
+    camp: campJson,
+    dummy: dummyJson,
     trees: treesJson,
     mines: minesJson,
     production: productionJson,
@@ -1522,6 +1608,7 @@ export function bundledRawContent(): RawContent {
     cardRules: cardRulesJson,
     dungeons: dungeonsJson,
     trials: trialsJson,
+    raids: raidsJson,
     combat: combatJson,
     cosmetics: cosmeticsJson,
     portals: portalsJson,
@@ -1546,8 +1633,10 @@ export function bundledRawContent(): RawContent {
     expeditions: expeditionsJson,
     challenges: challengesJson,
     skills: skillsJson,
+    moves: movesJson,
     scrolls: scrollsJson,
     heirlooms: heirloomsJson,
+    starters: startersJson,
     quests: questsJson,
     web: webJson,
   };
@@ -1565,4 +1654,46 @@ export interface ContentOptions {
 /** Loads and validates the bundled game data. Call once at startup. */
 export function loadContent(options: ContentOptions = {}): Content {
   return validateContent(bundledRawContent(), options);
+}
+
+/** raids.json (DESIGN.md §2 Raid bosses): ids are unique and not a dungeon's, ladder cards are real
+ *  fighting cards, every ladder score names a boss, and rewards pay real resources. */
+function checkRaids(
+  c: Pick<Content, 'cards' | 'raids' | 'resources' | 'dungeons' | 'trials'>,
+  issues: string[],
+): void {
+  const bosses = new Set<string>();
+  const taken = new Set([...c.dungeons, ...c.trials].map((x) => x.id));
+  c.raids.bosses.forEach((b, i) => {
+    if (bosses.has(b.id)) issues.push(`raids.json › bosses › [${i}] › id: "${b.id}" is used twice`);
+    if (taken.has(b.id))
+      issues.push(`raids.json › bosses › [${i}] › id: "${b.id}" is a dungeon id`);
+    bosses.add(b.id);
+    if ((b.trick.kind === 'shield' || b.trick.kind === 'curse') && b.trick.size > 1)
+      issues.push(`raids.json › bosses › [${i}] › trick › size: "${b.id}" must be at most 1`);
+  });
+  const resources = new Set(c.resources.map((r) => r.id));
+  const cards = new Map(c.cards.map((x) => [x.id, x]));
+  c.raids.ladder.teams.forEach((t, i) => {
+    t.cards.forEach((cardId) => {
+      if (cards.get(cardId)?.job !== 'fighting')
+        issues.push(
+          `raids.json › ladder › teams › [${i}] › cards: "${cardId}" is not a fighting card`,
+        );
+    });
+    for (const boss of Object.keys(t.scores))
+      if (!bosses.has(boss))
+        issues.push(`raids.json › ladder › teams › [${i}] › scores: unknown boss "${boss}"`);
+    for (const boss of bosses)
+      if (t.scores[boss] === undefined)
+        issues.push(`raids.json › ladder › teams › [${i}] › scores: no score for "${boss}"`);
+  });
+  c.raids.ladder.rewards.forEach((e, i) =>
+    e.rewards.forEach((r) => {
+      if (!resources.has(r.resource))
+        issues.push(
+          `raids.json › ladder › rewards › [${i}] › rewards: unknown resource "${r.resource}"`,
+        );
+    }),
+  );
 }
