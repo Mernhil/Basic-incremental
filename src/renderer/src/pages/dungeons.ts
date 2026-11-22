@@ -1,3 +1,4 @@
+import { keptIconMarkup } from '../ui/resourceIcons';
 import type { Dungeon, Trial } from '../../../data';
 import {
   cardDisplayName,
@@ -444,9 +445,17 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       new Decimal(n).mul(multiplier).mul(boss?.purseScale ?? 1);
     const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
     const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
-    const row = (label: string, value: string, cls = ''): HTMLElement => {
+    const row = (label: string, value: string, cls = '', resource = ''): HTMLElement => {
       const li = h('li', `dp-drop px-tile ${cls}`.trim());
-      li.append(h('span', '', label), h('span', 'bi-num', value));
+      const name = h('span', 'dp-drop__name', label);
+      const icon = resource ? keptIconMarkup(resource) : null;
+      if (icon) {
+        const art = h('span', 'dp-drop__ico');
+        art.setAttribute('aria-hidden', 'true');
+        art.innerHTML = icon;
+        name.prepend(art);
+      }
+      li.append(name, h('span', 'bi-num', value));
       return li;
     };
     const owned = s.inventory[d.drops.rare.itemId] ?? 0;
@@ -463,21 +472,30 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
           c.min === c.max
             ? amountText(content, c.resource, purse(c.min, c.multiplier))
             : `${amountText(content, c.resource, purse(c.min, c.multiplier))} – ${amountText(content, c.resource, purse(c.max, c.multiplier))}`,
+          '',
+          c.resource,
         ),
       ),
       ...drops.wages.map((w) =>
-        row(COPY.dungeons.wage(resName(w.resource)), COPY.production.rate(fmt(w.perSecond))),
+        row(
+          COPY.dungeons.wage(resName(w.resource)),
+          COPY.production.rate(fmt(w.perSecond)),
+          '',
+          w.resource,
+        ),
       ),
       ...(isDungeonCleared(s, d.id)
         ? []
         : d.drops.firstClear.map((p) =>
-            row(COPY.dungeons.firstClear(resName(p.resource)), fmt(p.amount)),
+            row(COPY.dungeons.firstClear(resName(p.resource)), fmt(p.amount), '', p.resource),
           )),
       row(
         resName(drops.material.resource),
         drops.material.amount > 1
           ? `${pct(drops.material.chance)} ×${drops.material.amount}`
           : pct(drops.material.chance),
+        '',
+        drops.material.resource,
       ),
       ...drops.extraMaterials.map((extra) =>
         row(
@@ -487,6 +505,8 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
             : extra.min === extra.max
               ? fmt(new Decimal(extra.min))
               : `${fmt(new Decimal(extra.min))}–${fmt(new Decimal(extra.max))}`,
+          '',
+          extra.resource,
         ),
       ),
     );

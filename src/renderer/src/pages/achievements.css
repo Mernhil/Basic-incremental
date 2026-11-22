@@ -396,3 +396,22 @@
     animation: none;
   }
 }
+
+/* a resource reward: its 32 x 32 icon (1x, never shrunk) and the amount */
+.ac-tip__res {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin-left: -16px;
+}
+.ac-tip__ico {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+}
+.ac-tip__ico svg {
+  width: 100%;
+  height: 100%;
+}

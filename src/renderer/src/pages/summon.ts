@@ -28,7 +28,7 @@ import { showReveal } from '../stage/reveal';
 import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { createCard, starSpritesHtml, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
-import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
+import { resourceIconMarkup } from '../ui/resourceIcons';
 import { cardTierArt, ITEM_VIEWBOX } from '../art/items';
 import { ITEM_KINDS } from '../../../data';
 
@@ -845,7 +845,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
       ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
       const resource = content.resourceById.get(v.resourceId);
-      const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
+      const icon = (resource ? resourceIconMarkup(resource) : null) ?? '';
       for (const [b, o, n] of [
         [ui.single, v.single, 1],
         [ui.ten, v.ten, 10],
@@ -885,7 +885,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
     ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
     const resource = content.resourceById.get(v.resourceId);
-    const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
+    const icon = (resource ? resourceIconMarkup(resource) : null) ?? '';
     for (const [b, o, n] of [
       [ui.single, v.single, 1],
       [ui.ten, v.ten, 10],
