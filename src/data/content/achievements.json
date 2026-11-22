@@ -2404,6 +2404,204 @@
       "stock": null
     },
     {
+      "id": "copy_runemoss",
+      "reward": {
+        "kind": "card",
+        "card": "runemoss"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_emberthorn",
+      "reward": {
+        "kind": "card",
+        "card": "emberthorn"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_stonegrove",
+      "reward": {
+        "kind": "card",
+        "card": "stonegrove"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_thornblaze",
+      "reward": {
+        "kind": "card",
+        "card": "thornblaze"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_mossfang",
+      "reward": {
+        "kind": "card",
+        "card": "mossfang"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_cindersting",
+      "reward": {
+        "kind": "card",
+        "card": "cindersting"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_vinepike",
+      "reward": {
+        "kind": "card",
+        "card": "vinepike"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_flarepike",
+      "reward": {
+        "kind": "card",
+        "card": "flarepike"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_spiralhorn",
+      "reward": {
+        "kind": "card",
+        "card": "spiralhorn"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_lavahorn",
+      "reward": {
+        "kind": "card",
+        "card": "lavahorn"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_runeboulder",
+      "reward": {
+        "kind": "card",
+        "card": "runeboulder"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_emberknot",
+      "reward": {
+        "kind": "card",
+        "card": "emberknot"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_rootstring",
+      "reward": {
+        "kind": "card",
+        "card": "rootstring"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_firebriar",
+      "reward": {
+        "kind": "card",
+        "card": "firebriar"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_amberbough",
+      "reward": {
+        "kind": "card",
+        "card": "amberbough"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_emberroot",
+      "reward": {
+        "kind": "card",
+        "card": "emberroot"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_mossreaper",
+      "reward": {
+        "kind": "card",
+        "card": "mossreaper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_ashreaper",
+      "reward": {
+        "kind": "card",
+        "card": "ashreaper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_mosstooth",
+      "reward": {
+        "kind": "card",
+        "card": "mosstooth"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_embertooth",
+      "reward": {
+        "kind": "card",
+        "card": "embertooth"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_grovehewer",
+      "reward": {
+        "kind": "card",
+        "card": "grovehewer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_charhewer",
+      "reward": {
+        "kind": "card",
+        "card": "charhewer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
       "id": "summon_scrolls",
       "reward": {
         "kind": "resource",

@@ -544,8 +544,8 @@ describe('views for the Cards page', () => {
       'burst.power',
     ]);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    // 144 ladder cards (22 of them Leviathan) and the 22 Heirloom cards.
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(166);
+    // 166 ladder cards (22 Leviathan, 22 Wildwood) and the 34 Heirloom cards.
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(200);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -565,6 +565,10 @@ describe('views for the Cards page', () => {
       'reef_prospector',
       'trench_burrower',
       'prismstrike',
+      // then the Wildwood hero and villain T6 pickaxes (batch 3) and its Heirloom
+      'mosstooth',
+      'embertooth',
+      'drumbeak',
     ]);
   });
 });

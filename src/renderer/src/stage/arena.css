@@ -816,16 +816,14 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   font-weight: 800;
 }
 
-/* the skill banners: a slanted banner sliding in from the left with the weapon, the card, the
-   skill's name large and what it does (the user's fight prototype); two at most */
+/* the skill list: kept for screen readers; every ultimate's banner is its cut-in (specialAttack.ts) */
 .du-plates {
+  /* the cut-in is every ultimate's banner; this list only announces the skill to a screen reader */
   position: absolute;
-  top: calc(var(--du-top) + 200px);
-  left: 0;
-  z-index: 5;
-  font-size: clamp(11px, min(1.05cqw, 2.2cqh), 20px);
-  display: grid;
-  gap: 10px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   pointer-events: none;
 }
 .du-skill {

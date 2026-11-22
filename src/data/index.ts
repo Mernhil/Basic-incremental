@@ -1083,7 +1083,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       if (!card.heirloom && card.tier !== 'mythic') {
         issues.push(`${where} › batch: only a T6 card has its own weapon`);
       }
-      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
+      if (card.pictureAlt && !card.heirloom) {
+        issues.push(`${where} › pictureAlt: only an Heirloom has a second picture`);
+      }
+      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}${card.pictureAlt ? '/alt' : ''}`;
       if (pictures.has(picture)) issues.push(`${where} › batch: "${picture}" is used twice`);
       pictures.add(picture);
       return;

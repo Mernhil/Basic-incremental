@@ -52,7 +52,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 ## 5. Chats and releases
 
 1. **Merged is not released.** After a merge, Claude says in one line that the work is merged but not yet released.
-2. **Three standing chats.** The controller talks to the user about how the game plays, plans, writes briefs, and merges and releases everything. The art controller handles everything the user looks at (art, effects, screens and layout) and is the only chat that spends on art. The rules and docs keeper changes rules only on the user's word and keeps the rule files, the overview, DESIGN and the tools that enforce rules. All three run on Fable or Opus at medium. Each stays short: it clears itself between jobs and keeps what is in flight in a short hand-over note. Everything else is a build chat.
+2. **Three standing chats.** The controller talks to the user about how the game plays, plans, writes briefs, and merges and releases everything. The art controller handles everything the user looks at (art, effects, screens and layout) and is the only chat that spends on art. The rules and docs keeper changes rules only on the user's word and keeps the rule files, DESIGN and the tools that enforce rules; it reads a build's overview lines in its DESIGN pass. It collects the day's decisions into one rulebook PR a day (DESIGN and the rule files), not one PR per decision; a decision a build is waiting on goes in at once. All three run on Fable or Opus at medium. Each stays short: it clears itself between jobs and keeps what is in flight in a short hand-over note. Everything else is a build chat.
 3. **A build chat does one job.** Before it is closed it writes a closing note of about 20 lines: what it built, the user's decisions in their words, what was rejected, what is left.
 4. **Closing notes go into one folder.** The controller reads them only when asked; closed chats are not re-read. The folder is `C:\Basic Incremental\design\closing-notes\` (local, not in the repo).
 5. **Release size.** Merged work is collected into releases of about 10 points: a small change counts 1, a big one 3 to 5. Claude gives the points and says the count. A job bigger than that is split sensibly over several releases.
@@ -71,12 +71,12 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 
 1. **DESIGN.md is the truth for game design** and is never contradicted without asking the user. UI_RULES is for UI, ASSET_RULES for art.
 2. **One current text per rule.** A rule in DESIGN is rewritten where it stands, never patched with an "update" section below it, and carries a tag saying whether the game has it yet. Tags change in the same PR as the code.
-3. **The project overview is updated in every PR that changes the code.** A build chat says in its closing note what changed; the rules and docs keeper writes it into the overview before the controller merges.
+3. **The project overview is updated in every PR that changes the code.** The build chat that changed the code writes its overview lines in its own PR. The overview only describes the code.
 4. **A plan doc is deleted by the PR that builds it.** Exact numbers live in the data files, not in DESIGN.
 5. **Whose decision it is.** Rules 1.2 and 1.3 applied to the docs: what a chat filled in is tagged Default and listed under Open questions, and becomes decided only on the user's explicit yes; the user's decisions carry their words and the date.
 6. **Decisions are written into DESIGN before the code.** A decision never lives only in a chat's memory.
 7. **A chat reads only what its job touches.** The brief names the parts of DESIGN and the overview to read; nobody reads both files whole. Graphics jobs read the graphics rule file, which carries a short description of the game's style to follow.
-8. **Only good models touch the rules and the docs.** The rule files, the overview and DESIGN are written and changed only by Opus or Fable, at medium strength (rule 3.7).
+8. **Only good models touch the rules and the docs.** The rule files and DESIGN are written and changed only by Opus or Fable, at medium strength (rule 3.7). The overview may be written by the build chat that changed the code, on any model (rule 8.3).
 9. **The docs stay small.** The overview and DESIGN must never grow back into dead weight: each has a size limit that `npm run lint` checks, set with the user's yes when the docs split is done.
 
 ## 9. Code
