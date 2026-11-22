@@ -33,6 +33,7 @@ import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createTrainingPanel } from '../ui/training';
+import { createSealBlock, type SealBlock } from '../ui/sealBlock';
 import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import { cardItemArt } from './loadoutCards';
 import { ITEM_VIEWBOX } from '../art/items';
@@ -517,6 +518,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
   weapon.append(weaponTabs, weaponBody);
   let weaponId: string | null | undefined;
   let weaponPanel: WeaponPanel | null = null;
+  let sealBlock: SealBlock | null = null;
   /** The tabs as built: the loadout's cards in order; they rebuild only when it changes. */
   let tabsKey: string | null = null;
   let tabLevels: Array<{ id: string; level: HTMLElement; tab: HTMLButtonElement }> = [];
@@ -563,6 +565,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
   function buildWeapon(mainId: string | null): void {
     weaponId = mainId;
     weaponPanel = null;
+    sealBlock = null;
     weaponNote.textContent = '';
     if (!mainId) {
       weaponBody.replaceChildren(h('p', 'dp-note', COPY.weapon.noMain));
@@ -584,7 +587,15 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
         render();
       },
     });
-    weaponBody.replaceChildren(weaponPanel.el, weaponNote);
+    sealBlock = createSealBlock({
+      content,
+      state: ctx.state,
+      apply: (next) => {
+        ctx.apply(next);
+        render();
+      },
+    });
+    weaponBody.replaceChildren(weaponPanel.el, sealBlock.el, weaponNote);
   }
 
   // ---- Training: a waiting pick, then the repeatable lines (DESIGN.md §4 Milestone picks) ----
@@ -625,6 +636,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     }
     const entry = weaponId ? ctx.cards.entry(s, weaponId) : null;
     if (entry) weaponPanel?.update(entry);
+    if (weaponId) sealBlock?.update(weaponId);
     trainingPanel.update();
   }
 

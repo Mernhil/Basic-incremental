@@ -56,6 +56,7 @@ export * from './goals';
 export * from './portals';
 export * from './tierRewards';
 export * from './heirlooms';
+export * from './starters';
 export * from './autobuyers';
 export * from './prestige';
 export * from './challenges';
@@ -288,6 +289,8 @@ export {
   freshCard,
   /** The tier whose table value a card reads (an Heirloom card the T6 one). */
   ladderTier,
+  /** The tier a card's numbers are those of: a sealed starter's is lower than its own. */
+  strengthTier,
   /** On-screen name of each tier. */
   TIER_LABELS,
   /** On-screen name of a card grade (a tier; Mythic or Void at T6). */

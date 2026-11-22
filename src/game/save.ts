@@ -37,7 +37,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 40;
+export const CURRENT_SAVE_VERSION = 41;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -153,6 +153,8 @@ export const serializedStateSchema = z.object({
         starFill: z.number().min(0),
         /** v13. */
         enhancements: z.array(z.string()),
+        /** v41: the starter weapon's seals broken (DESIGN.md §2 Starter weapon). */
+        seal: z.number().int().min(0).optional(),
       }),
     ),
     /** Only fighting has a loadout; the old logging and mining ones are stripped on parse
@@ -201,6 +203,8 @@ export const serializedStateSchema = z.object({
     firstTenPullDone: z.boolean(),
     tierRewardsClaimed: z.array(z.string()),
   }),
+  /** v41: the starter weapon's pick (DESIGN.md §2 Starter weapon). */
+  starter: z.object({ done: z.boolean(), skippable: z.boolean() }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
     production: z.object({
@@ -316,6 +320,7 @@ export function serializeState(state: GameState): SerializedState {
     },
     automation: { ...state.automation },
     summon: { ...state.summon },
+    starter: { ...state.starter },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -344,6 +349,7 @@ export function serializeState(state: GameState): SerializedState {
             xp: decimalToString(c.xp),
             starFill: c.starFill,
             enhancements: [...c.enhancements],
+            ...(c.seal !== undefined ? { seal: c.seal } : {}),
           },
         ]),
       ),
@@ -716,6 +722,12 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       enhancements: c.enhancements.filter((o) =>
         content.enhancements.cards[id]?.some((x) => x.id === o),
       ),
+      // A seal only holds a starter card, and no further than its last step.
+      ...(c.seal !== undefined &&
+      c.seal < content.starters.seals.length &&
+      content.starters.cards.includes(id)
+        ? { seal: c.seal }
+        : {}),
     };
   }
   const seen = new Set<string>();
@@ -806,6 +818,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
   );
   state.combat.cardsOut = [...new Set(state.combat.cardsOut.filter(isFighting))];
   const focusKind = saved.summon.focusKind;
+  state.starter = { ...saved.starter };
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,
     dailyClaimedDay: saved.summon.dailyClaimedDay,

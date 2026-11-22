@@ -62,6 +62,8 @@ export interface GameState {
   /** Summoning choices of the table update (DESIGN.md §3 scrolls, §7 Focus Portal). Save format 27;
    *  not read yet. Kept through prestige. */
   summon: SummonState;
+  /** The starter weapon's pick. Kept through prestige. */
+  starter: StarterState;
   /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
   presets: PresetState;
   /** Bond ids (`bonds.json`) triggered at least once (DESIGN.md §15 Bonds), in discovery order.
@@ -511,6 +513,7 @@ export function createInitialState(content: Content): GameState {
     upgrades: initialUpgrades(),
     automation: initialAutomation(),
     summon: initialSummon(),
+    starter: initialStarter(),
     presets: initialPresets(),
     discoveredBonds: [],
     expeditions: initialExpeditions(),
@@ -555,6 +558,7 @@ export function cloneState(state: GameState): GameState {
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
     summon: { ...state.summon, tierRewardsClaimed: [...state.summon.tierRewardsClaimed] },
+    starter: { ...state.starter },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -670,7 +674,21 @@ export interface OwnedCard {
   starFill: number;
   /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
+  /** The starter weapon's seals broken so far (DESIGN.md §2 Starter weapon); absent on every other
+   *  card and once the last seal is broken. A sealed card fights as the tier its seals allow
+   *  (`starters.json`). */
+  seal?: number;
 }
+
+/** The starter weapon's pick (DESIGN.md §2 Starter weapon). Save format 41. */
+export interface StarterState {
+  /** The pick is made (or turned down): no pick screen. */
+  done: boolean;
+  /** The screen may be closed without a pick: a save that began before the starter existed. */
+  skippable: boolean;
+}
+
+export const initialStarter = (): StarterState => ({ done: false, skippable: false });
 
 /** The account (DESIGN.md §10a, 16 E7). Kept through prestige. */
 export interface AccountState {

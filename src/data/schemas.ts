@@ -2564,6 +2564,26 @@ export const heirloomsSchema = z.strictObject({
   ),
 });
 export type HeirloomsConfig = z.output<typeof heirloomsSchema>;
+
+/**
+ * starters.json (DESIGN.md §2 Starter weapon): the four T6 cards a new game offers, and the seals
+ * that hold the chosen one at a lower strength. Breaking seal k pays its Cores and lets the card
+ * fight as a card of that tier; the last seal makes it the whole T6 card.
+ */
+export const startersSchema = z.strictObject({
+  cards: z.array(id).min(1),
+  seals: z
+    .array(
+      z.strictObject({
+        /** The tier the card fights as once this seal is broken (rising, ending at its own). */
+        tier: z.enum(RANK_TIERS),
+        cost: z.array(costSchema).min(1),
+      }),
+    )
+    .min(1),
+});
+export type StartersConfig = z.output<typeof startersSchema>;
+
 export type HeirloomTree = HeirloomsConfig['trees'][number];
 export type HeirloomNode = z.output<typeof heirloomNodeSchema>;
 
@@ -2641,6 +2661,7 @@ export const contentSchemas = {
   skills: skillsFileSchema,
   scrolls: scrollsSchema,
   heirlooms: heirloomsSchema,
+  starters: startersSchema,
   quests: questsFileSchema,
   web: webFileSchema,
 } as const;

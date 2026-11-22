@@ -1114,6 +1114,32 @@ export const COPY = {
     muteAll: 'Mute all sound',
     muteUnfocused: 'Mute when the game is in the background',
   },
+  starter: {
+    /** The pick screen at the start of a new game (DESIGN.md §2 Starter weapon). */
+    title: 'Choose your first weapon',
+    lead: 'It arrives sealed and fights like a Wood weapon. Dungeon Cores break its seals until it is the whole weapon.',
+    choose: 'Choose',
+    chooseLabel: (name: string) => `Choose ${name}`,
+    later: 'Not now',
+    elements: {
+      water: 'Water',
+      fire: 'Fire',
+      earth: 'Earth',
+      light: 'Light',
+      dark: 'Dark',
+    } as const,
+    /** "Fire sword · DPS" */
+    kindLine: (element: string, kind: string, role: string) => `${element} ${kind} · ${role}`,
+    /** The seal block beside the weapon panel. */
+    sealTitle: 'Sealed',
+    sealStep: (broken: number, total: number) => `Seal ${broken + 1} of ${total}`,
+    fightsAs: (tier: string) => `Fights as a ${tier} weapon`,
+    nextAs: (tier: string) => `Next: fights as ${tier}`,
+    breakSeal: 'Break the seal',
+    missing: 'Not enough Cores',
+    unsealed: 'Unsealed',
+    unsealedNote: 'The whole weapon',
+  },
   welcome: {
     title: 'Welcome back',
     collect: 'Collect',
