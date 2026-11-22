@@ -87,7 +87,8 @@ html.r-shell-gold
     .hm-stage,
     .st-toast,
     .update-notice,
-    .wp-tag
+    .wp-tag,
+    .hub__lock
   ):not(.du-sheet):not(.dv-sheet):not(.du-read):not(.du-plate):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/gold/plate.png');
   --o-bg: #393939;
@@ -126,7 +127,7 @@ html.r-shell-gold
   --o-out: 0;
   --o-fill: fill;
 }
-html.r-shell-gold :is(.du-read, .du-plate, .ar__readout):not(#_o):not(#_o):not(#_o) {
+html.r-shell-gold :is(.du-read, .du-plate, .ar__readout, .hub__plate):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/gold/pill.png');
   --o-bg: #393939;
   --o-slice: 10;
@@ -391,6 +392,9 @@ html.r-shell-gold
     .du-read,
     .du-plate,
     .ar__readout,
+    .hub__plate,
+    .hub__lock,
+    .hub__mark,
     .px-btn,
     .button,
     .shell-details,
@@ -619,4 +623,24 @@ html.r-shell-gold .shop-challenge__reward:not(#_o):not(#_o) {
 /* the sticker book's summary sits on a gold plate */
 html.r-shell-gold .ac-book__summary:not(#_o):not(#_o) {
   color: #2b1d08;
+}
+
+/* ---- the hub's labels (hub/hub.css) wear the shell pieces: the place name a pill, the lock note a plate,
+   the "!" mark the gold action piece ---------------------------------------------------------------- */
+html.r-shell-gold .hub__mark:not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/action.png');
+  --o-bg: #e99636;
+  --o-slice: 9;
+  --o-out: 0;
+  --o-fill: fill;
+  color: var(--gold-action-ink);
+  min-width: 30px;
+  height: 28px;
+}
+html.r-shell-gold .hub__plate:not(#_o):not(#_o) {
+  padding: 4px 12px;
+}
+html.r-shell-gold .hub__lock:not(#_o):not(#_o) {
+  padding: 6px 10px;
+  color: var(--bi-frame-ink-muted);
 }
