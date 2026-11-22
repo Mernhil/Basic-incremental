@@ -299,6 +299,8 @@ describe('v26 -> v27 (the table update)', () => {
     )) {
       card['skillOpen'] = false;
     }
+    // format 43: an empty raid record (DESIGN.md §2 Raid bosses)
+    scaled['raids'] = { day: null, used: {}, best: {}, paid: {} };
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

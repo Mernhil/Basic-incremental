@@ -106,6 +106,11 @@ export const MIGRATIONS: MigrationTable = {
   /** v40 -> v41: three attacks per card (DESIGN.md §2): every owned card's skill starts closed;
    *  it is opened with Cores. */
   40: v40ToV41,
+  /** v41 -> v42: format 42 belongs to the starter weapon and hub PRs; on this branch it changes nothing
+   *  (the merge keeps their migration here). */
+  41: (state) => state,
+  /** v42 -> v43: raid bosses (DESIGN.md §2): no tries used, no best scores, no rewards paid. */
+  42: v42ToV43,
 };
 
 /**
@@ -201,6 +206,11 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
+
+/** v42 -> v43 (DESIGN.md §2 Raid bosses): an empty raid record. */
+function v42ToV43(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, raids: { day: null, used: {}, best: {}, paid: {} } };
+}
 
 /** v40 -> v41 (DESIGN.md §2 Three attacks per card): every owned card gets `skillOpen: false`. */
 function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {

@@ -12,6 +12,7 @@ import {
   cloneCards,
   cloneFloors,
   cloneHeirlooms,
+  cloneRaids,
   DIFFICULTIES,
   emptyCardLoadout,
   LOADOUT_SLOTS,
@@ -37,7 +38,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 41;
+export const CURRENT_SAVE_VERSION = 43;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -203,6 +204,18 @@ export const serializedStateSchema = z.object({
     firstTenPullDone: z.boolean(),
     tierRewardsClaimed: z.array(z.string()),
   }),
+  /** v43: raid tries, best scores and the ladder rewards paid (DESIGN.md §2 Raid bosses). */
+  raids: z
+    .object({
+      day: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .nullable(),
+      used: z.record(z.string(), z.number().int().min(0)),
+      best: z.record(z.string(), z.number().min(0).finite()),
+      paid: z.record(z.string(), z.number().int().min(1)),
+    })
+    .default({ day: null, used: {}, best: {}, paid: {} }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
     production: z.object({
@@ -318,6 +331,7 @@ export function serializeState(state: GameState): SerializedState {
     },
     automation: { ...state.automation },
     summon: { ...state.summon },
+    raids: cloneRaids(state.raids),
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -811,6 +825,12 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
   );
   state.combat.cardsOut = [...new Set(state.combat.cardsOut.filter(isFighting))];
   const focusKind = saved.summon.focusKind;
+  state.raids = {
+    day: saved.raids.day,
+    used: { ...saved.raids.used },
+    best: { ...saved.raids.best },
+    paid: { ...saved.raids.paid },
+  };
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,
     dailyClaimedDay: saved.summon.dailyClaimedDay,

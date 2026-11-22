@@ -56,7 +56,10 @@ export function elementRelation(
   dungeonId: string,
   element: CardElement | undefined,
 ): ElementRelation {
-  return elementMatchup(element, content.dungeonById.get(dungeonId)?.boss.element);
+  return elementMatchup(
+    element,
+    content.dungeonById.get(dungeonId)?.boss.element ?? content.raidById.get(dungeonId)?.element,
+  );
 }
 
 /** The percent a card's element adds to its own damage against a dungeon (can be negative). */
@@ -83,7 +86,7 @@ export function elementModifiers(state: GameState, content: Content): Modifier[]
     if (id === null || !state.cards.owned[id]) continue;
     const card = content.cardById.get(id);
     if (card?.job !== 'fighting') continue;
-    for (const dungeon of content.dungeons) {
+    for (const dungeon of [...content.dungeons, ...content.raids.bosses]) {
       const value = elementDamagePercent(content, dungeon.id, card.element);
       if (value.eq(0)) continue;
       out.push({

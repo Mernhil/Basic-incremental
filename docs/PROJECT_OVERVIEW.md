@@ -184,6 +184,7 @@ Game content is JSON in `src/data/content/`, imported by `src/data/index.ts`. `l
 | `training.json`      | Training lines                                                                                                                    | Fights                                     |
 | `trees.json`         | Tree kinds                                                                                                                        | Production                                 |
 | `trials.json`        | Special dungeons                                                                                                                  | Challenges and trials                      |
+| `raids.json`         | The five raid bosses, their tricks, the AI ladder teams and the rank rewards                                                      | Raid bosses                                |
 | `weaponSkins.json`   | Legacy weapon skins                                                                                                               | Cosmetics and themes                       |
 | `wearRules.json`     | Rank a card needs to show a border, finish or exclusive                                                                           | Cosmetics and themes                       |
 | `web.json`           | Skill web `arms` and `nodes` (`perLevel`, `cost`, `maxLevel`)                                                                     | Skill web                                  |
@@ -556,6 +557,15 @@ A **challenge** is a whole Ascension run played under a handicap for a permanent
 - Each attempt pays every `tiers` entry whose `score` was reached (`trialRewards`); a score of 1 clears the trial. Clearing the trial adds it to `clearedDungeons`, which opens any dungeon or trial whose `unlockedBy` names it.
 - The best score earns medal tiers with bonuses from `progression.json` `trialMastery` (`src/game/mastery.ts`).
 
+## Raid bosses
+
+Five bosses, one for each element, fought with the player's fighting team after the first Ascension. All numbers are in `src/data/content/raids.json` (`raidsSchema`); the rules are `src/game/raids.ts`; tests `tests/raids.test.ts`; sim checks `scripts/sim/raidsCapture.ts` and `raidsCheck.ts`.
+
+- `raidsOpen`: `prestigeCount` at least `unlockAscensions`. `raidTriesLeft`: `triesPerDay` per boss, counted against the local day (`localDay`); `state.raids.day` holds the day the used tries belong to, so a new day (also after time away) gives them all back with no timer.
+- `fightRaid` builds the team with `buildTeam` scoped to the boss id (the element circle works through `elementDamagePercent`, which also knows raid ids, and the modifier scope is the boss id), then steps the fight a quarter second at a time: each card's hits and ultimates on the play-time clock (`cardRun`), heals and shields landing with the ultimates (`healFromMoves`), and the boss attacking one card at a time (`enemyTarget`, `weakenFactor`, `combat.defence`). It ends at a kill, a wiped team or `durationSeconds`. The state is not changed; the same team always gets the same result.
+- Score: the HP taken off the boss as a share of its HP (`combat.bossHp` modifiers apply); a kill ends the fight and scores 1 plus `killBonus` times the share of the time left. Tricks (`bossTrick`): `shield` (Stoneskin) soaks `size` of the team's damage, `mend` gives the boss back `size` of its HP every `every` seconds, `curse` cuts the team's damage by `size`, each by the share `answerAt` of Expose, Wound or Rally (`teamEffectShare`, the moveset's averages) takes away; `rage` grows the boss's attack by `size` a minute; `judgement` makes every `every`-th attack hit all cards for `size` times an attack.
+- Ladder (`raidLadder`, `raidRank`): the `ladder.teams` (four real cards each, a score per boss as a share of the boss's HP) and the player's best on one list, ties to the AI team. `tryRaid` spends a try, keeps the best (`state.raids.best`) and pays each `ladder.rewards` rank once per boss (`state.raids.paid` holds the best rank paid).
+
 ## Account level and reward track
 
 The save has one account level. Playing fills its XP bar; each level pays skill points and sometimes a reward. Logic: `src/game/account.ts`; numbers: `src/data/content/account.json` (`accountFileSchema` in `src/data/schemas.ts`).
@@ -712,7 +722,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 ### What a save is
 
 - Plain JSON text with three fields: `version` (the save format number), `savedAt` (epoch milliseconds, used for offline progress, see Game core) and `state` (`src/game/save.ts` `createSaveText`). No compression, encryption or checksum.
-- The current save format is **41** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration).
+- The current save format is **43** (`src/game/save.ts` `CURRENT_SAVE_VERSION`). Format 41 added `skillOpen` to every owned card (false from the migration). Format 43 added `raids` (tries used today, best scores, ladder ranks paid; empty from the migration). Format 42 belongs to the starter weapon and hub PRs; `MIGRATIONS[41]` is an identity step here until they merge.
 - `state` is the whole game state with big numbers as strings (`serializeState`; shape in `serializedStateSchema`). A card's tier is not saved; it is read from the card's data on load.
 
 ### Where and when it is written
@@ -748,7 +758,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ### Tests
 
-- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads; `tests/saveV41.test.ts` covers the step to format 41 (every owned card's skill closed).
+- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads; `tests/saveV41.test.ts` covers the step to format 41 (every owned card's skill closed); `tests/saveV43.test.ts` covers the step to format 43 (an empty raid record).
 - `tests/saveStore.test.ts` (desktop store), `tests/saveBackup.test.ts` (dev reset backup), `tests/webSaveStore.test.ts` (web store, browser API), `tests/devPaths.test.ts` (folders of a build run from source). Old-format saves: `tests/fixtures/saves/` and its `README.md`.
 
 ### Changing the save format

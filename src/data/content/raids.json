@@ -1,0 +1,282 @@
+{
+  "unlockAscensions": 1,
+  "triesPerDay": 3,
+  "durationSeconds": 90,
+  "killBonus": 0.5,
+  "bosses": [
+    {
+      "id": "rootstone_titan",
+      "name": "Rootstone Titan",
+      "element": "earth",
+      "art": "raid-earth-colossus",
+      "hp": "2e9",
+      "attack": {
+        "damage": "3000000",
+        "intervalSeconds": 2.5
+      },
+      "trick": {
+        "kind": "shield",
+        "line": "Stoneskin soaks most of your damage until it is Exposed.",
+        "size": 0.6,
+        "every": 0,
+        "answerAt": 0.04,
+        "answer": "Expose (Sunder, Piercing Lunge, light and dark Heirlooms)"
+      }
+    },
+    {
+      "id": "ember_tyrant",
+      "name": "Ember Tyrant",
+      "element": "fire",
+      "art": "raid-fire-tyrant",
+      "hp": "2e9",
+      "attack": {
+        "damage": "2500000",
+        "intervalSeconds": 2
+      },
+      "trick": {
+        "kind": "rage",
+        "line": "Hits harder every second of the fight; kill it fast or Weaken it.",
+        "size": 1.5,
+        "every": 0,
+        "answerAt": 0,
+        "answer": "Weaken, Stagger, Shield and speed"
+      }
+    },
+    {
+      "id": "tide_queen",
+      "name": "Tide Queen",
+      "element": "water",
+      "art": "raid-water-queen",
+      "hp": "2e9",
+      "attack": {
+        "damage": "2500000",
+        "intervalSeconds": 2.5
+      },
+      "trick": {
+        "kind": "mend",
+        "line": "Mends part of her health every few seconds; Wounds stop it.",
+        "size": 0.04,
+        "every": 5,
+        "answerAt": 0.3,
+        "answer": "Wound (Flurry, fire cards)"
+      }
+    },
+    {
+      "id": "dread_dragon_lich",
+      "name": "Dread Dragon Lich",
+      "element": "dark",
+      "art": "raid-dark-dragon-lich",
+      "hp": "2e9",
+      "attack": {
+        "damage": "2500000",
+        "intervalSeconds": 2.5
+      },
+      "trick": {
+        "kind": "curse",
+        "line": "Curses your team: your damage is cut until Rally lifts it.",
+        "size": 0.35,
+        "every": 0,
+        "answerAt": 0.1,
+        "answer": "Rally (Cross Cut, fire Mythics)"
+      }
+    },
+    {
+      "id": "dawn_seraph",
+      "name": "Dawn Seraph",
+      "element": "light",
+      "art": "raid-light-dawn-seraph",
+      "hp": "2e9",
+      "attack": {
+        "damage": "2500000",
+        "intervalSeconds": 2.5
+      },
+      "trick": {
+        "kind": "judgement",
+        "line": "Every fourth strike judges the whole team; Shields and Heals carry it.",
+        "size": 1.2,
+        "every": 4,
+        "answerAt": 0,
+        "answer": "Shield, Heal, Regen and Weaken"
+      }
+    }
+  ],
+  "ladder": {
+    "teams": [
+      {
+        "id": "wayside_wanderers",
+        "name": "Wayside Wanderers",
+        "cards": ["gilded_knight", "golden_tilter", "golden_sharpshot", "golden_sage"],
+        "scores": {
+          "rootstone_titan": 0.08,
+          "ember_tyrant": 0.08,
+          "tide_queen": 0.08,
+          "dread_dragon_lich": 0.08,
+          "dawn_seraph": 0.08
+        }
+      },
+      {
+        "id": "brass_choir",
+        "name": "Brass Choir",
+        "cards": ["gold_warlord", "golden_hoplite", "golden_anvilmaster", "golden_harvester"],
+        "scores": {
+          "rootstone_titan": 0.15,
+          "ember_tyrant": 0.15,
+          "tide_queen": 0.15,
+          "dread_dragon_lich": 0.15,
+          "dawn_seraph": 0.15
+        }
+      },
+      {
+        "id": "prism_pilgrims",
+        "name": "Prism Pilgrims",
+        "cards": ["prism_paladin", "mirror_cavalier", "rainbow_sniper", "kaleido_weaver"],
+        "scores": {
+          "rootstone_titan": 0.24,
+          "ember_tyrant": 0.24,
+          "tide_queen": 0.24,
+          "dread_dragon_lich": 0.24,
+          "dawn_seraph": 0.24
+        }
+      },
+      {
+        "id": "shard_syndicate",
+        "name": "Shard Syndicate",
+        "cards": ["dawnblade_regent", "whisper_assassin", "facet_crusher", "halfmoon_reaper"],
+        "scores": {
+          "rootstone_titan": 0.34,
+          "ember_tyrant": 0.34,
+          "tide_queen": 0.34,
+          "dread_dragon_lich": 0.34,
+          "dawn_seraph": 0.34
+        }
+      },
+      {
+        "id": "ember_vanguard",
+        "name": "Ember Vanguard",
+        "cards": ["emberthorn", "lavahorn", "firebriar", "emberroot"],
+        "scores": {
+          "rootstone_titan": 0.46,
+          "ember_tyrant": 0.46,
+          "tide_queen": 0.52,
+          "dread_dragon_lich": 0.46,
+          "dawn_seraph": 0.46
+        }
+      },
+      {
+        "id": "mossback_circle",
+        "name": "Mossback Circle",
+        "cards": ["runemoss", "spiralhorn", "rootstring", "amberbough"],
+        "scores": {
+          "rootstone_titan": 0.6,
+          "ember_tyrant": 0.67,
+          "tide_queen": 0.6,
+          "dread_dragon_lich": 0.6,
+          "dawn_seraph": 0.6
+        }
+      },
+      {
+        "id": "tidecallers",
+        "name": "Tidecallers",
+        "cards": ["pearl_duelist", "foam_cavalier", "moonlit_angler", "tide_oracle"],
+        "scores": {
+          "rootstone_titan": 0.9,
+          "ember_tyrant": 0.8,
+          "tide_queen": 0.8,
+          "dread_dragon_lich": 0.8,
+          "dawn_seraph": 0.8
+        }
+      },
+      {
+        "id": "gloam_legion",
+        "name": "Gloam Legion",
+        "cards": ["brine_corsair", "midnight_rider", "siren_huntress", "murk_warlock"],
+        "scores": {
+          "rootstone_titan": 1,
+          "ember_tyrant": 1,
+          "tide_queen": 1,
+          "dread_dragon_lich": 1,
+          "dawn_seraph": 1.12
+        }
+      },
+      {
+        "id": "dawn_order",
+        "name": "Dawn Order",
+        "cards": ["dawn_champion", "seraph_lancer", "seraph_archer", "sanctum_oracle"],
+        "scores": {
+          "rootstone_titan": 1.2,
+          "ember_tyrant": 1.2,
+          "tide_queen": 1.2,
+          "dread_dragon_lich": 1.34,
+          "dawn_seraph": 1.2
+        }
+      },
+      {
+        "id": "heirloom_court",
+        "name": "Heirloom Court",
+        "cards": ["solaris", "sunrider", "starweaver", "soulwell"],
+        "scores": {
+          "rootstone_titan": 1.45,
+          "ember_tyrant": 1.45,
+          "tide_queen": 1.45,
+          "dread_dragon_lich": 1.45,
+          "dawn_seraph": 1.45
+        }
+      }
+    ],
+    "rewards": [
+      {
+        "rank": 10,
+        "rewards": [
+          {
+            "resource": "facet_shard",
+            "amount": "10"
+          }
+        ]
+      },
+      {
+        "rank": 7,
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "3"
+          }
+        ]
+      },
+      {
+        "rank": 5,
+        "rewards": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "15"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "15"
+          }
+        ]
+      },
+      {
+        "rank": 3,
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "6"
+          }
+        ]
+      },
+      {
+        "rank": 1,
+        "rewards": [
+          {
+            "resource": "heirloom_scroll",
+            "amount": "1"
+          },
+          {
+            "resource": "star_dust",
+            "amount": "10"
+          }
+        ]
+      }
+    ]
+  }
+}

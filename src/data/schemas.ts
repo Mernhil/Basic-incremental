@@ -957,6 +957,90 @@ export const trialSchema = z
     path: ['tiers'],
   });
 
+// ---- Raid bosses (DESIGN.md §2 Raid bosses) ---------------------------------------------------
+
+/** The tricks a raid boss can have (raids.ts): each asks for a kind of team from the moveset. */
+export const RAID_TRICKS = ['shield', 'mend', 'rage', 'curse', 'judgement'] as const;
+export type RaidTrick = (typeof RAID_TRICKS)[number];
+
+/**
+ * Raid bosses and their ladder (DESIGN.md §2 Raid bosses): one timed fight with the team of four,
+ * scored by the damage dealt. `hp` and `attack` go through the modifier pipeline (combat.bossHp and
+ * combat.defence, scope: the boss id). A trick's `size` is its strength; `answerAt` is how much of
+ * the answering effect (a share of the team's time) takes it away entirely. Ladder scores are
+ * shares of the boss's HP: 1 is a kill, more is a kill with time left.
+ */
+export const raidsSchema = z
+  .strictObject({
+    /** Ascensions needed before raids open. */
+    unlockAscensions: z.number().int().min(0),
+    triesPerDay: z.number().int().min(1),
+    durationSeconds: z.number().positive(),
+    /** A kill ends the fight; its score is the HP times 1 + killBonus x (time left / duration). */
+    killBonus: z.number().min(0),
+    bosses: z
+      .array(
+        z.strictObject({
+          id,
+          name,
+          element: z.enum(ELEMENTS),
+          /** Picture file name (160 x 172 still) in the boss pictures. */
+          art: z.string().regex(/^raid-[a-z0-9-]+$/),
+          hp: positiveDecimal,
+          attack: z.strictObject({
+            damage: positiveDecimal,
+            intervalSeconds: z.number().positive(),
+          }),
+          trick: z.strictObject({
+            kind: z.enum(RAID_TRICKS),
+            /** One line for the screen. */
+            line: z.string().min(1),
+            size: z.number().positive(),
+            /** Seconds between two mends, or attacks between two judgements; 0 for the others. */
+            every: z.number().min(0),
+            /** Share of the answer (Expose, Wound or Rally) that cancels the trick; 0: none. */
+            answerAt: z.number().min(0),
+            /** What answers it, for the screen. */
+            answer: z.string().min(1),
+          }),
+        }),
+      )
+      .min(1),
+    ladder: z.strictObject({
+      teams: z
+        .array(
+          z.strictObject({
+            id,
+            name,
+            /** Four real cards, left to right. */
+            cards: z.array(id).length(4),
+            /** Boss id -> score as a share of the boss's HP. */
+            scores: z.record(id, z.number().min(0)),
+          }),
+        )
+        .min(1),
+      /** Paid once per boss, the first time the player's rank is this or better. */
+      rewards: z
+        .array(
+          z.strictObject({
+            rank: z.number().int().min(1),
+            rewards: z.array(costSchema).min(1),
+          }),
+        )
+        .min(1),
+    }),
+  })
+  .refine(
+    (r) => r.ladder.rewards.every((e, i) => i === 0 || e.rank < r.ladder.rewards[i - 1]!.rank),
+    {
+      message: 'rewards must go from the lowest rank (largest number) to the best',
+      path: ['ladder', 'rewards'],
+    },
+  );
+export type RaidsConfig = z.output<typeof raidsSchema>;
+export type RaidBoss = RaidsConfig['bosses'][number];
+export type RaidLadderTeam = RaidsConfig['ladder']['teams'][number];
+
 // ---- Progression (DESIGN.md §4, §6, §10, §12) ----------------------------------------------------------------
 
 /** The metal ladder (E1): tier 0..4 of anything with tiers. */
@@ -2768,6 +2852,7 @@ export const contentSchemas = {
   cardRules: cardRulesSchema,
   dungeons: z.array(dungeonSchema),
   trials: z.array(trialSchema),
+  raids: raidsSchema,
   combat: combatSchema,
   cosmetics: z.array(cosmeticSchema),
   portals: z.array(portalSchema),
