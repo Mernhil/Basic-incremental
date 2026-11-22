@@ -456,10 +456,13 @@ export function heirloomDeckView(info: HeirloomGateInfo, content: Content): Heir
 export function heirloomBoardView(info: HeirloomGateInfo, content: Content): HeirloomBoardView {
   const t = COPY.summon;
   const gate = content.heirlooms.gate;
-  const cell = (kind: string, batch: string): HeirloomCellView | null => {
-    const e = info.entries.find(
+  // a row key is a batch id, or `<batch>#2` for the batch's second Heirloom of a type (Wildwood's
+  // fox tail dagger): that row holds only those cells
+  const cell = (kind: string, rowKey: string): HeirloomCellView | null => {
+    const [batch = '', nth = '1'] = rowKey.split('#');
+    const e = info.entries.filter(
       (x) => x.card.item.kind === kind && (x.card.batch ?? 'base') === batch,
-    );
+    )[Number(nth) - 1];
     if (!e) return null;
     const side = e.side;
     return {
@@ -479,7 +482,7 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     title: t.heirloomBoardTitle(info.total),
     facts: t.heirloomBoardFacts(info.unlocked, info.total, gate.unlockShards),
     columns: kinds.map((k) => ({ kind: k.kind, name: k.noun })),
-    // one row per art batch (Dragon, then Leviathan), a cell per weapon type
+    // one row per art batch (Dragon, Leviathan, Wildwood, and a second Wildwood row for its extra dagger), a cell per weapon type
     rows: Object.entries(t.heirloomRows).map(([batch, name]) => ({
       name,
       cells: kinds.map((k) => cell(k.kind, batch)),

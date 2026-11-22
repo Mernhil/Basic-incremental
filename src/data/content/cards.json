@@ -7511,5 +7511,1655 @@
         }
       ]
     }
+  },
+  {
+    "id": "runemoss",
+    "name": "Wild Runemoss",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Runemoss",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberthorn",
+    "name": "Ash Emberthorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberthorn",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "stonegrove",
+    "name": "Wild Stonegrove",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Stonegrove",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "thornblaze",
+    "name": "Ash Thornblaze",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Thornblaze",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mossfang",
+    "name": "Wild Mossfang",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mossfang",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "cindersting",
+    "name": "Ash Cindersting",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Cindersting",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "vinepike",
+    "name": "Wild Vinepike",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Vinepike",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "flarepike",
+    "name": "Ash Flarepike",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Flarepike",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "spiralhorn",
+    "name": "Wild Spiralhorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "support",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Spiralhorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lavahorn",
+    "name": "Ash Lavahorn",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Lavahorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "runeboulder",
+    "name": "Wild Runeboulder",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Runeboulder",
+    "ability": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberknot",
+    "name": "Ash Emberknot",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberknot",
+    "ability": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "rootstring",
+    "name": "Wild Rootstring",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Rootstring",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "firebriar",
+    "name": "Ash Firebriar",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Firebriar",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "amberbough",
+    "name": "Wild Amberbough",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Amberbough",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberroot",
+    "name": "Ash Emberroot",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberroot",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mossreaper",
+    "name": "Wild Mossreaper",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mossreaper",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ashreaper",
+    "name": "Ash Ashreaper",
+    "job": "fighting",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Ashreaper",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mosstooth",
+    "name": "Wild Mosstooth",
+    "job": "mining",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Mosstooth",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "embertooth",
+    "name": "Ash Embertooth",
+    "job": "mining",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Embertooth",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grovehewer",
+    "name": "Wild Grovehewer",
+    "job": "logging",
+    "tier": "mythic",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Grovehewer",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "charhewer",
+    "name": "Ash Charhewer",
+    "job": "logging",
+    "tier": "mythic",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Charhewer",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "antlerblade",
+    "name": "Antlerblade",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Antlerblade",
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "elderbark",
+    "name": "Elderbark",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Elderbark",
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "alicorn",
+    "name": "Alicorn",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Alicorn",
+    "ability": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "toadmaul",
+    "name": "Toadmaul",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "tank",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Toadmaul",
+    "ability": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "owlwing",
+    "name": "Owlwing",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Owlwing",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "beetlejaw",
+    "name": "Beetlejaw",
+    "heirloom": true,
+    "job": "logging",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Beetlejaw",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "phoenixquill",
+    "name": "Phoenixquill",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Phoenixquill",
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bloodrose",
+    "name": "Bloodrose",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Bloodrose",
+    "ability": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberscale",
+    "name": "Emberscale",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberscale",
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "emberblossom",
+    "name": "Emberblossom",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Emberblossom",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "drumbeak",
+    "name": "Drumbeak",
+    "heirloom": true,
+    "job": "mining",
+    "tier": "heirloom",
+    "side": "void",
+    "element": "fire",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Drumbeak",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "foxtail",
+    "name": "Foxtail",
+    "heirloom": true,
+    "job": "fighting",
+    "tier": "heirloom",
+    "side": "mythic",
+    "element": "earth",
+    "role": "dps",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "wildwood",
+    "heirloomName": "Foxtail",
+    "pictureAlt": true,
+    "ability": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
   }
 ]

@@ -287,447 +287,557 @@
       {
         "itemId": "moonwood_dryad",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "seraph_lancer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "lodestone_seer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "dawn_champion",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "sunbreaker_titan",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "valor_pikeman",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "gleam_phantom",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "thunder_smith",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "seraph_archer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "sanctum_oracle",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "mercy_harvester",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "jade_vanguard",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "violet_herald",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "crown_warden",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "jade_regent",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "molten_pikeman",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "rose_sentinel",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "azure_cavalier",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "rose_phantom",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "sky_gleamer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "jade_stalker",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "stormforger",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "verdant_smith",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "amethyst_smith",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "dawn_archer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "orchid_oracle",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "azure_gleaner",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "azure_delver",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "emerald_seer",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "tidal_warden",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "dusk_feller",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "core_titan",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "grave_hammerer",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "rotwood_sovereign",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "shadow_reaver",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "ruin_tyrant",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "wraith_impaler",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "dread_horseman",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "venom_stalker",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "wither_huntress",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "hex_warlock",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "grim_sovereign",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "moon_reaver",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "cobalt_tyrant",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "spore_tyrant",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "gloom_maw",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "royal_impaler",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "cinder_serpent",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "blood_serpent",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "midnight_rider",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "plague_rider",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "bloodletter",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "violet_viper",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "frost_viper",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "iron_butcher",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "night_hunter",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "abyss_hunter",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "ember_stalker",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "rift_mystic",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "bog_reaper",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "hollow_reaper",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "frost_reaper",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "ruby_gnawer",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "void_burrower",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "amber_gnawer",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "rime_feller",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "blight_feller",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "pearl_duelist",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "surf_crusader",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "silver_minnow",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "coral_hoplite",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "foam_cavalier",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "anchor_smith",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "moonlit_angler",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "tide_oracle",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "kelp_harvester",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "reef_prospector",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "driftwood_keeper",
         "tier": "mythic",
-        "weight": 0.004761952
+        "weight": 0.003773622
       },
       {
         "itemId": "brine_corsair",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "maelstrom_tyrant",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "reef_assassin",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "kraken_impaler",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "sunken_horseman",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "barnacle_crusher",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "siren_huntress",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "murk_warlock",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "deep_sovereign",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "trench_burrower",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
       },
       {
         "itemId": "mangrove_tyrant",
         "tier": "void",
-        "weight": 0.002127681
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "runemoss",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "stonegrove",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "mossfang",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "vinepike",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "spiralhorn",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "runeboulder",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "rootstring",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "amberbough",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "mossreaper",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "mosstooth",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "grovehewer",
+        "tier": "mythic",
+        "weight": 0.003773622
+      },
+      {
+        "itemId": "emberthorn",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "thornblaze",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "cindersting",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "flarepike",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "lavahorn",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "emberknot",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "firebriar",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "emberroot",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "ashreaper",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "embertooth",
+        "tier": "void",
+        "weight": 0.001724155
+      },
+      {
+        "itemId": "charhewer",
+        "tier": "void",
+        "weight": 0.001724155
       }
     ],
     "pity": {
