@@ -21,6 +21,7 @@ import {
 import type { LiveLayer } from './pixel/live';
 import { FRAME_MS, stripStyle } from './pixel/animate';
 import { spriteImage, sprite, strip } from './pixel/sprites';
+import { FONT } from './pixelFont';
 import ZOOM from './foeZoom.json';
 
 export const FOE_W = 160;
@@ -176,13 +177,42 @@ function foeLayer() {
 }
 defineLive('foe-fx', foeLayer());
 
+/** The figure the placeholder fills in: an existing humanoid pack picture (its still, no new art). */
+const PLACEHOLDER_BODY = 'foe-hooded_rogue_assassin';
+const PLACEHOLDER_FILL = [0x3a, 0x40, 0x5e] as const;
+const PLACEHOLDER_MARK = '#d2d8f4';
+/** Where the question mark sits on the 160 x 172 canvas: left column, top row, art pixels per cell. */
+const MARK = { x: 65, y: 62, cell: 6 };
+
+/**
+ * The picture shown for an enemy that has none ("picture to come"): the silhouette of an existing
+ * pack figure filled with one dark colour, a question mark from the pixel font on it, on the same
+ * 160 x 172 canvas and ground line as the real pictures. An enemy gets its own picture back by
+ * dropping `hand/foe-<id>.png` and `foe-<id>-anim.png` in `art/pixel/` and baking
+ * (`scripts/art/bake-pixels.mjs`): `foeHtml` uses the strip as soon as it exists.
+ */
+export function placeholderHtml(scale: number): string {
+  const body = sprite(PLACEHOLDER_BODY);
+  if (!body) return '';
+  const [r, g, b] = PLACEHOLDER_FILL.map((v) => (v / 255).toFixed(3));
+  const rows = FONT['?']!;
+  let marks = '';
+  rows.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#')
+        marks += `<rect x="${MARK.x + x * MARK.cell}" y="${MARK.y + y * MARK.cell}" width="${MARK.cell}" height="${MARK.cell}"/>`;
+    }),
+  );
+  return `<svg class="bi-foe bi-foe--placeholder" width="${FOE_W * scale}" height="${FOE_H * scale}" viewBox="0 0 ${FOE_W} ${FOE_H}" overflow="visible" aria-hidden="true" focusable="false"><filter id="bi-foe-ph" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0 0 0 0 ${r} 0 0 0 0 ${g} 0 0 0 0 ${b} 0 0 0 1 0"/></filter><g filter="url(#bi-foe-ph)">${spriteImage(PLACEHOLDER_BODY, 0, 0, FOE_W, FOE_H)}</g><g fill="${PLACEHOLDER_MARK}" shape-rendering="crispEdges">${marks}</g></svg>`;
+}
+
 /**
  * The foe's picture as HTML at `scale` CSS px per art pixel (a whole number of device pixels, the
- * caller picks it: `stage/arena.ts`). Empty when the sprite does not exist.
+ * caller picks it: `stage/arena.ts`). The placeholder when the enemy has no picture.
  */
 export function foeHtml(id: string, scale: number): string {
   const s = strip(`foe-${id}`);
-  if (!s) return '';
+  if (!s) return placeholderHtml(scale);
   const w = FOE_W * scale;
   const h = FOE_H * scale;
   const fx = FX[id];

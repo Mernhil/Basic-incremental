@@ -17,7 +17,18 @@ function spriteIds(): string[] {
 
 describe('the enemy roster art (ASSET_RULES §5)', () => {
   it('gives every sprite id a still and an idle strip on the boss canvas', () => {
+    // the seven pictures taken out of the game show the placeholder (art/foes.ts)
+    const TAKEN_OUT = [
+      'ice_sorceress',
+      'gothic_corsair',
+      'golden_cross_novice_priestess',
+      'shadow_slime',
+    ];
     for (const id of spriteIds()) {
+      if (TAKEN_OUT.includes(id)) {
+        expect(MANIFEST[`foe-${id}`], id).toBeUndefined();
+        continue;
+      }
       const still = MANIFEST[`foe-${id}`];
       const strip = MANIFEST[`foe-${id}-anim`];
       expect(still, id).toMatchObject({ w: 160, h: 172 });

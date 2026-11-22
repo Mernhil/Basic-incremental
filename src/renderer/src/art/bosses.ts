@@ -233,8 +233,10 @@ function bossLayer(art: BossArt) {
     };
   };
 }
-for (const art of ['root_warden', 'cinder_lich', 'glacier_colossus', 'crystal_sentinel'] as const)
-  defineLive(`boss-${art}`, bossLayer(art));
+defineLive('boss-crystal_sentinel', bossLayer('crystal_sentinel'));
+
+/** Whether this boss's picture is baked (the three dungeon bosses' pictures were taken out). */
+export const hasBossSprite = (art: BossArt): boolean => !!sprite(`boss-${art}`);
 
 /**
  * The boss as markup placed at (x, y, w, h) in the caller's units: the still sprite (so it shows

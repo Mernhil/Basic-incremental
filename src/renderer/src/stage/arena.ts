@@ -28,7 +28,7 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
-import { bossArt, sentinelLevel } from '../art/bosses';
+import { bossArt, hasBossSprite, sentinelLevel } from '../art/bosses';
 import { FOE_H, FOE_W, foeHtml, hasFoeSprite } from '../art/foes';
 import { pixelNumberMarkup } from '../art/cosmetics';
 import { barsGone, challengeButton, challengeVerdict, healthPercent } from '../pages/dungeonsModel';
@@ -531,25 +531,19 @@ export function createArena(ctx: ArenaContext): Arena {
     if (dungeon) {
       const enemy = bossStatus(s, content)?.enemy;
       const art = dungeon.boss.art;
-      if (enemy && (enemy.kind !== 'boss' || !art)) {
+      if (enemy && (enemy.kind !== 'boss' || !art || !hasBossSprite(art))) {
         const key = `enemy:${enemy.kind}:${enemy.id}`;
         if (key === artKey) return;
         artKey = key;
         const sprite =
           enemy.kind === 'boss'
-            ? dungeon.boss.sprite
+            ? (dungeon.boss.sprite ?? art)
             : enemy.kind === 'miniboss'
               ? dungeon.miniBoss.sprite
               : dungeon.enemies.find((e) => e.id === enemy.id)?.sprite;
-        if (hasFoeSprite(sprite)) {
-          foeSprite = sprite!;
-          fitFoe();
-          return;
-        }
-        clearFoe();
-        const box = div(`ar-enemy ar-enemy--${enemy.kind}`);
-        box.append(span('ar-enemy__name', enemy.name));
-        foeBody.replaceChildren(box);
+        // no picture (taken out, or not made yet): foeHtml draws the placeholder
+        foeSprite = hasFoeSprite(sprite) ? sprite! : 'placeholder';
+        fitFoe();
         return;
       }
       if (art && artKey !== art) {
