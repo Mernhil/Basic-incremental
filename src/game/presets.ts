@@ -76,7 +76,7 @@ export function presetCost(
   loadout: CardLoadout,
 ): { cost: number; cap: number; cards: number } {
   return {
-    cost: loadoutCost(content, loadout),
+    cost: loadoutCost(content, loadout, state.cards.owned),
     cap: loadoutCostCap(state, content, 'fighting'),
     cards: loadoutCards(loadout).length,
   };

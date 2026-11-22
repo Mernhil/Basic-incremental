@@ -1,0 +1,59 @@
+/* The starter weapon's seal block (ui/sealBlock.ts): a pixel tile that goes beside the weapon
+   panel. Colours and frames come from the shared recipe (theme/frames.css). */
+.sealblock {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  min-width: 0;
+  padding: 8px 10px;
+}
+.sealblock[hidden] {
+  display: none;
+}
+.sealblock__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sealblock__title {
+  font-size: 13px;
+}
+.sealblock__step {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.sealblock__pips {
+  display: flex;
+  gap: 4px;
+}
+.sealblock__pip {
+  flex: 1;
+  height: 6px;
+  background: var(--bi-frame-ink-muted);
+  opacity: 0.35;
+}
+.sealblock__pip.is-broken {
+  background: var(--bi-chrome-accent);
+  opacity: 1;
+}
+.sealblock__now,
+.sealblock__next {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.sealblock__next {
+  color: var(--bi-frame-ink-muted);
+}
+.sealblock__cost {
+  display: flex;
+  min-height: 22px;
+}
+.sealblock__button {
+  justify-self: stretch;
+}
+/* in the Cards detail the block sits above the weapon panel with a frame step between them */
+.cp-detail__side > .sealblock {
+  margin-bottom: calc(var(--fs, 4px) * 2);
+}

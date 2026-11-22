@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CURRENT_SAVE_VERSION,
   collectModifiers,
   createSaveText,
   createSeededRng,
@@ -387,6 +388,7 @@ describe('Save format 40: summoning chances', () => {
     expect(content.portals.find((p) => p.id === PORTAL)).toBeDefined();
     const { version } = JSON.parse(createSaveText(freshState(), 1)) as { version: number };
     expect(version).toBeGreaterThanOrEqual(40);
+    expect(createSaveText(freshState(), 1)).toContain(`"version":${CURRENT_SAVE_VERSION}`);
   });
 
   it('a save with 10 or more Card Portal pulls has had its first 10-pull; the level comes from the pulls', () => {
