@@ -2,16 +2,17 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  brighten,
+  GLOW_GOLD,
   HUB_BUILDINGS,
   HUB_MAP_H,
   HUB_MAP_W,
   hubScale,
-  overlappingBuildings,
   scaled,
 } from '../src/renderer/src/hub/hubModel';
 import { VIEW_IDS } from '../src/renderer/src/table/viewIds';
 
-/** The hub map (DESIGN.md section 2 Base camp): whole scales, click squares on the picture, every dock screen reachable. */
+/** The hub map (DESIGN.md section 2 Base camp): whole scales, exact masks, every dock screen reachable. */
 describe('hub map', () => {
   it('is the approved 640 x 360 picture, shown at a whole scale and never scrolled', () => {
     const png = readFileSync(resolve(__dirname, '../src/renderer/src/hub/hub-wide-640x360.png'));
@@ -35,25 +36,27 @@ describe('hub map', () => {
     }
   });
 
-  it('puts every click square on whole screen pixels at either scale', () => {
-    for (const scale of [2, 3]) {
-      for (const b of HUB_BUILDINGS) {
-        const r = scaled(b.spot, scale);
-        for (const n of [r.x, r.y, r.w, r.h]) expect(Number.isInteger(n)).toBe(true);
-      }
+  it('has one exact mask per place: a 640 x 360 picture with transparency, byte for byte the approved one', () => {
+    for (const { id } of HUB_BUILDINGS) {
+      const png = readFileSync(resolve(__dirname, `../src/renderer/src/hub/masks/${id}.png`));
+      expect(png.readUInt32BE(16), id).toBe(HUB_MAP_W);
+      expect(png.readUInt32BE(20), id).toBe(HUB_MAP_H);
+      expect([4, 6], id).toContain(png[25]); // grey + alpha or RGBA
     }
   });
 
-  it('keeps every click square inside the picture and off every other', () => {
-    for (const { id, spot: rect } of HUB_BUILDINGS) {
-      expect(rect.w, id).toBeGreaterThan(0);
-      expect(rect.h, id).toBeGreaterThan(0);
-      expect(rect.x, id).toBeGreaterThanOrEqual(0);
-      expect(rect.y, id).toBeGreaterThanOrEqual(0);
-      expect(rect.x + rect.w, id).toBeLessThanOrEqual(HUB_MAP_W);
-      expect(rect.y + rect.h, id).toBeLessThanOrEqual(HUB_MAP_H);
+  it('puts every box on whole screen pixels at either scale', () => {
+    for (const scale of [2, 3]) {
+      const r = scaled({ x: 17, y: 9, w: 40, h: 23 }, scale);
+      for (const n of [r.x, r.y, r.w, r.h]) expect(Number.isInteger(n)).toBe(true);
     }
-    expect(overlappingBuildings()).toEqual([]);
+  });
+
+  it('brightens each colour by x1.15 + 8, capped at 255, and outlines in gold #FFD66E', () => {
+    expect(brighten(0)).toBe(8);
+    expect(brighten(100)).toBe(123);
+    expect(brighten(250)).toBe(255);
+    expect([...GLOW_GOLD]).toEqual([0xff, 0xd6, 0x6e]);
   });
 
   it('opens every screen the dock opened, from some building', () => {

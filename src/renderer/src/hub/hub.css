@@ -1,5 +1,5 @@
 /* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, centred, never scrolled,
-   with a small click square over each place. Colours from the shell tokens so a restyle applies. */
+   with each place answering by its mask. Colours from the shell tokens so a restyle applies. */
 
 .hub {
   position: absolute;
@@ -20,17 +20,29 @@
   image-rendering: pixelated;
   user-select: none;
 }
-/* one small invisible click square per place: only the pointer and the name plate show on mouseover */
+/* the hover picture: the brightened place and its one-pixel gold outline, drawn at the map's own pixels
+   and scaled up with nearest neighbour; it fades in and out in about 120 ms */
+.hub__glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.hub__glow.is-on {
+  opacity: 1;
+}
+/* a button over each place's box: the keyboard's way in and the anchor of its plate and "!" (the
+   mouse is answered by the masks, see hub.ts) */
 .hub__spot {
   position: absolute;
   padding: 0;
   border: 0;
   background: transparent;
-  cursor: pointer;
   outline: none;
-}
-.hub__spot.is-locked {
-  cursor: not-allowed;
+  pointer-events: none;
 }
 .hub__plate {
   position: absolute;
@@ -45,9 +57,10 @@
   background: var(--hub-charcoal, #1c1c20);
   box-shadow: 0 0 0 2px var(--hub-gold-dim, #c8a24a);
   opacity: 0;
+  transition: opacity 120ms ease-out;
   pointer-events: none;
 }
-.hub__spot:hover .hub__plate,
+.hub__spot.is-on .hub__plate,
 .hub__spot:focus-visible .hub__plate {
   opacity: 1;
 }
@@ -65,9 +78,10 @@
   box-shadow: 0 0 0 2px #6b6b72;
   max-width: 90%;
   opacity: 0;
+  transition: opacity 120ms ease-out;
   pointer-events: none;
 }
-.hub__spot:hover .hub__lock,
+.hub__spot.is-on .hub__lock,
 .hub__spot:focus-visible .hub__lock {
   opacity: 1;
 }

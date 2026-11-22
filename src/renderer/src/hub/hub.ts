@@ -2,6 +2,7 @@ import { h } from '../shell/shell';
 import type { PileHint, TableContext, ViewDef } from '../table/contract';
 import type { ViewId } from '../table/viewIds';
 import mapUrl from './hub-wide-640x360.png';
+import { glowImage, loadMapPixels, loadMask, maskFileFor, maskHit, type Mask } from './hubMasks';
 import {
   HUB_BUILDINGS,
   HUB_MAP_H,
@@ -14,10 +15,11 @@ import './hub.css';
 
 /**
  * The hub screen (DESIGN.md section 2 Base camp): the painted map at a whole scale, centred, never
- * scrolled, with one small invisible click square over each place. On mouseover (or the keyboard
- * on it) the pointer shows and the place's name plate appears; a gold "!" shows where something
- * waits and a lock plate on a place that does not exist yet. Selecting a place opens the screen the
- * dock opened before, or goes to the dungeon.
+ * scrolled. Each place is its mask: the click area is a pixel test on the mask at the map's scale.
+ * On mouseover (or the keyboard on it) the place is brightened a little and outlined by one gold
+ * map pixel, and its name plate shows (about 120 ms fade in and out); a gold "!" shows where
+ * something waits, and a lock plate on a place that does not exist yet. Selecting a place opens
+ * the screen the dock opened before, or goes to the dungeon.
  */
 
 export interface Hub {
@@ -28,6 +30,9 @@ export interface Hub {
 
 interface Place {
   def: HubBuilding;
+  /** The place's mask once it is read. */
+  mask: Mask | null;
+  /** A button over the mask's box: the keyboard's way in (Tab, Enter) and the plate's anchor. */
   spot: HTMLButtonElement;
   mark: HTMLElement;
 }
@@ -45,7 +50,12 @@ export function createHub(
   img.alt = '';
   img.draggable = false;
   img.setAttribute('aria-hidden', 'true');
-  stage.append(img);
+  // the hover picture: drawn at the map's own pixels, scaled by CSS with nearest neighbour
+  const glow = h('canvas', 'hub__glow') as HTMLCanvasElement;
+  glow.width = HUB_MAP_W;
+  glow.height = HUB_MAP_H;
+  glow.setAttribute('aria-hidden', 'true');
+  stage.append(img, glow);
   scroller.append(stage);
 
   const menu = h('div', 'hub__menu px-panel');
@@ -61,6 +71,11 @@ export function createHub(
 
   const hintOf = (id: ViewId): PileHint | null =>
     views.find((v) => v.id === id)?.pile?.hint?.(ctx) ?? null;
+
+  let scale = 0;
+  let area = '';
+  let mapPixels: ImageData | null = null;
+  let hovered: Place | null = null;
 
   const places: Place[] = HUB_BUILDINGS.map((def) => {
     const spot = h('button', 'hub__spot') as HTMLButtonElement;
@@ -81,9 +96,66 @@ export function createHub(
     mark.hidden = true;
     mark.setAttribute('aria-hidden', 'true');
     spot.append(mark);
+    const place: Place = { def, mask: null, spot, mark };
     spot.addEventListener('click', () => select(def, spot));
+    spot.addEventListener('focus', () => light(place));
+    spot.addEventListener('blur', () => {
+      if (hovered === place) light(null);
+    });
     stage.append(spot);
-    return { def, spot, mark };
+    return place;
+  });
+
+  // read the masks and the map's pixels; the picture still shows, the places answer once they are read
+  void (async () => {
+    mapPixels = await loadMapPixels(mapUrl);
+    await Promise.all(
+      places.map(async (p) => {
+        const url = maskFileFor(p.def.id);
+        p.mask = url ? await loadMask(url) : null;
+      }),
+    );
+    area = '';
+    layout();
+  })();
+
+  /** Lights one place (brightened, gold outline, name plate) or none. */
+  function light(place: Place | null): void {
+    if (place === hovered && place !== null) return;
+    if (hovered) hovered.spot.classList.remove('is-on');
+    hovered = place;
+    if (!place) {
+      glow.classList.remove('is-on');
+      stage.style.cursor = '';
+      return;
+    }
+    place.spot.classList.add('is-on');
+    if (place.mask && mapPixels) {
+      const g = glow.getContext('2d');
+      if (g) {
+        g.clearRect(0, 0, HUB_MAP_W, HUB_MAP_H);
+        g.putImageData(glowImage(place.mask, mapPixels), 0, 0);
+      }
+      glow.classList.add('is-on');
+    }
+    stage.style.cursor = place.def.action.kind === 'locked' ? 'not-allowed' : 'pointer';
+  }
+
+  /** The place whose mask is under a point of the screen, if any. */
+  function placeAt(clientX: number, clientY: number): Place | null {
+    if (scale === 0) return null;
+    const r = stage.getBoundingClientRect();
+    const x = Math.floor((clientX - r.left) / scale);
+    const y = Math.floor((clientY - r.top) / scale);
+    return places.find((p) => p.mask && maskHit(p.mask, x, y)) ?? null;
+  }
+
+  stage.addEventListener('pointermove', (e) => light(placeAt(e.clientX, e.clientY)));
+  stage.addEventListener('pointerleave', () => light(null));
+  stage.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('.hub__spot')) return;
+    const p = placeAt(e.clientX, e.clientY);
+    if (p) select(p.def, p.spot);
   });
 
   function closeMenu(): void {
@@ -130,8 +202,6 @@ export function createHub(
     if (!menu.hidden && !(e.target as Element).closest('.hub__menu, .hub__spot')) closeMenu();
   });
 
-  let scale = 0;
-  let area = '';
   function layout(): void {
     const w = scroller.clientWidth;
     const hh = scroller.clientHeight;
@@ -142,12 +212,17 @@ export function createHub(
     // centred: the stage may be taller than the window, then the top and bottom edge are cut
     stage.style.left = `${Math.floor((w - HUB_MAP_W * scale) / 2)}px`;
     stage.style.top = `${Math.floor((hh - HUB_MAP_H * scale) / 2)}px`;
-    stage.style.width = `${HUB_MAP_W * scale}px`;
-    stage.style.height = `${HUB_MAP_H * scale}px`;
-    img.style.width = `${HUB_MAP_W * scale}px`;
-    img.style.height = `${HUB_MAP_H * scale}px`;
+    for (const node of [stage, img, glow]) {
+      node.style.width = `${HUB_MAP_W * scale}px`;
+      node.style.height = `${HUB_MAP_H * scale}px`;
+    }
     for (const p of places) {
-      const r = scaled(p.def.spot, scale);
+      if (!p.mask) {
+        p.spot.hidden = true;
+        continue;
+      }
+      p.spot.hidden = false;
+      const r = scaled(p.mask.bounds, scale);
       p.spot.style.left = `${r.x}px`;
       p.spot.style.top = `${r.y}px`;
       p.spot.style.width = `${r.w}px`;
