@@ -38,16 +38,18 @@ const ownHeirloom = (state: GameState, id: string, stars = 1, level = 1): GameSt
   return state;
 };
 
-describe('the 22 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
+describe('the 34 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
   it('lists one Heirloom card per item type, in the shared type order', () => {
     const list = heirloomCards(content);
-    expect(list).toHaveLength(22);
-    // a type's Dragon Heirloom first, then its Leviathan one (batch 2)
-    expect(list.slice(0, 4).map((c) => c.name)).toEqual([
+    expect(list).toHaveLength(34);
+    // a type's Dragon Heirloom first, then its Leviathan one (batch 2), then its Wildwood one(s)
+    expect(list.slice(0, 6).map((c) => c.name)).toEqual([
       'Solaris',
       'Auroratusk',
+      'Antlerblade',
       'Grimhowl',
       'Maelfang',
+      'Elderbark',
     ]);
     // each leans to the side the user picked (2026-11-14): its card's rarity is Mythic or Void
     const dragon = list.filter((c) => !c.batch);
@@ -160,7 +162,7 @@ describe('the Heirloom Gate (DESIGN.md §7)', () => {
     // 2% with a pity at 60 lands a little above 2%.
     expect(whole / 10000).toBeGreaterThan(0.02);
     expect(whole / 10000).toBeLessThan(0.035);
-    expect(heirloomGateInfo(state, content).unlocked).toBe(22);
+    expect(heirloomGateInfo(state, content).unlocked).toBe(34);
   });
 
   it('keeps shards, pity, trees and scrolls through an Ascension', () => {

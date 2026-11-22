@@ -7,14 +7,14 @@ import { content } from './helpers';
 /** DESIGN §5 The base frame: every art batch has one shared border, worn at every tier. */
 describe('card kits (DESIGN.md §5 The base frame)', () => {
   it('has a 212 x 256 kit picture for every batch', () => {
-    expect(content.batches.map((b) => b.id)).toEqual(['dragon', 'leviathan']);
+    expect(content.batches.map((b) => b.id)).toEqual(['dragon', 'leviathan', 'wildwood']);
     for (const b of content.batches) expect(sprite(b.kit), b.kit).toMatchObject({ w: 212, h: 256 });
   });
 
-  it('gives the Dragon kit to every card without a batch and the Leviathan kit to its batch', () => {
+  it('gives the Dragon kit to every card without a batch and its own kit to each later batch', () => {
     const state = createInitialState(content);
     for (const c of content.cards) {
-      const want = c.batch === 'leviathan' ? 'kit-t6-leviathan' : 'kit-t6-dragon';
+      const want = c.batch ? `kit-t6-${c.batch}` : 'kit-t6-dragon';
       expect(baseKitOf(content, c.id), c.id).toBe(want);
       const look = resolveCard(content, state.cosmetics.loadout, {
         id: c.id,

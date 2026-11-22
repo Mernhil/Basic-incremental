@@ -797,7 +797,7 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   color: #ff8a8a;
 }
 
-/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 22
+/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 34
    Heirloom cards by weapon type on the left, the selected one large with its tree as gems in an
    arch around it on the right ---- */
 .cp-wrap--heirlooms {
@@ -820,9 +820,11 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-hgroup .cp-group__title {
   font-size: 12px;
 }
+/* a type's Heirlooms sit two to a line and wrap (three in each type, four daggers, with Wildwood) */
 .cp-hgroup__cards {
   display: flex;
-  gap: var(--kit-gutter);
+  flex-wrap: wrap;
+  gap: calc(28px * var(--card-k) + var(--kit-top) + var(--kit-bottom)) var(--kit-gutter);
   /* room for the ★6 crowns above the cards */
   padding-top: calc(28px * var(--card-k));
 }

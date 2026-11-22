@@ -60,7 +60,10 @@ describe('Heirloom backdrops', () => {
     for (let i = 0; i < 64; i++) expect(sprite(`bgfish-r${i}`)).toMatchObject({ w: 32, h: 32 });
     for (let i = 0; i < 16; i++) expect(sprite(`bgbig-b${i}`)).toMatchObject({ w: 64, h: 64 });
     for (const b of content.batches) {
-      expect(sprite(kitName('heirloom', b.kit, true))).toMatchObject({ w: 212, h: 256 });
+      // only a batch with a backdrop has a windowed kit (Wildwood's come later: it keeps the painted window)
+      if (b.backdrop) {
+        expect(sprite(kitName('heirloom', b.kit, true))).toMatchObject({ w: 212, h: 256 });
+      }
       expect(kitName('mythic', b.kit, true)).toBe(b.kit); // T6 keeps the painted window
     }
   });
