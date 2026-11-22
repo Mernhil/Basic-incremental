@@ -38,11 +38,14 @@ describe('ultimates queue one at a time', () => {
 });
 
 describe('stamps on the enemy card', () => {
-  it('lands in its own band', () => {
-    const crit = stampSpot('crit', [], () => 0.5);
-    const brk = stampSpot('break', [], () => 0.5);
-    expect(crit.x).toBeGreaterThan(0.5);
-    expect(brk.x).toBeLessThan(0.3);
+  it('BREAK! takes the upper slot and CRIT! the lower, never crossing', () => {
+    for (const r of [0, 0.5, 0.99]) {
+      const crit = stampSpot('crit', [], () => r);
+      const brk = stampSpot('break', [], () => r);
+      expect(brk.y).toBeLessThan(0.3);
+      expect(crit.y).toBeGreaterThan(0.6);
+      expect(crit.y - brk.y).toBeGreaterThan(0.4);
+    }
   });
 
   it('never sits on a stamp that is still showing (two at a time, 200 seeded tries)', () => {

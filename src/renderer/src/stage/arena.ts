@@ -507,7 +507,7 @@ export function createArena(ctx: ArenaContext): Arena {
     w.style.left = `${(spot.x * 100).toFixed(1)}%`;
     w.style.top = `${(spot.y * 100).toFixed(1)}%`;
     foeZone.append(w);
-    const r = 'rotate(-8deg)';
+    const r = 'translate(-50%, -50%) rotate(-8deg)';
     w.animate(
       [
         { transform: `scale(3) ${r}`, opacity: 0 },
@@ -1102,8 +1102,9 @@ export function createArena(ctx: ArenaContext): Arena {
       dpr,
       calm: calm(),
       hooks: {
+        // the dim holds one steady level while more cut-ins wait, and lifts once after the last
         dim: (on) => {
-          el.classList.toggle('is-special', on);
+          if (on || specialWaiting.length === 0) el.classList.toggle('is-special', on);
           slot.el.classList.toggle('is-special-src', on);
         },
         card: (o) => {
@@ -1174,6 +1175,7 @@ export function createArena(ctx: ArenaContext): Arena {
       // nothing left: the tag follows the enemy's health again
       specialTotal = null;
       tagHeld = false;
+      el.classList.remove('is-special');
       return;
     }
     if (special.busy()) {

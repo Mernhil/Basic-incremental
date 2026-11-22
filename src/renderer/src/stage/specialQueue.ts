@@ -29,10 +29,13 @@ export interface Spot {
   y: number;
 }
 
-/** The band each stamp lands in: CRIT! right and middle, BREAK! left and high. */
+/**
+ * The band each stamp lands in, around the card's middle column: BREAK! takes the upper slot, CRIT!
+ * the lower, so the two words never cross.
+ */
 const STAMP_BAND = {
-  crit: { x: [0.55, 0.75], y: [0.5, 0.65] },
-  break: { x: [0.1, 0.25], y: [0.12, 0.22] },
+  crit: { x: [0.35, 0.65], y: [0.66, 0.76] },
+  break: { x: [0.35, 0.65], y: [0.14, 0.24] },
 } as const;
 
 /** Nearest two stamps may sit to each other (fraction of the card's width, y counts half). */
