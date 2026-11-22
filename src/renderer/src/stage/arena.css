@@ -1199,6 +1199,32 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-card.is-out .du-card__mark {
   opacity: 0;
 }
+/* the effects a card or the enemy is under, as words until each has its art */
+.du-card__effects,
+.du-foe__effects {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--du-gold);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.8);
+  pointer-events: none;
+}
+.du-card__effects {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--du-u) * -44);
+  z-index: 3;
+  text-align: center;
+  white-space: nowrap;
+}
+.du-card.is-out .du-card__effects {
+  display: none;
+}
+.du-foe__effects {
+  display: block;
+  min-height: 1.2em;
+}
 /* a hit from the enemy: the card shakes (transform only) */
 .du-card__body.is-hurt {
   animation: du-hurt 0.4s linear;

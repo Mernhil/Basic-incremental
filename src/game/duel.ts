@@ -8,6 +8,9 @@ import { Decimal } from './num';
 import { isFrontSlot, type GameState } from './state';
 import type { BossAbility } from './bossAttacks';
 import { heirloomSkill } from './heirlooms';
+import { elementDamagePercent } from './elements';
+import { applyMoves, cardMoves, type CardMoves, type HealShare, type MoveFighter } from './moves';
+import type { MoveEffectKind } from '../data';
 
 /**
  * The card duel's rules (DESIGN.md §6 "The fight is a first-person card duel", "The team of 4 in
@@ -49,8 +52,15 @@ export interface TeamCard {
   hit: Decimal;
   /** Extra damage of a signature attack on top of its hit; 0 when the signature heals. */
   signature: Decimal;
-  /** Share of each standing card's max health its signature heals; 0 when it strikes. */
+  /** Share of each standing card's max health its ultimate heals (the team heal of `heals`). */
   heal: number;
+  /** What its ultimate heals each time it fires (DESIGN.md §2 Three attacks per card). */
+  heals: HealShare[];
+  /** Share the enemy's attacks lose while it stands, from its moves (Weaken and Stagger). */
+  weaken: number;
+  /** Its moves (null for bare hands), and seconds between its skills (0 with none open). */
+  moves: CardMoves | null;
+  skillEvery: number;
   /** Max health (its card health, the team's `combat.health` modifiers, the skill's factor). 0
    *  for bare hands, which nothing targets. */
   maxHealth: Decimal;
@@ -78,16 +88,14 @@ export function teamCardIds(state: GameState, content: Content): string[] {
   return teamPlacements(state, content).map((p) => p.id);
 }
 
-/** The skill a card fights with: an Heirloom's tree capstone's (with `state`), else its own (a
- *  unique), else its weapon type's (skills.json). */
+/** The passive a card fights with (guard, damage, health): an Heirloom's tree capstone's (with
+ *  `state`), else its weapon type's (skills.json). What it fires is its moves (moves.ts). */
 export function cardSkill(content: Content, cardId: string, state?: GameState): Skill {
   const fromTree = state ? heirloomSkill(state, content, cardId) : null;
   if (fromTree) return fromTree;
-  const own = content.skills.cards[cardId];
   const card = content.cardById.get(cardId);
   const kind = card?.item.kind as keyof Content['skills']['weapons'] | undefined;
-  const id =
-    own ?? (kind ? content.skills.weapons[kind] : undefined) ?? content.skills.weapons.sword;
+  const id = (kind ? content.skills.weapons[kind] : undefined) ?? content.skills.weapons.sword;
   return content.skillById.get(id) ?? content.skills.skills[0]!;
 }
 
@@ -172,6 +180,10 @@ export function buildTeam(
         hit,
         signature: hit.mul(burst.power),
         heal: 0,
+        heals: [],
+        weaken: 0,
+        moves: null,
+        skillEvery: 0,
         maxHealth: new Decimal(0),
         crit,
       },
@@ -183,7 +195,7 @@ export function buildTeam(
   const sum = healths.reduce((a, b) => a.add(b), new Decimal(0));
   const total = Decimal.max(computeStat('combat.health', sum, modifiers, healthCtx).value, 0);
   const healthFactor = sum.gt(0) ? total.div(sum) : new Decimal(0);
-  return ids.map((id, slot): TeamCard => {
+  const base = ids.map((id, slot): TeamCard => {
     const owned = state.cards.owned[id]!;
     const skill = cardSkill(content, id, state);
     const mods = forCard(id);
@@ -196,8 +208,10 @@ export function buildTeam(
       .mul(skill.damage)
       .mul(critFactor(crit));
     const hit = dps.mul(burst.interval);
-    const heals = skill.signature.kind === 'heal';
     const position = placed[slot]!.position;
+    // A tree skill that heals with the signature still does, with the ultimate.
+    const tree = heirloomSkill(state, content, id);
+    const treeHeal = tree?.signature.kind === 'heal' ? tree.signature.share : 0;
     return {
       id,
       slot,
@@ -208,10 +222,59 @@ export function buildTeam(
       fill: burst.fill,
       size: burst.size,
       hit,
-      signature: heals ? new Decimal(0) : hit.mul(burst.power),
-      heal: skill.signature.kind === 'heal' ? skill.signature.share : 0,
+      signature: hit.mul(burst.power),
+      heal: treeHeal,
+      heals: treeHeal > 0 ? [{ on: 'team', share: treeHeal }] : [],
+      weaken: 0,
+      moves: cardMoves(content, id, owned, mods),
+      skillEvery: 0,
       maxHealth: healths[slot]!.mul(healthFactor).mul(skill.health),
       crit,
+    };
+  });
+  return withMoves(content, base, dungeonId);
+}
+
+/** The team after its moves (moves.ts `applyMoves`): the skills, the ultimates and their effects. */
+function withMoves(content: Content, team: TeamCard[], dungeonId: string | null): TeamCard[] {
+  const fighters = team.map((c): MoveFighter => {
+    const element = c.moves?.element ?? null;
+    const percent =
+      element && dungeonId ? elementDamagePercent(content, dungeonId, element).toNumber() : 0;
+    return {
+      row: c.row,
+      interval: c.interval,
+      fill: c.fill,
+      size: c.size,
+      hit: c.hit,
+      signature: c.signature,
+      maxHealth: c.maxHealth,
+      critChance: c.crit.chance,
+      critDamage: c.crit.damage,
+      element,
+      resisted: percent < 0 && percent > -100 ? 1 / (1 + percent / 100) - 1 : 0,
+      moves: c.moves,
+    };
+  });
+  const out = applyMoves(fighters);
+  return team.map((c, i) => {
+    const o = out[i]!;
+    const heals = [...c.heals];
+    for (const h of o.heals) {
+      const same = heals.find((x) => x.on === h.on);
+      if (same) same.share += h.share;
+      else heals.push({ ...h });
+    }
+    return {
+      ...c,
+      interval: o.interval,
+      fill: o.fill,
+      hit: o.hit,
+      signature: o.signature,
+      heals,
+      heal: heals.filter((h) => h.on === 'team').reduce((a, h) => a + h.share, 0),
+      weaken: o.weaken,
+      skillEvery: o.skillEvery,
     };
   });
 }
@@ -334,7 +397,7 @@ export function secondsToHits(
 export function nextHealAt(cards: readonly TeamCard[], t: number): number {
   let at = Infinity;
   for (const card of cards) {
-    if (card.heal <= 0 || card.fill <= 0) continue;
+    if (card.heals.length === 0 || card.fill <= 0) continue;
     const g = signaturesBy(card, t);
     let k = Math.max(hitsBy(card, t) + 1, Math.ceil(((g + 1) * card.size) / card.fill - EPSILON));
     while (signaturesIn(card, k) < g + 1) k++;
@@ -448,10 +511,15 @@ export function abilityTargets(
   }
 }
 
-/** What the enemy's attacks are multiplied by: each standing card's weaken takes its share off. */
+/** What the enemy's attacks are multiplied by: each standing card's weaken (its passive and its
+ *  moves' Weaken and Stagger) takes its share off. */
 export function weakenFactor(state: Damaged, team: readonly TeamCard[]): number {
   let f = 1;
-  for (const c of team) if (c.skill.weaken > 0 && isStanding(state, c)) f *= 1 - c.skill.weaken;
+  for (const c of team) {
+    if (!isStanding(state, c)) continue;
+    if (c.skill.weaken > 0) f *= 1 - c.skill.weaken;
+    if (c.weaken > 0) f *= 1 - c.weaken;
+  }
   return f;
 }
 
@@ -484,6 +552,105 @@ export function healTeam(
     if (left.lte(0)) delete next.combat.cardDamage[c.id];
     else next.combat.cardDamage[c.id] = left;
   }
+}
+
+/**
+ * What a card's ultimate heals, `times` times (a state being built): each share lands on its
+ * target among the standing cards (the card itself, a row, the team, or the card with the least
+ * health left).
+ */
+export function healFromMoves(
+  next: GameState,
+  team: readonly TeamCard[],
+  source: TeamCard,
+  times: number,
+): void {
+  if (times <= 0) return;
+  const standing = team.filter((c) => c.maxHealth.gt(0) && isStanding(next, c));
+  for (const h of source.heals) {
+    let targets: TeamCard[];
+    switch (h.on) {
+      case 'self':
+        targets = standing.filter((c) => c.id === source.id);
+        break;
+      case 'front':
+      case 'back':
+        targets = standing.filter((c) => c.row === h.on);
+        break;
+      case 'lowest': {
+        const left = (c: TeamCard): Decimal => c.maxHealth.sub(damageTaken(next, c.id));
+        const low = standing.reduce<TeamCard | null>(
+          (m, c) => (m === null || left(c).lt(left(m)) ? c : m),
+          null,
+        );
+        targets = low ? [low] : [];
+        break;
+      }
+      default:
+        targets = standing;
+    }
+    healTeam(next, targets, h.share, times);
+  }
+}
+
+/** What each card and the enemy are under at `t` seconds of play time, from the skills and
+ *  ultimates that fired, for the stage's labels (show only: the fight deals the averages). */
+export interface ActiveEffects {
+  cards: Record<string, MoveEffectKind[]>;
+  enemy: MoveEffectKind[];
+}
+
+/** One-off effects (a heal, a shield) show this long on the stage. */
+const SHOW_ONE_OFF_SECONDS = 1.5;
+
+export function activeEffects(team: readonly TeamCard[], t: number): ActiveEffects {
+  const out: ActiveEffects = { cards: {}, enemy: [] };
+  const add = (list: MoveEffectKind[], k: MoveEffectKind): void => {
+    if (!list.includes(k)) list.push(k);
+  };
+  const on = (source: TeamCard, target: string): TeamCard[] => {
+    switch (target) {
+      case 'self':
+        return [source];
+      case 'front':
+      case 'back':
+        return team.filter((c) => c.row === target);
+      case 'row':
+        return team.filter((c) => c.row === source.row);
+      case 'enemy':
+        return [];
+      case 'emptiest':
+        return team.length > 1 ? [team.find((c) => c.id !== source.id)!] : [source];
+      default:
+        return [...team];
+    }
+  };
+  for (const card of team) {
+    const m = card.moves;
+    if (!m) continue;
+    const fired: { at: number; effects: typeof m.ult.effects }[] = [];
+    if (m.skill?.open && card.skillEvery > 0 && t >= card.skillEvery) {
+      fired.push({
+        at: Math.floor(t / card.skillEvery + EPSILON) * card.skillEvery,
+        effects: m.skill.effects,
+      });
+    }
+    const ults = signaturesBy(card, t);
+    if (ults > 0 && card.fill > 0) {
+      const k = Math.ceil((ults * card.size) / card.fill - EPSILON);
+      fired.push({ at: k * card.interval, effects: m.ult.effects });
+    }
+    for (const f of fired) {
+      for (const e of f.effects) {
+        const lasts =
+          e.seconds === undefined ? SHOW_ONE_OFF_SECONDS : e.seconds === 0 ? Infinity : e.seconds;
+        if (t - f.at > lasts) continue;
+        if (e.on === 'enemy') add(out.enemy, e.kind);
+        else for (const c of on(card, e.on)) add((out.cards[c.id] ??= []), e.kind);
+      }
+    }
+  }
+  return out;
 }
 
 /** Average damage per second of one card: hits, signature attacks and crits at their expected

@@ -6,6 +6,7 @@ import {
   bossStatus,
   collectModifiers,
   duelEnemy,
+  enemyEffects,
   duelFightKey,
   duelSheet,
   emptyDuelLog,
@@ -247,7 +248,10 @@ export function createArena(ctx: ArenaContext): Arena {
   const foeName = document.createElement('h2');
   foeName.className = 'du-foe__name';
   const foeKind = span('du-foe__kind');
-  foeHead.append(foeName, foeKind);
+  // the effects on the enemy, as words until each has its art (DESIGN.md §2 Three attacks)
+  const foeEffects = span('du-foe__effects');
+  foeEffects.setAttribute('aria-live', 'off');
+  foeHead.append(foeName, foeKind, foeEffects);
   const foeArt = div('du-foe__art');
   const foeBody = div('du-foe__body');
   const foeFx = div('du-foe__fx');
@@ -436,7 +440,8 @@ export function createArena(ctx: ArenaContext): Arena {
       const grey = div('du-card__grey');
       const mark = div('du-card__mark');
       mark.setAttribute('aria-hidden', 'true');
-      wrap.append(glow, body, grey, mark);
+      const effects = div('du-card__effects');
+      wrap.append(glow, body, grey, mark, effects);
       hand.append(wrap);
       const entry: HandSlot = {
         cardId: c.cardId,
@@ -468,6 +473,8 @@ export function createArena(ctx: ArenaContext): Arena {
       slot.crit = c.critChance;
       slot.hopMs = hopMs(c.hitSeconds);
       slot.el.classList.toggle('is-targeted', c.targeted);
+      const fx = slot.el.querySelector<HTMLElement>('.du-card__effects');
+      if (fx) setText(fx, c.effects.join(' · '));
       // a knocked-out card fades to grey and stays grey until the floor is won
       if (c.knockedOut !== slot.out) {
         slot.out = c.knockedOut;
@@ -483,6 +490,7 @@ export function createArena(ctx: ArenaContext): Arena {
           fmt(c.health),
           fmt(c.maxHealth),
         ),
+        ...(c.moves ? [DUEL_COPY.movesTip(c.moves.skill, c.moves.skillOpen, c.moves.ult)] : []),
         ...(c.knockedOut ? [DUEL_COPY.cardOut] : []),
         ...(c.targeted ? [DUEL_COPY.targeted] : []),
       ].join(' ');
@@ -665,6 +673,7 @@ export function createArena(ctx: ArenaContext): Arena {
             : '',
       );
       foe.setAttribute('aria-label', `${DUEL_COPY.enemy}: ${view.enemy.name}`);
+      setText(foeEffects, enemyEffects(s, content, mods).join(' · '));
       hp.update(
         status.bars,
         fmt(status.hp),
