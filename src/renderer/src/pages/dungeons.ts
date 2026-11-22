@@ -284,6 +284,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     });
     const cap = (x: string): string => x.charAt(0).toUpperCase() + x.slice(1);
     const lines = [
+      COPY.dungeons.bossElement(cap(e.own)),
       COPY.dungeons.bossWeak(cap(e.weak.element), e.weak.percent),
       ...(e.resist ? [COPY.dungeons.bossResists(cap(e.resist.element), e.resist.percent)] : []),
       COPY.dungeons.bossNoneElement,

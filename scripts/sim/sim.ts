@@ -43,30 +43,21 @@ import {
 } from '../../src/data';
 import {
   advance,
-  activeWorkers,
   buyHeirloomNode,
   heirloomCards,
   heirloomPullPrice,
   heirloomTreeInfo,
   pullHeirloomGate,
   assignForgeWorker,
-  assignWorker,
   forgeWorker,
   setForgeRecipe,
   workersUsed,
-  producerLevel,
   producersOf,
   workerPower,
-  workerSlots,
   PRODUCTION_JOBS,
   type OwnedCard,
-  buyMineLevel,
-  buyMineLevels,
-  curveMaxAffordable,
   MAX_BULK_LEVELS,
   buyTraining,
-  buyTool,
-  toolLines,
   trainingLines,
   cardPower,
   cardBaseDamage,
@@ -76,6 +67,18 @@ import {
   pickStarter,
   createSeededRng,
   Decimal,
+  CAMP_PLACES,
+  levelSlots,
+  campLevelCost,
+  campPerSecond,
+  openSlots,
+  placeJob,
+  setSlotMaterial,
+  assignSlotCard,
+  upgradeCamp,
+  campLevel,
+  slotWorkers,
+  type CampPlace,
   emptyCardLoadout,
   incomePerSecond,
   isDungeonCleared,
@@ -87,18 +90,10 @@ import {
   heirloomCount,
   loadoutCards,
   loadoutCostCap,
-  mineLevel,
   waitingPicks,
   pickPerk,
   perkEffects,
   loadoutMaxHealth,
-  treeLevel,
-  treeLevelCost,
-  buyTreeLevel,
-  buyTreeLevels,
-  mineLevelCost,
-  productionPerSecond,
-  producerRate,
   secondsPerKill,
   survivalSeconds,
   simulateOffline,
@@ -122,8 +117,6 @@ import {
   openCardSkill,
   buyShardItem,
   cardStatPower,
-  treeUnlockCost,
-  unlockTree,
   averageDps,
   cardCost,
   claimDaily,
@@ -143,10 +136,6 @@ import {
   chooseEnhancement,
   resetEnhancements,
   setWishlisted,
-  autobuyerOwned,
-  setAutomation,
-  depthYield,
-  workersPerPlace,
   forgeRecipe,
   statValue,
   respecInfo,
@@ -566,9 +555,7 @@ function skillActive(state: GameState, content: Content, node: SkillNode): boole
   const kindOf = (id: string | null): string | undefined =>
     id ? content.cardById.get(id)?.item.kind : undefined;
   if (state.cards.loadouts.fighting.slots.some((id) => kindOf(id) === node.circle)) return true;
-  return Object.values(activeWorkers(state, content))
-    .flat()
-    .some((id) => kindOf(id) === node.circle);
+  return slotWorkers(state, content).some((w) => kindOf(w.card) === node.circle);
 }
 
 /** What one rank of a skill is worth now (0 for a circle skill that does not act). */
@@ -792,7 +779,7 @@ function productionOf(
   let byModifiers = productions.get(state);
   if (!byModifiers) productions.set(state, (byModifiers = new WeakMap()));
   let out = byModifiers.get(modifiers);
-  if (!out) byModifiers.set(modifiers, (out = productionPerSecond(state, content, modifiers)));
+  if (!out) byModifiers.set(modifiers, (out = campPerSecond(state, content, modifiers)));
   return out;
 }
 
@@ -899,70 +886,45 @@ export function toolGain(
 }
 
 /** The economy purchases (mine and tree levels, training, shelf upgrades) with their gains. */
+/** Slots one camp level opens in both places together (the buyer's gain). */
+function levelSlotsOf(content: Content, level: number): number {
+  return CAMP_PLACES.reduce((n, place) => n + levelSlots(content, place, level), 0);
+}
+
+/** The training feed of a unit of production, summed over the camp's gems (0 when none). */
+function trainingFeedAll(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+): number {
+  return content.trees
+    .concat(content.mines as never)
+    .reduce((n, m) => n + trainingFeed(state, content, m.resource, modifiers) * 0.1, 0);
+}
+
 function economyCandidates(
   state: GameState,
   content: Content,
   modifiers: Modifier[],
 ): Omit<Candidate, 'eta'>[] {
   const out: Omit<Candidate, 'eta'>[] = [];
-  const totalProduction = weightedProduction(state, content, modifiers);
-  for (const mine of content.mines) {
-    if (!isProducerUnlocked(state, content, 'mining', mine.id)) continue;
-    const price = mineLevelCost(state, content, mine.id, modifiers);
-    if (!price) continue;
-    const level = mineLevel(state, mine.id);
-    const now = num(producerRate(mine, 'mining', modifiers, level));
-    const next = num(producerRate(mine, 'mining', modifiers, level + 1));
-    // The mine's share of the weighted production grows by its relative gain.
-    const share =
-      totalProduction > 0
-        ? weightedProduction(state, content, modifiers, [mine.resource]) / totalProduction
-        : 1;
-    const rise = now > 0 ? (next - now) / now : 1;
+  // The camp level (DESIGN.md section 2): a lift on every slot, and a new slot at some levels.
+  // Valued by the rise of the weighted production, as mine and tree levels were.
+  {
+    const level = campLevel(state);
+    const slots = (l: number): number => levelSlotsOf(content, l);
+    const factor = (l: number): number =>
+      1 + (num(content.camp.yieldPercentPerLevel) * (l - 1)) / 100;
+    const rise =
+      factor(level + 1) / factor(level) -
+      1 +
+      (slots(level + 1) - slots(level)) / Math.max(1, slots(level));
     out.push({
-      id: `mine:${mine.id}`,
+      id: 'camp:level',
       kind: 'economy',
-      prices: [price],
-      gain:
-        PRODUCTION_VALUE * (now > 0 ? rise * share : 1) +
-        rise * trainingFeed(state, content, mine.resource, modifiers),
-      buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
-      bulk: (s, c, m, budget) => {
-        const ctx = { job: 'mining' as const, producer: mine.id, resource: mine.resource };
-        const max = curveMaxAffordable(mine.level.cost, mineLevel(s, mine.id), budget, m, ctx);
-        if (max.count < 1) return null;
-        const r = okState(buyMineLevels(s, c, mine.id, max.count, m));
-        return r && { state: r, count: max.count };
-      },
-    });
-  }
-  for (const tree of content.trees) {
-    if (!isProducerUnlocked(state, content, 'logging', tree.id)) continue;
-    const price = treeLevelCost(state, content, tree.id, modifiers);
-    if (!price) continue;
-    const level = treeLevel(state, tree.id);
-    const now = num(producerRate(tree, 'logging', modifiers, level));
-    const next = num(producerRate(tree, 'logging', modifiers, level + 1));
-    const share =
-      totalProduction > 0
-        ? weightedProduction(state, content, modifiers, [tree.resource]) / totalProduction
-        : 1;
-    const rise = now > 0 ? (next - now) / now : 1;
-    out.push({
-      id: `tree:${tree.id}`,
-      kind: 'economy',
-      prices: [price],
-      gain:
-        PRODUCTION_VALUE * (now > 0 ? rise * share : 1) +
-        rise * trainingFeed(state, content, tree.resource, modifiers),
-      buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
-      bulk: (s, c, m, budget) => {
-        const ctx = { job: 'logging' as const, producer: tree.id, resource: tree.resource };
-        const max = curveMaxAffordable(tree.level.cost, treeLevel(s, tree.id), budget, m, ctx);
-        if (max.count < 1) return null;
-        const r = okState(buyTreeLevels(s, c, tree.id, max.count, m));
-        return r && { state: r, count: max.count };
-      },
+      prices: campLevelCost(state, content, modifiers),
+      gain: PRODUCTION_VALUE * rise + trainingFeedAll(state, content, modifiers) * rise,
+      buy: (s2, c, m) => okState(upgradeCamp(s2, c, m)),
     });
   }
   // Training (DESIGN.md §6): the repeatable fighting upgrades, valued by what they raise.
@@ -976,29 +938,6 @@ function economyCandidates(
       buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
   }
-  // Tool lines (DESIGN.md §4): each by how much it raises its job's output (`toolGain`).
-  for (const job of PRODUCTION_JOBS) {
-    const jobShare =
-      totalProduction > 0
-        ? weightedProduction(
-            state,
-            content,
-            modifiers,
-            producersOf(content, job).map((p) => p.resource),
-          ) / totalProduction
-        : 0.5;
-    for (const t of toolLines(state, content, job, 1, modifiers)) {
-      const gain =
-        PRODUCTION_VALUE * jobShare * toolGain(t.line.stat, t.now, t.after, job, modifiers);
-      out.push({
-        id: `tool:${t.line.id}`,
-        kind: 'economy',
-        prices: [t.offer.price],
-        gain,
-        buy: (s, c, m) => okState(buyTool(s, c, t.line.id, 1, m)),
-      });
-    }
-  }
   return out;
 }
 
@@ -1009,15 +948,6 @@ export function buyerCandidates(
   modifiers: Modifier[] = collectModifiers(state, content),
 ): Candidate[] {
   const out: Omit<Candidate, 'eta'>[] = economyCandidates(state, content, modifiers);
-  for (const tree of content.trees) {
-    if (isProducerUnlocked(state, content, 'logging', tree.id)) continue;
-    out.push({
-      id: `tree:${tree.id}`,
-      kind: 'tree',
-      prices: treeUnlockCost(content, tree.id, modifiers),
-      buy: (s, c, m) => okState(unlockTree(s, c, tree.id, m)),
-    });
-  }
   for (const card of content.cards) {
     if (!state.cards.owned[card.id]) continue;
     for (const kind of ['star'] as const) {
@@ -1313,6 +1243,11 @@ function pickPurchase(
     if (cheap) economy.push({ c: cheap, s: score(cheap) });
   }
   economy.sort((a, b) => b.s - a.s);
+  // The camp level costs several woods and ores at once, so it is not ranked per price: it is
+  // bought as soon as its whole price is spendable, before the single-price lines.
+  for (const c of candidates) {
+    if (c.id === 'camp:level' && c.eta === 0 && spendable(state, reserved, c.prices)) picks.push(c);
+  }
   picks.push(...economy.map((e) => e.c));
   return picks;
 }
@@ -1388,12 +1323,11 @@ export function greedyBuy(
 ): { state: GameState; bought: string[]; dustSpent: number } {
   let current = takePicks(chooseRespec(state, content), content);
   const bought: string[] = [];
-  let candidates: Candidate[] = [];
   const maxed = new Set<string>();
   for (let i = 0; i < MAX_BUYS_PER_PASS; i++) {
     const modifiers = collectModifiers(current, content);
     let next: GameState | null = null;
-    candidates = buyerCandidates(current, content, modifiers);
+    const candidates = buyerCandidates(current, content, modifiers);
     for (const candidate of pickPurchase(current, content, candidates)) {
       if (maxed.has(candidate.id)) continue;
       next = candidate.buy(current, content, modifiers, rng);
@@ -1430,7 +1364,6 @@ export function greedyBuy(
   current = buyHeirloomTrees(current, content);
   current = equipSets(current, content);
   current = markWishlist(current, content);
-  current = chooseAutomation(current, content, candidates);
   return { state: current, bought, dustSpent: dust.spent };
 }
 
@@ -1508,7 +1441,7 @@ export function buildOrder(state: GameState, content: Content): string[] {
   add(heir(state, content));
   for (const id of loadout.slots) add(id);
   const working = [
-    ...Object.values(activeWorkers(state, content)).flat(),
+    ...slotWorkers(state, content).map((w) => w.card),
     ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
   ].sort(
     (a, b) =>
@@ -1747,84 +1680,87 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
   return placeBestWorkers(current, content);
 }
 
-/** One worker the sim would place: a slot of a tree or mine, the card, and what it brings in. */
+/** One slot the sim would fill: a camp slot, the card and the material, and what it brings in. */
 interface WorkerPick {
-  place: string;
+  place: CampPlace;
+  index: number;
   card: string;
-  /** Weighted output the card makes there: the place's value × the card's power. */
+  material: string;
+  /** Weighted output the card makes there: the material's value × the card's power. */
   value: number;
 }
 
-/**
- * What a tree or mine is worth to the player per unit of worker power: its level rate × the yield
- * of the layer or age it has reached × the Starlight tier weight of its gem (the weight the buyer
- * values production by, so a Moonwillow gem counts for a hundred Oak gems).
- */
-function placeValue(
-  state: GameState,
-  content: Content,
-  job: (typeof PRODUCTION_JOBS)[number],
-  producer: ReturnType<typeof producersOf>[number],
-): number {
+/** What a material is worth per unit of power: its base rate × the Starlight tier weight of its gem. */
+function placeValue(content: Content, producer: ReturnType<typeof producersOf>[number]): number {
   const weights = content.prestige.gain.tierWeights;
   const tier = content.resourceById.get(producer.resource)?.tier ?? 1;
-  const weight = num(weights[Math.min(tier, weights.length) - 1]!);
-  const rate = producerRate(producer, job, [], producerLevel(state, job, producer.id));
-  return num(rate) * num(depthYield(state, content, producer.id)) * weight;
+  return num(producer.baseRate) * num(weights[Math.min(tier, weights.length) - 1]!);
 }
 
 /**
- * The workers the sim wants (DESIGN.md §4 Workers, Worker slots), richest first. Per job, every
- * open slot (a place's second slot from the Starlight shop counts as a slot of its own) is ranked
- * by its place's value and paired with the job's cards by worker power, best with best, which is
- * what puts the most output to work. The shared slots then go to the pairs worth the most, of
- * either job.
+ * The slots the sim wants filled (DESIGN.md section 2 Base camp), richest first. Per place the open
+ * slots take the job's cards by worker power, best first. A slot farms the open material the camp
+ * level still needs most (price less stock, shared by the slots already on it); with nothing
+ * needed, the most valuable one.
  */
 export function workerPicks(state: GameState, content: Content): WorkerPick[] {
-  const pairs: WorkerPick[] = [];
-  for (const job of PRODUCTION_JOBS) {
+  const need = new Map<string, Decimal>();
+  for (const p of campLevelCost(state, content)) need.set(p.resource, p.amount);
+  const out: WorkerPick[] = [];
+  for (const place of CAMP_PLACES) {
+    const job = placeJob(place);
     const cards = content.cards
       .filter((c) => c.job === job && state.cards.owned[c.id] && !isOnTrip(state, c.id))
       .map((c) => ({ id: c.id, power: workerPower(content, c.id, state.cards.owned[c.id]!) }))
       .sort((a, b) => b.power - a.power);
-    const slots = producersOf(content, job)
-      .filter((p) => isProducerUnlocked(state, content, job, p.id))
-      .flatMap((p) => {
-        const value = placeValue(state, content, job, p);
-        return Array.from({ length: workersPerPlace(state, content, p.id) }, () => ({
-          id: p.id,
-          value,
-        }));
-      })
-      .sort((a, b) => b.value - a.value);
-    slots.slice(0, cards.length).forEach((slot, i) => {
-      pairs.push({ place: slot.id, card: cards[i]!.id, value: slot.value * cards[i]!.power });
-    });
+    const materials = producersOf(content, job).filter((p) =>
+      isProducerUnlocked(state, content, job, p.id),
+    );
+    const assigned = new Map<string, number>();
+    const slots = Math.min(openSlots(state, content, place), cards.length);
+    for (let index = 0; index < slots; index += 1) {
+      const scored = materials.map((m) => {
+        const missing = Decimal.max(
+          (need.get(m.resource) ?? new Decimal(0)).sub(have(state, m.resource)),
+          0,
+        );
+        return { m, score: num(missing) / (1 + (assigned.get(m.id) ?? 0)) };
+      });
+      scored.sort(
+        (a, b) => b.score - a.score || placeValue(content, b.m) - placeValue(content, a.m),
+      );
+      const best = scored[0];
+      if (!best) continue;
+      assigned.set(best.m.id, (assigned.get(best.m.id) ?? 0) + 1);
+      out.push({
+        place,
+        index,
+        card: cards[index]!.id,
+        material: best.m.id,
+        value: placeValue(content, best.m) * cards[index]!.power,
+      });
+    }
   }
-  return pairs.sort((a, b) => b.value - a.value).slice(0, workerSlots(state, content));
+  return out.sort((a, b) => b.value - a.value);
 }
 
-/** The workers the sim wants as place id -> card ids (`workerPicks`). */
+/** The cards the sim wants on slots, as place -> card ids (`workerPicks`). */
 export function bestWorkers(state: GameState, content: Content): Record<string, string[]> {
-  return toAssignment(workerPicks(state, content));
-}
-
-function toAssignment(picks: readonly WorkerPick[]): Record<string, string[]> {
   const out: Record<string, string[]> = {};
-  for (const p of picks) (out[p.place] ??= []).push(p.card);
+  for (const p of workerPicks(state, content)) (out[p.place] ??= []).push(p.card);
   return out;
 }
 
 /**
- * A worker in the forge beats a worker on a tree or mine when the weakest place worker brings in
- * less than this share of what all the places bring in (the forge's star dust is the only way to
- * star a card besides copies, DESIGN.md §4 The forge).
+ * A worker in the forge beats a worker on a slot when the weakest slot worker brings in less than
+ * this share of what all the slots bring in (the forge's star dust is the only way to star a card
+ * besides copies, DESIGN.md §4 The forge).
  */
 export const FORGE_SWAP_SHARE = 0.05;
 
 /**
- * Puts the sim's chosen workers to work (`workerPicks`) and runs the forge (`forgePlan`): the forge
- * takes a slot left over, or the slot of the weakest place worker when that worker adds little.
+ * Puts the sim's chosen cards on the camp's slots (`workerPicks`) and runs the forge (`forgePlan`):
+ * the forge takes a card left over, or the weakest slot worker when that worker adds little.
  */
 export function placeBestWorkers(state: GameState, content: Content): GameState {
   let picks = workerPicks(state, content);
@@ -1847,18 +1783,13 @@ export function placeBestWorkers(state: GameState, content: Content): GameState 
           workerPower(content, b.id, state.cards.owned[b.id]!) -
           workerPower(content, a.id, state.cards.owned[a.id]!),
       )[0];
-    if (picks.length < workerSlots(state, content) && idle) forgeCard = idle.id;
+    if (idle) forgeCard = idle.id;
     else if (weakest && weakest.value < total * FORGE_SWAP_SHARE) {
       forgeCard = weakest.card;
       picks = picks.slice(0, -1);
     }
   }
-  return placeForge(
-    placePlaceWorkers(state, content, toAssignment(picks)),
-    content,
-    plan,
-    forgeCard,
-  );
+  return placeForge(placeSlotWorkers(state, content, picks), content, plan, forgeCard);
 }
 
 /** What the forge should do: the recipe to make, and whether to run it now. */
@@ -1912,27 +1843,38 @@ function placeForge(
   return hired.ok ? hired.state : current;
 }
 
-/** Puts the wanted workers on the trees and mines, when they differ from today's. */
-function placePlaceWorkers(
+/** Puts the wanted cards and materials on the camp's slots, when they differ from today's. */
+function placeSlotWorkers(
   state: GameState,
   content: Content,
-  want: Record<string, string[]>,
+  want: readonly WorkerPick[],
 ): GameState {
-  const now = activeWorkers(state, content);
-  const same = (a: Record<string, string[]>, b: Record<string, string[]>): boolean =>
-    Object.keys(a).length === Object.keys(b).length &&
-    Object.entries(a).every(([place, ids]) => b[place]?.join() === ids.join());
-  if (same(want, now)) return state;
+  const now = slotWorkers(state, content);
+  const same =
+    now.length === want.length &&
+    want.every((w) =>
+      now.some(
+        (n) =>
+          n.place === w.place &&
+          n.index === w.index &&
+          n.card === w.card &&
+          n.material.id === w.material,
+      ),
+    );
+  if (same) return state;
   let current = state;
-  for (const place of Object.keys(now)) {
-    const result = assignWorker(current, content, place, null);
-    if (result.ok) current = result.state;
-  }
-  for (const [place, ids] of Object.entries(want)) {
-    for (const id of ids) {
-      const result = assignWorker(current, content, place, id);
-      if (result.ok) current = result.state;
+  for (const place of CAMP_PLACES) {
+    for (let index = 0; index < openSlots(current, content, place); index += 1) {
+      if (want.some((w) => w.place === place && w.index === index)) continue;
+      const r = assignSlotCard(current, content, place, index, null);
+      if (r.ok) current = r.state;
     }
+  }
+  for (const w of want) {
+    const m = setSlotMaterial(current, content, w.place, w.index, w.material);
+    if (m.ok) current = m.state;
+    const c = assignSlotCard(current, content, w.place, w.index, w.card);
+    if (c.ok) current = c.state;
   }
   return current;
 }
@@ -2364,34 +2306,6 @@ export function chooseOverflow(state: GameState, content: Content): GameState {
   return next;
 }
 
-/**
- * Autobuyers (DESIGN.md §15, §9): the player switches on every autobuyer it owns. They buy the
- * cheapest tree or mine level between the player's own visits, so while the player saves Money for
- * a tier-up the reserve is 100% (they buy nothing) and otherwise 0%.
- */
-export function chooseAutomation(
-  state: GameState,
-  content: Content,
-  /** The buyer's last candidates (they say what it saves for); computed when not given. */
-  candidates?: readonly Candidate[],
-): GameState {
-  const owned = {
-    treeLevels: autobuyerOwned(state, content, 'treeLevels'),
-    mineLevels: autobuyerOwned(state, content, 'mineLevels'),
-  };
-  if (!owned.treeLevels && !owned.mineLevels) return state;
-  const reserved = reservations(state, candidates ?? buyerCandidates(state, content));
-  const reservePercent = (reserved.get('money') ?? new Decimal(0)).gt(0) ? 100 : 0;
-  const a = state.automation;
-  if (
-    a.treeLevels === owned.treeLevels &&
-    a.mineLevels === owned.mineLevels &&
-    a.reservePercent === reservePercent
-  )
-    return state;
-  return setAutomation(state, { ...owned, reservePercent });
-}
-
 // ---- running -----------------------------------------------------------------------------------
 
 export interface SimOptions {
@@ -2554,7 +2468,7 @@ export function progressOf(
     dustEarned: num(have(state, 'star_dust')) + dustSpent,
     dustSpent,
     workers: workersUsed(state, content),
-    slots: workerSlots(state, content),
+    slots: openSlots(state, content, 'forest') + openSlots(state, content, 'cave'),
     fight: at ? `${dungeon!.id} ${at.difficulty} ${at.floor}` : (state.activeDungeonId ?? '-'),
     bestWeapon: bestWeapon(state, content),
     ...(table ? tableProgress(state, content, t, table) : {}),
@@ -2569,18 +2483,10 @@ function levelProgress(
   content: Content,
 ): Pick<ProgressSample, 'meanLevel' | 'gemOutput' | 'levelWait'> {
   const modifiers = collectModifiers(state, content);
-  const trees = content.trees.filter((x) => isProducerUnlocked(state, content, 'logging', x.id));
-  const mines = content.mines.filter((x) => isProducerUnlocked(state, content, 'mining', x.id));
-  const levels = [
-    ...trees.map((x) => treeLevel(state, x.id)),
-    ...mines.map((x) => mineLevel(state, x.id)),
-  ];
-  const prices = [
-    ...trees.map((x) => treeLevelCost(state, content, x.id, modifiers)),
-    ...mines.map((x) => mineLevelCost(state, content, x.id, modifiers)),
-  ]
-    .filter((x) => x !== null && x.resource === 'money')
-    .map((x) => x!.amount);
+  const levels = [campLevel(state)];
+  const prices = campLevelCost(state, content, modifiers)
+    .filter((x) => x.resource === 'money')
+    .map((x) => x.amount);
   const money = num(incomeOf(state, content, 'money', modifiers));
   const cheapest = prices.length > 0 ? Math.min(...prices.map(num)) : Infinity;
   return {
@@ -3339,12 +3245,6 @@ export function formatSummary(result: SimResult, content: Content): string {
   const cards = Object.entries(s.cards.owned)
     .map(([id, c]) => `${content.cardById.get(id)?.name ?? id} ${c.tier} ★${c.stars} Lv ${c.level}`)
     .join(', ');
-  const mines = content.mines
-    .map((m) => `${m.name} ${s.production.mineLevels[m.id] ?? 0}`)
-    .join(', ');
-  const trees = content.trees
-    .map((t) => `${t.name} ${s.production.treeLevels[t.id] ?? 0}`)
-    .join(', ');
   const fought = Object.entries(result.log.fought)
     .map(([d, sec]) => `${d} ${hoursText(sec)}`)
     .join(', ');
@@ -3380,8 +3280,7 @@ export function formatSummary(result: SimResult, content: Content): string {
     `Time fought: ${fought || 'none'}`,
     `Summons: ${result.log.summons} pulls; Money in hand ${formatShort(s.resources['money'] ?? 0)}, scrolls ${num(s.resources['summon_scroll'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_scroll'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
-    `Tree levels: ${trees}`,
-    `Mine levels: ${mines}`,
+    `Camp level ${campLevel(s)}`,
     `Cards: ${cards}`,
     `Account level ${s.account.level}, skills: ${
       Object.entries(s.account.skills)
@@ -3393,15 +3292,11 @@ export function formatSummary(result: SimResult, content: Content): string {
       .join(', ')}`,
     `Achievements: ${Object.keys(s.achievements).length} / ${content.achievements.length}`,
     `Fought over time: ${formatFightTimeline(result.progress, result.simSeconds / 3600)}`,
-    `Workers: ${Object.entries(activeWorkers(s, content))
-      .map(([place, ids]) => `${place} ${ids.join(' + ')}`)
+    `Slots: ${slotWorkers(s, content)
+      .map((w) => `${w.place} ${w.index + 1} ${w.material.id} ${w.card}`)
       .join(
         ', ',
-      )}; forge ${forgeWorker(s, content) ?? 'idle'} (${s.production.forge.recipe ?? 'no recipe'}); tools ${
-      Object.entries(s.production.tools)
-        .map(([id, l]) => `${id} ${l}`)
-        .join(', ') || 'none'
-    }`,
+      )}; forge ${forgeWorker(s, content) ?? 'idle'} (${s.production.forge.recipe ?? 'no recipe'})`,
     `Wishlist: ${s.cards.wishlist.join(', ') || 'empty'}; star dust ${num(have(s, 'star_dust')).toFixed(0)} held, ${(result.log.dustSpent ?? 0).toFixed(0)} spent`,
     ...(result.log.table ? [formatTableLog(result.log.table, s, content, result.simSeconds)] : []),
   ].join('\n');

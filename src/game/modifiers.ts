@@ -9,7 +9,6 @@ import { accountModifiers } from './account';
 import { perkModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { tierRewardModifiers } from './tierRewards';
-import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
 import { bondModifiers } from './bonds';
 import { heirloomTreeModifiers } from './heirlooms';
@@ -237,7 +236,6 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   // Milestone picks (DESIGN.md §4).
   out.push(...perkModifiers(state, content));
   out.push(...trainingModifiers(state, content));
-  out.push(...toolModifiers(state, content));
 
   // The loadout's elements against each boss.
   out.push(...elementModifiers(view, content));

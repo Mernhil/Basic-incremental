@@ -17,8 +17,7 @@ import { MAX_STARS, RANK_TIERS } from '../data/schemas';
 import { accountLevel } from './account';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { teamBonusPower } from './upgrades';
-import { activeWorkers, producerJob, workerModifiers, workerScope, workplaceOf } from './workers';
+import { slotWorkers, workerModifiers, workerScope, workplaceOf } from './camp';
 import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
@@ -606,7 +605,7 @@ function boostTeamBonus(m: Modifier, power: Decimal): Modifier {
 export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
   // Upgrades make the team bonuses stronger (DESIGN.md §4).
-  const power = teamBonusPower(state, content, 'fighting');
+  const power = new Decimal(1);
   for (const id of state.cards.loadouts.fighting.slots) {
     if (id === null) continue;
     const owned = state.cards.owned[id];
@@ -633,9 +632,8 @@ export function cardsAtWork(
     seen.add(id);
     out.push({ cardId: id, scope: null });
   }
-  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
-    const job = producerJob(content, place)!;
-    for (const id of ids) out.push({ cardId: id, scope: workerScope(job, place) });
+  for (const w of slotWorkers(state, content)) {
+    out.push({ cardId: w.card, scope: workerScope(w.place, w.material) });
   }
   return out;
 }

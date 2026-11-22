@@ -4,6 +4,7 @@ import { h } from '../shell/shell';
 import type { PileHint, TableContext, TablePieceDef, ViewDef, ViewId } from './contract';
 import { dealIn } from './motion';
 import { DOCK } from './registry';
+import { createHub, type Hub } from '../hub/hub';
 import { createViewHost, type ViewHost } from './viewHost';
 import './table.css';
 
@@ -14,8 +15,15 @@ import './table.css';
  * full view (`viewHost.ts`).
  */
 
+/** The two main screens (DESIGN.md section 2 Base camp): the hub and the dungeon. */
+export type Screen = 'hub' | 'dungeon';
+
 export interface Table {
   el: HTMLElement;
+  /** The main screen showing under any open view. */
+  screen(): Screen;
+  /** Goes to a main screen; from the dungeon the way back to the hub is one click. */
+  setScreen(screen: Screen): void;
   host: ViewHost;
   /** Builds the pieces and piles and mounts every view. Call once. */
   build(views: readonly ViewDef[], pieces: readonly TablePieceDef[], ctx: TableContext): void;
@@ -45,7 +53,21 @@ export function createTable(): Table {
   const dockList = h('ul', 'tbl-dock__list');
   dock.append(dockList);
   const host = createViewHost();
-  el.append(slots.left, slots.centre, slots.right, dock, host.el);
+  // the dock is gone: the hub's buildings open what its piles opened. It stays built, hidden, so
+  // the piles' hints can still be read by the hub's marks.
+  const back = h('button', 'px-btn tbl-hubback', COPY.table.toHub);
+  back.type = 'button';
+  back.dataset.open = 'hub';
+  let hub: Hub | null = null;
+  let screen: Screen = 'hub';
+  el.dataset.screen = screen;
+  el.append(slots.left, slots.centre, slots.right, back, dock, host.el);
+  const setScreen = (next: Screen): void => {
+    screen = next;
+    el.dataset.screen = next;
+    if (next === 'hub') hub?.render();
+  };
+  back.addEventListener('click', () => setScreen('hub'));
 
   const openers = new Map<ViewId, HTMLElement>();
   const rendered: Array<{ render(): void }> = [];
@@ -118,8 +140,15 @@ export function createTable(): Table {
   return {
     el,
     host,
+    screen: () => screen,
+    setScreen,
     build(views, pieces, ctx) {
       ctxRef = ctx;
+      hub = createHub(ctx, views, {
+        goDungeon: () => setScreen('dungeon'),
+        open: (id, from) => open(id, from),
+      });
+      el.insertBefore(hub.el, slots.left);
       for (const p of pieces) buildPiece(p, ctx);
       const byId = new Map(views.map((v) => [v.id, v]));
       for (const id of DOCK) {
@@ -129,12 +158,14 @@ export function createTable(): Table {
       host.mount(views, ctx);
       // the table under an open view is inert: Tab stays in the view
       host.onChange((id) => {
-        for (const node of [slots.left, slots.centre, slots.right, dock]) node.inert = id !== null;
+        for (const node of [slots.left, slots.centre, slots.right, dock, hub!.el, back])
+          node.inert = id !== null;
         el.dataset.view = id ?? '';
       });
     },
     render(now) {
       if (host.current()) host.render();
+      else if (screen === 'hub') hub?.render();
       else for (const r of rendered) r.render();
       if (now - hintsAt >= 1000 && ctxRef) {
         hintsAt = now;
@@ -143,15 +174,7 @@ export function createTable(): Table {
     },
     open,
     enter() {
-      dealIn([slots.centre], { offset: { x: 0, y: 24 } });
-      dealIn([slots.left], { offset: { x: -40, y: 0 }, delay: 90 });
-      dealIn([slots.right], { offset: { x: 40, y: 0 }, delay: 90 });
-      const r = dock.getBoundingClientRect();
-      const from = new DOMRect(r.left, r.top, 1, r.height);
-      dealIn(Array.from(dockList.querySelectorAll<HTMLElement>('.tbl-pile')), {
-        from,
-        delay: 180,
-      });
+      dealIn([screen === 'hub' ? hub!.el : slots.centre], { offset: { x: 0, y: 24 } });
     },
     opener: (id) => openers.get(id) ?? null,
   };

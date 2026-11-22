@@ -35,6 +35,7 @@ import {
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
 import {
+  constantRng,
   content,
   CRYSTAL_UNIT,
   floorsContent,
@@ -42,10 +43,6 @@ import {
   levelPointsOnly,
   withDps,
 } from './helpers';
-
-/** First level price of a mine or tree (the shipped numbers are tuning, DESIGN.md §4). */
-const firstLevel = (kind: 'mine' | 'tree', id: string): number =>
-  (kind === 'mine' ? content.mineById : content.treeById).get(id)!.level.cost.base.toNumber();
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
   state.resources[resource] = new Decimal(amount);
@@ -57,39 +54,33 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
 const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
   state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
   if (job === 'fighting') state.cards.loadouts.fighting.slots[0] = id;
-  else state.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [id];
+  else if (job === 'logging') state.camp.forest = [{ material: 'oak', card: id }];
+  else state.camp.cave = [{ material: 'copper_quarry', card: id }];
 };
 
 describe('balance sim: greedy buyer', () => {
   it('lists purchases with an ETA, 0 when affordable now', () => {
-    const state = rich(freshState(), 'money', firstLevel('mine', 'copper_quarry'));
+    const state = rich(freshState(), 'oak_gem', 5000);
+    state.resources['copper_gem'] = new Decimal(5000);
     const candidates = buyerCandidates(state, content);
     // The damage lines are gone: damage comes from cards, so nothing on the list is a damage buy.
     expect(candidates.some((c) => c.id.startsWith('damage:'))).toBe(false);
-    // A Copper Quarry level is affordable now; a dearer Oak level is paid by the wage.
-    expect(candidates.find((c) => c.id === 'mine:copper_quarry')?.eta).toBe(0);
-    const oak = candidates.find((c) => c.id === 'tree:oak');
-    expect(oak?.eta).toBeGreaterThan(0);
-    expect(Number.isFinite(oak!.eta!)).toBe(true);
-    // Plots, slots and expansions are gone.
-    expect(candidates.some((c) => c.id.startsWith('expand:'))).toBe(false);
+    // The camp level is affordable now, paid in woods and ores.
+    expect(candidates.find((c) => c.id === 'camp:level')?.eta).toBe(0);
+    // Trees, mines and tool lines are gone.
+    expect(candidates.some((c) => /^(mine|tree|tool):/.test(c.id))).toBe(false);
     // Nothing earns Glamour Scrolls before a kill, so a Wardrobe Gate 10-pull is out of reach.
     const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate:10');
     expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
 
-  it('buys the best gain per Money first, then keeps buying', () => {
-    // The price of an Oak level buys a level of the line with the best gain per Money. The
-    // Copper Quarry's gems also pay for Sharpen (`trainingFeed`), which puts it just ahead.
-    const state = rich(freshState(), 'money', firstLevel('tree', 'oak'));
-    const money = buyerCandidates(state, content).filter(
-      (c) => c.kind === 'economy' && c.prices[0]!.resource === 'money',
-    );
-    const per = (c: (typeof money)[number]): number => c.gain! / c.prices[0]!.amount.toNumber();
-    const best = [...money].sort((a, b) => per(b) - per(a))[0]!;
-    const { state: after, bought } = greedyBuy(state, content);
-    expect(bought.find((id) => /^(mine|tree|tool):/.test(id))).toBe(best.id);
-    expect(after.resources['money']!.lt(state.resources['money']!)).toBe(true);
+  it('buys the camp level once its woods and ores are in hand', () => {
+    const state = rich(freshState(), 'oak_gem', 1e12);
+    state.resources['copper_gem'] = new Decimal(1e12);
+    const camp = buyerCandidates(state, content).find((c) => c.id === 'camp:level')!;
+    const after = camp.buy(state, content, [], constantRng(0.5));
+    expect(after?.camp.level).toBe(state.camp.level + 1);
+    expect(greedyBuy(state, content).state.camp.level).toBeGreaterThan(state.camp.level);
   });
 
   it('summons from a portal once a pull is affordable', () => {
@@ -154,7 +145,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
+    expect(bought.some((id) => id.startsWith('camp:'))).toBe(false); // no woods or ores in hand
     // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
     expect(bought).toContain('train:sharpen');
     expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
@@ -187,12 +178,11 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(greedyBuy(state, content).bought.some((id) => id.startsWith('tier:'))).toBe(false);
   });
 
-  it('weighs a mine or tree level by the share of the production', () => {
+  it('weighs a camp level by what it lifts', () => {
     const state = rich(freshState(), 'money', 1e9);
     const candidates = buyerCandidates(state, content);
     const gain = (id: string): number => candidates.find((c) => c.id === id)!.gain!;
-    expect(gain('mine:copper_quarry')).toBeGreaterThan(0);
-    expect(gain('tree:oak')).toBeGreaterThan(0);
+    expect(gain('camp:level')).toBeGreaterThan(0);
   });
 
   it('buys a star-up from the star bar alone: it needs no Cores to share', () => {

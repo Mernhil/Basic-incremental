@@ -92,6 +92,7 @@ export const COPY = {
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
+    toHub: '← Hub',
     dock: 'Table',
     open: (name: string) => `Open ${name}`,
     boss: 'Boss',
@@ -107,12 +108,12 @@ export const COPY = {
   },
   /** The full views over the table (UI_RULES.md §2, A full view). */
   view: {
-    back: '← Table',
+    back: '← Hub',
     backLabel: 'Back to the table',
     titles: {
       dungeon: 'Dungeon',
-      logging: 'Logging',
-      mining: 'Mining',
+      logging: 'Forest',
+      mining: 'Cave',
       cards: 'Cards',
       summon: 'Summon',
       wardrobe: 'Wardrobe',
@@ -120,6 +121,8 @@ export const COPY = {
       achievements: 'Achievements',
       shop: 'Shop',
       forge: 'Forge',
+      training: 'Training ground',
+      expeditions: 'Expedition board',
       upgrades: 'Upgrades',
       settings: 'Settings',
     },
@@ -435,7 +438,8 @@ export const COPY = {
     fight: 'Fight',
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
-    /** A boss's elements (DESIGN.md §2 Fights): "Weak to Fire (+50% damage)", "Resists Earth (-25% damage)". */
+    /** A boss's elements (DESIGN.md §2 Fights): "Earth boss", "Weak to Fire (+50% damage)", "Resists Water (-25% damage)". */
+    bossElement: (element: string) => `${element} boss`,
     bossWeak: (element: string, percent: number) => `Weak to ${element} (+${percent}% damage)`,
     bossResists: (element: string, percent: number) => `Resists ${element} (${percent}% damage)`,
     bossNoneElement: 'Wood to Prismatic cards have no element and always do base damage.',
@@ -604,18 +608,10 @@ export const COPY = {
     gateLabel: 'The Ascension gate, with everything you keep drifting into it',
     resets: 'Starts over',
     resetParts: {
-      mine_levels: ['Mine levels', 'Every mine back to level 0'],
-      tree_levels: ['Tree levels', 'Every tree back to level 0'],
       resources: ['Gems and materials', 'Every resource except Starlight'],
-      tile_stages: ['Tile growth', 'Trees and mines back to the first stage'],
-      tool_lines: ['Tool lines', 'Yield, strike speed and crit lines back to level 0'],
-      depth_growth: [
-        'Depth and age',
-        'Every mine back to its first layer, every tree to its first age',
-      ],
     },
     upgradesNote:
-      'Your milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
+      'Your Training milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
     kept: 'Kept forever',
     keptParts: {
       cards: 'Cards',
@@ -626,7 +622,7 @@ export const COPY = {
       portal_pity: 'Portal pity',
       crystals: 'Scrolls',
       starlight: 'Starlight',
-      workers: 'Workers',
+      camp: 'The camp',
       forge: 'The forge',
       star_dust: 'Star dust',
       stage_stars: 'Stage stars',
@@ -643,7 +639,8 @@ export const COPY = {
       portal_pity: 'Pulls counted toward each pity',
       crystals: (summon: string, glamour: string) => `${summon} Summon, ${glamour} Glamour`,
       starlight: (n: string) => `${n} in hand`,
-      workers: (n: number) => (n === 1 ? '1 worker placed' : `${n} workers placed`),
+      camp: (n: number) =>
+        n === 1 ? 'Its level and slots, 1 card farming' : `Its level and slots, ${n} cards farming`,
       forge: 'Its recipe, worker and progress',
       star_dust: (n: string) => `${n} in hand`,
       stage_stars: (n: number) => (n === 1 ? '1 stage kill counted' : `${n} stage kills counted`),
@@ -677,14 +674,7 @@ export const COPY = {
     effect: (from: string, to: string) => `${from} → ${to}`,
     maxedEffect: (now: string) => `${now}, max level`,
     /** Starlight lines that open a rule instead of a bonus (DESIGN.md §9). */
-    slots: (open: number, places: number) => `${open} of ${places} places have a second slot`,
-    slotsLocked: 'Opens once every tree and mine has its first worker slot',
-    autobuyer: (owned: boolean) => (owned ? 'Owned: switch it on below' : 'Not owned'),
-    autobuyers: 'Autobuyers',
-    autoTrees: 'Buy tree levels',
-    autoMines: 'Buy mine levels',
-    autoReserve: 'Keep at least this share of what you hold',
-    autoNote: 'They run every second, like offline progress. They never touch cards.',
+    slots: (open: number) => `${open} more farming slots in the forest and in the cave`,
     buy: 'Buy level',
     maxed: 'Max level',
     price: (amount: string) => `${amount} Starlight`,
@@ -1310,11 +1300,6 @@ export const COPY = {
     need: (amount: string) => `need ${amount} more`,
     level: (n: number) => `Lv ${n}`,
     effect: {
-      placeOutput: (place: string) => `${place} output`,
-      jobOutput: (job: string) => `${job} output`,
-      burstEvery: 'A burst every',
-      critChance: 'Crit chance',
-      critDamage: 'Crit damage',
       teamDps: 'Team damage',
       teamHealth: 'Team health',
       moneyPerKill: 'Money per kill',
@@ -1382,7 +1367,7 @@ export const COPY = {
       cosmetics: 'cosmetic upgrades',
       portal: 'summons',
       starlightShop: 'the Starlight shop',
-      unlock: (name: string) => `unlocking ${name}`,
+      camp: 'the camp level',
     },
   },
   shelf: {

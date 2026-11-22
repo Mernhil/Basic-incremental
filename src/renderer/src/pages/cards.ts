@@ -37,7 +37,7 @@ import {
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
-import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import { createBondsPanel, type Panel } from './tablePanels';
 import { keepScroll } from '../ui/keepScroll';
 import { setStarText } from '../ui/stars';
 import './weaponSkinsTab.css';
@@ -49,7 +49,7 @@ import './cards.css';
  * and three supports under its cost cap). All rules come from the CardsModel.
  */
 
-type Tab = 'collection' | 'heirlooms' | 'loadouts' | 'bonds' | 'trips';
+type Tab = 'collection' | 'heirlooms' | 'loadouts' | 'bonds';
 type Sort = keyof typeof COPY.cards.sortBy;
 
 const JOB_NAMES: Record<Job, string> = {
@@ -129,7 +129,6 @@ export function createCardsPage(
     heirlooms: h('button', 'cp-tab', COPY.cards.heirloomsTab),
     loadouts: h('button', 'cp-tab', COPY.cards.loadoutsTab),
     bonds: h('button', 'cp-tab', 'Bonds'),
-    trips: h('button', 'cp-tab', 'Expeditions'),
   };
   const panel = h('div', 'cp-panel');
   panel.setAttribute('role', 'tabpanel');
@@ -231,8 +230,8 @@ export function createCardsPage(
         (heirlooms.find((e) => e.role) ?? heirlooms.find((e) => e.owned) ?? heirlooms[0])?.id ??
         null;
     }
-    if (tab === 'bonds' || tab === 'trips') {
-      const side: Panel = (tab === 'bonds' ? createBondsPanel : createExpeditionsPanel)(ctx);
+    if (tab === 'bonds') {
+      const side: Panel = createBondsPanel(ctx);
       const head = h('div', 'cp-head');
       tabsInPage(head);
       const wrap = h('div', 'cp-loadouts');

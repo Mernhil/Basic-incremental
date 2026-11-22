@@ -15,8 +15,6 @@ const tier = z.number().int().min(1);
 
 /** The five elements (DESIGN.md §2 Fights): water beats fire beats earth beats water; light and dark beat each other. */
 export const ELEMENTS = ['water', 'fire', 'earth', 'light', 'dark'] as const;
-/** The three that a boss can resist: nothing ever resists light or dark. */
-export const RESISTABLE_ELEMENTS = ['water', 'fire', 'earth'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
 
 /**
@@ -77,37 +75,8 @@ export const costCurveSchema = z.strictObject({
 });
 
 /**
- * Depth and growth of a tree kind (ages) or mine type (layers) (DESIGN.md §4 Depth and growth).
- * Layer `n` (1-based) has hardness `hardness x hardnessGrowth^(n-1)` that the worker's digging
- * (`digRate` hardness per second at worker power 1) breaks; each layer below the first multiplies
- * the place's yield by `yieldGrowth`. There are as many layers as `names`; the last one is never
- * broken. Reset on Ascension.
- */
-export const depthSchema = z.strictObject({
-  /** The age or layer names, shallowest first (at least two). */
-  names: z.array(name).min(2),
-  hardness: positiveDecimal,
-  hardnessGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-  yieldGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-  digRate: positiveDecimal,
-});
-export type DepthDef = z.output<typeof depthSchema>;
-
-/** Shared by trees (logging) and mines (mining). Each unlocked one produces once. */
-const producerFields = {
-  depth: depthSchema,
-  id,
-  name,
-  tier,
-  /** Resource id this producer yields. */
-  resource: id,
-  /** Output per second at level 0. */
-  baseRate: positiveDecimal,
-};
-
-/**
  * Level milestones (DESIGN.md §4): every `every` levels the line's output is multiplied by
- * `multiplier` (x2 every 25 levels to start). Per line, so milestones can differ later.
+ * `multiplier`. Per line, so milestones can differ later. Used by the Training lines.
  */
 export const milestoneSchema = z.strictObject({
   every: z.number().int().min(1),
@@ -115,39 +84,30 @@ export const milestoneSchema = z.strictObject({
 });
 export type Milestones = z.output<typeof milestoneSchema>;
 
-/**
- * Levels of a tree kind or mine type, bought with Money and reset on prestige. Each level adds
- * `ratePercent`% output and every `milestones.every` levels multiplies it (DESIGN.md §4).
- */
-export const producerLevelSchema = z.strictObject({
-  cost: costCurveSchema,
-  /** Percent output per level, read through `production.levelBonus`. */
-  ratePercent: decimal.refine((d) => d.gte(0), { message: 'must not be negative' }),
-  /** Output multiplier every N levels. */
-  milestones: milestoneSchema,
-});
+/** Shared by woods (logging) and ores (mining): one material the camp's slots can farm. */
+const producerFields = {
+  id,
+  name,
+  tier,
+  /** Resource id this material is (the six gems). */
+  resource: id,
+  /** Output per second of a slot at camp level 1 with a power-1 card. */
+  baseRate: positiveDecimal,
+  /** Dungeon whose clear opens this material for a slot; null = open from the start. */
+  unlockedByDungeon: id.nullable(),
+  /** The material's element: a card of this element on it gives +15% (DESIGN.md §6 Elements in combat). */
+  element: z.enum(ELEMENTS),
+};
 
+/** A wood: farmed in the forest. */
 export const treeSchema = z.strictObject({
   ...producerFields,
-  /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
-  unlockCost: z.array(costSchema),
-  /** The tree's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
-  element: z.enum(ELEMENTS),
-  /** Tree levels (DESIGN.md §4), bought with Money and reset on prestige. */
-  level: producerLevelSchema,
-  /** Tree colours, themed to its gem: canopy and bark, light to dark. */
+  /** Colours, themed to its gem: canopy and bark, light to dark. */
   art: z.strictObject({ leaf: tones, bark: tones }),
 });
 
-export const mineSchema = z.strictObject({
-  ...producerFields,
-  /** Dungeon whose clear unlocks this mine type; null = available from the start. */
-  unlockedByDungeon: id.nullable(),
-  /** The mine's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
-  element: z.enum(ELEMENTS),
-  /** Mine levels, bought with Money and reset on prestige. */
-  level: producerLevelSchema,
-});
+/** An ore: farmed in the cave. */
+export const mineSchema = z.strictObject({ ...producerFields });
 
 /** How a worker strikes its place (DESIGN.md §4 Workers play the field): a look and a rhythm,
  *  never extra output. */
@@ -217,40 +177,6 @@ export type Job = (typeof JOBS)[number];
 
 const positiveNumber = z.number().positive();
 
-/** The stats a tool line can raise (DESIGN.md §4 Tool lines). */
-export const TOOL_STATS = [
-  'production.rate',
-  'harvest.speed',
-  'harvest.critChance',
-  'harvest.critDamage',
-] as const;
-
-/**
- * A tool line of a production job (DESIGN.md §4 Tool lines): repeatable, bought with Money like a
- * Training line. Yield and strike speed multiply their stat by (1 + ratePercent% x level) x the
- * milestones (`milestones` required); crit chance adds ratePercent percentage points a level and
- * crit damage adds ratePercent/100 to the crit multiplier a level (no milestones). The job is the
- * scope. Reset on Ascension.
- */
-export const toolLineSchema = z
-  .strictObject({
-    id,
-    name,
-    job: z.enum(['logging', 'mining']),
-    /** What it raises, as the words after the amount ("yield"). */
-    effect: z.string().min(1),
-    stat: z.enum(TOOL_STATS),
-    cost: costCurveSchema,
-    ratePercent: decimal.refine((d) => d.gt(0), { message: 'must be above 0' }),
-    milestones: milestoneSchema.optional(),
-  })
-  .refine(
-    (t) =>
-      (t.stat === 'production.rate' || t.stat === 'harvest.speed') === (t.milestones !== undefined),
-    { message: 'yield and speed lines need milestones, crit lines have none' },
-  );
-export type ToolLine = z.output<typeof toolLineSchema>;
-
 /**
  * A forge recipe (DESIGN.md §4 The forge): `inputs` are spent and `output` made each time the
  * worker has done `work` (progress per second is the forge's `speed` × the worker's power).
@@ -264,51 +190,14 @@ export const forgeRecipeSchema = z.strictObject({
 });
 export type ForgeRecipe = z.output<typeof forgeRecipeSchema>;
 
-/**
- * The lucky strike of a job (DESIGN.md §4 Lucky strikes): a worked place gets one every
- * `everySeconds` on average, visible for `windowSeconds`, paying `payoutSeconds` of its output. The
- * economy uses the average, 1 + payout / interval; 0 payout switches it off.
- */
-export const luckySchema = z
-  .strictObject({
-    /** What appears: "Golden tree", "Rich vein". */
-    name,
-    everySeconds: z.number().positive(),
-    windowSeconds: z.number().positive(),
-    payoutSeconds: z.number().min(0),
-  })
-  .refine((l) => l.windowSeconds < l.everySeconds, {
-    message: 'the window must be shorter than the interval',
-  });
-export type LuckyConfig = z.output<typeof luckySchema>;
-
 export const productionSchema = z.strictObject({
-  /** Lucky strikes of each job (DESIGN.md §4 Lucky strikes). */
-  lucky: z.strictObject({ logging: luckySchema, mining: luckySchema }),
   /** The forge (DESIGN.md §4 The forge): its recipes and its progress per second at power 1. */
   forge: z.strictObject({
     speed: positiveDecimal,
     recipes: z.array(forgeRecipeSchema).min(1),
   }),
-  /** The tool lines of both jobs (DESIGN.md §4 Tool lines), in the order the page shows them. */
-  tools: z.array(toolLineSchema).min(1),
-  harvest: z.strictObject({
-    /** Base harvest crit; the `harvest.*` stats change it, read at a worker's place. A place
-     *  with no worker has no crits. */
-    crit: z.strictObject({
-      chance: z.number().min(0).max(1),
-      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-    }),
-  }),
   /** Workers (DESIGN.md §4 Workers, Worker slots). */
   workers: z.strictObject({
-    /** Worker slots: `base` plus `perAscension` per Ascension, at most `perProducer` on one tree
-     *  kind or mine type (so never more than that many times the trees and mines). */
-    slots: z.strictObject({
-      base: z.number().int().min(0),
-      perAscension: z.number().int().min(0),
-      perProducer: z.number().int().min(1),
-    }),
     /** A worker's power by its card's tier (an Heirloom as T6); × the card's level and star power
      *  (`cardStatPower`) it multiplies its place's output. */
     tierPower: z.strictObject({
@@ -321,6 +210,54 @@ export const productionSchema = z.strictObject({
     }),
   }),
 });
+
+/**
+ * The base camp (DESIGN.md section 2 Base camp): one camp level, paid in woods and ores, opens
+ * farming slots in the forest (woods) and the cave (ores) and lifts what every slot brings. A slot
+ * farms one chosen material with one tool card on it. Every number goes through the modifier pipeline
+ * (stat `production.rate`, and `cost.multiplier` on the level price).
+ */
+export const campSchema = z.strictObject({
+  /** The level a new game starts at. */
+  startLevel: z.number().int().min(1),
+  /** Extra output of every slot per camp level above the first, in percent. */
+  yieldPercentPerLevel: positiveDecimal,
+  /** What going up a level costs: each line is base x growth^(level - startLevel), asked from `fromLevel` on. */
+  levelCost: z
+    .array(
+      z.strictObject({
+        resource: id,
+        base: positiveDecimal,
+        growth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+        fromLevel: z.number().int().min(1),
+      }),
+    )
+    .min(1),
+  /** How many slots each place has open from a camp level on (the last row at or below the level counts). */
+  slots: z
+    .array(
+      z.strictObject({
+        level: z.number().int().min(1),
+        forest: z.number().int().min(0),
+        cave: z.number().int().min(0),
+      }),
+    )
+    .min(1),
+  /** Slots one level of the Starlight item granting `camp_slots` adds to each place. */
+  starlightSlotsPerLevel: z.number().int().min(0),
+});
+export type CampConfig = z.output<typeof campSchema>;
+
+/** The Training ground dummy (DESIGN.md section 2 Test dummies): endless health, damage set by the player. */
+export const dummySchema = z.strictObject({
+  /** The damage a dummy deals per hit when the player has not set one. */
+  defaultDamage: positiveDecimal,
+  /** The seconds between a dummy's hits. */
+  hitIntervalSeconds: positiveNumber,
+  /** The most damage the player may set. */
+  maxDamage: positiveDecimal,
+});
+export type DummyConfig = z.output<typeof dummySchema>;
 
 // ---- modifiers ---------------------------------------------------------------------------------
 
@@ -866,10 +803,8 @@ export const dungeonSchema = z.strictObject({
     art: z.enum(BOSS_ARTS).optional(),
     /** A boss picture cut from an asset pack (`foe-<sprite>`), used when there is no `art`. */
     sprite: id.optional(),
-    /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
-    weakness: z.enum(ELEMENTS),
-    /** Absent when the boss has none (never light or dark). */
-    resistance: z.enum(RESISTABLE_ELEMENTS).optional(),
+    /** The boss's element; what it is weak to and resists follows the circle (game/elements.ts). */
+    element: z.enum(ELEMENTS),
     hp: positiveDecimal,
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
@@ -995,8 +930,7 @@ export type GoalPage = (typeof GOAL_PAGES)[number];
  * Goal rules (E8). Each kind finds its candidates in the state:
  * - `clear_dungeon`: unlocked dungeons not cleared yet (with what the clear opens);
  * - `clear_trial`: unlocked special dungeons not cleared yet;
- * - `unlock_tree`: tree kinds not bought yet;
- * - `mine_milestone`: the next level milestone of each mine type;
+ * - `camp_level`: the next camp level, paid in woods and ores;
  * - `gem_mastery` / `boss_mastery`: the next mastery tier of each gem / boss;
  * - `star_up`: owned cards with the duplicate for their next star, missing level or materials.
  */
@@ -1005,8 +939,7 @@ export const GOAL_KINDS = [
   'first_summon',
   'clear_dungeon',
   'clear_trial',
-  'unlock_tree',
-  'mine_milestone',
+  'camp_level',
   'gem_mastery',
   'boss_mastery',
   /** A card's star bar is part full (DESIGN.md §5). */
@@ -1014,9 +947,7 @@ export const GOAL_KINDS = [
   /** A card at its level cap is short of Money or materials for its tier-up. */
   /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
-  /** The cheapest next level of a tool line (DESIGN.md §4 Tool lines). */
-  'tool_line',
-  /** A free worker slot and a production card that is not working (DESIGN.md §4 Workers). */
+  /** An open camp slot and a production card that is not working (DESIGN.md section 2). */
   'worker_slot',
   /** Skill points waiting to be spent (DESIGN.md §10). */
   'skill_points',
@@ -1659,12 +1590,9 @@ export const prestigeSchema = z.strictObject({
       cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
       perLevel: z.array(modifierSchema).default([]),
       /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
-       *  `second_worker_slots` (each level gives the next tree or mine a second worker slot, only
-       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15), `expedition_slot` (each level one more expedition
+       *  `camp_slots` (each level opens more farming slots in the forest and the cave), `expedition_slot` (each level one more expedition
        *  slot, §15). */
-      grants: z
-        .enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines', 'expedition_slot'])
-        .optional(),
+      grants: z.enum(['camp_slots', 'expedition_slot']).optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */
@@ -1709,7 +1637,6 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('offline_hours'), hours: z.number().positive() }),
   z.strictObject({ kind: z.literal('gem_mastery'), tier: z.number().int().min(1).max(4) }),
   z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
-  z.strictObject({ kind: z.literal('milestone'), level: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('max_cosmetic') }),
   /** `count` stages (default 1) at star level `level` or more (1 Wood .. 6 Mythic). */
   z.strictObject({
@@ -1734,12 +1661,10 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('endless_depth'), depth: z.number().int().min(1) }),
   /** Star levels earned over all stages. */
   z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
-  /** Workers at work on trees and mines now. */
+  /** Cards working farming slots in the camp now. */
   z.strictObject({ kind: z.literal('workers'), count: z.number().int().min(1) }),
-  /** Tool line levels bought this run, all lines together. */
-  z.strictObject({ kind: z.literal('tool_levels'), amount: z.number().int().min(1) }),
-  /** The deepest layer or age of any tree or mine (1-based). */
-  z.strictObject({ kind: z.literal('depth'), layer: z.number().int().min(2) }),
+  /** The camp level reached. */
+  z.strictObject({ kind: z.literal('camp_level'), level: z.number().int().min(2) }),
   /** The forge has a worker and a recipe. */
   z.strictObject({ kind: z.literal('forge_working') }),
   /** Bonds discovered (DESIGN.md §15 Bonds). */
@@ -2189,7 +2114,7 @@ export const cosmeticSetSchema = z.strictObject({
  * effects are ordinary modifiers (source `upgrade`), applied while the line is at or above the
  * level; the pick is kept through an ascension and comes back when the line reaches it again.
  */
-export const PERK_LINE_KINDS = ['tree', 'mine', 'tool', 'training'] as const;
+export const PERK_LINE_KINDS = ['training'] as const;
 export type PerkLineKind = (typeof PERK_LINE_KINDS)[number];
 export const perkLineSchema = z.strictObject({
   kind: z.enum(PERK_LINE_KINDS),
@@ -2785,6 +2710,8 @@ export type Batch = z.output<typeof batchSchema>;
 export const contentSchemas = {
   batches: z.array(batchSchema).min(1),
   resources: z.array(resourceSchema),
+  camp: campSchema,
+  dummy: dummySchema,
   trees: z.array(treeSchema),
   mines: z.array(mineSchema),
   production: productionSchema,

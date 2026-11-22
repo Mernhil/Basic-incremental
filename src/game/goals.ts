@@ -1,12 +1,17 @@
 import { type Content, type GoalKind, type GoalPage, type GoalRule } from '../data';
 import { skillPoints } from './account';
-import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
-import { toolLines } from './toolLines';
-import { activeWorkers, forgeWorker, workerSlots, workersUsed } from './workers';
+import {
+  campLevel,
+  campPerSecond,
+  campLevelCost,
+  openSlots,
+  slotWorkers,
+  workersUsed,
+} from './camp';
+import { forgeWorker } from './workers';
 import { cardDisplayName, starUpCheck } from './cards';
 import {
   averageDps,
-  burstStats,
   difficultyDrops,
   effectiveDrops,
   fightStage,
@@ -19,19 +24,11 @@ import {
 import { floorPosition, floorSpec, stageKey } from './floors';
 import { STAGE_STAR_NAMES, stageStars } from './stageStars';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
-import { milestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { pullPrice } from './portals';
 import { runPoints, starlightGain } from './prestige';
 import { Decimal } from './num';
-import {
-  isProducerUnlocked,
-  mineLevel,
-  PRODUCTION_JOBS,
-  productionPerSecond,
-  treeUnlockCost,
-  type Price,
-} from './production';
+import { type Price } from './production';
 import type { GameState } from './state';
 
 /**
@@ -116,8 +113,7 @@ function trialCapability(
 }
 
 /**
- * Units of a resource earned per second at the current rates: production with the average
- * harvest burst, plus the drops of whatever is being fought (dungeon drops per kill on average,
+ * Units of a resource earned per second at the current rates: the camp's slots, plus the drops of whatever is being fought (dungeon drops per kill on average,
  * or the special dungeon's rewards per attempt at the score it reaches).
  */
 export function incomePerSecond(
@@ -127,16 +123,8 @@ export function incomePerSecond(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Decimal {
   let total = new Decimal(0);
-  const produced = productionPerSecond(state, content, modifiers)[resourceId];
-  if (produced) {
-    const job = PRODUCTION_JOBS.find((j) =>
-      (j === 'logging' ? content.trees : content.mines).some((p) => p.resource === resourceId),
-    );
-    const burst = job ? burstStats(content, job, modifiers) : null;
-    const extra =
-      burst && burst.fill > 0 ? burst.power.mul(burst.fill / (burst.size * burst.interval)) : 0;
-    total = total.add(produced.mul(new Decimal(extra).add(1)));
-  }
+  const produced = campPerSecond(state, content, modifiers)[resourceId];
+  if (produced) total = total.add(produced);
   const active = state.activeDungeonId;
   const dungeon = active ? content.dungeonById.get(active) : undefined;
   if (dungeon) {
@@ -281,35 +269,18 @@ const clearTrial: RuleFn = (state, content, modifiers) =>
       };
     });
 
-const unlockTree: RuleFn = (state, content, modifiers) =>
-  content.trees
-    .filter((t) => !isProducerUnlocked(state, content, 'logging', t.id))
-    .map((t) => {
-      const prices = treeUnlockCost(content, t.id, modifiers);
-      return {
-        targetId: t.id,
-        title: `Unlock ${t.name}`,
-        progress: priceProgress(state, prices),
-        etaSeconds: secondsToAfford(state, content, prices, modifiers),
-      };
-    });
-
-const mineMilestone: RuleFn = (state, content, modifiers) =>
-  content.mines
-    .filter((m) => isProducerUnlocked(state, content, 'mining', m.id))
-    .map((m) => {
-      const level = mineLevel(state, m.id);
-      const info = milestoneInfo(m.level.milestones, level);
-      const ctx = { job: 'mining' as const, producer: m.id, resource: m.resource };
-      const count = Math.min(info.levelsToNext, MAX_BULK_LEVELS);
-      const price = curveBulkPrice(m.level.cost, level, count, modifiers, ctx);
-      return {
-        targetId: m.id,
-        title: `${m.name} Lv ${info.nextLevel} (×${info.nextMultiplier.toString()})`,
-        progress: info.progress,
-        etaSeconds: secondsToAfford(state, content, [price], modifiers),
-      };
-    });
+/** The next camp level: progress is how much of its price is held, the ETA the time to farm the rest. */
+const campLevelRule: RuleFn = (state, content, modifiers) => {
+  const prices = campLevelCost(state, content, modifiers);
+  return [
+    {
+      targetId: 'camp',
+      title: `Camp level ${campLevel(state) + 1}`,
+      progress: priceProgress(state, prices),
+      etaSeconds: secondsToAfford(state, content, prices, modifiers),
+    },
+  ];
+};
 
 const gemMasteryRule: RuleFn = (state, content, modifiers) =>
   content.resources
@@ -420,32 +391,12 @@ const ascensionRule: RuleFn = (state, content, modifiers) => {
   ];
 };
 
-/**
- * The cheapest next level of a tool line of each job (DESIGN.md §4 Tool lines): progress is the
- * Money held over its price, the ETA the time to earn the rest.
- */
-const toolLineRule: RuleFn = (state, content, modifiers) =>
-  PRODUCTION_JOBS.flatMap((job) => {
-    const next = toolLines(state, content, job, 1, modifiers).sort((a, b) =>
-      a.offer.price.amount.cmp(b.offer.price.amount),
-    )[0];
-    if (!next) return [];
-    const price = next.offer.price;
-    return [
-      {
-        targetId: next.line.id,
-        title: `${next.line.name}: level ${next.level + 1}`,
-        progress: priceProgress(state, [price]),
-        etaSeconds: secondsToAfford(state, content, [price], modifiers),
-      },
-    ];
-  });
-
 /** A free worker slot with an owned production card that is not at work: put it to work. */
 const workerSlotRule: RuleFn = (state, content) => {
-  if (workersUsed(state, content) >= workerSlots(state, content)) return [];
+  const open = openSlots(state, content, 'forest') + openSlots(state, content, 'cave');
+  if (workersUsed(state, content) >= open) return [];
   const working = new Set([
-    ...Object.values(activeWorkers(state, content)).flat(),
+    ...slotWorkers(state, content).map((w) => w.card),
     ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
   ]);
   const idle = content.cards.find(
@@ -491,15 +442,13 @@ const wishlistRule: RuleFn = (state) =>
       ];
 
 const RULES: Record<GoalKind, RuleFn> = {
-  tool_line: toolLineRule,
   worker_slot: workerSlotRule,
   skill_points: skillPointsRule,
   wishlist: wishlistRule,
   first_summon: firstSummon,
   clear_dungeon: clearDungeon,
   clear_trial: clearTrial,
-  unlock_tree: unlockTree,
-  mine_milestone: mineMilestone,
+  camp_level: campLevelRule,
   gem_mastery: gemMasteryRule,
   boss_mastery: bossMasteryRule,
   star_up: starUpRule,

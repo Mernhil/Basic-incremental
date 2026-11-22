@@ -90,15 +90,17 @@ describe('the Challenge controls (DESIGN.md §6 Farming and Challenge)', () => {
 
 describe('boss elements', () => {
   const sizes = { weakness: 50, resistance: -25 };
-  it('lists the weakness and, when there is one, the resistance, with their percents', () => {
-    expect(bossElements({ weakness: 'fire', resistance: 'earth' }, sizes)).toEqual({
+  it('gives the boss element, what it is weak to and what it resists, with their percents', () => {
+    expect(bossElements({ element: 'earth' }, sizes)).toEqual({
+      own: 'earth',
       weak: { element: 'fire', percent: 50 },
-      resist: { element: 'earth', percent: -25 },
+      resist: { element: 'water', percent: -25 },
     });
   });
-  it('has no resistance line for a boss without one (nothing resists light or dark)', () => {
-    expect(bossElements({ weakness: 'dark' }, sizes)).toEqual({
-      weak: { element: 'dark', percent: 50 },
+  it('has no resistance line for a light or dark boss (nothing resists them)', () => {
+    expect(bossElements({ element: 'dark' }, sizes)).toEqual({
+      own: 'dark',
+      weak: { element: 'light', percent: 50 },
     });
   });
 });

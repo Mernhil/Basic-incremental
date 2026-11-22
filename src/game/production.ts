@@ -1,25 +1,20 @@
 import type { Content, CostCurve, Mine, ProductionJob, Tree } from '../data';
-import { luckyFactor } from './lucky';
-import { depthYield, digPerSecond } from './depth';
-import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
-import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
+import { type Modifier, type StatContext, statValue } from './modifiers';
 import { Decimal } from './num';
-import { cloneState, initialProduction, type GameState } from './state';
-import { activeWorkers, placePower } from './workers';
+import { cloneState, type GameState } from './state';
 
 /**
- * Production (DESIGN.md §4): one of each. Every unlocked tree kind and mine type produces once,
- * at its level. Tree kinds are unlocked with gems, mine types by clearing dungeons, and each
- * tree kind and mine type has levels bought with Money. Every number goes through the modifier pipeline.
+ * What is left of production (DESIGN.md section 2 Base camp): the six materials (woods and ores),
+ * which a camp slot may farm once their dungeon is cleared, and the shared price helpers. The
+ * farming itself is in `camp.ts`.
  *
- * Every function is pure: state changes return a new state. Functions that need modifiers take
- * them as an optional last argument (pass `collectModifiers(state, content)` once when calling
- * several in a row).
+ * Every function is pure: state changes return a new state.
  */
 
 export type { ProductionJob };
 export const PRODUCTION_JOBS: readonly ProductionJob[] = ['logging', 'mining'];
 
+/** A wood (`trees.json`) or an ore (`mines.json`). */
 export type Producer = Tree | Mine;
 
 /** An amount of one resource to pay. */
@@ -29,12 +24,10 @@ export interface Price {
 }
 
 export type ProductionFailure =
-  /** No tree/mine/dungeon with that id for this job. */
+  /** No material or dungeon with that id. */
   | 'unknown'
-  /** The tree kind or mine type is not unlocked yet. */
+  /** The material is not open yet. */
   | 'locked'
-  /** The tree kind is already unlocked. */
-  | 'already-unlocked'
   /** Not enough resources. */
   | 'unaffordable'
   /** A bulk buy count that is not a whole number from 1 to MAX_BULK_LEVELS. */
@@ -43,36 +36,27 @@ export type ProductionFailure =
 export type ProductionResult =
   { ok: true; state: GameState } | { ok: false; reason: ProductionFailure };
 
-const fail = (reason: ProductionFailure): ProductionResult => ({ ok: false, reason });
-
+/** The woods of the forest (logging) or the ores of the cave (mining), in content order. */
 export function producersOf(content: Content, job: ProductionJob): readonly Producer[] {
   return job === 'logging' ? content.trees : content.mines;
 }
 
-function producerContext(producer: Producer, job: ProductionJob): StatContext {
-  return { job, producer: producer.id, resource: producer.resource };
-}
-
-// ---- unlocks -------------------------------------------------------------------------------
-
-/** Trees: start kinds or bought with wood. Mines: start types or their dungeon was cleared. */
+/** A material is open when it has no dungeon to clear or that dungeon has been cleared. */
 export function isProducerUnlocked(
   state: GameState,
   content: Content,
   job: ProductionJob,
   id: string,
 ): boolean {
-  if (job === 'logging') {
-    const tree = content.treeById.get(id);
-    if (!tree) return false;
-    return tree.unlockCost.length === 0 || state.production.unlockedTrees.includes(id);
-  }
-  const mine = content.mineById.get(id);
-  if (!mine) return false;
-  return mine.unlockedByDungeon === null || state.clearedDungeons.includes(mine.unlockedByDungeon);
+  const material = (job === 'logging' ? content.treeById : content.mineById).get(id);
+  if (!material) return false;
+  return (
+    material.unlockedByDungeon === null ||
+    state.clearedDungeons.includes(material.unlockedByDungeon)
+  );
 }
 
-/** The unlocked trees/mines of a job, in content order. */
+/** The open materials of a job, in content order. */
 export function unlockedProducers(
   state: GameState,
   content: Content,
@@ -82,7 +66,7 @@ export function unlockedProducers(
 }
 
 /**
- * Records a dungeon clear and returns the mine types it unlocked (empty if already cleared).
+ * Records a dungeon clear and returns the ores it opened (empty if already cleared).
  * Called by combat when a dungeon is cleared for the first time.
  */
 export function clearDungeon(
@@ -126,15 +110,14 @@ export function finalPrice(
 
 /**
  * The most of a price curve's growth above 1 that `cost.growth` cuts may take away together
- * (DESIGN §3 Every Money price): stacked cuts (Wide Skies, Fresh Start, Wide Groves, Deep Roots)
- * once pushed ×1.13 to the floor of 1, and level prices stopped growing.
+ * (DESIGN §3 Every Money price): stacked cuts once pushed prices to a flat floor, so a price
+ * always keeps growing.
  */
 export const MAX_GROWTH_CUT = 0.5;
 
 /**
  * A curve's growth after `cost.growth`: the modifiers act on the part above 1 (a -10% cut turns
- * ×1.2 into ×1.18), and together they never take more than `MAX_GROWTH_CUT` of it, so a price
- * always keeps growing.
+ * ×1.2 into ×1.18), and together they never take more than `MAX_GROWTH_CUT` of it.
  */
 export function effectiveGrowth(
   growth: Decimal,
@@ -158,86 +141,6 @@ export function curvePrice(
   return finalPrice(curve.resource, curve.base.mul(growth.pow(owned)), modifiers, ctx);
 }
 
-/** One-time wood price to unlock a tree kind. Empty for start kinds. */
-export function treeUnlockCost(
-  content: Content,
-  treeId: string,
-  modifiers: readonly Modifier[] = [],
-): Price[] {
-  const tree = content.treeById.get(treeId);
-  if (!tree) return [];
-  const ctx = producerContext(tree, 'logging');
-  return tree.unlockCost.map((c) => finalPrice(c.resource, c.amount, modifiers, ctx));
-}
-
-export function mineLevel(state: GameState, mineId: string): number {
-  return state.production.mineLevels[mineId] ?? 0;
-}
-
-/** A tree kind's level (0 = never bought). Reset on prestige. */
-export function treeLevel(state: GameState, treeId: string): number {
-  return state.production.treeLevels[treeId] ?? 0;
-}
-
-/** The level of a tree or mine in a job (what `producerRate` takes). */
-export function producerLevel(state: GameState, job: ProductionJob, id: string): number {
-  return job === 'logging' ? treeLevel(state, id) : mineLevel(state, id);
-}
-
-/** A tree kind's level milestones ("Lv 25: x2"), or null for an unknown tree. */
-export function treeLevelMilestone(
-  state: GameState,
-  content: Content,
-  treeId: string,
-): MilestoneInfo | null {
-  const tree = content.treeById.get(treeId);
-  return tree ? milestoneInfo(tree.level.milestones, treeLevel(state, treeId)) : null;
-}
-
-/** Price of the next level of a tree kind, in Money. */
-export function treeLevelCost(
-  state: GameState,
-  content: Content,
-  treeId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Price | null {
-  const tree = content.treeById.get(treeId);
-  if (!tree) return null;
-  return curvePrice(
-    tree.level.cost,
-    treeLevel(state, treeId),
-    modifiers,
-    producerContext(tree, 'logging'),
-  );
-}
-
-/** A mine type's level milestones ("Lv 25: x2"), or null for an unknown mine. */
-export function mineLevelMilestone(
-  state: GameState,
-  content: Content,
-  mineId: string,
-): MilestoneInfo | null {
-  const mine = content.mineById.get(mineId);
-  return mine ? milestoneInfo(mine.level.milestones, mineLevel(state, mineId)) : null;
-}
-
-/** Price of the next level of a mine type, in its own ore. */
-export function mineLevelCost(
-  state: GameState,
-  content: Content,
-  mineId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Price | null {
-  const mine = content.mineById.get(mineId);
-  if (!mine) return null;
-  return curvePrice(
-    mine.level.cost,
-    mineLevel(state, mineId),
-    modifiers,
-    producerContext(mine, 'mining'),
-  );
-}
-
 export function canAfford(state: GameState, prices: readonly Price[]): boolean {
   return prices.every((p) => (state.resources[p.resource] ?? new Decimal(0)).gte(p.amount));
 }
@@ -251,250 +154,7 @@ export function pay(state: GameState, prices: readonly Price[]): GameState {
   return next;
 }
 
-// ---- purchases -------------------------------------------------------------------------------
-
-/** Unlocks a tree kind for wood. Kept through prestige. */
-export function unlockTree(
-  state: GameState,
-  content: Content,
-  treeId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ProductionResult {
-  if (!content.treeById.has(treeId)) return fail('unknown');
-  if (isProducerUnlocked(state, content, 'logging', treeId)) return fail('already-unlocked');
-  const prices = treeUnlockCost(content, treeId, modifiers);
-  if (!canAfford(state, prices)) return fail('unaffordable');
-  const next = pay(state, prices);
-  next.production.unlockedTrees.push(treeId);
-  return { ok: true, state: next };
-}
-
-/** Buys the next level of an unlocked tree kind with Money. */
-export function buyTreeLevel(
-  state: GameState,
-  content: Content,
-  treeId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ProductionResult {
-  const price = treeLevelCost(state, content, treeId, modifiers);
-  if (!price) return fail('unknown');
-  if (!isProducerUnlocked(state, content, 'logging', treeId)) return fail('locked');
-  if (!canAfford(state, [price])) return fail('unaffordable');
-  const next = pay(state, [price]);
-  next.production.treeLevels[treeId] = treeLevel(state, treeId) + 1;
-  return { ok: true, state: next };
-}
-
-/** Buys the next level of an unlocked mine type with Money. */
-export function buyMineLevel(
-  state: GameState,
-  content: Content,
-  mineId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ProductionResult {
-  const price = mineLevelCost(state, content, mineId, modifiers);
-  if (!price) return fail('unknown');
-  if (!isProducerUnlocked(state, content, 'mining', mineId)) return fail('locked');
-  if (!canAfford(state, [price])) return fail('unaffordable');
-  const next = pay(state, [price]);
-  next.production.mineLevels[mineId] = mineLevel(state, mineId) + 1;
-  return { ok: true, state: next };
-}
-
-// ---- output ----------------------------------------------------------------------------------
-
-/**
- * Output per second of this tree kind or mine type at `level`, after modifiers. `level` adds
- * `production.levelBonus` percent per level (from the producer's `ratePercent`) and every level
- * milestone multiplies it (DESIGN.md §4), before the `production.rate` modifiers apply.
- */
-export function producerRate(
-  producer: Producer,
-  job: ProductionJob,
-  modifiers: readonly Modifier[],
-  level = 0,
-): Decimal {
-  const ctx = producerContext(producer, job);
-  let base = producer.baseRate;
-  if (level > 0) {
-    const percent = statValue('production.levelBonus', producer.level.ratePercent, modifiers, ctx);
-    base = base
-      .mul(Decimal.max(percent.mul(level).div(100).add(1), 0))
-      .mul(milestoneMultiplier(producer.level.milestones, level));
-  }
-  return Decimal.max(statValue('production.rate', base, modifiers, ctx), 0);
-}
-
-/** A place's harvest crit numbers after modifiers (DESIGN.md §4 Harvest crits). */
-export interface HarvestCrit {
-  /** Chance one strike crits, 0..1. */
-  chance: number;
-  /** Output multiplier of a crit, at least 1. */
-  damage: Decimal;
-}
-
-/** No crits: a place with no worker (crits come from the card working it). */
-export const NO_HARVEST_CRIT: HarvestCrit = { chance: 0, damage: new Decimal(1) };
-
-/**
- * The harvest crits of a worker's place: the base (`production.json`) through the
- * `harvest.critChance` / `harvest.critDamage` modifiers read at that place, so a worker's
- * ability and enhancements count only where it works.
- */
-export function harvestCrit(
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = [],
-  producer?: Producer,
-): HarvestCrit {
-  const base = content.production.harvest.crit;
-  const ctx = producer ? producerContext(producer, job) : { job };
-  const chance = statValue('harvest.critChance', base.chance, modifiers, ctx).toNumber();
-  return {
-    chance: Math.min(1, Math.max(0, chance)),
-    damage: Decimal.max(statValue('harvest.critDamage', base.damage, modifiers, ctx), 1),
-  };
-}
-
-/**
- * Average output factor from crits: 1 + chance * (damage - 1). Output is always the expected
- * value, so online, offline and split steps give the same totals; the strike events only show it.
- */
-export function harvestCritFactor(crit: HarvestCrit): Decimal {
-  return crit.damage.sub(1).mul(crit.chance).add(1);
-}
-
-/**
- * How fast a worked place strikes and fills its harvest gauge: 1 plus the `harvest.speed` modifiers
- * (the strike speed tool line) read at that place. Never below 0.
- */
-export function harvestSpeed(
-  job: ProductionJob,
-  modifiers: readonly Modifier[],
-  producer?: Producer,
-): number {
-  const ctx = producer ? producerContext(producer, job) : { job };
-  return Math.max(0, statValue('harvest.speed', 1, modifiers, ctx).toNumber());
-}
-
-/** One unlocked tree kind or mine type at work: its rate, crits and workers. */
-export interface WorkSite {
-  job: ProductionJob;
-  /** Position among the job's kinds in content order (locked ones count, so it stays stable). */
-  kind: number;
-  producer: Producer;
-  /** Card ids working it (empty: the plain level rate, no strikes, no gauge, no crits). */
-  workers: string[];
-  /** Output per second without crits: the level rate × the workers' power × its layer's yield. */
-  rate: Decimal;
-  crit: HarvestCrit;
-  /** The expected-value factor of its lucky strikes, 1 + payout / interval (1 with no worker). */
-  lucky: Decimal;
-  /** Hardness of its current layer or age broken per second by the workers (0 with none). */
-  dig: Decimal;
-  /** Strike and gauge speed, 1 = the card's own rhythm (1 with no worker). */
-  speed: number;
-}
-
-/**
- * The unlocked kinds of a job as they work now, in content order (DESIGN.md §4 Workers): each
- * yields its level rate × its worker's power, crits from the worker; no worker = the plain rate.
- */
-export function workSites(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): WorkSite[] {
-  const all = producersOf(content, job);
-  const workers = activeWorkers(state, content);
-  return unlockedProducers(state, content, job).map((producer) => {
-    const ids = workers[producer.id] ?? [];
-    const level = producerLevel(state, job, producer.id);
-    const ctx = producerContext(producer, job);
-    const power =
-      ids.length > 0
-        ? statValue(
-            'worker.power',
-            placePower(state, content, producer.id),
-            modifiers,
-            ctx,
-          ).toNumber()
-        : 1;
-    const speed = ids.length > 0 ? harvestSpeed(job, modifiers, producer) : 1;
-    return {
-      job,
-      kind: all.indexOf(producer),
-      producer,
-      workers: ids,
-      rate: producerRate(producer, job, modifiers, level)
-        .mul(power)
-        .mul(statValue('depth.yield', depthYield(state, content, producer.id), modifiers, ctx)),
-      dig: digPerSecond(state, content, producer.id, ids.length > 0 ? power : 0, speed).mul(
-        statValue('depth.digRate', 1, modifiers, ctx),
-      ),
-      crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
-      speed,
-      lucky: ids.length > 0 ? luckyFactor(content, job, modifiers, ctx) : new Decimal(1),
-    };
-  });
-}
-
-/** Output per second of one site, crits included (the expected value). */
-export function siteOutput(site: WorkSite): Decimal {
-  return site.rate.mul(harvestCritFactor(site.crit)).mul(site.lucky);
-}
-
-/** Resource id -> gained per second from one job's unlocked kinds, once each (crits included). */
-export function jobProductionPerSecond(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Record<string, Decimal> {
-  const out: Record<string, Decimal> = {};
-  for (const site of workSites(state, content, job, modifiers)) {
-    const resource = site.producer.resource;
-    out[resource] = (out[resource] ?? new Decimal(0)).add(siteOutput(site));
-  }
-  return out;
-}
-
-/** Resource id -> total gained per second from every unlocked tree kind and mine type. */
-export function productionPerSecond(
-  state: GameState,
-  content: Content,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Record<string, Decimal> {
-  const out: Record<string, Decimal> = {};
-  for (const job of PRODUCTION_JOBS) {
-    for (const [resource, gained] of Object.entries(
-      jobProductionPerSecond(state, content, job, modifiers),
-    )) {
-      out[resource] = (out[resource] ?? new Decimal(0)).add(gained);
-    }
-  }
-  return out;
-}
-
-// ---- prestige --------------------------------------------------------------------------------
-
-/**
- * The production part of a prestige (DESIGN.md §9): tree and mine levels go back to the
- * start; unlocked tree kinds, cleared dungeons (so unlocked mines), the workers and the forge are
- * kept. Resources are
- * not touched here; the prestige system resets them.
- */
+/** The production part of an Ascension: the forge is kept, and so is the camp (DESIGN.md section 2). */
 export function resetProduction(state: GameState): GameState {
-  const next = cloneState(state);
-  // Levels, tool lines, depth and harvest gauges start over; unlocked kinds, the workers and the
-  // forge are kept (DESIGN.md §4, §9).
-  const kept = next.production;
-  next.production = {
-    ...initialProduction(),
-    unlockedTrees: kept.unlockedTrees,
-    workers: kept.workers,
-    forge: kept.forge,
-  };
-  return next;
+  return cloneState(state);
 }
