@@ -24,6 +24,7 @@ import {
   type Stroke,
   type WeaponMotion,
 } from './specialData';
+import { duelPace } from './duelPace';
 
 export { hasSpecial } from './specialData';
 
@@ -1650,7 +1651,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
     r.hooks.card({ dy: 0, glow: null, glowPx: 0, weapon: true, flash: false });
     r.hooks.foe({ dx: 0, dy: 0, flash: false });
     r.hooks.done();
-    freeAt = performance.now() + COOLDOWN_MS;
+    freeAt = performance.now() + COOLDOWN_MS / duelPace();
   };
 
   if (typeof document !== 'undefined')
@@ -1731,7 +1732,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
       let lastFrame = -1;
       let released = false;
       const stop = onFrame((dt) => {
-        t += dt / 1000;
+        t += (dt * duelPace()) / 1000;
         if (t >= len) {
           finish();
           return;

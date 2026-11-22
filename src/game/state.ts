@@ -400,6 +400,10 @@ export interface CombatState {
    *  dies, so Money comes only when something is won (DESIGN.md §3). Runtime only, not saved: a save
    *  loses at most the seconds since the last kill. */
   wageOwed?: Record<string, Decimal>;
+  /** Seconds a sped-up Challenge has added to the card-fight clock (DESIGN.md §2 Speed button): the
+   *  fight clock is play time plus this (speed.ts `fightClock`). Runtime only, not saved: a loaded
+   *  game only shifts the cards' hit rhythm. */
+  fightClockBonus?: number;
 }
 
 /** A running Challenge (DESIGN.md §6 Farming and Challenge). */
@@ -617,6 +621,7 @@ export function cloneCombat(c: CombatState): CombatState {
     cardDamage: { ...c.cardDamage },
     cardsOut: [...c.cardsOut],
     ...(c.wageOwed ? { wageOwed: { ...c.wageOwed } } : {}),
+    ...(c.fightClockBonus ? { fightClockBonus: c.fightClockBonus } : {}),
   };
 }
 

@@ -21,6 +21,7 @@ export * from './depth';
 export * from './forge';
 export * from './lucky';
 export * from './loop';
+export * from './speed';
 export * from './offline';
 export * from './migrations';
 export * from './save';

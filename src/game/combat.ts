@@ -37,6 +37,7 @@ import {
   type Modifier,
   type StatContext,
 } from './modifiers';
+import { fightClock } from './speed';
 import { Decimal } from './num';
 import { clearDungeon, type Price } from './production';
 import { pushBossAttack, pushPlayerHit, pushSkill, type TickReport } from './report';
@@ -788,7 +789,7 @@ export function burstView(
   const base = burstStats(content, job, modifiers);
   const power = lead.hit.gt(0) ? lead.signature.div(lead.hit) : base.power;
   const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill, power };
-  const fraction = gaugeAt(lead, state.stats.playTimeMs / 1000);
+  const fraction = gaugeAt(lead, fightClock(state));
   return { gauge: fraction * lead.size, size: lead.size, fraction, stats };
 }
 
@@ -1151,7 +1152,7 @@ export function bossAttackView(
   const interval = stage.intervalSeconds;
   const damages = attackDamages(stage.attack.mul(weakenFactor(state, team)), pattern);
   if (damages.normal.lte(0)) return null;
-  const clock = state.stats.playTimeMs / 1000;
+  const clock = fightClock(state);
   const landed = bossAttacksBy(clock, interval);
   const slam = nextBossSlam(landed, pattern);
   const cycleSeconds = pattern.attacksPerCycle * interval;
@@ -1180,7 +1181,7 @@ export function secondsToKnockoutNow(
   const team = buildTeam(state, content, modifiers, stage.dungeon.id);
   if (!enemyTarget(state, team) || stage.attack.lte(0)) return null;
   const interval = stage.intervalSeconds;
-  const clock = state.stats.playTimeMs / 1000;
+  const clock = fightClock(state);
   const lethal = teamLethalAttack(
     state,
     team,
@@ -1260,6 +1261,7 @@ export function advanceCombat(
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
+  fightSpeed = 1,
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
@@ -1276,6 +1278,14 @@ export function advanceCombat(
     } else return;
   }
   const dungeon = content.dungeonById.get(id);
+  // A Challenge runs `fightSpeed` times faster than the clock (DESIGN.md §2 Speed button): the
+  // fight gets that many seconds and the fight clock gains the difference. Farming, income and
+  // everything else keep the real pace.
+  const pace = { speed: next.combat.challenge && dungeon && fightSpeed > 1 ? fightSpeed : 1 };
+  if (pace.speed > 1) {
+    next.combat.fightClockBonus = (next.combat.fightClockBonus ?? 0) + left * (pace.speed - 1);
+    left *= pace.speed;
+  }
   let mods = modifiers;
   // A rare drop joins the collection and its cosmetic bonus counts at once: the fight stops
   // there and carries on with fresh modifiers, so any split of time deals the same damage.
@@ -1284,15 +1294,29 @@ export function advanceCombat(
     const team = buildTeam(next, content, mods, id);
     if (teamAverageDps(team).lte(0)) return;
     // This call covers the last `seconds` of play time; `left` of them are still to fight.
-    const start = next.stats.playTimeMs / 1000 - left;
+    if (pace.speed > 1 && !next.combat.challenge) left = endSpeedUp(next, pace, left);
+    if (left <= EPSILON) return;
+    const start = fightClock(next) - left;
     if (!dungeon) {
       const trial = content.trialById.get(id);
       if (trial) fightTrial(next, content, trial, team, start, left, report, mods);
       return;
     }
-    left = fightDungeon(next, content, dungeon, team, start, left, rng, report, mods);
+    left = fightDungeon(next, content, dungeon, team, start, left, rng, report, mods, pace);
     if (left > EPSILON) mods = collectModifiers(next, content);
   }
+}
+
+/**
+ * The Challenge a speed-up served is over inside the span: the rest of the span is farming at the
+ * real pace, so the seconds left shrink back and the fight clock gives the difference back.
+ * Returns the seconds left.
+ */
+function endSpeedUp(next: GameState, pace: { speed: number }, left: number): number {
+  const real = left / pace.speed;
+  next.combat.fightClockBonus = (next.combat.fightClockBonus ?? 0) - (left - real);
+  pace.speed = 1;
+  return real;
 }
 
 /**
@@ -1377,6 +1401,7 @@ function fightDungeon(
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
+  pace: { speed: number } = { speed: 1 },
 ): number {
   // The floor's attacks and the cards' hits sit on the play-time clock (bossAttacks.ts, duel.ts):
   // this fight is the play time from `start`, so any split of time lands the same hits.
@@ -1400,14 +1425,14 @@ function fightDungeon(
       next,
       content,
       'fighting',
-      fightingXpPerSecond(content, dungeon, modifiers).mul(t * stage.scale.xp),
+      fightingXpPerSecond(content, dungeon, modifiers).mul((t * stage.scale.xp) / pace.speed),
     );
     // The wage (the first dungeon's Money) for every second spent fighting is earned here and
     // paid at the next kill, so Money comes only when something is won (DESIGN.md §3).
     for (const wage of drops.wages) {
       const owed = (next.combat.wageOwed ??= {});
       owed[wage.resource] = (owed[wage.resource] ?? new Decimal(0)).add(
-        wage.perSecond.mul(t * stage.scale.wage),
+        wage.perSecond.mul((t * stage.scale.wage) / pace.speed),
       );
     }
     return landed;
@@ -1569,6 +1594,8 @@ function fightDungeon(
 
   for (let event = 0; event < MAX_FIGHT_EVENTS_PER_ADVANCE; event++) {
     if (left <= EPSILON) return 0;
+    // A speed-up ends with its Challenge: the rest of the span is farming at the real pace.
+    if (pace.speed > 1 && !next.combat.challenge) left = endSpeedUp(next, pace, left);
     // A rare drop changed the modifiers (its cosmetic): hand the rest of the span back.
     if ((report.drops[rareItem] ?? 0) > raresAtStart) return left;
     // A Challenge left behind (another dungeon or difficulty) is over.

@@ -14,6 +14,7 @@ import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import type { SkillEvent, TickReport } from './report';
 import type { GameState } from './state';
+import { fightClock } from './speed';
 
 /**
  * What the card duel shows (DESIGN.md §6 "What the duel shows"), as pure selectors for the UI: the
@@ -60,7 +61,7 @@ export function teamView(
   const team = buildTeam(state, content, modifiers, state.activeDungeonId).filter((c) => c.id);
   const out = state.combat.knockoutSeconds > 0;
   const target = out ? null : enemyTarget(state, team);
-  const clock = state.stats.playTimeMs / 1000;
+  const clock = fightClock(state);
   return team.map((card: TeamCard): TeamCardView => {
     const down = out || !isStanding(state, card);
     const health = down

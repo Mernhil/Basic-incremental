@@ -260,7 +260,7 @@
   );
 }
 .ar__slam-flash.is-hit {
-  animation: ar-slam-flash 0.46s ease-out;
+  animation: ar-slam-flash calc(0.46s / var(--pace, 1)) ease-out;
 }
 @keyframes ar-slam-flash {
   0% {
@@ -281,7 +281,7 @@
   background: color-mix(in srgb, #fff 88%, var(--bi-hp-0));
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
   pointer-events: none;
-  animation: ar-chunk-fall 0.6s ease-in forwards;
+  animation: ar-chunk-fall calc(0.6s / var(--pace, 1)) ease-in forwards;
 }
 .ar-chunk--slam {
   --fall: 34px;
@@ -314,7 +314,7 @@
 
 /* a finished HP bar: the counter ticks */
 .bi-hpstack__count.is-ticking {
-  animation: ar-tick 0.5s ease-out;
+  animation: ar-tick calc(0.5s / var(--pace, 1)) ease-out;
 }
 @keyframes ar-tick {
   30% {
@@ -339,7 +339,7 @@
   );
   filter: blur(4px);
   transform-origin: bottom;
-  animation: ar-beam 1.6s ease-out forwards;
+  animation: ar-beam calc(1.6s / var(--pace, 1)) ease-out forwards;
 }
 @keyframes ar-beam {
   0% {
@@ -763,13 +763,13 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-tag--foe.is-landed {
   z-index: 2;
   transform-origin: right bottom;
-  animation: du-tag-land 0.46s steps(1, end) both;
+  animation: du-tag-land calc(0.46s / var(--pace, 1)) steps(1, end) both;
 }
 .du-feed__line.is-landed {
   position: relative;
   z-index: 1;
   transform-origin: right top;
-  animation: du-feed-land 0.46s steps(1, end) both;
+  animation: du-feed-land calc(0.46s / var(--pace, 1)) steps(1, end) both;
 }
 @keyframes du-tag-land {
   0% {
@@ -1201,7 +1201,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 /* a hit from the enemy: the card shakes (transform only) */
 .du-card__body.is-hurt {
-  animation: du-hurt 0.4s linear;
+  animation: du-hurt calc(0.4s / var(--pace, 1)) linear;
 }
 @keyframes du-hurt {
   20% {
@@ -1434,4 +1434,9 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .ar.ar--calm.is-special :is(.ar__scene, .du-top, .du-left, .du-sheet, .du-plates, .du-deck),
 .ar.ar--calm.is-special .du-card:not(.is-special-src) {
   transition: none;
+}
+
+/* the speed button while no faster speed is open yet */
+.du-ctrl__speed.is-locked {
+  opacity: 0.6;
 }
