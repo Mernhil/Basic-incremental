@@ -151,6 +151,8 @@ export function buildTeam(
   content: Content,
   modifiers: readonly Modifier[],
   dungeonId: string | null,
+  /** `false`: each card before any move counts (its plain hit and signature), for readouts. */
+  withMovesApplied = true,
 ): TeamCard[] {
   const placed = teamPlacements(state, content);
   const ids = placed.map((p) => p.id);
@@ -232,7 +234,26 @@ export function buildTeam(
       crit,
     };
   });
-  return withMoves(content, base, dungeonId);
+  return withMovesApplied ? withMoves(content, base, dungeonId) : base;
+}
+
+/**
+ * One card as it would fight alone in the front row, before its moves count (its plain hit, its
+ * signature, its timings and its moves), for the card screens; null when it is not owned or does
+ * not fight.
+ */
+export function soloCard(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+  cardId: string,
+): TeamCard | null {
+  if (!state.cards.owned[cardId] || content.cardById.get(cardId)?.job !== 'fighting') return null;
+  const view: GameState = {
+    ...state,
+    cards: { ...state.cards, loadouts: { fighting: { slots: [null, cardId, null, null] } } },
+  };
+  return buildTeam(view, content, modifiers, state.activeDungeonId, false)[0] ?? null;
 }
 
 /** The team after its moves (moves.ts `applyMoves`): the skills, the ultimates and their effects. */

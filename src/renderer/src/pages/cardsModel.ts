@@ -226,7 +226,8 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'dust'): ModelResult;
+  /** Adds a star (from copies or dust), or opens the card's skill with Cores (DESIGN.md §2). */
+  upgrade(state: GameState, id: string, kind: 'star' | 'dust' | 'skill'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

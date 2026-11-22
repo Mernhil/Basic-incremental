@@ -117,6 +117,7 @@ import {
   starUpCheck,
   starDustCost,
   starUpWithDust,
+  openCardSkill,
   buyShardItem,
   cardStatPower,
   treeUnlockCost,
@@ -1423,11 +1424,26 @@ export function greedyBuy(
   const shards = spendShards(dust.state, content);
   current = shards === current ? current : optimizeLoadouts(shards, content);
   current = fillEnhancements(current, content);
+  current = openSkills(current, content);
   current = buyHeirloomTrees(current, content);
   current = equipSets(current, content);
   current = markWishlist(current, content);
   current = chooseAutomation(current, content, candidates);
   return { state: current, bought, dustSpent: dust.spent };
+}
+
+/**
+ * Opens the skills of the fighting loadout's cards with Cores (DESIGN.md §2 Three attacks per card),
+ * left to right, as soon as their Cores are there: the player has nothing else to spend Cores on.
+ */
+export function openSkills(state: GameState, content: Content): GameState {
+  let current = state;
+  for (const id of current.cards.loadouts.fighting.slots) {
+    if (!id) continue;
+    const result = openCardSkill(current, content, id);
+    if (result.ok) current = result.state;
+  }
+  return current;
 }
 
 /** The value the buyer gives an enhancement option. */

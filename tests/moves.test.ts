@@ -3,6 +3,7 @@ import {
   activeEffects,
   buildTeam,
   cardMoves,
+  mergeEffects,
   cloneState,
   collectModifiers,
   createSaveText,
@@ -182,5 +183,23 @@ describe('opening a skill with Cores', () => {
     const s = teamOf(['brass_vanguard'], ['brass_vanguard']);
     const back = readSave(createSaveText(cloneState(s), 0), content).state;
     expect(back.cards.owned['brass_vanguard']!.skillOpen).toBe(true);
+  });
+});
+
+describe('one effect of a kind per move', () => {
+  it('merges the kit, layer and twist: the stronger counts, Wounds add up', () => {
+    const ult = moves('solaris').ult.effects;
+    expect(ult.filter((e) => e.kind === 'haste' && e.on === 'team')).toHaveLength(1);
+    expect(
+      mergeEffects([
+        { kind: 'wound', on: 'enemy', value: 0.4, seconds: 6 },
+        { kind: 'wound', on: 'enemy', value: 0.5, seconds: 6 },
+        { kind: 'rally', on: 'team', value: 0.1, seconds: 5 },
+        { kind: 'rally', on: 'team', value: 0.15, seconds: 6 },
+      ]),
+    ).toEqual([
+      { kind: 'wound', on: 'enemy', value: 0.9, seconds: 6 },
+      { kind: 'rally', on: 'team', value: 0.15, seconds: 6 },
+    ]);
   });
 });

@@ -57,8 +57,46 @@ const NO_LEAN = { strike: 1, every: 1, seconds: 1, skillEffect: 1 };
 
 const isTop = (tier: RankTier): boolean => tier === 'mythic' || tier === 'heirloom';
 
+/** Kinds that add up when one move carries them twice; the others keep the stronger and longer. */
+const ADDS_UP: readonly MoveEffect['kind'][] = [
+  'wound',
+  'charge',
+  'heal',
+  'shield',
+  'regen',
+  'drain',
+];
+
+/** One move's effects with each kind and target once (its kit, layers and twist merged). */
+export function mergeEffects(list: readonly MoveEffect[]): MoveEffect[] {
+  const out: MoveEffect[] = [];
+  for (const e of list) {
+    const same = out.findIndex((x) => x.kind === e.kind && x.on === e.on);
+    if (same < 0) {
+      out.push({ ...e });
+      continue;
+    }
+    const a = out[same]!;
+    const seconds =
+      a.seconds === undefined && e.seconds === undefined
+        ? undefined
+        : a.seconds === 0 || e.seconds === 0
+          ? 0
+          : Math.max(a.seconds ?? 0, e.seconds ?? 0);
+    const below = Math.max(a.below ?? 0, e.below ?? 0);
+    out[same] = {
+      kind: a.kind,
+      on: a.on,
+      value: ADDS_UP.includes(a.kind) ? a.value + e.value : Math.max(a.value, e.value),
+      ...(seconds !== undefined ? { seconds } : {}),
+      ...(below > 0 ? { below } : {}),
+    };
+  }
+  return out;
+}
+
 function scaled(list: readonly MoveEffect[], value: number, seconds: number): MoveEffect[] {
-  return list.map((e) => ({
+  return mergeEffects(list).map((e) => ({
     ...e,
     value: e.value * value,
     ...(e.seconds !== undefined && e.seconds > 0 ? { seconds: e.seconds * seconds } : {}),

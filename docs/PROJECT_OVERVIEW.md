@@ -81,7 +81,8 @@ Run by hand, with Playwright against a running dev app (its `--remote-debugging-
 - **Extra reports** (`npx tsx scripts/sim/<file>`): `breakdown.ts` (damage sources), `timeline.ts` (state over time), `ranges.ts` (number ranges), `tiers.ts` (tier gaps), `quests.ts` (with and without quests).
 - **Cheats**: `src/game/dev.ts` holds pure functions: grant resources, clear a dungeon, set a floor, set a card's stars and level, add account XP, grant a cosmetic, advance time, reset the game.
 - **Panel**: `src/renderer/src/dev/devPanel.ts` calls them and adds game speed buttons (`GAME_SPEEDS` in `src/game/loop.ts`). The Dev button or Ctrl+Shift+D toggles it. Reset first copies the save to `save.before-reset-<time>.json`.
-- `scripts/make-new-save.ts` and `scripts/make-meta-save.ts` write a save text to a given path.
+- The sim player opens the fighting loadout's skills with Cores as soon as it can (`openSkills` in `scripts/sim/sim.ts`).
+- `scripts/make-new-save.ts` and `scripts/make-meta-save.ts` write a save text to a given path. `scripts/shoot-moves.mjs` screenshots the effect words in the duel and the weapon panel's attacks in the running dev app.
 
 Keeping cheats out of releases:
 
@@ -884,6 +885,8 @@ One component in two places: the dungeon view's Weapon panel (`drawer`: the weap
 An Heirloom card and a 6-star card show no button, only the notes. The panel also lists what the next star changes (`starStats`); an Heirloom below 6 stars shows the `allStars` line text because it has no star bar.
 
 There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: that its stars come from the Heirloom Gate, or that it is fully upgraded), plus a note while the next level is a breakthrough level. Built by `weaponModel.ts` `weaponView`. See Cards.
+
+**Attacks** (DESIGN.md §2 Three attacks per card; `pages/movesModel.ts` `movesView`, `COPY.moves`): a list of the card's hit, skill and ultimate, each with its name, when it fires, its damage now (the card fighting alone before team effects: `soloCard` in `src/game/duel.ts`) and one line per effect (`effectText`). A skill with no slot at the tier, or not opened yet, carries a note. While the skill can be opened, its row shows the Cores (`costMarkup`, red when short) and **Open skill** (`openCardSkill` through the cards adapter's `upgrade(state, id, 'skill')`), disabled when short. Card variant: a tile before the notes; drawer: in the side column. Read at most twice a second and redrawn only on change.
 
 ### Shared widgets (`ui/`)
 
