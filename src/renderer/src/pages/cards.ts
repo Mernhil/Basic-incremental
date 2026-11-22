@@ -684,7 +684,11 @@ export function createCardsPage(
   // ---- detail panel ----
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
     // "tier · job · role" on the right of the name
-    const parts = [gradeLabel(styleGrade(e.rarity)), JOB_NAMES[e.job]];
+    // a starter weapon is labelled so (DESIGN.md §2 Starter weapon), a label only
+    const parts = [
+      e.starter ? COPY.starter.tierLabel : gradeLabel(styleGrade(e.rarity)),
+      JOB_NAMES[e.job],
+    ];
     if (e.owned && e.role) parts.push(COPY.cards.slotName(e.role.slot));
     const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
