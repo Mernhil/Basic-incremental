@@ -40,14 +40,22 @@ export interface UpgradeRowView {
   /** "412/s" and "417/s". */
   now: string;
   after: string;
+  /** What the purchase adds, signed ("+5/s", "−5 s", "+5%"); empty when it has no simple size. */
+  delta: string;
+  /** "after this level" or "after 10 levels": what `after` and the price are for. */
+  scope: string;
+  /** The whole effect as one sentence, for the tooltip and the accessible label. */
+  says: string;
   /** "×2.26 → ×2.29" (small). */
   mult: string;
   /** Pips from the last milestone to the next. */
   segments: { filled: number; total: number };
-  /** "Lv 50: damage ×1.8 and pick War Drums or Elemental Edge". */
+  /** "In 13 levels (Lv 50): damage ×1.8, and you pick War Drums or Elemental Edge". */
   next: string;
   /** "13 levels". */
   toGo: string;
+  /** What each pick of the next milestone does, one per line; empty when it has no pick. */
+  nextTip: string;
   /** Perks picked on this line that apply now. */
   badges: { name: string; description: string }[];
   buy: {
@@ -95,6 +103,29 @@ function effectText(content: Content, e: LineEffect, d: Decimal): string {
       return `×${times(d)}`;
     case 'hitsPerSignature':
       return `${small(d)} hits`;
+  }
+}
+
+/** A change as text with its sign; empty when nothing changes. */
+function deltaText(e: LineEffect, d: Decimal): string {
+  if (d.eq(0)) return '';
+  const sign = d.gt(0) ? '+' : '−';
+  const a = d.abs();
+  switch (e.kind) {
+    case 'placeOutput':
+    case 'jobOutput':
+    case 'teamDps':
+      return `${sign}${small(a)}/s`;
+    case 'teamHealth':
+      return `${sign}${small(a)}`;
+    case 'burstEvery':
+      return `${sign}${small(a)} s`;
+    case 'critChance':
+      return `${sign}${percent(a)}`;
+    case 'hitsPerSignature':
+      return `${sign}${small(a)} hits`;
+    default:
+      return '';
   }
 }
 
@@ -202,19 +233,30 @@ export function upgradeRow(
   const step = nextLineStep(state, content, line);
   let next: string = COPY.row.done;
   let toGo = '';
+  let nextTip = '';
   let segments = { filled: 0, total: 0 };
   if (step) {
     const parts: string[] = [];
     if (step.ring)
       parts.push(COPY.row.ring(ringWhat(content, line), fmt(step.ring.nextMultiplier)));
-    if (step.pick) parts.push(COPY.row.pick(step.pick.options[0].name, step.pick.options[1].name));
-    next = COPY.row.next(step.level, parts.join(COPY.row.and));
+    if (step.pick) {
+      parts.push(COPY.row.pick(step.pick.options[0].name, step.pick.options[1].name));
+      nextTip = step.pick.options
+        .map((o) => `${o.name}: ${o.description}`)
+        .join(String.fromCharCode(10));
+    }
     toGo = COPY.row.toGo(step.levelsToGo);
+    next = COPY.row.next(toGo, step.level, parts.join(COPY.row.and));
     const span = step.level - step.fromLevel;
     const done = level - step.fromLevel;
     const scale = span > MAX_SEGMENTS ? MAX_SEGMENTS / span : 1;
     segments = { filled: Math.floor(done * scale), total: Math.round(span * scale) };
   }
+  const scope = COPY.row.scope(offer.count);
+  const nowText = effectText(content, effect, effect.now);
+  const afterText = effectText(content, effect, effect.after);
+  const delta = deltaText(effect, effect.after.sub(effect.now));
+  const label = effectLabel(content, line, effect);
   const resource = offer.price.resource;
   const held = state.resources[resource] ?? new Decimal(0);
   const short = offer.affordable ? null : Decimal.max(offer.price.amount.sub(held), 0);
@@ -223,13 +265,17 @@ export function upgradeRow(
     line,
     name: lineName(content, line),
     levelText: COPY.row.level(level),
-    effectLabel: effectLabel(content, line, effect),
-    now: effectText(content, effect, effect.now),
-    after: effectText(content, effect, effect.after),
+    effectLabel: label,
+    now: nowText,
+    after: afterText,
+    delta,
+    scope,
+    says: COPY.row.says(label, nowText, afterText, scope, delta),
     mult,
     segments,
     next,
     toGo,
+    nextTip,
     badges: lineBadges(state, content, line).map((b) => ({
       name: b.option.name,
       description: b.option.description,
