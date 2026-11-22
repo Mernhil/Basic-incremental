@@ -1755,3 +1755,116 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
     },
   };
 }
+
+// ------------------------------------------------------------------------------------------------
+// the cut-in alone (the Summon reveal's entrance for a T6 or an Heirloom)
+// ------------------------------------------------------------------------------------------------
+
+export interface CutInRequest {
+  kind: string;
+  element: string;
+  tier?: string;
+  /** The weapon sprite (the card's own picture, loaded). */
+  weapon: HTMLImageElement;
+  /** The small line above the name (the tier word) and the big name. */
+  tag: string;
+  name: string;
+  /** Seconds the band stays before it leaves. */
+  hold?: number;
+}
+
+/**
+ * Plays only the special attack's cut-in (the slanted band, the weapon large, a small line and a
+ * big name) on a canvas laid over `host`, with the same drawing code as the duel's. Null when the
+ * card has no element effect (the caller then shows the result without it). `done` settles when the band
+ * has left or `stop` was called.
+ */
+export function playCutIn(
+  host: HTMLElement,
+  req: CutInRequest,
+): { done: Promise<void>; stop: () => void } | null {
+  // an axe or a pickaxe has no fighting motion, but its cut-in needs only the band's colours and
+  // timing: it borrows the sword's
+  const m = WEAPON_MOTIONS[req.kind] ?? WEAPON_MOTIONS['sword'];
+  const e = effectOf(req.tier, req.element);
+  if (!m || !e || document.hidden) return null;
+  const dpr = window.devicePixelRatio || 1;
+  const u = Math.max(
+    1,
+    Math.round(Math.min(host.clientWidth / 1280, host.clientHeight / 720) * dpr),
+  );
+  const unit = u / dpr;
+  const cv = document.createElement('canvas');
+  cv.width = Math.max(1, Math.ceil(host.clientWidth / unit));
+  cv.height = Math.max(1, Math.ceil(host.clientHeight / unit));
+  cv.className = 'sa-canvas';
+  cv.setAttribute('aria-hidden', 'true');
+  cv.style.width = `${cv.width * unit}px`;
+  cv.style.height = `${cv.height * unit}px`;
+  const g = cv.getContext('2d');
+  if (!g) return null;
+  g.imageSmoothingEnabled = false;
+  const none = { x: 0, y: 0, w: 1, h: 1 };
+  const wp = req.weapon;
+  const leave = (req.hold ?? 0.9) + 0.3;
+  const sc: Scene = {
+    g,
+    W: cv.width,
+    H: cv.height,
+    req: {
+      kind: req.kind,
+      element: req.element,
+      weapon: wp,
+      card: req.tag,
+      skill: req.name,
+      line: '',
+      foe: none,
+      rest: none,
+      u,
+      dpr,
+      calm: false,
+      hooks: { dim: () => {}, card: () => {}, foe: () => {}, release: () => {}, done: () => {} },
+    },
+    m: { ...m, times: { ...m.times, leave } },
+    e,
+    f: 1,
+    band: cl(Math.min(cv.width / 1280, cv.height / 720) * 1.15, 0.5, 1),
+    foe: none,
+    fc: { x: 0, y: 0 },
+    rest: { x: 0, y: 0 },
+    s1: 1,
+    wp,
+    white: tinted(wp, '#ffffff'),
+    black: tinted(wp, '#000000'),
+    dark: tinted(wp, e.ink),
+    trail: [],
+  };
+  host.append(cv);
+  let t = 0;
+  let last = -1;
+  let ended = false;
+  let off = (): void => {};
+  let finish = (): void => {};
+  const done = new Promise<void>((res) => {
+    finish = () => {
+      if (ended) return;
+      ended = true;
+      off();
+      cv.remove();
+      res();
+    };
+  });
+  off = onFrame((dt) => {
+    t += dt / 1000;
+    if (t >= leave + 0.12) {
+      finish();
+      return;
+    }
+    const fr = F(t);
+    if (fr === last) return;
+    last = fr;
+    g.clearRect(0, 0, cv.width, cv.height);
+    cutin(sc, t, false);
+  });
+  return { done, stop: finish };
+}

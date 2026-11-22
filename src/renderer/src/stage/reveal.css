@@ -1,17 +1,17 @@
-/* Summon reveal (DESIGN.md §7, A6 E), in the pixel-frame shell (UI_RULES.md §2): the dialog is a
-   pixel panel (theme/frames.css), the card backs match the decks on the Summon page, the orb and
-   the tags are square pixel shapes. Orb colours are the rarity hues of the reveal; the card faces
-   carry their own rarity and theme tokens. The deal, orb drop, upgrade flash and flip keep their
-   behaviour. */
+/* The summon reveal (DESIGN.md §2 "The reveal is redone", the three doors, user pick 2026-11-22; the
+   picture is design/options/summon-look/b-reveal.png). The dialog is the game's pixel panel
+   (theme/frames.css); inside it the stage holds the opened door, the best-tier mark and the cut-in
+   canvas of specialAttack.ts, and the line of small cards runs along the bottom. Cards fly with
+   transform and opacity only (reveal.ts). --card-n and --card-k come from fitCard() on .rv__line. */
 
 .rv {
   --rv-common: #c9ced6;
-  --rv-rare: #5aa8ff;
   --rv-uncommon: #6fdc8c;
+  --rv-rare: #5aa8ff;
   --rv-epic: #b67bff;
   --rv-legendary: #ffc23a;
-  --rv-mythic: #ff4fb8;
-  --rv-void: #8a5cff;
+  --rv-mythic: #ff7ab8;
+  --rv-void: #9a6ae0;
   position: fixed;
   inset: 0;
   z-index: 45;
@@ -20,549 +20,237 @@
   background: color-mix(in srgb, var(--bi-chrome-bg) 86%, transparent);
   animation: rv-fade 0.2s ease-out both;
 }
-.rv[data-kind='cosmetics'] {
-  --rv-back: #b53a82;
-  --rv-back-lo: #5c1747;
-}
-.rv[data-kind='skins'] {
-  --rv-back: #1f8a78;
-  --rv-back-lo: #0b4339;
-}
 .rv.is-leaving {
   opacity: 0;
-  transition: opacity 0.25s;
+  transition: opacity 0.22s;
 }
-.rv__dialog {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 18px;
-  padding: 24px;
-  max-width: 94vw;
-}
-.rv__row {
-  position: relative;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px;
-  max-width: calc(5 * 132px + 4 * 14px);
-  cursor: pointer;
-}
-.rv:not(.is-ready) .rv__row {
-  visibility: hidden;
-}
-
-/* a pull: back (with its orb) and front, flipping inside the frame */
-.rv-slot {
-  /* --card-k comes from fitCard() in reveal.ts: a whole number of device pixels per art pixel */
-  --orb: var(--rv-common);
-  /* one art pixel in CSS px (whole device pixels) */
-  --u: calc(var(--card-n) / var(--dpr) * 1px);
-  position: relative;
-  width: calc(176px * var(--card-k));
-  height: calc(248px * var(--card-k));
-  perspective: 900px;
-  /* the deal out of the portal is motion E, played by reveal.ts (table/motion.ts tokens) */
-}
-.rv-slot[data-orb='uncommon'] {
-  --orb: var(--rv-uncommon);
-}
-.rv-slot[data-orb='rare'] {
-  --orb: var(--rv-rare);
-}
-.rv-slot[data-orb='epic'] {
-  --orb: var(--rv-epic);
-}
-.rv-slot[data-orb='legendary'] {
-  --orb: var(--rv-legendary);
-}
-.rv-slot[data-orb='mythic'] {
-  --orb: var(--rv-mythic);
-}
-.rv-slot[data-orb='void'] {
-  --orb: var(--rv-void);
-}
-.rv-slot__inner {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.3, 1);
-}
-.rv-slot.is-open .rv-slot__inner {
-  transform: rotateY(180deg);
-}
-.rv-slot__back,
-.rv-slot__front {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-}
-/* the back: the same card back as the decks (gold border, diamond lattice); the pixel rim in the
-   orb's colour hints the rarity */
-.rv-slot__back {
-  display: grid;
-  place-items: center;
-  background: var(--rv-back, #3a55c4);
-  box-shadow:
-    inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
-    inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
-    0 0 0 calc(2 * var(--u)) var(--orb),
-    0 0 0 calc(3 * var(--u)) var(--px-edge);
-}
-.rv-slot__back::before {
-  content: '';
-  position: absolute;
-  inset: calc(4 * var(--u));
-  background: var(--rv-back-lo, #1b2a73);
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h2v1H3zM2 1h1v1H2zM5 1h1v1H5zM1 2h1v1H1zM6 2h1v1H6zM0 3h1v2H0zM7 3h1v2H7zM1 5h1v1H1zM6 5h1v1H6zM2 6h1v1H2zM5 6h1v1H5zM3 7h2v1H3z'/%3E%3C/svg%3E")
-    0 0 / calc(8 * var(--u)) calc(8 * var(--u)) repeat;
-}
-/* the orb: a stepped round gem in the rarity's colour */
-.rv-orb {
-  position: relative;
-  z-index: 1;
-  width: calc(36 * var(--u));
-  aspect-ratio: 1;
-  background:
-    linear-gradient(#fff, #fff) calc(8 * var(--u)) calc(8 * var(--u)) / calc(8 * var(--u))
-      calc(4 * var(--u)) no-repeat,
-    linear-gradient(
-        color-mix(in srgb, var(--orb) 55%, #000),
-        color-mix(in srgb, var(--orb) 55%, #000)
-      )
-      0 100% / 100% 40% no-repeat,
-    var(--orb);
-  clip-path: polygon(
-    25% 0,
-    75% 0,
-    75% 8%,
-    92% 8%,
-    92% 25%,
-    100% 25%,
-    100% 75%,
-    92% 75%,
-    92% 92%,
-    75% 92%,
-    75% 100%,
-    25% 100%,
-    25% 92%,
-    8% 92%,
-    8% 75%,
-    0 75%,
-    0 25%,
-    8% 25%,
-    8% 8%,
-    25% 8%
-  );
-}
-/* the orb drops once the card has landed: after the deal starts, a beat behind its own card */
-.rv.is-ready .rv-orb {
-  animation: rv-orb-drop 0.4s var(--deal-ease, ease-out) both;
-  animation-delay: calc(min(var(--i), 6) * 0.07s + 0.3s);
-}
-.rv-slot.is-upgrading .rv-orb {
-  animation: rv-upgrade 0.45s ease-out;
-}
-.rv-slot__front {
-  transform: rotateY(180deg);
-}
-.rv-slot__front > .bi-card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: scale(var(--card-k));
-  transform-origin: 0 0;
-}
-.rv-slot.is-open .rv-slot__front {
-  box-shadow:
-    0 0 0 calc(2 * var(--u)) var(--orb),
-    0 0 0 calc(3 * var(--u)) var(--px-edge);
-}
-.rv-slot__plain {
-  display: grid;
-  place-items: center;
-  height: 100%;
-  background: var(--bi-frame-bg);
-  color: var(--bi-frame-ink);
-  font-weight: 700;
-  text-align: center;
-}
-.rv-slot__plain--pic {
-  place-items: center;
-  align-content: center;
-  gap: calc(10px * var(--card-k));
-  padding: 8px;
-  box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--orb);
-  font-size: calc(15px * var(--card-k));
-}
-.rv-slot__plain--pic .cs {
-  --cs: calc(120px * var(--card-k));
-  --cs-scale: calc(0.6 * var(--card-k));
-}
-.rv-slot__tags {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -12px;
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  opacity: 0;
-  transition: opacity 0.3s 0.4s;
-}
-.rv-slot.is-open .rv-slot__tags {
-  opacity: 1;
-}
-.rv-slot__tags span {
-  padding: 1px 7px;
-  font-size: 12px;
-  font-weight: 800;
-  background: var(--orb);
-  color: #1a1020;
-  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
-}
-.rv__status {
-  min-height: 1.4em;
-  margin: 8px 0 0;
-  color: var(--bi-chrome-ink);
-  font-weight: 700;
-  text-align: center;
-}
-.rv__hint {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--bi-frame-ink-muted, var(--bi-chrome-ink-muted));
-}
-.rv__actions {
-  display: flex;
-  gap: 10px;
-}
-
 @keyframes rv-fade {
   from {
     opacity: 0;
   }
 }
-@keyframes rv-orb-drop {
-  from {
-    translate: 0 -80px;
-    scale: 0.4;
-    opacity: 0;
-  }
-}
-@keyframes rv-upgrade {
-  0% {
-    opacity: 0.4;
-    scale: 1.6;
-  }
-  100% {
-    opacity: 1;
-    scale: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rv-slot,
-  .rv-orb {
-    animation: none;
-  }
-  .rv-slot__inner {
-    transition: none;
-  }
-}
-
-/* ---- the reveal show: rare cards glow face down, the best card gets a full-screen entrance ---- */
-.rv-slot {
-  --glow: transparent;
-}
-.rv-slot[data-glow='rare'] {
-  --glow: var(--rv-rare);
-}
-.rv-slot[data-glow='epic'] {
-  --glow: var(--rv-epic);
-}
-.rv-slot[data-glow='legendary'] {
-  --glow: var(--rv-legendary);
-}
-.rv-slot[data-glow='mythic'] {
-  --glow: var(--rv-mythic);
-}
-.rv-slot[data-glow='void'] {
-  --glow: var(--rv-void);
-}
-.rv-slot.is-glowing:not(.is-open) .rv-slot__back {
-  /* the frame keeps its look and takes the rarity colour (the deal shows rarity by the frame) */
-  box-shadow:
-    inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
-    inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
-    0 0 0 calc(2 * var(--u)) var(--glow),
-    0 0 0 calc(3 * var(--u)) var(--px-edge),
-    0 0 calc(10 * var(--u)) calc(2 * var(--u)) var(--glow),
-    0 0 calc(24 * var(--u)) calc(4 * var(--u)) color-mix(in srgb, var(--glow) 55%, transparent);
-}
-.rv-entrance[data-rarity='rare'] {
-  --tint: var(--rv-rare);
-}
-.rv-entrance[data-rarity='epic'] {
-  --tint: var(--rv-epic);
-}
-.rv-entrance[data-rarity='legendary'] {
-  --tint: var(--rv-legendary);
-}
-.rv-entrance[data-rarity='mythic'] {
-  --tint: var(--rv-mythic);
-}
-.rv-entrance[data-rarity='void'] {
-  --tint: var(--rv-void);
-}
-
-/* ---- mockup r3 "Fan Deck" (DESIGN.md §7 Reveal): the circle with the deck on it, the fan, the cinema ---- */
-.rv__stage {
-  --w: calc(176px * var(--card-k, 1));
-  --u: calc(var(--card-n, 1) / var(--dpr, 1) * 1px);
+.rv__dialog {
   position: relative;
   display: grid;
-  align-items: end;
-  justify-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 8px;
+  width: min(94vw, 1240px);
+  height: min(96vh, 820px);
+  padding: 12px;
+  box-sizing: border-box;
 }
-/* the circle lies on the table: two canvases turning against each other, flattened */
-.rv__circle {
+
+/* ---- the stage ---- */
+.rv__stage {
+  --rv-glow: var(--rv-common);
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: radial-gradient(ellipse at 50% 30%, #2a2030 0, #0f0c10 75%), var(--px-dark, #0f0c10);
+  box-shadow: inset 0 0 0 2px var(--px-edge);
+}
+.rv__stage[data-best='uncommon'] {
+  --rv-glow: var(--rv-uncommon);
+}
+.rv__stage[data-best='rare'] {
+  --rv-glow: var(--rv-rare);
+}
+.rv__stage[data-best='epic'] {
+  --rv-glow: var(--rv-epic);
+}
+.rv__stage[data-best='legendary'] {
+  --rv-glow: var(--rv-legendary);
+}
+.rv__stage[data-best='mythic'] {
+  --rv-glow: var(--rv-mythic);
+}
+.rv__stage[data-best='void'] {
+  --rv-glow: var(--rv-void);
+}
+.rv__door {
+  --rv-door: 320px;
   position: absolute;
   left: 50%;
-  top: auto;
-  bottom: calc(-0.75 * var(--w));
-  width: calc(1.4 * var(--w));
-  height: calc(1.4 * var(--w));
-  translate: -50% 0;
-  transform: perspective(900px) rotateX(62deg);
-  pointer-events: none;
-  animation: rv-circle-in 0.7s var(--deal-ease, ease-out) both;
+  top: 8px;
+  width: var(--rv-door);
+  height: var(--rv-door);
+  margin-left: calc(var(--rv-door) / -2);
+  /* the best tier glows on the door before any card moves */
+  filter: drop-shadow(0 0 18px var(--rv-glow));
 }
-.rv__circle canvas {
+.rv__door-img {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
+  user-select: none;
 }
-.rv__circle-outer {
-  animation: rv-turn 14s steps(60) infinite;
+.rv__door-img--open {
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
 }
-.rv__circle-inner {
-  animation: rv-turn 9s steps(60) infinite reverse;
+.rv__stage.is-open .rv__door-img--open {
+  opacity: 1;
 }
-.rv.is-ready .rv__circle {
-  opacity: 0.55;
-  transition: opacity 0.5s;
+.rv__stage.is-open .rv__door-img--closed {
+  opacity: 0;
 }
-@keyframes rv-turn {
-  to {
-    rotate: 360deg;
-  }
-}
-@keyframes rv-circle-in {
-  from {
-    opacity: 0;
-    scale: 0.5;
-  }
-}
-.rv__dialog--ten .rv__stage {
-  grid-template-columns: calc(1.45 * var(--w)) auto;
-  column-gap: 12px;
-}
-.rv__dialog--ten .rv__circle {
-  left: calc(0.72 * var(--w));
-  top: auto;
-  bottom: calc(-0.55 * var(--w));
-  width: calc(2.1 * var(--w));
-  height: calc(2.1 * var(--w));
-  translate: -50% 0;
-}
-/* the deck: card backs one step apart, standing on the circle; the cards are dealt out of it */
-.rv__deck {
-  position: relative;
-  align-self: center;
-  width: var(--w);
-  height: calc(1.4091 * var(--w));
-}
-.rv__dialog--ten {
-  padding: 12px;
-}
-.rv__deck .rv-slot__back {
-  --orb: var(--px-gold);
-  translate: calc(var(--d) * 2 * var(--u)) calc(var(--d) * -2 * var(--u));
-  z-index: calc(var(--d) * -1);
-}
-/* a ten-pull lies in two rows of five, every card whole: the gap between cards is the kit's room
-   (--kit-gutter, --kit-top from fitCard, ui/pixelFit.ts), so a revealed face never covers another's text */
-.rv__dialog--ten .rv__row {
-  display: grid;
-  grid-template-columns: repeat(5, var(--w));
-  gap: calc(var(--kit-top) + 10px) var(--kit-gutter);
-  max-width: none;
-  width: auto;
-  padding: var(--kit-top) calc(var(--kit-side) * 0.8) 0 0;
-}
-.rv__dialog--ten .rv-slot {
-  position: relative;
-}
-/* the rarity glow: a halo behind the card (opacity only), the frame also takes the colour */
-.rv-slot::before {
-  content: '';
+.rv__best {
   position: absolute;
-  inset: calc(-14 * var(--u));
-  background: radial-gradient(
-    closest-side,
-    var(--glow),
-    color-mix(in srgb, var(--glow) 55%, transparent) 55%,
-    transparent
-  );
+  left: 50%;
+  top: calc(8px + var(--rv-door, 320px) - 8px);
+  translate: -50% 0;
+  margin: 0;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--px-ink);
+  background: var(--px-body);
+  box-shadow:
+    0 0 0 2px var(--rv-glow),
+    0 0 0 4px var(--px-edge);
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  white-space: nowrap;
+}
+.rv__best.is-on {
+  opacity: 1;
+}
+/* a T6 or Heirloom stops everything: the stage dims under the cut-in */
+.rv__dim {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 6 5 / 0.72);
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.12s ease-out;
 }
-.rv-slot.is-glowing:not(.is-open)::before {
-  animation: rv-halo 1.1s ease-in-out infinite alternate;
-}
-.rv-slot[data-glow].is-open::before {
-  opacity: 0.45;
-  transition: opacity 0.6s;
-}
-@keyframes rv-halo {
-  from {
-    opacity: 0.3;
-  }
-  to {
-    opacity: 0.9;
-  }
+.rv__stage.is-cut .rv__dim {
+  opacity: 1;
 }
 
-/* the best card's entrance: black bars close in, the card comes forward, its name in the bottom bar */
-.rv-entrance {
-  position: fixed;
+/* the cards and the buttons sit on the stage, over the dark, as in the mock-up */
+.rv__line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 36px;
+  z-index: 2;
+}
+.rv__actions {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  z-index: 3;
+}
+
+/* ---- the line of small cards ---- */
+.rv__line {
+  --u: calc(var(--card-n) / var(--dpr) * 1px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+  margin: 0;
+  list-style: none;
+  padding: var(--kit-top, 35px) 0 var(--kit-bottom, 25px);
+  box-sizing: border-box;
+  min-height: calc(248px * var(--card-k, 0.5));
+}
+.rv-slot {
+  position: relative;
+  flex: none;
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
+}
+.rv-slot + .rv-slot {
+  margin-left: var(--rv-gap, 6px);
+}
+.rv-slot:hover {
+  z-index: 2;
+}
+.rv-slot.is-best {
+  filter: drop-shadow(0 0 6px var(--rv-glow, var(--rv-legendary)));
+  z-index: 1;
+}
+.rv-slot[data-rarity='mythic'].is-best {
+  --rv-glow: var(--rv-mythic);
+}
+.rv-slot[data-rarity='void'].is-best {
+  --rv-glow: var(--rv-void);
+}
+.rv-slot[data-rarity='legendary'].is-best {
+  --rv-glow: var(--rv-legendary);
+}
+.rv-slot[data-rarity='epic'].is-best {
+  --rv-glow: var(--rv-epic);
+}
+.rv-slot[data-rarity='rare'].is-best {
+  --rv-glow: var(--rv-rare);
+}
+.rv-slot__plain {
+  position: absolute;
   inset: 0;
-  z-index: 50;
   display: grid;
   place-content: center;
-  justify-items: center;
-  cursor: pointer;
-  --tint: var(--rv-common);
-  background: color-mix(in srgb, #02060a 93%, transparent);
-  animation: rv-entrance-in 0.5s var(--deal-ease, ease-out) both;
-}
-.rv-entrance::before,
-.rv-entrance::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 96px;
-  background: #05070a;
-  animation: rv-bar-in 0.6s var(--deal-ease, ease-out) both;
-}
-.rv-entrance::before {
-  top: 0;
-  box-shadow: 0 3px 0 var(--tint);
-  --from: -100%;
-}
-.rv-entrance::after {
-  bottom: 0;
-  box-shadow: 0 -3px 0 var(--tint);
-  --from: 100%;
-}
-.rv-entrance[data-rarity='rare'] {
-  --tint: var(--rv-rare);
-}
-.rv-entrance[data-rarity='epic'] {
-  --tint: var(--rv-epic);
-}
-.rv-entrance[data-rarity='legendary'] {
-  --tint: var(--rv-legendary);
-}
-.rv-entrance[data-rarity='mythic'] {
-  --tint: var(--rv-mythic);
-}
-.rv-entrance[data-rarity='void'] {
-  --tint: var(--rv-void);
-}
-.rv-entrance__card {
-  position: relative;
-  width: calc(176px * var(--card-k, 1));
-  height: calc(248px * var(--card-k, 1));
-  animation: rv-entrance-card 0.7s var(--deal-ease, ease-out) 0.15s both;
-}
-.rv-entrance__name {
-  position: absolute;
-  z-index: 1;
-  left: 0;
-  right: 0;
-  bottom: 24px;
-  margin: 0;
+  gap: 6px;
+  padding: calc(6 * var(--u));
   text-align: center;
-  font-family: var(--bi-font-display);
-  font-size: 28px;
-  color: #fff6dc;
-  animation: rv-entrance-in 0.6s var(--deal-ease, ease-out) 0.5s both;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--px-ink);
+  background: var(--px-body);
+  box-shadow:
+    inset 0 0 0 calc(2 * var(--u)) var(--px-gold),
+    inset 0 0 0 calc(3 * var(--u)) var(--px-edge);
 }
-.rv-entrance__hint {
+.rv-slot__plain--pic svg {
+  width: 100%;
+  height: auto;
+  max-height: 60%;
+}
+.rv-slot__tags {
   position: absolute;
-  z-index: 1;
   left: 0;
   right: 0;
-  top: 34px;
-  margin: 0;
-  text-align: center;
-  font-size: 13px;
-  color: var(--tint);
-  animation: rv-entrance-in 0.6s var(--deal-ease, ease-out) 0.9s both;
+  bottom: calc(-1 * var(--fs, 4px));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
 }
-@keyframes rv-entrance-in {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes rv-bar-in {
-  from {
-    translate: 0 var(--from);
-  }
-}
-@keyframes rv-entrance-card {
-  from {
-    translate: 0 40px;
-    scale: 0.8;
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .rv__circle,
-  .rv__circle canvas,
-  .rv-slot::before,
-  .rv-entrance,
-  .rv-entrance::before,
-  .rv-entrance::after,
-  .rv-entrance__card,
-  .rv-entrance__name,
-  .rv-entrance__hint {
-    animation: none;
-  }
-  .rv-slot.is-glowing:not(.is-open)::before {
-    opacity: 0.7;
-  }
+.rv-slot__tags span {
+  padding: 1px 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--px-gold-ink, #2a1c10);
+  background: var(--px-gold);
+  box-shadow: 0 0 0 1px var(--px-edge);
 }
 
-.rv-entrance__card > .bi-card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: scale(var(--card-k, 1));
-  transform-origin: 0 0;
-}
-
-.rv__status,
-.rv__hint,
+/* ---- the buttons ---- */
 .rv__actions {
-  position: relative;
-  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.rv__actions [hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv,
+  .rv__door-img--open,
+  .rv__best,
+  .rv__dim {
+    animation: none;
+    transition: none;
+  }
+}
+html[data-motion='reduced'] :is(.rv, .rv__door-img--open, .rv__best, .rv__dim) {
+  animation: none;
+  transition: none;
 }

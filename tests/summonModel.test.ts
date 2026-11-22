@@ -8,7 +8,17 @@ import {
   type PullResult,
 } from '../src/game';
 import {
+  CUTIN_MS,
   DECK_MAX_LAYERS,
+  DOOR_ORDER,
+  FLY_MS,
+  bestOfPull,
+  doorAbout,
+  doorKeyOf,
+  doorPx,
+  isCutinRarity,
+  revealTimeline,
+  spriteNameOf,
   DECK_MIN_LAYERS,
   HAND_MAX,
   deckLayers,
@@ -223,5 +233,103 @@ describe('wishlist panel', () => {
     const rare = v.rows.find((x) => x.rarity === 'rare')!;
     expect(rare.full).toBe(true);
     expect(rare.cards.filter((c) => c.blocked)).toHaveLength(ids.length - portal.wishlistPerTier);
+  });
+});
+
+describe('the three doors page', () => {
+  it('has the Card Portal, the Focus Portal and the Heirloom Gate left to right', () => {
+    expect(DOOR_ORDER).toEqual(['card_portal', 'focus_portal', 'heirloom_gate']);
+  });
+
+  it('opens the Card Portal door for gates without door art', () => {
+    expect(doorKeyOf('card_portal')).toBe('card_portal');
+    expect(doorKeyOf('focus_portal')).toBe('focus_portal');
+    expect(doorKeyOf('heirloom_gate')).toBe('heirloom_gate');
+    expect(doorKeyOf('wardrobe_gate')).toBe('card_portal');
+    expect(doorKeyOf('legacy_gate')).toBe('card_portal');
+  });
+
+  it('says what each door pulls, the Focus Portal with its chosen type', () => {
+    expect(doorAbout('card_portal', null)).toMatch(/Heirloom/);
+    expect(doorAbout('focus_portal', 'Sword')).toMatch(/Sword/);
+    expect(doorAbout('focus_portal', null)).toMatch(/Choose/);
+    expect(doorAbout('heirloom_gate', null)).toMatch(/shards/i);
+  });
+
+  it('shows a door at a whole number of device pixels per art pixel', () => {
+    expect(doorPx(320, 1)).toBe(320);
+    expect(doorPx(320, 2)).toBe(320);
+    expect(doorPx(160, 1)).toBe(160);
+    expect(doorPx(50, 1)).toBe(160);
+    // 125 % screen: 320 CSS px is 2.5 art pixels, so the nearest whole scale is 3 (480 device px)
+    expect(doorPx(320, 1.25)).toBe(384);
+    expect(Number.isInteger(doorPx(300, 1.5) * 1.5)).toBe(true);
+  });
+
+  it('reads a weapon sprite name from its art markup', () => {
+    expect(spriteNameOf('<image data-sprite="item-sword-t1"/>')).toBe('item-sword-t1');
+    expect(spriteNameOf('<g/>')).toBeNull();
+  });
+});
+
+describe('the new reveal', () => {
+  it('knows the best tier of a pull before any card moves', () => {
+    expect(bestOfPull([])).toBeNull();
+    expect(bestOfPull(['common', 'rare', 'common'])).toEqual({
+      index: 1,
+      rarity: 'rare',
+      cutin: false,
+    });
+    // the first of equal best cards wins
+    expect(bestOfPull(['epic', 'epic'])?.index).toBe(0);
+    expect(bestOfPull(['common', 'mythic', 'legendary'])).toEqual({
+      index: 1,
+      rarity: 'mythic',
+      cutin: true,
+    });
+    expect(bestOfPull(['void'])?.cutin).toBe(true);
+  });
+
+  it('gives the cut-in to a T6 or a whole Heirloom only', () => {
+    expect(isCutinRarity('mythic')).toBe(true);
+    expect(isCutinRarity('void')).toBe(true);
+    expect(isCutinRarity('legendary')).toBe(false);
+  });
+
+  it('sends a ten-pull of ordinary cards through in about a second', () => {
+    const t = revealTimeline(Array(10).fill('common'));
+    expect(t.steps).toHaveLength(10);
+    expect(t.steps.every((s) => s.kind === 'fly')).toBe(true);
+    expect(t.totalMs).toBeLessThanOrEqual(1100);
+    expect(t.steps.map((s) => s.index)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    const at = t.steps.map((s) => s.at);
+    expect(at).toEqual([...at].sort((a, b) => a - b));
+  });
+
+  it('sends one card on its own', () => {
+    const t = revealTimeline(['rare']);
+    expect(t.steps).toEqual([{ kind: 'fly', index: 0, at: 0 }]);
+    expect(t.totalMs).toBe(FLY_MS);
+  });
+
+  it('stops everything for a T6: the cut-in, then its card, then the rest', () => {
+    const t = revealTimeline(['common', 'common', 'mythic', 'common']);
+    const cut = t.steps.find((s) => s.kind === 'cutin')!;
+    expect(cut.index).toBe(2);
+    // the cards before it have landed when the cut-in starts
+    for (const s of t.steps.filter((x) => x.kind === 'fly' && x.index < 2)) {
+      expect(s.at + FLY_MS).toBeLessThanOrEqual(cut.at);
+    }
+    // nothing after it moves until it is over
+    const after = t.steps.filter((x) => x.kind === 'fly' && x.index >= 2);
+    for (const s of after) expect(s.at).toBeGreaterThanOrEqual(cut.at + CUTIN_MS);
+    expect(t.totalMs).toBeGreaterThan(cut.at + CUTIN_MS);
+  });
+
+  it('gives each of two T6 cards its own cut-in, one after the other', () => {
+    const t = revealTimeline(['mythic', 'void']);
+    const cuts = t.steps.filter((s) => s.kind === 'cutin');
+    expect(cuts).toHaveLength(2);
+    expect(cuts[1]!.at).toBeGreaterThanOrEqual(cuts[0]!.at + CUTIN_MS);
   });
 });
