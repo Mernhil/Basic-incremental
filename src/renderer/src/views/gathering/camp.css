@@ -1,45 +1,228 @@
+/* The forest and the mine (DESIGN.md section 2 Base camp): the painted scene at a whole scale,
+   centred; each node lit by its mask; its slots at its foot. --s is the whole scale (set in camp.ts):
+   a scene pixel is --s screen pixels. Colours from the hub's charcoal and gold. */
+.camp {
+  position: relative;
+  overflow: hidden;
+  background: var(--hub-charcoal, #1c1c20);
+}
+.camp__view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
 .camp__scene {
+  position: absolute;
+}
+.camp__img,
+.camp__dim,
+.camp__glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  user-select: none;
+}
+.camp__dim,
+.camp__glow {
+  pointer-events: none;
+  opacity: 0;
+}
+.camp__dim.is-on {
+  opacity: 1;
+}
+/* hover and selected: the hub's glow, a 1 map pixel gold rim and a slight brightening; an active node
+   shimmers faintly (stilled by reduced motion) */
+.camp__glow {
+  transition: opacity 120ms ease-out;
+}
+.camp__glow.is-active {
+  animation: camp-shimmer 3.6s ease-in-out infinite;
+}
+.camp__glow.is-hover,
+.camp__glow.is-selected {
+  animation: none;
+  opacity: 1;
+}
+@keyframes camp-shimmer {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.32;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .camp__glow.is-active {
+    animation: none;
+  }
+  .camp__glow {
+    transition: none;
+  }
+}
+
+.camp__node {
+  position: absolute;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: #1b1b1f;
-}
-.camp__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-}
-.camp__next {
-  margin: 0;
-  flex-basis: 100%;
-  opacity: 0.8;
+  align-items: stretch;
+  gap: calc(var(--s) * 4px);
+  font-size: calc(var(--s) * 6px);
+  color: #f1ead8;
 }
 .camp__slots {
-  list-style: none;
-  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(var(--s) * 3px);
+}
+.camp__tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--s) * 55px);
+  height: calc(var(--s) * 65px);
   padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: rgba(12, 12, 14, 0.82);
+  border: calc(var(--s) * 1px) solid #ffd66e;
+}
+.camp__tile--empty {
+  border-style: dashed;
+  background: rgba(12, 12, 14, 0.55);
+  text-align: center;
+  padding: calc(var(--s) * 3px);
+}
+.camp__tile--place {
+  align-content: center;
+  gap: calc(var(--s) * 2px);
+  text-align: center;
+  font-weight: 700;
+  color: #ffd66e;
+  background: rgba(70, 52, 8, 0.78);
+}
+.camp__plus {
+  font-size: calc(var(--s) * 13px);
+  line-height: 1;
+}
+.camp__tile:hover,
+.camp__tile:focus-visible {
+  background: rgba(60, 46, 10, 0.85);
+  outline: none;
+}
+.camp__art {
+  display: block;
+  width: 80%;
+  height: 80%;
+}
+.camp__art svg {
+  width: 100%;
+  height: 100%;
+}
+.camp__tilerate {
+  position: absolute;
+  right: calc(var(--s) * 3px);
+  bottom: calc(var(--s) * 2px);
+  font-size: calc(var(--s) * 5.5px);
+  color: #ffd66e;
+}
+.camp__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: calc(var(--s) * 4px) calc(var(--s) * 5px);
+  background: rgba(14, 14, 16, 0.88);
+  border: calc(var(--s) * 1px) solid #8a6d2f;
+}
+.camp__node.is-selected .camp__label,
+.camp__node:hover .camp__label {
+  border-color: #ffd66e;
+}
+.camp__node.is-locked .camp__label {
+  color: #8d8d95;
+  border-color: #3b3b42;
+}
+.camp__lock {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-.camp__slot {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
   align-items: center;
-  padding: 8px 12px;
-  border: 2px solid #8a6d2f;
-  background: #25252b;
+  gap: calc(var(--s) * 1px);
+  padding: calc(var(--s) * 4px) calc(var(--s) * 7px);
+  font-size: calc(var(--s) * 5.5px);
+  text-align: center;
+  white-space: nowrap;
+  color: #d8d2c4;
+  background: rgba(20, 20, 24, 0.92);
+  box-shadow: 0 0 0 calc(var(--s) * 1px) #8a6d2f;
+  pointer-events: none;
 }
-.camp__rate,
-.camp__total {
-  text-align: right;
+.camp__lock b {
+  font-size: calc(var(--s) * 7px);
+}
+.camp__lock[hidden] {
+  display: none;
+}
+
+/* the bar: camp level, the slot call, the raise button and the place's total */
+.camp__bar {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+}
+.camp__next.is-call {
+  color: #ffd66e;
+  font-weight: 700;
 }
 .camp__upgrade.is-no {
   opacity: 0.5;
+}
+.camp__total {
+  margin-left: auto;
+}
+
+/* the tool picker over the scene */
+.camp__picker {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(960px, calc(100% - 48px));
+  max-height: calc(100% - 96px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  overflow: auto;
+}
+.camp__picker[hidden] {
+  display: none;
+}
+.camp__pickhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.camp__pickhead b {
+  margin-right: auto;
+}
+.camp__none {
+  list-style: none;
 }
 
 /* the Training ground and the Expedition board */

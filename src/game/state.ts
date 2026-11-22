@@ -295,7 +295,7 @@ export interface ProductionState {
 
 /** One farming slot of the camp: the material it farms and the tool card on it (either may be empty). */
 export interface CampSlot {
-  /** A wood or an ore id (`trees.json`, `mines.json`), or null = the first open one. */
+  /** The wood or ore the slot belongs to (`trees.json`, `mines.json`), or null = open but not placed on a node yet. */
   material: string | null;
   /** An axe (forest) or pickaxe (cave) card id, or null = nothing farms. */
   card: string | null;
@@ -485,8 +485,9 @@ export function initialCamp(content: Content): CampState {
   for (const id of content.cardRules.startCards) {
     const job = content.cardById.get(id)?.job;
     if (job === 'logging' && camp.forest.length === 0)
-      camp.forest.push({ material: null, card: id });
-    if (job === 'mining' && camp.cave.length === 0) camp.cave.push({ material: null, card: id });
+      camp.forest.push({ material: content.trees[0]?.id ?? null, card: id });
+    if (job === 'mining' && camp.cave.length === 0)
+      camp.cave.push({ material: content.mines[0]?.id ?? null, card: id });
   }
   return camp;
 }

@@ -1,80 +1,208 @@
 import {
   assignSlotCard,
-  campLevel,
   campLevelCost,
   canAfford,
   cardDisplayName,
   collectModifiers,
-  Decimal,
-  isProducerUnlocked,
+  isOnTrip,
   openSlots,
   placeJob,
-  producersOf,
-  setSlotMaterial,
+  placeSlot,
   slotAt,
-  slotMaterial,
-  slotRates,
+  slotOfCard,
   upgradeCamp,
+  workerPower,
   type CampPlace,
 } from '../../../../game';
+import { cardItemArt } from '../../pages/loadoutCards';
 import { COPY } from '../../copy';
+import { HUB_MAP_H, HUB_MAP_W } from '../../hub/hubModel';
 import { fmt } from '../../settings/numberFormat';
 import { costText } from '../../settings/cost';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewHandle } from '../../table/contract';
+import { campScreen, type NodeView } from './campModel';
+import {
+  dimImage,
+  glowImage,
+  loadMapPixels,
+  loadNodeMask,
+  maskHit,
+  nodeMaskUrl,
+  SCENE_URL,
+  type Mask,
+} from './campScene';
 import { GATHERING_COPY as T } from './copy';
+import { itemSvg } from './jobModel';
+import { workerPickList, workerPickTile } from './workerPick';
 
 /**
- * The forest and the cave (DESIGN.md section 2 Base camp): the camp level with its price, and one
- * row per open farming slot with the material it farms, the card on it and what it brings. This is
- * the plain working screen; the painted scene behind the slots is drawn later and goes in the
- * `.camp__scene` element (one named place for the background picture).
+ * The forest and the mine (DESIGN.md section 2 Base camp): the painted scene at a whole scale,
+ * centred like the hub, with each material a tree or a vein lit by its mask. The slots of a node
+ * stand at its foot; a slot opened by a camp level waits until the player places it on a node. The
+ * camp level and its price sit in a bar at the bottom. Tools are chosen with the card picker.
  */
+
+/** The node panel's width in scene pixels. Panels stand on the bar, whatever the scale. */
+const PANEL_W = 200;
+const LOCK_Y = 180;
+
+interface Node {
+  id: string;
+  mask: Mask | null;
+  el: HTMLElement;
+  slots: HTMLElement;
+  label: HTMLElement;
+  labelName: HTMLElement;
+  labelRate: HTMLElement;
+  lock: HTMLElement;
+  glow: HTMLCanvasElement;
+  dim: HTMLCanvasElement;
+  view: NodeView | null;
+  /** Where the panel's centre stands, in scene pixels. */
+  cx: number;
+}
 
 const set = (node: HTMLElement, text: string): void => {
   if (node.textContent !== text) node.textContent = text;
 };
 
-/** The structural state of a place: what a rebuild of its controls depends on. */
-function signature(ctx: TableContext, place: CampPlace): string {
-  const s = ctx.state();
-  const job = placeJob(place);
-  const owned = Object.keys(s.cards.owned).filter(
-    (id) => ctx.content.cardById.get(id)?.job === job,
-  );
-  return JSON.stringify([
-    campLevel(s),
-    openSlots(s, ctx.content, place),
-    s.camp[place],
-    owned,
-    producersOf(ctx.content, job).map((p) => isProducerUnlocked(s, ctx.content, job, p.id)),
-    s.expeditions.trips.map((t) => t.cardId),
-    s.production.forge.worker,
-  ]);
-}
+const reduced = (): boolean =>
+  window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
 export function createCampView(host: HTMLElement, ctx: TableContext, place: CampPlace): ViewHandle {
   const { content } = ctx;
   const job = placeJob(place);
-  host.classList.add('camp', `camp--${place}`);
-  /** The painted forest or cave scene goes here when it exists. */
+  host.classList.add('camp', `camp--${place}`, 'shell-page--stage');
+
+  const view = h('div', 'camp__view');
+  /** The painted scene: one named place for the background picture and the nodes on it. */
   const scene = h('div', 'camp__scene');
   scene.dataset['scene'] = place;
-  const head = h('section', 'camp__head px-panel');
-  const levelText = h('h2', 'camp__level px-display');
+  const img = h('img', 'camp__img') as HTMLImageElement;
+  img.src = SCENE_URL[place];
+  img.alt = '';
+  img.draggable = false;
+  img.setAttribute('aria-hidden', 'true');
+  scene.append(img);
+  view.append(scene);
+
+  const bar = h('section', 'camp__bar px-panel');
+  const levelText = h('b', 'camp__level px-display');
+  const next = h('span', 'camp__next');
   const upgrade = h('button', 'px-btn camp__upgrade');
   upgrade.type = 'button';
   upgrade.dataset['key'] = 'camp-upgrade';
   const cost = h('span', 'camp__cost bi-num');
-  const next = h('p', 'camp__next');
-  head.append(levelText, upgrade, cost, next);
-  const list = h('ul', 'camp__slots');
-  const total = h('p', 'camp__total bi-num');
-  scene.append(head, list, total);
-  host.append(scene);
+  const total = h('span', 'camp__total bi-num');
+  bar.append(levelText, next, upgrade, cost, total);
 
-  const rateEls: HTMLElement[] = [];
+  const picker = h('div', 'camp__picker px-panel');
+  picker.hidden = true;
+  picker.setAttribute('role', 'dialog');
+  host.append(view, bar, picker);
+
+  let scale = 0;
+  let area = '';
+  let sceneData: ImageData | null = null;
+  let hovered: Node | null = null;
+  let selected: string | null = null;
+  let picking: { index: number; material: string } | null = null;
   let sig = '';
+
+  const nodes: Node[] = [];
+
+  function paintGlow(n: Node): void {
+    if (!n.mask || !sceneData) return;
+    const g = n.glow.getContext('2d');
+    g?.putImageData(glowImage(n.mask, sceneData), 0, 0);
+    const d = n.dim.getContext('2d');
+    d?.putImageData(dimImage(n.mask, sceneData), 0, 0);
+  }
+
+  function light(n: Node | null): void {
+    if (n === hovered) return;
+    hovered?.glow.classList.remove('is-hover');
+    hovered = n;
+    n?.glow.classList.add('is-hover');
+    scene.style.cursor = n && n.view?.locked ? 'not-allowed' : n ? 'pointer' : '';
+  }
+
+  function select(n: Node): void {
+    if (n.view?.locked) return;
+    selected = selected === n.id ? null : n.id;
+    for (const o of nodes) o.glow.classList.toggle('is-selected', o.id === selected);
+    for (const o of nodes) o.el.classList.toggle('is-selected', o.id === selected);
+  }
+
+  function nodeAt(clientX: number, clientY: number): Node | null {
+    if (scale === 0) return null;
+    const r = scene.getBoundingClientRect();
+    const x = Math.floor((clientX - r.left) / scale);
+    const y = Math.floor((clientY - r.top) / scale);
+    return nodes.find((n) => n.mask && maskHit(n.mask, x, y)) ?? null;
+  }
+
+  scene.addEventListener('pointermove', (e) => {
+    const over = (e.target as Element).closest<HTMLElement>('.camp__node');
+    light(over ? (nodes.find((n) => n.el === over) ?? null) : nodeAt(e.clientX, e.clientY));
+  });
+  scene.addEventListener('pointerleave', () => light(null));
+  scene.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('.camp__node')) return;
+    const n = nodeAt(e.clientX, e.clientY);
+    if (n) select(n);
+  });
+
+  // read the scene's pixels and the node masks; the picture shows meanwhile
+  void (async () => {
+    sceneData = await loadMapPixels(SCENE_URL[place]);
+    await Promise.all(
+      nodes.map(async (n) => {
+        const view = n.view;
+        const url = view ? nodeMaskUrl(view.mask) : null;
+        n.mask = url ? await loadNodeMask(url) : null;
+        if (n.mask) {
+          n.cx = n.mask.bounds.x + n.mask.bounds.w / 2;
+          paintGlow(n);
+        }
+      }),
+    );
+    area = '';
+    layout();
+    update();
+  })();
+
+  function layout(): void {
+    const w = view.clientWidth;
+    const hh = view.clientHeight;
+    const key = `${w}x${hh}`;
+    if (key === area || w === 0) return;
+    area = key;
+    // whole scale by width: the scene fills the width and a tall scene is cut top and bottom
+    scale = Math.max(1, Math.floor(w / HUB_MAP_W + 0.05));
+    scene.style.setProperty('--s', String(scale));
+    scene.style.width = `${HUB_MAP_W * scale}px`;
+    scene.style.height = `${HUB_MAP_H * scale}px`;
+    scene.style.left = `${Math.floor((w - HUB_MAP_W * scale) / 2)}px`;
+    scene.style.top = `${Math.floor((hh - HUB_MAP_H * scale) / 2)}px`;
+    const sceneTop = Math.floor((hh - HUB_MAP_H * scale) / 2);
+    const foot = Math.round(sceneTop + HUB_MAP_H * scale - (hh - (bar.offsetHeight + 20)));
+    // panels stand under their node, never over each other, always inside the scene
+    let edge = 6;
+    nodes.forEach((n, i) => {
+      const last = HUB_MAP_W - 6 - PANEL_W - (nodes.length - 1 - i) * (PANEL_W + 4);
+      const left = Math.min(Math.max(n.cx - PANEL_W / 2, edge), last);
+      edge = left + PANEL_W + 4;
+      n.el.style.bottom = `${foot}px`;
+      n.el.style.left = `${left * scale}px`;
+      n.el.style.width = `${PANEL_W * scale}px`;
+      n.lock.style.left = `${(left + PANEL_W / 2) * scale}px`;
+      n.lock.style.top = `${LOCK_Y * scale}px`;
+    });
+    host.dataset['scale'] = String(scale);
+  }
+  new ResizeObserver(() => layout()).observe(view);
 
   upgrade.addEventListener('click', () => {
     const r = upgradeCamp(ctx.state(), content);
@@ -84,89 +212,230 @@ export function createCampView(host: HTMLElement, ctx: TableContext, place: Camp
     update();
   });
 
-  function build(): void {
-    const s = ctx.state();
-    const open = openSlots(s, content, place);
-    rateEls.length = 0;
-    const rows: HTMLElement[] = [];
-    for (let index = 0; index < open; index += 1) {
-      const slot = slotAt(s, place, index);
-      const row = h('li', 'camp__slot');
-      row.dataset['slot'] = String(index);
-      const material = h('select', 'camp__material') as HTMLSelectElement;
-      material.setAttribute('aria-label', T.slotMaterial(index + 1));
-      const shown = slotMaterial(s, content, place, index)?.id ?? '';
-      for (const p of producersOf(content, job)) {
-        const option = h('option', '', p.name) as HTMLOptionElement;
-        option.value = p.id;
-        option.disabled = !isProducerUnlocked(s, content, job, p.id);
-        if (option.disabled) option.textContent = `${p.name} (${T.locked})`;
-        material.append(option);
+  // ---- the node panels ----
+  function buildNodes(): void {
+    const model = campScreen(ctx.state(), content, place, []);
+    for (const nv of model.nodes) {
+      const el = h('div', 'camp__node');
+      el.dataset['node'] = nv.id;
+      const slots = h('div', 'camp__slots');
+      const label = h('div', 'camp__label');
+      const labelName = h('b', '', nv.name);
+      const labelRate = h('span', 'bi-num');
+      label.append(labelName, labelRate);
+      el.append(slots, label);
+      const lock = h('div', 'camp__lock');
+      lock.dataset['lock'] = nv.id;
+      const dim = h('canvas', 'camp__dim') as HTMLCanvasElement;
+      const glow = h('canvas', 'camp__glow') as HTMLCanvasElement;
+      for (const c of [dim, glow]) {
+        c.width = HUB_MAP_W;
+        c.height = HUB_MAP_H;
+        c.setAttribute('aria-hidden', 'true');
       }
-      material.value = shown;
-      material.addEventListener('change', () => {
-        const r = setSlotMaterial(ctx.state(), content, place, index, material.value);
-        if (r.ok) ctx.apply(r.state);
+      scene.append(dim, glow, el, lock);
+      nodes.push({
+        id: nv.id,
+        mask: null,
+        el,
+        slots,
+        label,
+        labelName,
+        labelRate,
+        lock,
+        glow,
+        dim,
+        view: nv,
+        cx: nodes.length * 205 + 117,
       });
-      const card = h('select', 'camp__card') as HTMLSelectElement;
-      card.setAttribute('aria-label', T.slotCard(index + 1));
-      const none = h('option', '', T.noCard) as HTMLOptionElement;
-      none.value = '';
-      card.append(none);
-      for (const c of content.cards) {
-        if (c.job !== job || !s.cards.owned[c.id]) continue;
-        const option = h('option', '', cardDisplayName(content, c)) as HTMLOptionElement;
-        option.value = c.id;
-        card.append(option);
-      }
-      card.value = slot.card ?? '';
-      card.addEventListener('change', () => {
-        const r = assignSlotCard(ctx.state(), content, place, index, card.value || null);
+    }
+  }
+  buildNodes();
+
+  function tile(
+    n: Node,
+    kind: 'card' | 'empty' | 'place',
+    index = 0,
+    card: string | null = null,
+    rate = '',
+  ): HTMLElement {
+    const b = h('button', `camp__tile camp__tile--${kind}`);
+    b.type = 'button';
+    if (kind === 'place') {
+      b.dataset['key'] = `place-${n.id}`;
+      b.append(h('b', 'camp__plus', '+'), h('span', '', T.placeHere));
+      b.setAttribute('aria-label', T.placeOn(n.view?.name ?? ''));
+      b.addEventListener('click', () => {
+        const r = placeSlot(ctx.state(), content, place, n.id);
         if (!r.ok) return;
         ctx.sound('buy');
         ctx.apply(r.state);
         update();
       });
-      const rate = h('span', 'camp__rate bi-num');
-      rateEls.push(rate);
-      row.append(material, card, rate);
-      rows.push(row);
+      return b;
     }
-    list.replaceChildren(...rows);
+    b.dataset['key'] = `slot-${index}`;
+    b.dataset['slot'] = String(index);
+    if (kind === 'card' && card) {
+      const s = ctx.state();
+      const art = h('span', 'camp__art');
+      art.setAttribute('aria-hidden', 'true');
+      art.innerHTML = itemSvg(cardItemArt(content, card, s.cards.owned[card], s));
+      b.append(art);
+      if (rate) b.append(h('span', 'camp__tilerate bi-num', rate));
+      const c = content.cardById.get(card);
+      b.setAttribute('aria-label', `${c ? cardDisplayName(content, c) : card} ${rate}`.trim());
+    } else {
+      b.append(h('span', 'camp__empty', T.emptySlot));
+      b.setAttribute('aria-label', T.slotCard(index + 1));
+    }
+    b.addEventListener('click', () => openPicker(index, n.id));
+    return b;
+  }
+
+  function build(): void {
+    const s = ctx.state();
+    const model = campScreen(s, content, place, collectModifiers(s, content));
+    for (const n of nodes) {
+      const nv = model.nodes.find((x) => x.id === n.id)!;
+      n.view = nv;
+      n.el.classList.toggle('is-locked', nv.locked !== null);
+      n.dim.classList.toggle('is-on', nv.locked !== null);
+      n.glow.classList.toggle('is-active', nv.working && !reduced());
+      n.lock.hidden = nv.locked === null;
+      n.lock.replaceChildren(h('b', '', nv.name), h('span', '', nv.locked ?? ''));
+      const parts: HTMLElement[] = nv.slots.map((sv) =>
+        tile(n, sv.card ? 'card' : 'empty', sv.index, sv.card, sv.rate),
+      );
+      if (nv.canPlace) parts.push(tile(n, 'place'));
+      n.slots.replaceChildren(...parts);
+      n.slots.dataset['count'] = String(parts.length);
+    }
+  }
+
+  // ---- the tool picker (the same cards as the forge's) ----
+  function closePicker(): void {
+    picking = null;
+    picker.hidden = true;
+    picker.replaceChildren();
+  }
+
+  function pick(cardId: string | null): void {
+    if (!picking) return;
+    const r = assignSlotCard(ctx.state(), content, place, picking.index, cardId);
+    if (!r.ok) return;
+    ctx.sound('buy');
+    ctx.apply(r.state);
+    closePicker();
+    update();
+  }
+
+  function openPicker(index: number, material: string): void {
+    picking = { index, material };
+    const s = ctx.state();
+    const slot = slotAt(s, place, index);
+    const nodeName = nodes.find((n) => n.id === material)?.view?.name ?? '';
+    const head = h('div', 'camp__pickhead');
+    head.append(h('b', 'px-display', T.pickFor(nodeName)));
+    const close = h('button', 'px-btn px-btn--dark', T.closeList);
+    close.type = 'button';
+    close.dataset['key'] = 'camp-pick-close';
+    close.addEventListener('click', closePicker);
+    if (slot.card) {
+      const off = h('button', 'px-btn px-btn--dark', T.takeOff);
+      off.type = 'button';
+      off.dataset['key'] = 'camp-pick-off';
+      off.addEventListener('click', () => pick(null));
+      head.append(off);
+    }
+    head.append(close);
+    const list = workerPickList();
+    const items: HTMLElement[] = [];
+    for (const c of content.cards) {
+      if (c.job !== job || !s.cards.owned[c.id]) continue;
+      const owned = s.cards.owned[c.id];
+      const here = slot.card === c.id;
+      const away = isOnTrip(s, c.id);
+      const at = slotOfCard(s, content, c.id);
+      const elsewhere = at && !(at.place === place && at.index === index);
+      items.push(
+        workerPickTile(content, s, {
+          cardId: c.id,
+          key: `camp-pick-${c.id}`,
+          name: cardDisplayName(content, c),
+          power: owned ? `×${fmt(workerPower(content, c.id, owned))}` : '',
+          note: '',
+          where: here ? T.worksHere : away ? T.away : elsewhere ? T.moves : '',
+          current: here,
+          disabled: away,
+          onPick: () => pick(c.id),
+        }),
+      );
+    }
+    if (items.length === 0) items.push(h('li', 'camp__none', T.noToolCards));
+    list.replaceChildren(...items);
+    picker.replaceChildren(head, list);
+    picker.hidden = false;
+  }
+
+  function signature(): string {
+    const s = ctx.state();
+    const owned = Object.keys(s.cards.owned).filter((id) => content.cardById.get(id)?.job === job);
+    return JSON.stringify([
+      s.camp.level,
+      openSlots(s, content, place),
+      s.camp[place],
+      owned,
+      s.clearedDungeons,
+      s.expeditions.trips.map((t) => t.cardId),
+      s.production.forge.worker,
+    ]);
   }
 
   function update(): void {
+    layout();
     const s = ctx.state();
-    const now = signature(ctx, place);
+    const mods = collectModifiers(s, content);
+    const now = signature();
+    const model = campScreen(s, content, place, mods);
     if (now !== sig) {
       sig = now;
       build();
     }
-    const level = campLevel(s);
-    set(levelText, T.campLevel(level));
+    for (const n of nodes) {
+      const nv = model.nodes.find((x) => x.id === n.id)!;
+      n.view = nv;
+      set(n.labelName, nv.name);
+      set(n.labelRate, nv.locked ? '' : nv.rate || '—');
+    }
+    set(levelText, T.campLevel(model.level));
     const prices = campLevelCost(s, content);
     set(cost, prices.map((p) => costText(content, p.resource, p.amount)).join(' · '));
     const can = canAfford(s, prices);
     upgrade.textContent = T.raiseCamp;
     upgrade.setAttribute('aria-disabled', String(!can));
     upgrade.classList.toggle('is-no', !can);
-    set(next, T.slotsOpen(openSlots(s, content, place)));
-    const rates = slotRates(s, content, collectModifiers(s, content));
-    let sum = new Decimal(0);
-    rateEls.forEach((el, index) => {
-      const found = rates.find((r) => r.worker.place === place && r.worker.index === index);
-      if (found) sum = sum.add(found.rate);
-      set(
-        el,
-        found
-          ? T.slotRate(found.worker.material.name, fmt(found.rate))
-          : slotAt(s, place, index).card
-            ? ''
-            : T.emptySlot,
-      );
-    });
-    set(total, T.placeRate(COPY.view.titles[job], fmt(sum)));
+    set(
+      next,
+      model.waiting > 0
+        ? T.toPlace(model.waiting, place)
+        : T.slotsOpen(openSlots(s, content, place)),
+    );
+    next.classList.toggle('is-call', model.waiting > 0);
+    set(total, T.placeAll(fmt(model.total), COPY.view.titles[job] ?? ''));
   }
 
-  return { render: update };
+  host.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !picker.hidden) {
+      closePicker();
+      e.stopPropagation();
+    }
+  });
+
+  return {
+    render: update,
+    opened() {
+      closePicker();
+    },
+  };
 }
