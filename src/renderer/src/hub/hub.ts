@@ -1,7 +1,7 @@
 import { h } from '../shell/shell';
 import type { PileHint, TableContext, ViewDef } from '../table/contract';
 import type { ViewId } from '../table/viewIds';
-import mapUrl from './hub-map-384x688.png';
+import mapUrl from './hub-wide-640x360.png';
 import {
   HUB_BUILDINGS,
   HUB_MAP_H,
@@ -41,7 +41,7 @@ export function createHub(
   actions: { goDungeon(): void; open(id: ViewId, from: HTMLElement): void },
 ): Hub {
   const el = h('div', 'hub');
-  const scroller = h('div', 'hub__scroll');
+  const scroller = h('div', 'hub__view');
   const stage = h('div', 'hub__stage');
   const img = h('img', 'hub__map') as HTMLImageElement;
   img.src = mapUrl;
@@ -160,10 +160,17 @@ export function createHub(
   });
 
   let scale = 0;
+  let area = '';
   function layout(): void {
-    const next = hubScale(scroller.clientWidth);
-    if (next === scale) return;
-    scale = next;
+    const w = scroller.clientWidth;
+    const hh = scroller.clientHeight;
+    const key = `${w}x${hh}`;
+    if (key === area) return;
+    area = key;
+    scale = hubScale(w, hh);
+    // centred: the stage may be taller than the window, then the top and bottom edge are cut
+    stage.style.left = `${Math.floor((w - HUB_MAP_W * scale) / 2)}px`;
+    stage.style.top = `${Math.floor((hh - HUB_MAP_H * scale) / 2)}px`;
     stage.style.width = `${HUB_MAP_W * scale}px`;
     stage.style.height = `${HUB_MAP_H * scale}px`;
     img.style.width = `${HUB_MAP_W * scale}px`;

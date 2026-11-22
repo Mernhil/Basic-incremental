@@ -1,14 +1,14 @@
 import type { ViewId } from '../table/viewIds';
 
 /**
- * The hub map (DESIGN.md section 2 Base camp): one painted picture, 384 x 688, shown at a whole
- * scale (2x or 3x, nearest neighbour) and scrolled up and down. The buildings are click areas laid
+ * The hub map (DESIGN.md section 2 Base camp): one painted picture, 640 x 360, shown at a whole
+ * scale (2x at 1280 x 720, 3x at 1920 x 1080, nearest neighbour), centred, never scrolled. The buildings are click areas laid
  * over it by code; each is an outline (a polygon) in the picture's own pixels, traced by eye off the approved
- * picture `hub-map-384x688.png`. Display logic only: no DOM, unit tested.
+ * picture `hub-wide-640x360.png`. Display logic only: no DOM, unit tested.
  */
 
-export const HUB_MAP_W = 384;
-export const HUB_MAP_H = 688;
+export const HUB_MAP_W = 640;
+export const HUB_MAP_H = 360;
 
 export type Point = readonly [number, number];
 
@@ -49,10 +49,10 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'raid_gate',
     name: 'Raid gate',
     shape: [
-      [36, 142],
-      [83, 142],
-      [84, 189],
-      [35, 189],
+      [110, 32],
+      [169, 32],
+      [169, 91],
+      [110, 91],
     ],
     action: { kind: 'locked', why: 'Sealed until raids exist' },
     marks: [],
@@ -61,13 +61,13 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'dungeon_arch',
     name: 'Dungeon',
     shape: [
-      [169, 165],
-      [178, 143],
-      [192, 136],
-      [206, 143],
-      [212, 165],
-      [210, 203],
-      [171, 203],
+      [286, 95],
+      [286, 47],
+      [297, 27],
+      [320, 20],
+      [345, 27],
+      [354, 47],
+      [354, 95],
     ],
     action: { kind: 'dungeon' },
     marks: [],
@@ -76,11 +76,12 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'mine',
     name: 'Mine',
     shape: [
-      [248, 155],
-      [270, 148],
-      [295, 155],
-      [296, 190],
-      [248, 188],
+      [442, 47],
+      [502, 46],
+      [502, 95],
+      [480, 102],
+      [452, 102],
+      [442, 75],
     ],
     action: { kind: 'view', view: 'mining' },
     marks: ['mining'],
@@ -89,14 +90,14 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'forest',
     name: 'Forest',
     shape: [
-      [316, 150],
-      [332, 128],
-      [360, 122],
-      [372, 145],
-      [374, 180],
-      [360, 199],
-      [325, 199],
-      [315, 180],
+      [532, 75],
+      [537, 35],
+      [555, 17],
+      [580, 17],
+      [597, 35],
+      [600, 75],
+      [590, 107],
+      [542, 107],
     ],
     action: { kind: 'view', view: 'logging' },
     marks: ['logging'],
@@ -105,15 +106,16 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'arena',
     name: 'Arena',
     shape: [
-      [30, 250],
-      [40, 231],
-      [75, 220],
-      [115, 222],
-      [142, 240],
-      [145, 300],
-      [130, 320],
-      [50, 324],
-      [31, 305],
+      [20, 160],
+      [22, 120],
+      [45, 102],
+      [105, 102],
+      [135, 117],
+      [150, 150],
+      [150, 205],
+      [135, 215],
+      [30, 215],
+      [20, 200],
     ],
     action: { kind: 'locked', why: 'The arena is not built yet' },
     marks: [],
@@ -122,11 +124,11 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'portal',
     name: 'Portal',
     shape: [
-      [244, 238],
-      [300, 213],
-      [356, 238],
-      [356, 312],
-      [244, 312],
+      [368, 131],
+      [400, 109],
+      [487, 112],
+      [489, 189],
+      [370, 189],
     ],
     action: { kind: 'view', view: 'summon' },
     marks: ['summon'],
@@ -135,12 +137,13 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'expedition_board',
     name: 'Expedition board',
     shape: [
-      [20, 350],
-      [62, 328],
-      [105, 330],
-      [142, 357],
-      [142, 395],
-      [20, 395],
+      [175, 142],
+      [210, 120],
+      [224, 91],
+      [234, 117],
+      [277, 115],
+      [277, 192],
+      [175, 196],
     ],
     action: { kind: 'view', view: 'expeditions' },
     marks: ['expeditions'],
@@ -149,14 +152,16 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'shrine',
     name: 'Shrine',
     shape: [
-      [235, 350],
-      [250, 316],
-      [265, 325],
-      [277, 350],
-      [277, 372],
-      [262, 384],
-      [240, 382],
-      [234, 367],
+      [505, 150],
+      [520, 120],
+      [542, 122],
+      [550, 150],
+      [569, 190],
+      [569, 212],
+      [545, 222],
+      [505, 217],
+      [495, 202],
+      [496, 185],
     ],
     action: { kind: 'view', view: 'skills' },
     marks: ['skills'],
@@ -165,12 +170,14 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'forge',
     name: 'Forge',
     shape: [
-      [304, 335],
-      [345, 332],
-      [357, 322],
-      [367, 322],
-      [367, 372],
-      [305, 372],
+      [567, 150],
+      [595, 142],
+      [597, 127],
+      [617, 125],
+      [632, 135],
+      [632, 190],
+      [600, 197],
+      [570, 192],
     ],
     action: { kind: 'view', view: 'forge' },
     marks: [],
@@ -179,10 +186,10 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'training_ground',
     name: 'Training ground',
     shape: [
-      [22, 409],
-      [100, 409],
-      [100, 464],
-      [22, 464],
+      [29, 235],
+      [152, 235],
+      [154, 315],
+      [29, 316],
     ],
     action: {
       kind: 'menu',
@@ -197,11 +204,11 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'armoury',
     name: 'Armoury and Trophy hall',
     shape: [
-      [260, 410],
-      [314, 376],
-      [370, 402],
-      [370, 462],
-      [260, 462],
+      [366, 230],
+      [414, 196],
+      [467, 222],
+      [467, 295],
+      [367, 296],
     ],
     action: {
       kind: 'menu',
@@ -216,13 +223,13 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'tailor',
     name: 'Tailor',
     shape: [
-      [82, 480],
-      [95, 468],
-      [135, 442],
-      [142, 440],
-      [167, 475],
-      [167, 520],
-      [82, 520],
+      [182, 235],
+      [192, 215],
+      [274, 214],
+      [285, 245],
+      [285, 290],
+      [192, 292],
+      [182, 272],
     ],
     action: { kind: 'view', view: 'wardrobe' },
     marks: ['wardrobe'],
@@ -231,19 +238,27 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
     id: 'market',
     name: 'Market',
     shape: [
-      [222, 467],
-      [365, 467],
-      [365, 542],
-      [222, 542],
+      [489, 245],
+      [520, 227],
+      [622, 230],
+      [622, 315],
+      [492, 317],
     ],
     action: { kind: 'view', view: 'shop' },
     marks: ['shop'],
   },
 ];
 
-/** The whole scale the map is shown at: 3x when the screen is wide enough for it with room to spare, else 2x. */
-export function hubScale(availableWidth: number): 2 | 3 {
-  return availableWidth >= HUB_MAP_W * 3 + 160 ? 3 : 2;
+/**
+ * The whole scale the map is shown at: the largest that fits the width of the area under the
+ * header and, in height, loses at most 12 % to the window (a little of the top and bottom edge,
+ * which are rock and grass, then falls off the picture; the header takes 64 px at 1280 x 720).
+ * 2x at 1280 x 720, 3x at 1920 x 1080; at least 1.
+ */
+export function hubScale(width: number, height: number): number {
+  const byWidth = Math.floor(width / HUB_MAP_W);
+  const byHeight = Math.floor((height * 1.12) / HUB_MAP_H);
+  return Math.max(1, Math.min(byWidth, byHeight));
 }
 
 /** The box around an outline. */

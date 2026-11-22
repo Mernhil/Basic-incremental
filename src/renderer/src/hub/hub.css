@@ -1,25 +1,19 @@
-/* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, scrolled up and down,
+/* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, centred, never scrolled,
    with a click area over each building. Colours from the shell tokens so a restyle applies. */
 
 .hub {
-  position: relative;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
-  grid-area: 1 / 1 / -1 / -1;
-}
-.hub__scroll {
   position: absolute;
   inset: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  background: var(--bi-table-bg, #17131f);
+  overflow: hidden;
+}
+.hub__view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--hub-charcoal, #1c1c20);
 }
 .hub__stage {
-  position: relative;
-  flex: none;
+  position: absolute;
 }
 .hub__map {
   display: block;

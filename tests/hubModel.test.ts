@@ -14,15 +14,26 @@ import { VIEW_IDS } from '../src/renderer/src/table/viewIds';
 
 /** The hub map (DESIGN.md section 2 Base camp): whole scales, click areas on the picture, every dock screen reachable. */
 describe('hub map', () => {
-  it('is the approved 384 x 688 picture, shown at 2x or 3x only', () => {
-    const png = readFileSync(resolve(__dirname, '../src/renderer/src/hub/hub-map-384x688.png'));
+  it('is the approved 640 x 360 picture, shown at a whole scale and never scrolled', () => {
+    const png = readFileSync(resolve(__dirname, '../src/renderer/src/hub/hub-wide-640x360.png'));
     expect(png.readUInt32BE(16)).toBe(HUB_MAP_W);
     expect(png.readUInt32BE(20)).toBe(HUB_MAP_H);
-    for (const width of [800, 1000, 1280, 1400, 1600, 1920, 2560]) {
-      expect([2, 3]).toContain(hubScale(width));
+    // the area under the header: 1280 x 656 and 1920 x 1016 in a 1280 x 720 and a 1920 x 1080 window
+    expect(hubScale(1280, 656)).toBe(2);
+    expect(hubScale(1920, 1016)).toBe(3);
+    expect(hubScale(1000, 600)).toBe(1);
+    expect(hubScale(300, 200)).toBe(1);
+    expect(hubScale(2560, 1300)).toBe(4);
+    for (const [w, h] of [
+      [800, 500],
+      [1366, 700],
+      [1600, 900],
+      [2200, 1100],
+    ] as const) {
+      const s = hubScale(w, h);
+      expect(Number.isInteger(s)).toBe(true);
+      expect(HUB_MAP_W * s).toBeLessThanOrEqual(Math.max(w, HUB_MAP_W));
     }
-    expect(hubScale(1280)).toBe(2);
-    expect(hubScale(1920)).toBe(3);
   });
 
   it('puts every click area on whole screen pixels at either scale', () => {
