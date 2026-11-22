@@ -875,8 +875,13 @@ export const COPY = {
     heirloomStar: (n: number) => `★${n}!`,
     heirloomCardShards: (n: number) => `+${n} card shards`,
     heirloomSide: { mythic: 'Mythic', void: 'Void' } as Record<string, string>,
-    /** A row of the Heirloom board: one per art batch (Dragon is the first, Leviathan the second). */
-    heirloomRows: { base: 'Dragon', leviathan: 'Leviathan' } as Record<string, string>,
+    /** A row of the Heirloom board: one per art batch (Dragon is the first, Leviathan the second, Wildwood the third; `#2` is a batch's second Heirloom of a type). */
+    heirloomRows: {
+      base: 'Dragon',
+      leviathan: 'Leviathan',
+      wildwood: 'Wildwood',
+      'wildwood#2': 'Wildwood II',
+    } as Record<string, string>,
     handEmptyBacks: 'No pull yet: the cards you draw will wait here.',
   },
   /** The card skin picker (DESIGN.md §8 Card skins), on the Cards panel and in the Wardrobe tab. */

@@ -47,12 +47,12 @@ describe('the five elements', () => {
     }
   });
 
-  it('the 111 T6 and Heirloom cards come out as dark 31, water 24, light 22, fire 19, earth 15', () => {
+  it('the 145 T6 and Heirloom cards come out as dark 31, water 24, light 22, fire 35, earth 33', () => {
     const count: Record<string, number> = {};
     for (const card of content.cards) {
       if (card.element) count[card.element] = (count[card.element] ?? 0) + 1;
     }
-    expect(count).toEqual({ dark: 31, water: 24, light: 22, fire: 19, earth: 15 });
+    expect(count).toEqual({ dark: 31, water: 24, light: 22, fire: 35, earth: 33 });
   });
 });
 
@@ -159,9 +159,9 @@ describe('workers on matching places', () => {
     expect(place('apprentice_feller', 'oak', 'logging').element).toHaveLength(0);
     expect(place('cave_digger', 'iron_deeps', 'mining').element).toHaveLength(0);
   });
-  it('every tree is earth, and no T6 or Heirloom logging worker is earth (the logging axe has none)', () => {
+  it('every tree is earth, and the two earth logging workers are the Wildwood hero T6 and Heirloom axes', () => {
     for (const tree of content.trees) expect(tree.element, tree.id).toBe('earth');
     const earthLoggers = content.cards.filter((c) => c.job === 'logging' && c.element === 'earth');
-    expect(earthLoggers).toHaveLength(0);
+    expect(earthLoggers.map((c) => c.id).sort()).toEqual(['beetlejaw', 'grovehewer']);
   });
 });

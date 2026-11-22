@@ -575,7 +575,12 @@ const cardBase = {
   batch: id.optional(),
   heirloomName: name.optional(),
   /**
-   * One of the Heirloom cards (11 Dragon, 11 Leviathan) (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
+   * A batch's second Heirloom of one weapon type (the Wildwood fox tail dagger beside the phoenix
+   * one): its picture is `item-<type>-<batch>-heirloom-alt`. Only on an Heirloom card with a `batch`.
+   */
+  pictureAlt: z.literal(true).optional(),
+  /**
+   * One of the Heirloom cards (11 Dragon, 11 Leviathan, 12 Wildwood) (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
    * its rarity's side, named as in items.json, at the fixed tier `heirloom`. It comes only from the
    * Heirloom Gate (heirlooms.json), never from a portal, the shard shop or a tier-up.
    */

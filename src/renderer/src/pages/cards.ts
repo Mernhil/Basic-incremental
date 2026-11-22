@@ -436,7 +436,7 @@ export function createCardsPage(
     for (const kind of itemOrder) {
       const ofKind = list.filter((e) => e.itemKind === kind);
       if (ofKind.length === 0) continue;
-      // a type's two Heirlooms together under its heading
+      // a type's Heirlooms together under its heading
       const li = h('li', 'cp-hgroup');
       const pair = h('div', 'cp-hgroup__cards');
       li.append(
