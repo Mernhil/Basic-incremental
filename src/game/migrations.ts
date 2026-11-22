@@ -103,7 +103,153 @@ export const MIGRATIONS: MigrationTable = {
   /** v39 -> v40: summoning chances (DESIGN.md §2 Summoning): the Card Portal's pity counts toward a
    *  T6 now; a save that made 10 or more pulls has had its first 10-pull; no tier reward is paid yet. */
   39: v39ToV40,
+  /** v40 -> v41: three attacks per card (DESIGN.md §2): every owned card's skill starts closed;
+   *  it is opened with Cores. */
+  40: v40ToV41,
+  /** v41 -> v42: the base camp replaces trees, mines, tool lines and the autobuyers (DESIGN.md section 2). */
+  41: v41ToV42,
+  /** v42 -> v43: the starter weapon (DESIGN.md §2 Starter weapon): a save that began before it is
+   *  offered the pick once, and may turn it down. */
+  42: v42ToV43,
+  /** v43 -> v44: raid bosses (DESIGN.md §2): no tries used, no best scores, no rewards paid. */
+  43: v43ToV44,
 };
+
+/**
+ * The camp's slots by level when save format 40 was made (a snapshot of `camp.json`): the rows of
+ * [camp level, forest slots, cave slots].
+ */
+const V41_CAMP_SLOTS: readonly (readonly [number, number, number])[] = [
+  [1, 1, 1],
+  [3, 2, 1],
+  [5, 2, 2],
+  [8, 3, 2],
+  [11, 3, 3],
+  [15, 4, 4],
+  [20, 5, 5],
+  [28, 6, 6],
+];
+/** The most the conversion lifts the camp: more than the camp's last slot row asks. */
+const V41_MAX_CONVERTED_LEVEL = 40;
+/** The milestone ids of the Training lines, which stay (every other saved pick was on a tree, mine or tool line). */
+const V41_TRAINING_PICKS: ReadonlySet<string> = new Set([
+  'sharpen_5',
+  'sharpen_15',
+  'sharpen_30',
+  'toughen_5',
+  'toughen_15',
+  'toughen_30',
+  'plunder_5',
+  'plunder_15',
+  'plunder_30',
+  'tempo_5',
+  'tempo_15',
+  'tempo_30',
+]);
+/** The worth of one milestone pick on a tree, mine or tool line, in levels. */
+const V41_PICK_WORTH = 5;
+/** Starlight items that went: each is refunded at its price. */
+const V41_REFUNDED_ITEMS: Record<string, number> = { timber_steward: 15, vein_steward: 15 };
+
+/** The old places in content order: woods, then ores, with their saved ids. */
+const V41_FOREST = ['oak', 'ironbark', 'moonwillow'] as const;
+const V41_CAVE = ['copper_quarry', 'iron_deeps', 'crystal_grotto'] as const;
+
+const sumLevels = (levels: unknown): number =>
+  isRecord(levels)
+    ? Object.values(levels).reduce<number>(
+        (n, v) => n + (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : 0),
+        0,
+      )
+    : 0;
+
+/**
+ * v41 -> v42 (DESIGN.md section 2 Base camp): the base camp replaces trees, mines, tool lines,
+ * milestone picks on them, the production presets and the autobuyers. The conversion:
+ *
+ * - Camp level = 1 + floor(worth / 10), at most 40, where worth = the tree levels and mine levels
+ *   bought, plus half the tool line levels, plus 5 for each milestone pick on a tree, mine or tool
+ *   line (every saved pick that is not one of the Training lines' twelve). Slots are opened by the level, so the open slots follow.
+ * - Stocks of the six materials, Money and everything else are kept as they are.
+ * - Workers posted on a tree or a mine go to the camp's slots in the old place order (woods into
+ *   the forest, ores into the cave), each on a slot farming the material of the place it worked;
+ *   workers beyond the open slots go back to the collection.
+ * - The Starlight items for the autobuyers are removed and refunded at their price; the second-slot
+ *   item keeps its levels and now opens a farming slot in the forest and in the cave per level.
+ * - Gauges, depth, tool lines, the production presets and the autobuyer switches are dropped; the
+ *   forge is kept as it is. The dummy starts at its default.
+ */
+function v41ToV42(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const upgrades = isRecord(state['upgrades']) ? state['upgrades'] : {};
+  const picks = isRecord(upgrades['picks']) ? upgrades['picks'] : {};
+  const trainingPicks = Object.keys(picks).filter((id) => V41_TRAINING_PICKS.has(id));
+  const removedPicks = Object.keys(picks).length - trainingPicks.length;
+  const worth =
+    sumLevels(production['treeLevels']) +
+    sumLevels(production['mineLevels']) +
+    sumLevels(production['tools']) / 2 +
+    V41_PICK_WORTH * removedPicks;
+  const level = Math.min(V41_MAX_CONVERTED_LEVEL, 1 + Math.floor(worth / 10));
+
+  const open = (place: 1 | 2): number => {
+    let slots = 0;
+    for (const row of V41_CAMP_SLOTS) if (row[0] <= level) slots = row[place];
+    return slots;
+  };
+  const prestige = isRecord(state['prestige']) ? { ...state['prestige'] } : null;
+  const shop = prestige && isRecord(prestige['shop']) ? { ...prestige['shop'] } : {};
+  // The second-slot item adds a slot per level to each place.
+  const extra = typeof shop['second_hands'] === 'number' ? Math.max(0, shop['second_hands']) : 0;
+  const workers = isRecord(production['workers']) ? production['workers'] : {};
+  const place = (
+    ids: readonly string[],
+    room: number,
+  ): { material: string | null; card: string | null }[] => {
+    const slots: { material: string | null; card: string | null }[] = [];
+    for (const id of ids) {
+      const posted = Array.isArray(workers[id]) ? (workers[id] as unknown[]) : [];
+      for (const card of posted) {
+        if (typeof card === 'string' && slots.length < room) slots.push({ material: id, card });
+      }
+    }
+    return slots;
+  };
+  const camp = {
+    level,
+    forest: place(V41_FOREST, open(1) + extra),
+    cave: place(V41_CAVE, open(2) + extra),
+  };
+
+  let refund = 0;
+  for (const [id, price] of Object.entries(V41_REFUNDED_ITEMS)) {
+    const bought = typeof shop[id] === 'number' ? shop[id] : 0;
+    if (bought > 0) refund += price * Math.min(bought, 1);
+    delete shop[id];
+  }
+  if (prestige) prestige['shop'] = shop;
+
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  if (refund > 0) {
+    const held = resources['starlight'];
+    const have =
+      typeof held === 'string' && isDecimalString(held) ? new Decimal(held) : new Decimal(0);
+    resources['starlight'] = have.add(refund).toString();
+  }
+  const presets = isRecord(state['presets']) ? { ...state['presets'] } : null;
+  if (presets) delete presets['production'];
+  const rest = { ...state };
+  delete rest['automation'];
+  return {
+    ...rest,
+    resources,
+    ...(prestige ? { prestige } : {}),
+    ...(presets ? { presets } : {}),
+    production: { forge: production['forge'] },
+    camp,
+    dummy: { damage: '100', team: [null, null, null, null] },
+  };
+}
 
 /**
  * The Wood to Prismatic cards by tier when save format 39 was made (a snapshot of cards.json; every
@@ -198,6 +344,30 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
+
+/** v43 -> v44 (DESIGN.md §2 Raid bosses): an empty raid record. */
+function v43ToV44(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
+}
+
+/** v40 -> v41 (DESIGN.md §2 Three attacks per card): every owned card gets `skillOpen: false`. */
+function v40ToV41(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? state['cards'] : null;
+  if (!cards || !isRecord(cards['owned'])) return state;
+  const owned: Record<string, unknown> = {};
+  for (const [id, c] of Object.entries(cards['owned']))
+    owned[id] = isRecord(c) ? { ...c, skillOpen: false } : c;
+  return { ...state, cards: { ...cards, owned } };
+}
+
+/**
+ * v42 -> v43: the starter weapon (DESIGN.md §2 Starter weapon). An existing save would never get
+ * the pick otherwise, so it is offered once when the save loads; the screen may be closed without
+ * a pick. No card changes.
+ */
+function v42ToV43(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, starter: { done: false, skippable: true } };
+}
 
 /**
  * v39 -> v40: summoning chances (DESIGN.md §2 Summoning). The Card Portal level is read from the

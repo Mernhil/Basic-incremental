@@ -92,6 +92,7 @@ export const COPY = {
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
+    toHub: '← Hub',
     dock: 'Table',
     open: (name: string) => `Open ${name}`,
     boss: 'Boss',
@@ -107,12 +108,12 @@ export const COPY = {
   },
   /** The full views over the table (UI_RULES.md §2, A full view). */
   view: {
-    back: '← Table',
+    back: '← Hub',
     backLabel: 'Back to the table',
     titles: {
       dungeon: 'Dungeon',
-      logging: 'Logging',
-      mining: 'Mining',
+      logging: 'Forest',
+      mining: 'Cave',
       cards: 'Cards',
       summon: 'Summon',
       wardrobe: 'Wardrobe',
@@ -120,6 +121,9 @@ export const COPY = {
       achievements: 'Achievements',
       shop: 'Shop',
       forge: 'Forge',
+      training: 'Training ground',
+      expeditions: 'Expedition board',
+      raids: 'Raids',
       upgrades: 'Upgrades',
       settings: 'Settings',
     },
@@ -388,6 +392,7 @@ export const COPY = {
     pickCurrent: 'In this slot',
     pickSwap: (slot: string) => `In ${slot}: swaps`,
     pickHeirlooms: 'A loadout can hold two Heirlooms',
+    pickStarters: 'A team can hold only one starter weapon',
     /** How the limit grows, next to the cost bar (DESIGN.md §10 Loadout cost cap). */
     capGrows: (next: number, level: number) =>
       `Limit grows with account level · next +${next} at level ${level}`,
@@ -415,6 +420,7 @@ export const COPY = {
       'wrong-job': 'This card belongs to another job.',
       duplicate: 'This card is already in that loadout.',
       'too-many-heirlooms': 'A loadout can hold two Heirlooms',
+      'too-many-starters': 'A team can hold only one starter weapon',
       'over-cost-cap':
         'That loadout would go over its cost cap. Remove a card or pick a cheaper one.',
       'invalid-slot': 'This card is not in a loadout.',
@@ -435,7 +441,8 @@ export const COPY = {
     fight: 'Fight',
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
-    /** A boss's elements (DESIGN.md §2 Fights): "Weak to Fire (+50% damage)", "Resists Earth (-25% damage)". */
+    /** A boss's elements (DESIGN.md §2 Fights): "Earth boss", "Weak to Fire (+50% damage)", "Resists Water (-25% damage)". */
+    bossElement: (element: string) => `${element} boss`,
     bossWeak: (element: string, percent: number) => `Weak to ${element} (+${percent}% damage)`,
     bossResists: (element: string, percent: number) => `Resists ${element} (${percent}% damage)`,
     bossNoneElement: 'Wood to Prismatic cards have no element and always do base damage.',
@@ -604,18 +611,10 @@ export const COPY = {
     gateLabel: 'The Ascension gate, with everything you keep drifting into it',
     resets: 'Starts over',
     resetParts: {
-      mine_levels: ['Mine levels', 'Every mine back to level 0'],
-      tree_levels: ['Tree levels', 'Every tree back to level 0'],
       resources: ['Gems and materials', 'Every resource except Starlight'],
-      tile_stages: ['Tile growth', 'Trees and mines back to the first stage'],
-      tool_lines: ['Tool lines', 'Yield, strike speed and crit lines back to level 0'],
-      depth_growth: [
-        'Depth and age',
-        'Every mine back to its first layer, every tree to its first age',
-      ],
     },
     upgradesNote:
-      'Your milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
+      'Your Training milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
     kept: 'Kept forever',
     keptParts: {
       cards: 'Cards',
@@ -626,7 +625,7 @@ export const COPY = {
       portal_pity: 'Portal pity',
       crystals: 'Scrolls',
       starlight: 'Starlight',
-      workers: 'Workers',
+      camp: 'The camp',
       forge: 'The forge',
       star_dust: 'Star dust',
       stage_stars: 'Stage stars',
@@ -643,7 +642,8 @@ export const COPY = {
       portal_pity: 'Pulls counted toward each pity',
       crystals: (summon: string, glamour: string) => `${summon} Summon, ${glamour} Glamour`,
       starlight: (n: string) => `${n} in hand`,
-      workers: (n: number) => (n === 1 ? '1 worker placed' : `${n} workers placed`),
+      camp: (n: number) =>
+        n === 1 ? 'Its level and slots, 1 card farming' : `Its level and slots, ${n} cards farming`,
       forge: 'Its recipe, worker and progress',
       star_dust: (n: string) => `${n} in hand`,
       stage_stars: (n: number) => (n === 1 ? '1 stage kill counted' : `${n} stage kills counted`),
@@ -677,14 +677,7 @@ export const COPY = {
     effect: (from: string, to: string) => `${from} → ${to}`,
     maxedEffect: (now: string) => `${now}, max level`,
     /** Starlight lines that open a rule instead of a bonus (DESIGN.md §9). */
-    slots: (open: number, places: number) => `${open} of ${places} places have a second slot`,
-    slotsLocked: 'Opens once every tree and mine has its first worker slot',
-    autobuyer: (owned: boolean) => (owned ? 'Owned: switch it on below' : 'Not owned'),
-    autobuyers: 'Autobuyers',
-    autoTrees: 'Buy tree levels',
-    autoMines: 'Buy mine levels',
-    autoReserve: 'Keep at least this share of what you hold',
-    autoNote: 'They run every second, like offline progress. They never touch cards.',
+    slots: (open: number) => `${open} more farming slots in the forest and in the cave`,
     buy: 'Buy level',
     maxed: 'Max level',
     price: (amount: string) => `${amount} Starlight`,
@@ -829,6 +822,22 @@ export const COPY = {
     gateLocked: 'Opens with the Wardrobe',
     gateAbout: 'Pulls cosmetic sets and items. Duplicates feed their upgrade levels.',
     revealTitle: (portal: string) => `${portal} reveal`,
+    /** The three doors (the Summon page) and the reveal's controls. */
+    doorCard: 'Every card but the Heirlooms',
+    doorFocus: (name: string) => `One weapon type of your choice: ${name}`,
+    doorHeirloom: 'Heirloom shards only',
+    doorsLabel: 'The three doors',
+    doorSelect: (name: string) => `Show what ${name} holds below`,
+    stripLabel: 'Portal progress and chances',
+    chancesTitle: 'Chances now',
+    pityStripTitle: 'T6 pity',
+    tiersStripTitle: 'Tier collection',
+    moreTitle: 'More from the portals',
+    bestLabel: (rarity: string) => `Best of this pull: ${rarity}`,
+    skip: 'Skip',
+    continue: 'Continue',
+    pullAgain: 'Pull again',
+    lineLabel: 'Cards of this pull',
     next: 'Click or press Space to reveal the next',
     skipAll: 'Skip all',
     entranceHint: 'Click to continue',
@@ -875,8 +884,13 @@ export const COPY = {
     heirloomStar: (n: number) => `★${n}!`,
     heirloomCardShards: (n: number) => `+${n} card shards`,
     heirloomSide: { mythic: 'Mythic', void: 'Void' } as Record<string, string>,
-    /** A row of the Heirloom board: one per art batch (Dragon is the first, Leviathan the second). */
-    heirloomRows: { base: 'Dragon', leviathan: 'Leviathan' } as Record<string, string>,
+    /** A row of the Heirloom board: one per art batch (Dragon is the first, Leviathan the second, Wildwood the third; `#2` is a batch's second Heirloom of a type). */
+    heirloomRows: {
+      base: 'Dragon',
+      leviathan: 'Leviathan',
+      wildwood: 'Wildwood',
+      'wildwood#2': 'Wildwood II',
+    } as Record<string, string>,
     handEmptyBacks: 'No pull yet: the cards you draw will wait here.',
   },
   /** The card skin picker (DESIGN.md §8 Card skins), on the Cards panel and in the Wardrobe tab. */
@@ -1114,6 +1128,41 @@ export const COPY = {
     muteAll: 'Mute all sound',
     muteUnfocused: 'Mute when the game is in the background',
   },
+  starter: {
+    /** The pick screen at the start of a new game (DESIGN.md §2 Starter weapon). */
+    title: 'Choose your first weapon',
+    lead: 'It arrives sealed and fights like a Wood weapon. Dungeon Cores break its seals until it is the whole weapon.',
+    /** A later unlock: a dungeon cleared on Nightmare, or reached in the endless depths. */
+    unlockTitle: (special: boolean) =>
+      special ? 'A special weapon is yours to choose' : 'Choose another starter weapon',
+    unlockLead: (special: boolean) =>
+      special
+        ? 'Reaching the endless depths opens a weapon of light or dark. It arrives sealed.'
+        : 'A dungeon cleared on Nightmare opens one more starter weapon. It arrives sealed.',
+    /** The card's tier label while it is a starter weapon. */
+    tierLabel: 'Starter',
+    choose: 'Choose',
+    chooseLabel: (name: string) => `Choose ${name}`,
+    later: 'Not now',
+    elements: {
+      water: 'Water',
+      fire: 'Fire',
+      earth: 'Earth',
+      light: 'Light',
+      dark: 'Dark',
+    } as const,
+    /** "Fire sword · DPS" */
+    kindLine: (element: string, kind: string, role: string) => `${element} ${kind} · ${role}`,
+    /** The seal block beside the weapon panel. */
+    sealTitle: 'Sealed',
+    sealStep: (broken: number, total: number) => `Seal ${broken + 1} of ${total}`,
+    fightsAs: (tier: string) => `Fights as a ${tier} weapon`,
+    nextAs: (tier: string) => `Next: fights as ${tier}`,
+    breakSeal: 'Break the seal',
+    missing: 'Not enough Cores',
+    unsealed: 'Unsealed',
+    unsealedNote: 'The whole weapon',
+  },
   welcome: {
     title: 'Welcome back',
     collect: 'Collect',
@@ -1279,11 +1328,6 @@ export const COPY = {
     need: (amount: string) => `need ${amount} more`,
     level: (n: number) => `Lv ${n}`,
     effect: {
-      placeOutput: (place: string) => `${place} output`,
-      jobOutput: (job: string) => `${job} output`,
-      burstEvery: 'A burst every',
-      critChance: 'Crit chance',
-      critDamage: 'Crit damage',
       teamDps: 'Team damage',
       teamHealth: 'Team health',
       moneyPerKill: 'Money per kill',
@@ -1351,7 +1395,7 @@ export const COPY = {
       cosmetics: 'cosmetic upgrades',
       portal: 'summons',
       starlightShop: 'the Starlight shop',
-      unlock: (name: string) => `unlocking ${name}`,
+      camp: 'the camp level',
     },
   },
   shelf: {
@@ -1589,6 +1633,67 @@ export const COPY = {
       level: 'That option opens at a higher card level.',
       already: 'Already chosen.',
       'over-budget': 'Not enough points left. Reset to choose again.',
+    },
+  },
+  /** A card's three attacks on the card screens (DESIGN.md §2 Three attacks per card). */
+  moves: {
+    title: 'Attacks',
+    hit: 'Hit',
+    skill: 'Skill',
+    ult: 'Ultimate',
+    hitText: (damage: string, every: string) => `${damage} damage every ${every}`,
+    hitPlain: 'Its normal hit, every second',
+    skillText: (every: string, damage: string) => `Every ${every}: ${damage} damage`,
+    skillPlain: (every: string, strike: string) => `Every ${every}: ${strike} of a hit`,
+    ultText: (hits: string, damage: string) =>
+      `Every ${hits} hits, on a full gauge: ${damage} damage`,
+    ultPlain: (strike: string) => `On a full gauge: ${strike} of the signature attack`,
+    ultSupport: (hits: string) => `Every ${hits} hits, on a full gauge`,
+    ultSupportPlain: 'On a full gauge',
+    closed: 'Not opened yet: open it with Cores.',
+    noSlot: (tier: string) => `No skill at this tier: weapons have one from ${tier} up.`,
+    ultEffectsLater: 'Its effects come from Silver up.',
+    open: 'Open skill',
+    openFor: 'Open the skill for',
+    short: 'Not enough Cores yet.',
+    reasons: {
+      'not-owned': 'You do not own this card.',
+      'no-skill': 'This card has no skill slot.',
+      open: 'The skill is already open.',
+      cost: 'Not enough Cores yet.',
+    },
+    wholeFight: 'for the whole fight',
+    forSeconds: (s: string) => `for ${s}`,
+    who: {
+      enemy: 'the enemy',
+      self: 'itself',
+      row: 'its row',
+      front: 'the front row',
+      back: 'the back row',
+      team: 'the team',
+      emptiest: 'the ally with the emptiest gauge',
+      lowest: 'the card with the least health',
+    },
+    effect: {
+      wound: (p: string, lasts: string) => `Wound: ${p} of a hit every second ${lasts}`,
+      expose: (p: string, lasts: string) => `Expose: the enemy takes ${p} more ${lasts}`,
+      weaken: (p: string, lasts: string) => `Weaken: the enemy deals ${p} less ${lasts}`,
+      stagger: (s: string) => `Stagger: the enemy's next attack comes ${s} later`,
+      mark: (el: string, p: string, lasts: string) =>
+        `Mark: ${el} hits deal ${p} more and are not resisted ${lasts}`,
+      execute: (p: string, below: string) =>
+        `Execute: ${p} more when the enemy is below ${below} health`,
+      rally: (who: string, p: string, lasts: string) => `Rally: ${who} deals ${p} more ${lasts}`,
+      haste: (who: string, p: string, lasts: string) => `Haste: ${who} hits ${p} faster ${lasts}`,
+      focus: (who: string, p: string, lasts: string) =>
+        `Focus: ${who} gets ${p} crit chance ${lasts}`,
+      sureCrit: 'Its hit always crits',
+      charge: (who: string, n: string) => `Charge: ${who} gets ${n} gauge`,
+      heal: (who: string, p: string) => `Heal: ${who} gets back ${p} of max health`,
+      regen: (who: string, p: string, lasts: string) =>
+        `Regen: ${who} gets back ${p} of max health a second ${lasts}`,
+      shield: (who: string, p: string) => `Shield: ${who} gets a shield of ${p} of max health`,
+      drain: (who: string, p: string) => `Drain: ${who} heals ${p} of the damage`,
     },
   },
 } as const;

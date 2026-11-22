@@ -816,16 +816,14 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   font-weight: 800;
 }
 
-/* the skill banners: a slanted banner sliding in from the left with the weapon, the card, the
-   skill's name large and what it does (the user's fight prototype); two at most */
+/* the skill list: kept for screen readers; every ultimate's banner is its cut-in (specialAttack.ts) */
 .du-plates {
+  /* the cut-in is every ultimate's banner; this list only announces the skill to a screen reader */
   position: absolute;
-  top: calc(var(--du-top) + 200px);
-  left: 0;
-  z-index: 5;
-  font-size: clamp(11px, min(1.05cqw, 2.2cqh), 20px);
-  display: grid;
-  gap: 10px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   pointer-events: none;
 }
 .du-skill {
@@ -1198,6 +1196,32 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 .du-card.is-out .du-card__mark {
   opacity: 0;
+}
+/* the effects a card or the enemy is under, as words until each has its art */
+.du-card__effects,
+.du-foe__effects {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--du-gold);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 0.8);
+  pointer-events: none;
+}
+.du-card__effects {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--du-u) * -44);
+  z-index: 3;
+  text-align: center;
+  white-space: nowrap;
+}
+.du-card.is-out .du-card__effects {
+  display: none;
+}
+.du-foe__effects {
+  display: block;
+  min-height: 1.2em;
 }
 /* a hit from the enemy: the card shakes (transform only) */
 .du-card__body.is-hurt {

@@ -177,6 +177,7 @@ describe('enhancement star chart', () => {
       xp: new Decimal(0),
       starFill: 0,
       enhancements: chosen,
+      skillOpen: false,
     };
   };
 

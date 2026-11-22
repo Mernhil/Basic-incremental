@@ -1,12 +1,5 @@
 import type { Content, PerkLine } from '../../../data';
-import {
-  buyMineLevels,
-  buyTool,
-  buyTraining,
-  buyTreeLevels,
-  collectModifiers,
-  type GameState,
-} from '../../../game';
+import { buyTraining, collectModifiers, type GameState } from '../../../game';
 import { COPY } from '../copy';
 import { heldResources, upgradeRows, type UpgradeRowView } from '../pages/upgradeRowModel';
 import { replay } from '../stage/motion';
@@ -69,23 +62,9 @@ const set = (node: HTMLElement, text: string): void => {
 
 function buyLine(state: GameState, content: Content, line: PerkLine): GameState | null {
   const count = buyCount();
-  switch (line.kind) {
-    case 'tree': {
-      const r = buyTreeLevels(state, content, line.id, count);
-      return r.ok ? r.state : null;
-    }
-    case 'mine': {
-      const r = buyMineLevels(state, content, line.id, count);
-      return r.ok ? r.state : null;
-    }
-    case 'tool': {
-      const r = buyTool(state, content, line.id, count);
-      return r.ok ? r.state : null;
-    }
-    case 'training': {
-      const r = buyTraining(state, content, line.id, count);
-      return r.ok ? r.state : null;
-    }
+  {
+    const r = buyTraining(state, content, line.id, count);
+    return r.ok ? r.state : null;
   }
 }
 

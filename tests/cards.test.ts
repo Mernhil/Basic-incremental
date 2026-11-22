@@ -4,9 +4,7 @@ import {
   advance,
   advanceChunked,
   approxEq,
-  burstStats,
-  harvestBurstStats,
-  workSites,
+  slotRates,
   cardCollection,
   cardEffectModifiers,
   cardHealth,
@@ -91,10 +89,8 @@ describe('a new game (DESIGN.md §5)', () => {
       slots: ['ember_squire', null, null, null],
     });
     // the logging and mining start cards are workers on the first tree and mine (DESIGN.md §4)
-    expect(state.production.workers).toEqual({
-      oak: ['apprentice_feller'],
-      copper_quarry: ['cave_digger'],
-    });
+    expect(state.camp.forest).toEqual([{ material: null, card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: null, card: 'cave_digger' }]);
     expect(state.cards.shards).toBe(0);
   });
 });
@@ -119,7 +115,7 @@ describe('levels (DESIGN.md §5)', () => {
 
   it('gives a worker XP per unit its place harvested, and only workers', () => {
     let state = own(bareState(), 'grove_keeper');
-    state.production.workers = { oak: ['apprentice_feller'] };
+    state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
     // the Feller's own ability (+20% card XP) counts at its place
     const perUnit = productionXpPerUnit(
       content,
@@ -134,22 +130,9 @@ describe('levels (DESIGN.md §5)', () => {
     expect(state.cards.owned['cave_digger']!.xp.eq(0)).toBe(true); // not working
   });
 
-  it('counts harvest-burst output as harvested', () => {
-    const state = bareState();
-    state.production.workers = { copper_quarry: ['cave_digger'] };
-    state.production.harvestGauges.copper_quarry = { gauge: 29, timer: 0 };
-    const after = advance(state, content, 1000, rng).state; // 0.5 ore + a 10 s burst (5 ore)
-    const mods = collectModifiers(state, content);
-    const expected = productionXpPerUnit(content, 'mining', mods, 'copper_quarry').mul(5.5);
-    const owned = after.cards.owned['cave_digger']!;
-    // over 10 XP: level 1 -> 2 (10 XP) on the whole second, the rest left.
-    expect(owned.level).toBe(2);
-    expect(approxEq(owned.xp, expected.sub(xpToNextLevel(content, 1)))).toBe(true);
-  });
-
   it('levels up on whole seconds of play time and reports it', () => {
     const state = bareState();
-    state.production.workers = { oak: ['apprentice_feller'] };
+    state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
     // 10 XP is due after 8.33 s of Oak (1.2 XP per unit with its own +20%, 1 unit per second),
     // so the level comes on the 9 s boundary.
     let { state: after, report } = advance(state, content, 8_500, rng);
@@ -190,7 +173,7 @@ describe('levels (DESIGN.md §5)', () => {
 
   it('stops XP at the level cap until a tier-up raises it', () => {
     const state = own(bareState(), 'apprentice_feller', { level: 20 });
-    state.production.workers = { oak: ['apprentice_feller'] };
+    state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
     const after = advance(state, content, 60_000, rng).state;
     expect(after.cards.owned['apprentice_feller']).toMatchObject({ level: 20 });
     expect(after.cards.owned['apprentice_feller']!.xp.eq(0)).toBe(true);
@@ -251,22 +234,6 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     state.cards.loadouts.fighting.slots[0] = 'dawnblade_regent';
     expect(fighting(state).interval).toBe(2);
     expect(fighting(state).power.toNumber()).toBeCloseTo(15);
-  });
-
-  it('gives Elder Treant and Geode Golem 15 s harvest bursts where they work', () => {
-    const state = own(own(bareState(), 'elder_treant'), 'geode_golem');
-    state.production.workers = { oak: ['elder_treant'], copper_quarry: ['geode_golem'] };
-    const mods = collectModifiers(state, content);
-    const at = (job: 'logging' | 'mining', id: string) =>
-      harvestBurstStats(
-        content,
-        { job, producer: (job === 'logging' ? content.treeById : content.mineById).get(id)! },
-        mods,
-      ).power;
-    expect(at('logging', 'oak').eq(15)).toBe(true);
-    expect(at('mining', 'copper_quarry').eq(15)).toBe(true);
-    expect(at('logging', 'ironbark').eq(10)).toBe(true); // nobody works there
-    expect(burstStats(content, 'fighting', mods).power.eq(10)).toBe(true);
   });
 
   it('has every loadout card give the team its bonus, whatever its slot', () => {
@@ -336,17 +303,17 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
   });
 
-  it('makes a levelled worker raise its place’s output', () => {
+  it('makes a levelled worker raise its slot’s output', () => {
     const state = own(bareState(), 'apprentice_feller', { level: 11 });
-    expect(workSites(state, content, 'logging')[0]!.rate.eq(1)).toBe(true);
-    state.production.workers = { oak: ['apprentice_feller'] };
-    expect(workSites(state, content, 'logging')[0]!.rate.toNumber()).toBeCloseTo(lv11Power);
+    expect(slotRates(state, content)).toEqual([]);
+    state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
+    expect(slotRates(state, content)[0]!.rate.toNumber()).toBeCloseTo(lv11Power);
   });
 
   it('lists nothing for cards in the wrong job or not owned', () => {
     const state = bareState();
     state.cards.loadouts.fighting.slots[0] = 'apprentice_feller'; // a logging card
-    state.production.workers = { oak: ['moonwood_dryad'] }; // not owned
+    state.camp.forest = [{ material: 'oak', card: 'moonwood_dryad' }]; // not owned
     expect(cardModifiers(state, content)).toEqual([]);
   });
 });
@@ -577,8 +544,8 @@ describe('views for the Cards page', () => {
       'burst.power',
     ]);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    // 144 ladder cards (22 of them Leviathan) and the 22 Heirloom cards.
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(166);
+    // 166 ladder cards (22 Leviathan, 22 Wildwood) and the 34 Heirloom cards.
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(205);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -598,6 +565,10 @@ describe('views for the Cards page', () => {
       'reef_prospector',
       'trench_burrower',
       'prismstrike',
+      // then the Wildwood hero and villain T6 pickaxes (batch 3) and its Heirloom
+      'mosstooth',
+      'embertooth',
+      'drumbeak',
     ]);
   });
 });

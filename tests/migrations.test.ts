@@ -799,16 +799,11 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v25-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(25);
     const { state } = readSave(text, floorsContent);
-    expect(state.production.workers).toEqual({
-      oak: ['apprentice_feller'],
-      copper_quarry: ['cave_digger'],
-    });
-    expect(Object.keys(state.production.harvestGauges).sort()).toEqual(['copper_quarry', 'oak']);
-    // the old job gauges moved to the first tree and mine; the state keeps the fighting one only
+    expect(state.camp.forest).toEqual([{ material: 'oak', card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: 'copper_quarry', card: 'cave_digger' }]);
     const saved = JSON.parse(text) as { state: { bursts: Record<string, unknown> } };
-    expect(state.production.harvestGauges['oak']).toEqual(saved.state.bursts['logging']);
-    expect(state.production.harvestGauges['copper_quarry']).toEqual(saved.state.bursts['mining']);
     expect(Object.keys(state.bursts)).toEqual(['fighting']);
+    void saved;
     expect(state.combat.stageKills).toEqual({ [stageKey('mossy_cellar', 'normal', 10)]: 78 });
     // Stars, levels and loadouts are what the 0.5.5 game wrote.
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
@@ -816,12 +811,9 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
     expect(state.cards.loadouts.fighting.slots).toContain('ember_squire');
     expect(state.cards.wishlist).toEqual([]);
-    expect(state.production.tools).toEqual({});
-    expect(state.production.depth).toEqual({});
     expect(state.production.forge.recipe).toBeNull();
     expect(state.combat.stageChests).toEqual({});
     expect(state.combat.overflow).toEqual({});
-    expect(state.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
     // Saved again, it is format 26 and loads to the same state.
     const again = readSave(createSaveText(state, 1), floorsContent);
     expect(JSON.parse(createSaveText(state, 1)).version).toBe(CURRENT_SAVE_VERSION);

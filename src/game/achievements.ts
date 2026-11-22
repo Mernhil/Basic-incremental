@@ -2,11 +2,12 @@ import { RANK_TIERS, type Achievement, type AchievementCondition, type Content }
 import { skillPointsSpent, weaponCircles } from './account';
 import { grantCard } from './cards';
 import { Decimal } from './num';
-import { isProducerUnlocked, mineLevel, producersOf } from './production';
+import { campLevel, slotWorkers } from './camp';
+import { isProducerUnlocked, producersOf } from './production';
 import { floorCount, floorPosition, stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
 import { stageStarLevel, totalStageStarLevels } from './stageStars';
 import { totalChallengeCompletions } from './challenges';
-import { activeWorkers, forgeWorker } from './workers';
+import { forgeWorker } from './workers';
 import type { TickReport } from './report';
 import { cloneState, type GameState } from './state';
 import { cosmeticMaxLevel, detectSets } from './theme';
@@ -105,10 +106,6 @@ export function measure(
         value: Math.max(0, ...Object.values(state.mastery.bossTiers)),
         target: condition.tier,
       };
-    case 'milestone': {
-      const levels = content.mines.map((m) => mineLevel(state, m.id));
-      return { value: Math.max(0, ...levels), target: condition.level };
-    }
     case 'stage_stars': {
       let n = 0;
       for (const key of Object.keys(state.combat.stageKills)) {
@@ -144,20 +141,9 @@ export function measure(
     case 'star_total':
       return { value: totalStageStarLevels(state, content), target: condition.amount };
     case 'workers':
-      return {
-        value: Object.values(activeWorkers(state, content)).reduce((n, ids) => n + ids.length, 0),
-        target: condition.count,
-      };
-    case 'tool_levels':
-      return {
-        value: Object.values(state.production.tools).reduce((n, level) => n + level, 0),
-        target: condition.amount,
-      };
-    case 'depth':
-      return {
-        value: Math.max(1, ...Object.values(state.production.depth).map((d) => d.layer)),
-        target: condition.layer,
-      };
+      return { value: slotWorkers(state, content).length, target: condition.count };
+    case 'camp_level':
+      return { value: campLevel(state), target: condition.level };
     case 'forge_working': {
       const working =
         state.production.forge.recipe !== null && forgeWorker(state, content) !== null;

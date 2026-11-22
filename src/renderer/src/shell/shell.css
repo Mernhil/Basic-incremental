@@ -275,8 +275,8 @@ body {
 .shell-currency__art {
   display: inline-grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 .shell-currency__art svg {
   width: 100%;

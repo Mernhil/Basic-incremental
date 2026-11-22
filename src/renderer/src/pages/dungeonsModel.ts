@@ -3,6 +3,8 @@
  * small counts of the duel, the Challenge button and verdict, and the cells of the stage map in the
  * Dungeons panel. Pure: the views turn game state into these inputs; no game rules here.
  */
+import { resistsElement, weakToElement } from '../../../game';
+import type { CardElement } from '../../../data';
 
 /** Bars of a boss already gone: "2 of 5" is `{ gone: 2, total: 5 }`. */
 export function barsGone(total: number, remaining: number): { gone: number; total: number } {
@@ -111,15 +113,18 @@ export interface BossElement {
 }
 
 /**
- * What the dungeon panel says about a boss's elements (DESIGN.md §2 Fights): the one it is weak to
- * and, when it has one, the one it resists. `sizes` are the percents from `combat.json`.
+ * What the dungeon panel says about a boss's elements (DESIGN.md §2 Fights): its own element, the
+ * one it is weak to and, unless it is light or dark, the one it resists (the circle). `sizes` are
+ * the percents from `combat.json`.
  */
 export function bossElements(
-  boss: { weakness: string; resistance?: string | undefined },
+  boss: { element: CardElement },
   sizes: { weakness: number; resistance: number },
-): { weak: BossElement; resist?: BossElement } {
+): { own: string; weak: BossElement; resist?: BossElement } {
+  const resisted = resistsElement(boss.element);
   return {
-    weak: { element: boss.weakness, percent: sizes.weakness },
-    ...(boss.resistance ? { resist: { element: boss.resistance, percent: sizes.resistance } } : {}),
+    own: boss.element,
+    weak: { element: weakToElement(boss.element), percent: sizes.weakness },
+    ...(resisted ? { resist: { element: resisted, percent: sizes.resistance } } : {}),
   };
 }

@@ -1,4 +1,4 @@
-import type { CardElement, Content } from '../data';
+import { ELEMENTS, type CardElement, type Content } from '../data';
 import { Decimal } from './num';
 import type { Modifier } from './modifiers';
 import type { GameState } from './state';
@@ -13,17 +13,53 @@ import type { GameState } from './state';
 
 export type ElementRelation = 'weak' | 'resist' | 'neutral';
 
-/** How an element meets a dungeon's boss. No element, or anything that is not one of the six bosses, is neutral. */
+/** The element each of water, fire and earth beats: water beats fire beats earth beats water. */
+const BEATS: Partial<Record<CardElement, CardElement>> = {
+  water: 'fire',
+  fire: 'earth',
+  earth: 'water',
+};
+
+/**
+ * How an attacking element meets a defending one (the circle, DESIGN.md §2 "What beats what"):
+ * 'weak' when the attacker beats the defender (light and dark beat each other), 'resist' when the
+ * defender beats the attacker (water, fire and earth only: nothing ever resists light or dark),
+ * otherwise 'neutral'. No element on either side is neutral.
+ */
+export function elementMatchup(
+  attacker: CardElement | undefined,
+  defender: CardElement | undefined,
+): ElementRelation {
+  if (!attacker || !defender) return 'neutral';
+  if (attacker === 'light') return defender === 'dark' ? 'weak' : 'neutral';
+  if (attacker === 'dark') return defender === 'light' ? 'weak' : 'neutral';
+  if (BEATS[attacker] === defender) return 'weak';
+  if (BEATS[defender] === attacker) return 'resist';
+  return 'neutral';
+}
+
+/** The element that hits this one harder (the one that beats it). */
+export function weakToElement(element: CardElement): CardElement {
+  if (element === 'light') return 'dark';
+  if (element === 'dark') return 'light';
+  return ELEMENTS.find((e) => BEATS[e] === element) as CardElement;
+}
+
+/** The element that hits this one softer (the one it beats); none for light and dark. */
+export function resistsElement(element: CardElement): CardElement | undefined {
+  return BEATS[element];
+}
+
+/** How a card's element meets a dungeon's boss. No element, or anything that is not one of the six bosses, is neutral. */
 export function elementRelation(
   content: Content,
   dungeonId: string,
   element: CardElement | undefined,
 ): ElementRelation {
-  const boss = content.dungeonById.get(dungeonId)?.boss;
-  if (!boss || !element) return 'neutral';
-  if (boss.weakness === element) return 'weak';
-  if (boss.resistance === element) return 'resist';
-  return 'neutral';
+  return elementMatchup(
+    element,
+    content.dungeonById.get(dungeonId)?.boss.element ?? content.raidById.get(dungeonId)?.element,
+  );
 }
 
 /** The percent a card's element adds to its own damage against a dungeon (can be negative). */
@@ -50,7 +86,7 @@ export function elementModifiers(state: GameState, content: Content): Modifier[]
     if (id === null || !state.cards.owned[id]) continue;
     const card = content.cardById.get(id);
     if (card?.job !== 'fighting') continue;
-    for (const dungeon of content.dungeons) {
+    for (const dungeon of [...content.dungeons, ...content.raids.bosses]) {
       const value = elementDamagePercent(content, dungeon.id, card.element);
       if (value.eq(0)) continue;
       out.push({

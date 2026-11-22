@@ -1,0 +1,122 @@
+/* The hub (DESIGN.md section 2 Base camp): the painted map at a whole scale, centred, never scrolled,
+   with each place answering by its mask. Colours from the shell tokens so a restyle applies. */
+
+.hub {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hub__view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--hub-charcoal, #1c1c20);
+}
+.hub__stage {
+  position: absolute;
+}
+.hub__map {
+  display: block;
+  image-rendering: pixelated;
+  user-select: none;
+}
+/* the hover picture: the brightened place and its one-pixel gold outline, drawn at the map's own pixels
+   and scaled up with nearest neighbour; it fades in and out in about 120 ms */
+.hub__glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.hub__glow.is-on {
+  opacity: 1;
+}
+/* a button over each place's box: the keyboard's way in and the anchor of its plate and "!" (the
+   mouse is answered by the masks, see hub.ts) */
+.hub__spot {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  pointer-events: none;
+}
+.hub__plate {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, 4px);
+  z-index: 3;
+  padding: 3px 8px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--hub-gold, #f2c14e);
+  background: var(--hub-charcoal, #1c1c20);
+  box-shadow: 0 0 0 2px var(--hub-gold-dim, #c8a24a);
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+  pointer-events: none;
+}
+.hub__spot.is-on .hub__plate,
+.hub__spot:focus-visible .hub__plate {
+  opacity: 1;
+}
+.hub__lock {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: #d8d2c4;
+  background: #1c1c20;
+  box-shadow: 0 0 0 2px #6b6b72;
+  max-width: 90%;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+  pointer-events: none;
+}
+.hub__spot.is-on .hub__lock,
+.hub__spot:focus-visible .hub__lock {
+  opacity: 1;
+}
+.hub__mark {
+  position: absolute;
+  right: -6px;
+  top: -10px;
+  z-index: 4;
+  min-width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font: 700 16px/1 var(--bi-font-display, monospace);
+  color: #1c1c20;
+  background: var(--hub-gold, #f2c14e);
+  box-shadow: 0 0 0 2px #1c1c20;
+}
+.hub__mark[hidden] {
+  display: none;
+}
+.hub__menu {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  width: 270px;
+}
+.hub__menu[hidden] {
+  display: none;
+}
+.hub__settings {
+  position: absolute;
+  right: 20px;
+  top: 12px;
+  z-index: 5;
+}

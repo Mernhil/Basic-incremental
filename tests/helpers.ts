@@ -4,6 +4,7 @@ import {
   Decimal,
   emptyCardLoadout,
   initialProgress,
+  newOwnedCard,
   stageFloors,
   stageKey,
   STAR_DIFFICULTIES,
@@ -25,29 +26,12 @@ function pinProductionRates(bundled: Content): Content {
     iron_deeps: '0.25',
     crystal_grotto: '0.1',
   };
-  const pin = <
-    T extends { id: string; baseRate: Decimal; depth: Content['trees'][number]['depth'] },
-  >(
-    list: T[],
-  ): T[] =>
-    list.map((p) => ({
-      ...p,
-      baseRate: new Decimal(rates[p.id] ?? p.baseRate),
-      // no digging: rule tests count exact output; depth tests use `shippedContent`
-      depth: { ...p.depth, digRate: new Decimal('1e-30') },
-    }));
+  const pin = <T extends { id: string; baseRate: Decimal }>(list: T[]): T[] =>
+    list.map((p) => ({ ...p, baseRate: new Decimal(rates[p.id] ?? p.baseRate) }));
   const trees = pin(bundled.trees);
   const mines = pin(bundled.mines);
   return {
     ...bundled,
-    // lucky strikes off: rule tests count exact output (lucky tests set their own)
-    production: {
-      ...bundled.production,
-      lucky: {
-        logging: { ...bundled.production.lucky.logging, payoutSeconds: 0 },
-        mining: { ...bundled.production.lucky.mining, payoutSeconds: 0 },
-      },
-    },
     trees,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mines,
@@ -191,12 +175,6 @@ export const content: Content = pinOneFloor(floorsContent);
 export const CRYSTAL_UNIT =
   content.portals.find((p) => p.id === 'card_portal')!.cost.single.toNumber() / 10;
 
-const noMilestones = { every: 25, multiplier: new Decimal(1) };
-const plainMines = content.mines.map((m) => ({
-  ...m,
-  level: { ...m.level, milestones: noMilestones },
-}));
-
 /**
  * The bundled content with crits (DESIGN.md §6), level milestones (11.12) and mastery
  * bonuses (16, E2 and E3; tiers still settle) switched off, so rule tests can set an exact
@@ -210,8 +188,6 @@ export const plainContent: Content = {
     gemMastery: { ...content.progression.gemMastery, perTier: [] },
     trialMastery: { ...content.progression.trialMastery, perTier: [] },
   },
-  mines: plainMines,
-  mineById: new Map(plainMines.map((m) => [m.id, m])),
   combat: {
     ...neutralStars(content).combat,
     crit: { chance: 0, damage: new Decimal(1) },
@@ -294,7 +270,29 @@ export function newGame(): GameState {
 export function bareState(): GameState {
   const state = freshState();
   state.cards.loadouts.fighting = emptyCardLoadout();
-  state.production.workers = {};
+  state.camp.forest = [];
+  state.camp.cave = [];
+  return state;
+}
+
+/**
+ * The content where farming gives cards no XP, so a farming card never levels up in the middle of a
+ * run and the output of a slot stays exactly its rate (rule tests count exact output).
+ */
+export function noFarmXp(base: Content): Content {
+  const xp = { ...base.cardRules.xp, perUnit: { logging: new Decimal(0), mining: new Decimal(0) } };
+  return { ...base, cardRules: { ...base.cardRules, xp } };
+}
+
+/**
+ * The state with a power-1 axe card on the first forest slot (Oak) and a power-1 pickaxe card on
+ * the first cave slot (Copper Quarry): with the pinned rates, Oak makes 1 a second and Copper 0.5.
+ */
+export function withFarmers(state: GameState): GameState {
+  state.cards.owned['apprentice_feller'] = newOwnedCard();
+  state.cards.owned['cave_digger'] = newOwnedCard();
+  state.camp.forest = [{ material: 'oak', card: 'apprentice_feller' }];
+  state.camp.cave = [{ material: 'copper_quarry', card: 'cave_digger' }];
   return state;
 }
 

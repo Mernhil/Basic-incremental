@@ -8,16 +8,13 @@ import { settleTierRewards } from './tierRewards';
 import { bondsDue, settleBonds } from './bonds';
 import { advanceTrips } from './expeditions';
 import { settleChallenges } from './challenges';
-import { autobuyDue, settleAutobuyers } from './autobuyers';
-import { recordLuckyStrikes } from './lucky';
 import { advanceForge } from './forge';
-import { addDigging, depthDue, settleDepth } from './depth';
-import { advanceHarvestGauges, recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
 import { countMoneyEarned } from './upgrades';
-import { PRODUCTION_JOBS, siteOutput, workSites, type WorkSite } from './production';
+import { slotRates } from './camp';
+import { PRODUCTION_JOBS } from './production';
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
@@ -76,8 +73,6 @@ export function advance(
     current = advanceSpan(current, content, until, rng, report, fightSpeed);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
-    settleDepth(current, content);
-    settleAutobuyers(current, content);
     settleAccount(current, content, report);
     settleBonds(current, content);
     settleAchievements(current, content, report);
@@ -132,8 +127,6 @@ function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
-    depthDue(ahead, content) ||
-    autobuyDue(ahead, content) ||
     bondsDue(ahead, content) ||
     accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
@@ -159,47 +152,31 @@ function advanceSpan(
   // The field cache: a scroll lump on every whole period of play time spent fighting (DESIGN.md §3).
   payFieldCache(next, content, fromMs, fromMs + dtMs, modifiers);
 
-  // Production (DESIGN.md §4 Workers): every unlocked tree kind and mine type yields its level
-  // rate × its worker's power per second, once; each worker strikes its own place (events only)
-  // and fills its own harvest gauge.
-  const sites = Object.fromEntries(
-    PRODUCTION_JOBS.map((job) => [job, workSites(state, content, job, modifiers)]),
-  ) as Record<(typeof PRODUCTION_JOBS)[number], WorkSite[]>;
-  for (const job of PRODUCTION_JOBS) {
-    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report, sites[job]);
-    recordLuckyStrikes(content, job, fromMs, fromMs + dtMs, report, sites[job]);
-    for (const site of sites[job]) {
-      const resource = site.producer.resource;
-      const current = next.resources[resource] ?? new Decimal(0);
-      next.resources[resource] = current.add(siteOutput(site).mul(seconds));
-      addDigging(next, content, site.producer.id, site.dig, seconds);
-    }
+  // The camp (DESIGN.md section 2): every farming slot yields its rate per second, once.
+  const slots = slotRates(state, content, modifiers);
+  for (const { worker, rate } of slots) {
+    const resource = worker.material.resource;
+    next.resources[resource] = (next.resources[resource] ?? new Decimal(0)).add(rate.mul(seconds));
   }
-  const burstSeconds = advanceHarvestGauges(
-    next,
-    content,
-    seconds,
-    report,
-    modifiers,
-    PRODUCTION_JOBS.flatMap((job) => sites[job]),
-  );
 
   // The forge turns the gems of the step into what its recipe makes.
   advanceForge(next, content, seconds);
 
-  // Card XP: each worker gains XP per unit its own place harvested (normal output and bursts);
-  // every gem harvested counts toward its mastery and the account.
+  // Card XP: each farming card gains XP per unit its slot made; every gem harvested counts toward
+  // its mastery and the account.
   for (const job of PRODUCTION_JOBS) {
     const gains: Record<string, Decimal> = {};
-    for (const site of sites[job]) {
-      const harvestSeconds = (burstSeconds[site.producer.id] ?? new Decimal(0)).add(seconds);
-      const units = siteOutput(site).mul(harvestSeconds);
-      const resource = site.producer.resource;
+    for (const { worker, rate } of slots) {
+      if (
+        worker.material.resource === undefined ||
+        (worker.place === 'forest') !== (job === 'logging')
+      )
+        continue;
+      const units = rate.mul(seconds);
+      const resource = worker.material.resource;
       gains[resource] = (gains[resource] ?? new Decimal(0)).add(units);
-      for (const id of site.workers) {
-        const perUnit = productionXpPerUnit(content, job, modifiers, site.producer.id);
-        grantWorkerXp(next, content, id, units.mul(perUnit));
-      }
+      const perUnit = productionXpPerUnit(content, job, modifiers, worker.material.id);
+      grantWorkerXp(next, content, worker.card, units.mul(perUnit));
     }
     countHarvest(next, content, gains);
     grantAccountXp(next, content, harvestXp(content, job, gains), modifiers, job);

@@ -39,7 +39,7 @@ export interface MilestoneLine {
 }
 
 export interface MilestoneGroup {
-  key: 'logging' | 'mining' | 'training';
+  key: 'training';
   title: string;
   lines: MilestoneLine[];
 }
@@ -81,24 +81,14 @@ function lineView(state: GameState, content: Content, line: PerkLine): Milestone
 
 /** The lines of each group in the order the views show them. */
 export function boardLines(content: Content): Record<MilestoneGroup['key'], PerkLine[]> {
-  const tools = (job: 'logging' | 'mining'): PerkLine[] =>
-    content.production.tools.filter((t) => t.job === job).map((t) => ({ kind: 'tool', id: t.id }));
   return {
-    logging: [
-      ...content.trees.map((t) => ({ kind: 'tree' as const, id: t.id })),
-      ...tools('logging'),
-    ],
-    mining: [
-      ...content.mines.map((m) => ({ kind: 'mine' as const, id: m.id })),
-      ...tools('mining'),
-    ],
     training: content.training.map((t) => ({ kind: 'training' as const, id: t.id })),
   };
 }
 
 export function milestoneBoard(state: GameState, content: Content): MilestoneBoard {
   const lines = boardLines(content);
-  const keys = ['logging', 'mining', 'training'] as const;
+  const keys = ['training'] as const;
   return {
     groups: keys.map((key) => ({
       key,

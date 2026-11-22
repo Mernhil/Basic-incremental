@@ -54,9 +54,9 @@ describe('a card arrives at its own tier and stays there (DESIGN.md §5 No tier-
         expect(cards, `${kind} ${tier}`).toHaveLength(1);
       }
     }
-    expect(content.cards.filter((c) => c.tier === 'mythic')).toHaveLength(89);
-    expect(content.cards.filter((c) => c.tier === 'heirloom')).toHaveLength(22);
-    expect(content.cards).toHaveLength(166);
+    expect(content.cards.filter((c) => c.tier === 'mythic')).toHaveLength(116);
+    expect(content.cards.filter((c) => c.tier === 'heirloom')).toHaveLength(34);
+    expect(content.cards).toHaveLength(205);
   });
 
   it('only T6 and Heirloom cards have a side, and the grade is the tier or that side', () => {
@@ -181,7 +181,7 @@ describe('tier ratios (DESIGN.md §5 Base damage)', () => {
 describe('the shard shop sells copies of every card (DESIGN.md §5)', () => {
   it('has one entry per card, priced by its tier, rising steeply', () => {
     const price = new Map<string, number>();
-    for (const card of content.cards.filter((c) => !c.heirloom)) {
+    for (const card of content.cards.filter((c) => !c.heirloom && !c.starterArt)) {
       const items = content.shardShop.filter(
         (i) => i.reward.kind === 'card' && i.reward.card === card.id,
       );

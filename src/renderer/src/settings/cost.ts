@@ -1,6 +1,7 @@
 import type { Content } from '../../../data';
 import type { Decimal } from '../../../game';
 import { amountText, coinAmount, isMoney } from './coins';
+import { keptIconSprite } from '../ui/resourceIcons';
 import { fmt } from './numberFormat';
 
 /**
@@ -16,16 +17,14 @@ export interface CostPart {
 }
 
 /**
- * Whether the resource has a sprite to draw its cost with: gems (their coin), Money (its coin),
- * the scrolls and Starlight (their icons). Materials (Cores, Dust, Shards, Sigils) have none yet.
- * Keep in step with `ICON_MARKUP` in ui/resourceIcons.ts: a material that gets an icon there
- * becomes a sprite cost here by adding its kind.
+ * Whether the resource has a sprite to draw its cost with: every kept icon (`KEPT_ICONS` in
+ * ui/resourceIcons.ts: gems, materials, scrolls, Starlight) and Money (its coin). A resource with
+ * neither keeps its name in words.
  */
 export function hasCostArt(content: Content, resource: string): boolean {
   const r = content.resourceById.get(resource);
   if (!r) return false;
-  if (r.gem || isMoney(content, resource)) return true;
-  return r.kind === 'scroll' || r.kind === 'prestige' || r.kind === 'currency';
+  return keptIconSprite(resource) !== null || isMoney(content, resource);
 }
 
 /** The amount that sits beside the sprite: "5.12" for Money, "1,200" for the rest. */

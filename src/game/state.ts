@@ -12,14 +12,17 @@ export interface GameStats {
 export interface GameState {
   /** Every resource id in the content has an entry. */
   resources: Record<string, Decimal>;
-  /** Unlocked tree kinds, tree and mine levels. See production.ts. */
+  /** The forge. See forge.ts. */
   production: ProductionState;
+  /** The base camp: its level and the farming slots of the forest and the cave. See camp.ts. */
+  camp: CampState;
+  /** The Training ground's test dummy: its damage and the team on trial. See dummy.ts. */
+  dummy: DummyState;
   /** Dungeons cleared at least once. Kept through prestige; clearing one unlocks mine types. */
   clearedDungeons: string[];
   /** Floors, stage kills and the Glimmer Trial attempt. See combat.ts. */
   combat: CombatState;
-  /** The fighting burst gauge (signature attack). Harvest gauges are per worker, in
-   *  `production.harvestGauges`. */
+  /** The fighting burst gauge (signature attack). */
   bursts: FightingBursts;
   /** Dungeon (or special dungeon) being auto-fought, or null. */
   activeDungeonId: string | null;
@@ -57,11 +60,13 @@ export interface GameState {
   account: AccountState;
   /** The upgrade shelf (DESIGN.md §4): owned upgrades and the lifetime Money earned. */
   upgrades: UpgradeState;
-  /** The autobuyers for tree and mine levels (DESIGN.md §9, §15). Save format 26. */
-  automation: AutomationState;
   /** Summoning choices of the table update (DESIGN.md §3 scrolls, §7 Focus Portal). Save format 27;
    *  not read yet. Kept through prestige. */
   summon: SummonState;
+  /** Raid tries today, best scores and ladder rewards paid (DESIGN.md §2 Raid bosses). Save format 44. Kept through prestige. */
+  raids: RaidState;
+  /** The starter weapon's pick. Kept through prestige. */
+  starter: StarterState;
   /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
   presets: PresetState;
   /** Bond ids (`bonds.json`) triggered at least once (DESIGN.md §15 Bonds), in discovery order.
@@ -117,6 +122,34 @@ export interface SummonState {
   tierRewardsClaimed: string[];
 }
 
+/** Raid progress (raids.ts). Scores are shares of the boss's HP (1 = a kill). */
+export interface RaidState {
+  /** The local day ("YYYY-MM-DD") `used` counts tries of; another day means no tries used. */
+  day: string | null;
+  /** Boss id -> tries used on `day`. */
+  used: Record<string, number>;
+  /** Boss id -> best score so far, as a share of the boss's HP. */
+  best: Record<string, number>;
+  /** Boss id -> best (lowest) ladder rank whose reward is already paid. */
+  paid: Record<string, number>;
+  /** Boss id -> its level, one for each kill so far (0 = never killed). */
+  level: Record<string, number>;
+}
+
+export function initialRaids(): RaidState {
+  return { day: null, used: {}, best: {}, paid: {}, level: {} };
+}
+
+export function cloneRaids(r: RaidState): RaidState {
+  return {
+    day: r.day,
+    used: { ...r.used },
+    best: { ...r.best },
+    paid: { ...r.paid },
+    level: { ...r.level },
+  };
+}
+
 export function initialSummon(): SummonState {
   return {
     focusKind: null,
@@ -126,30 +159,14 @@ export function initialSummon(): SummonState {
   };
 }
 
-/** The production jobs that have named presets (DESIGN.md §15 Loadout presets). */
-export const PRESET_JOBS = ['logging', 'mining'] as const;
-export type PresetJob = (typeof PRESET_JOBS)[number];
-/** Named presets per production job ([Default] three). */
-export const PRESETS_PER_JOB = 3;
-
-/** A named production preset: which cards work which tree or mine of that job. */
-export interface ProductionPreset {
-  name: string;
-  /** Tree or mine id -> card ids in slot order, as `production.workers`. */
-  workers: Record<string, string[]>;
-}
-
 export interface PresetState {
   /** Dungeon (or special dungeon) id -> the fighting loadout remembered for it; missing = none
    *  saved, picking the dungeon keeps the current loadout. */
   dungeons: Record<string, CardLoadout>;
-  /** Job -> always `PRESETS_PER_JOB` entries, null = an empty preset slot. */
-  production: Record<PresetJob, (ProductionPreset | null)[]>;
 }
 
 export function initialPresets(): PresetState {
-  const empty = (): (ProductionPreset | null)[] => Array<null>(PRESETS_PER_JOB).fill(null);
-  return { dungeons: {}, production: { logging: empty(), mining: empty() } };
+  return { dungeons: {} };
 }
 
 /** One card's trip (DESIGN.md §15 Expeditions). A card on a trip cannot be equipped or work. */
@@ -192,23 +209,6 @@ export interface AscensionChallengeState {
 
 export function initialAscensionChallenges(): AscensionChallengeState {
   return { active: null, completions: {} };
-}
-
-/**
- * The autobuyers for tree and mine levels (DESIGN.md §15), bought in the Starlight shop (§9).
- * Only the player's switches live here: whether an autobuyer is owned comes from the shop.
- */
-export interface AutomationState {
-  /** The tree-level autobuyer is switched on. */
-  treeLevels: boolean;
-  /** The mine-level autobuyer is switched on. */
-  mineLevels: boolean;
-  /** Percent of the Money held (0..100) the autobuyers leave unspent. */
-  reservePercent: number;
-}
-
-export function initialAutomation(): AutomationState {
-  return { treeLevels: false, mineLevels: false, reservePercent: 0 };
 }
 
 /** Milestone picks and the lifetime Money (DESIGN.md §4 Milestone picks, §9). */
@@ -287,35 +287,43 @@ export interface CosmeticState {
   owned: Record<string, OwnedCosmetic>;
 }
 
-/** Production (DESIGN.md §4): every unlocked tree kind and mine type produces once, at its level. */
+/** Production: only the forge is left (the camp has its own state). */
 export interface ProductionState {
-  /** Tree kinds bought with wood (start kinds are always unlocked). Kept through prestige. */
-  unlockedTrees: string[];
-  /** Mine id -> level bought with Money. Reset on prestige. */
-  mineLevels: Record<string, number>;
-  /** Tree id -> level bought with Money (DESIGN.md §4). Reset on prestige. */
-  treeLevels: Record<string, number>;
-  /** Tree or mine id -> the ids of the cards working it, in slot order (DESIGN.md §4 Workers).
-   *  A card works one place at a time; missing or [] = no worker. Kept through prestige. */
-  workers: Record<string, string[]>;
-  /** Tree or mine id -> its worker's harvest gauge (DESIGN.md §4 Harvest burst); missing = empty.
-   *  Reset on prestige, as the burst gauges are. */
-  harvestGauges: Record<string, BurstGauge>;
-  /** Tool line id -> level bought with Money (DESIGN.md §4 Tool lines). Reset on prestige. */
-  tools: Record<string, number>;
-  /** Tree or mine id -> its age or layer (DESIGN.md §4 Depth and growth); missing = layer 1 with
-   *  nothing broken. Reset on prestige. */
-  depth: Record<string, DepthProgress>;
   /** The forge (DESIGN.md §4 The forge). Kept through prestige. */
   forge: ForgeState;
 }
 
-/** How deep a mine is dug or how old a tree has grown (DESIGN.md §4 Depth and growth). */
-export interface DepthProgress {
-  /** The layer (mine) or age (tree) being broken through, 1-based. */
-  layer: number;
-  /** Hardness of that layer broken so far (the worker's damage), 0 up to the layer's hardness. */
-  progress: Decimal;
+/** One farming slot of the camp: the material it farms and the tool card on it (either may be empty). */
+export interface CampSlot {
+  /** A wood or an ore id (`trees.json`, `mines.json`), or null = the first open one. */
+  material: string | null;
+  /** An axe (forest) or pickaxe (cave) card id, or null = nothing farms. */
+  card: string | null;
+}
+
+/** The base camp (DESIGN.md section 2 Base camp). Kept through prestige. */
+export interface CampState {
+  /** The one camp level, at least 1. */
+  level: number;
+  /** The forest's slots in order; slots past the open count stay empty. */
+  forest: CampSlot[];
+  /** The cave's slots in order. */
+  cave: CampSlot[];
+}
+
+/** The Training ground's dummy (DESIGN.md section 2 Test dummies). */
+export interface DummyState {
+  /** Damage per second the dummy deals to the team on trial. */
+  damage: Decimal;
+  /** The fighting cards on trial, one per loadout slot (null = empty). */
+  team: (string | null)[];
+}
+
+export function initialDummy(content: Content): DummyState {
+  return {
+    damage: content.dummy.defaultDamage,
+    team: Array<string | null>(LOADOUT_SLOTS).fill(null),
+  };
 }
 
 /** The forge (DESIGN.md §4 The forge): one recipe at a time, run by one worker card. */
@@ -456,18 +464,9 @@ export function initialBursts(): FightingBursts {
   return { fighting: { gauge: 0, timer: 0 } };
 }
 
-/** Production as in a brand-new game (or right after a prestige, minus the kept unlocks). */
+/** Production as in a brand-new game. */
 export function initialProduction(): ProductionState {
-  return {
-    unlockedTrees: [],
-    mineLevels: {},
-    treeLevels: {},
-    workers: {},
-    harvestGauges: {},
-    tools: {},
-    depth: {},
-    forge: initialForge(),
-  };
+  return { forge: initialForge() };
 }
 
 /** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md §3). */
@@ -480,15 +479,16 @@ export function startingAmount(content: Content, resourceId: string): Decimal {
  * (cardRules.startCards) works its job's first tree kind or mine type, as an old save's main
  * cards do after the format 26 migration.
  */
-export function initialWorkers(content: Content): Record<string, string[]> {
-  const first = { logging: content.trees[0]?.id, mining: content.mines[0]?.id };
-  const workers: Record<string, string[]> = {};
+/** A new game's camp: the start level, the starter axe on the first forest slot and the starter pickaxe on the first cave slot. */
+export function initialCamp(content: Content): CampState {
+  const camp: CampState = { level: content.camp.startLevel, forest: [], cave: [] };
   for (const id of content.cardRules.startCards) {
     const job = content.cardById.get(id)?.job;
-    const producer = job === 'logging' || job === 'mining' ? first[job] : undefined;
-    if (producer && !workers[producer]) workers[producer] = [id];
+    if (job === 'logging' && camp.forest.length === 0)
+      camp.forest.push({ material: null, card: id });
+    if (job === 'mining' && camp.cave.length === 0) camp.cave.push({ material: null, card: id });
   }
-  return workers;
+  return camp;
 }
 
 export function createInitialState(content: Content): GameState {
@@ -498,7 +498,9 @@ export function createInitialState(content: Content): GameState {
 
   return {
     resources,
-    production: { ...initialProduction(), workers: initialWorkers(content) },
+    production: initialProduction(),
+    camp: initialCamp(content),
+    dummy: initialDummy(content),
     clearedDungeons: [],
     combat: initialCombat(),
     bursts: initialBursts(),
@@ -515,8 +517,9 @@ export function createInitialState(content: Content): GameState {
     shardShop: {},
     account: initialAccount(),
     upgrades: initialUpgrades(),
-    automation: initialAutomation(),
     summon: initialSummon(),
+    raids: initialRaids(),
+    starter: initialStarter(),
     presets: initialPresets(),
     discoveredBonds: [],
     expeditions: initialExpeditions(),
@@ -544,6 +547,8 @@ export function cloneState(state: GameState): GameState {
     ...state,
     resources: { ...state.resources },
     production: cloneProduction(state.production),
+    camp: cloneCamp(state.camp),
+    dummy: { damage: state.dummy.damage, team: [...state.dummy.team] },
     clearedDungeons: [...state.clearedDungeons],
     combat: cloneCombat(state.combat),
     bursts: cloneBursts(state.bursts),
@@ -559,8 +564,9 @@ export function cloneState(state: GameState): GameState {
     quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
-    automation: { ...state.automation },
     summon: { ...state.summon, tierRewardsClaimed: [...state.summon.tierRewardsClaimed] },
+    raids: cloneRaids(state.raids),
+    starter: { ...state.starter },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -593,17 +599,14 @@ export function cloneState(state: GameState): GameState {
 }
 
 export function cloneProduction(p: ProductionState): ProductionState {
+  return { forge: { ...p.forge } };
+}
+
+export function cloneCamp(c: CampState): CampState {
   return {
-    unlockedTrees: [...p.unlockedTrees],
-    mineLevels: { ...p.mineLevels },
-    treeLevels: { ...p.treeLevels },
-    workers: Object.fromEntries(Object.entries(p.workers).map(([id, w]) => [id, [...w]])),
-    harvestGauges: Object.fromEntries(
-      Object.entries(p.harvestGauges).map(([id, g]) => [id, { ...g }]),
-    ),
-    tools: { ...p.tools },
-    depth: Object.fromEntries(Object.entries(p.depth).map(([id, d]) => [id, { ...d }])),
-    forge: { ...p.forge },
+    level: c.level,
+    forest: c.forest.map((slot) => ({ ...slot })),
+    cave: c.cave.map((slot) => ({ ...slot })),
   };
 }
 
@@ -628,15 +631,10 @@ export function cloneCombat(c: CombatState): CombatState {
 }
 
 export function clonePresets(p: PresetState): PresetState {
-  const copyWorkers = (w: Record<string, string[]>): Record<string, string[]> =>
-    Object.fromEntries(Object.entries(w).map(([id, cards]) => [id, [...cards]]));
-  const job = (list: (ProductionPreset | null)[]): (ProductionPreset | null)[] =>
-    list.map((x) => (x ? { name: x.name, workers: copyWorkers(x.workers) } : null));
   return {
     dungeons: Object.fromEntries(
       Object.entries(p.dungeons).map(([id, l]) => [id, { slots: [...l.slots] }]),
     ),
-    production: { logging: job(p.production.logging), mining: job(p.production.mining) },
   };
 }
 
@@ -677,7 +675,23 @@ export interface OwnedCard {
   starFill: number;
   /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
+  /** Whether its skill was opened with Cores (DESIGN.md §2 Three attacks per card). */
+  skillOpen: boolean;
+  /** The starter weapon's seals broken so far (DESIGN.md §2 Starter weapon); absent on every other
+   *  card and once the last seal is broken. A sealed card fights as the tier its seals allow
+   *  (`starters.json`). */
+  seal?: number;
 }
+
+/** The starter weapon's pick (DESIGN.md §2 Starter weapon). Save format 42. */
+export interface StarterState {
+  /** The pick is made (or turned down): no pick screen. */
+  done: boolean;
+  /** The screen may be closed without a pick: a save that began before the starter existed. */
+  skippable: boolean;
+}
+
+export const initialStarter = (): StarterState => ({ done: false, skippable: false });
 
 /** The account (DESIGN.md §10a, 16 E7). Kept through prestige. */
 export interface AccountState {
@@ -697,7 +711,7 @@ export function initialAccount(): AccountState {
 }
 
 /** The fighting loadout: four equal slots, left to right (null = empty). Logging and mining
- *  cards are workers instead (`production.workers`, DESIGN.md §4, §5 Loadouts). */
+ *  cards work camp slots or the forge instead (DESIGN.md §5 Loadouts). */
 export interface CardLoadout {
   /** Always LOADOUT_SLOTS entries. */
   slots: (string | null)[];
@@ -735,6 +749,7 @@ export function newOwnedCard(tier: RankTier = 'wood'): OwnedCard {
     xp: new Decimal(0),
     starFill: 0,
     enhancements: [],
+    skillOpen: false,
   };
 }
 

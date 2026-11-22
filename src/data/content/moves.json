@@ -1,0 +1,1378 @@
+{
+  "$comment": "Three attacks per card (DESIGN.md section 2): the kits of Wood to Prismatic, the element and side layers of T6 and Heirloom cards, and each T6 and Heirloom card's named moves. Every number is a placeholder tuned with the sim. Source: design/moveset-2026-11-22.json, approved by the user 2026-11-22.",
+  "tiers": {
+    "wood": {
+      "skill": false,
+      "ultEffects": false,
+      "every": 1,
+      "seconds": 1,
+      "ultEffect": 1
+    },
+    "bronze": {
+      "skill": true,
+      "ultEffects": false,
+      "every": 1,
+      "seconds": 1,
+      "ultEffect": 1
+    },
+    "silver": {
+      "skill": true,
+      "ultEffects": true,
+      "every": 1,
+      "seconds": 1,
+      "ultEffect": 1
+    },
+    "gold": {
+      "skill": true,
+      "ultEffects": true,
+      "every": 0.8,
+      "seconds": 1.5,
+      "ultEffect": 1
+    },
+    "prismatic": {
+      "skill": true,
+      "ultEffects": true,
+      "every": 0.8,
+      "seconds": 1.5,
+      "ultEffect": 1.5
+    },
+    "mythic": {
+      "skill": true,
+      "ultEffects": true,
+      "every": 0.8,
+      "seconds": 1.5,
+      "ultEffect": 1.5
+    },
+    "heirloom": {
+      "skill": true,
+      "ultEffects": true,
+      "every": 0.8,
+      "seconds": 1.5,
+      "ultEffect": 1.5
+    }
+  },
+  "unlock": {
+    "bronze": {
+      "resource": "moss_core",
+      "amount": 3
+    },
+    "silver": {
+      "resource": "cinder_core",
+      "amount": 5
+    },
+    "gold": {
+      "resource": "frost_core",
+      "amount": 8
+    },
+    "prismatic": {
+      "resource": "storm_core",
+      "amount": 12
+    },
+    "mythic": {
+      "resource": "sanctum_core",
+      "amount": 15
+    },
+    "heirloom": {
+      "resource": "void_core",
+      "amount": 25
+    }
+  },
+  "leans": {
+    "power": {
+      "strike": 1.2,
+      "every": 1,
+      "seconds": 1,
+      "skillEffect": 1
+    },
+    "tempo": {
+      "strike": 1,
+      "every": 0.8,
+      "seconds": 1,
+      "skillEffect": 1
+    },
+    "duration": {
+      "strike": 1,
+      "every": 1,
+      "seconds": 1.5,
+      "skillEffect": 1
+    },
+    "reach": {
+      "strike": 1,
+      "every": 1,
+      "seconds": 1,
+      "skillEffect": 1.25
+    }
+  },
+  "mark": {
+    "value": 0.2,
+    "seconds": 8
+  },
+  "kits": {
+    "sword": {
+      "skill": {
+        "name": "Cross Cut",
+        "every": 10,
+        "strike": 2,
+        "effects": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      },
+      "ult": {
+        "name": "Cleave",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "haste",
+            "on": "team",
+            "value": 0.15,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "greatsword": {
+      "skill": {
+        "name": "Heavy Swing",
+        "every": 12,
+        "strike": 2.5,
+        "effects": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.15
+          }
+        ]
+      },
+      "ult": {
+        "name": "Sunder",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "expose",
+            "on": "enemy",
+            "value": 0.15,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "hammer": {
+      "skill": {
+        "name": "Crush",
+        "every": 12,
+        "strike": 1.8,
+        "effects": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.15,
+            "seconds": 6
+          }
+        ]
+      },
+      "ult": {
+        "name": "Quake",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "stagger",
+            "on": "enemy",
+            "value": 3
+          }
+        ]
+      }
+    },
+    "lance": {
+      "skill": {
+        "name": "Brace",
+        "every": 14,
+        "strike": 1.5,
+        "effects": [
+          {
+            "kind": "shield",
+            "on": "front",
+            "value": 0.12
+          }
+        ]
+      },
+      "ult": {
+        "name": "Bulwark Charge",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "shield",
+            "on": "team",
+            "value": 0.15
+          }
+        ]
+      }
+    },
+    "spear": {
+      "skill": {
+        "name": "Pin",
+        "every": 10,
+        "strike": 2,
+        "effects": [
+          {
+            "kind": "stagger",
+            "on": "enemy",
+            "value": 1.5
+          }
+        ]
+      },
+      "ult": {
+        "name": "Piercing Lunge",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "expose",
+            "on": "enemy",
+            "value": 0.15,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "dagger": {
+      "skill": {
+        "name": "Quick Cut",
+        "every": 8,
+        "strike": 1.5,
+        "effects": [
+          {
+            "kind": "charge",
+            "on": "emptiest",
+            "value": 3
+          }
+        ]
+      },
+      "ult": {
+        "name": "Flurry",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.4,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "scythe": {
+      "skill": {
+        "name": "Harvest",
+        "every": 12,
+        "strike": 2,
+        "effects": [
+          {
+            "kind": "drain",
+            "on": "self",
+            "value": 0.3
+          }
+        ]
+      },
+      "ult": {
+        "name": "Reap",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 1,
+            "below": 0.3
+          }
+        ]
+      }
+    },
+    "bow": {
+      "skill": {
+        "name": "Aimed Shot",
+        "every": 10,
+        "strike": 2.2,
+        "effects": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      },
+      "ult": {
+        "name": "Volley",
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "focus",
+            "on": "self",
+            "value": 1,
+            "seconds": 1
+          }
+        ]
+      }
+    },
+    "staff": {
+      "skill": {
+        "name": "Renew",
+        "every": 10,
+        "strike": 1,
+        "effects": [
+          {
+            "kind": "regen",
+            "on": "team",
+            "value": 0.02,
+            "seconds": 5
+          }
+        ]
+      },
+      "ult": {
+        "name": "Mend",
+        "strike": 0,
+        "effects": [
+          {
+            "kind": "heal",
+            "on": "team",
+            "value": 0.3
+          }
+        ]
+      }
+    }
+  },
+  "elements": {
+    "fire": {
+      "skill": [
+        {
+          "kind": "wound",
+          "on": "enemy",
+          "value": 0.25,
+          "seconds": 5
+        }
+      ],
+      "mythic": [
+        {
+          "kind": "rally",
+          "on": "team",
+          "value": 0.15,
+          "seconds": 6
+        }
+      ],
+      "void": [
+        {
+          "kind": "wound",
+          "on": "enemy",
+          "value": 0.5,
+          "seconds": 6
+        }
+      ]
+    },
+    "water": {
+      "skill": [
+        {
+          "kind": "regen",
+          "on": "row",
+          "value": 0.015,
+          "seconds": 5
+        }
+      ],
+      "mythic": [
+        {
+          "kind": "heal",
+          "on": "team",
+          "value": 0.15
+        }
+      ],
+      "void": [
+        {
+          "kind": "weaken",
+          "on": "enemy",
+          "value": 0.2,
+          "seconds": 6
+        }
+      ]
+    },
+    "earth": {
+      "skill": [
+        {
+          "kind": "shield",
+          "on": "self",
+          "value": 0.1
+        }
+      ],
+      "mythic": [
+        {
+          "kind": "shield",
+          "on": "front",
+          "value": 0.12
+        }
+      ],
+      "void": [
+        {
+          "kind": "stagger",
+          "on": "enemy",
+          "value": 2
+        }
+      ]
+    },
+    "light": {
+      "skill": [
+        {
+          "kind": "charge",
+          "on": "emptiest",
+          "value": 2
+        }
+      ],
+      "mythic": [
+        {
+          "kind": "haste",
+          "on": "team",
+          "value": 0.15,
+          "seconds": 6
+        }
+      ],
+      "void": [
+        {
+          "kind": "expose",
+          "on": "enemy",
+          "value": 0.15,
+          "seconds": 6
+        }
+      ]
+    },
+    "dark": {
+      "skill": [
+        {
+          "kind": "drain",
+          "on": "self",
+          "value": 0.25
+        }
+      ],
+      "mythic": [
+        {
+          "kind": "focus",
+          "on": "team",
+          "value": 0.15,
+          "seconds": 6
+        }
+      ],
+      "void": [
+        {
+          "kind": "expose",
+          "on": "enemy",
+          "value": 0.15,
+          "seconds": 6
+        }
+      ]
+    }
+  },
+  "cards": {
+    "dawn_champion": {
+      "skill": "Dawnstroke",
+      "ult": "Sunrise Cleave",
+      "lean": "duration"
+    },
+    "shadow_reaver": {
+      "skill": "Cinder Rend",
+      "ult": "Ashfall Cleave",
+      "lean": "power"
+    },
+    "moon_reaver": {
+      "skill": "Crimson Arc",
+      "ult": "Bloodmoon Fall",
+      "lean": "tempo"
+    },
+    "jade_vanguard": {
+      "skill": "Sandshear",
+      "ult": "Dune Collapse",
+      "lean": "reach"
+    },
+    "violet_herald": {
+      "skill": "Gloom Edge",
+      "ult": "Spire of Dusk",
+      "lean": "duration"
+    },
+    "pearl_duelist": {
+      "skill": "Pearl Riposte",
+      "ult": "Tidebrand",
+      "lean": "tempo"
+    },
+    "brine_corsair": {
+      "skill": "Brine Slash",
+      "ult": "Keelhaul",
+      "lean": "power"
+    },
+    "solaris": {
+      "skill": "Solar Edge",
+      "ult": "Zenith",
+      "extra": {
+        "ult": [
+          {
+            "kind": "haste",
+            "on": "team",
+            "value": 0.15,
+            "seconds": 12
+          }
+        ]
+      },
+      "note": "Its Cleave Haste lasts until its next skill, so the team never drops out of Haste."
+    },
+    "auroratusk": {
+      "skill": "Aurora Thrust",
+      "ult": "Polar Breach",
+      "extra": {
+        "ult": [
+          {
+            "kind": "stagger",
+            "on": "enemy",
+            "value": 2
+          }
+        ]
+      },
+      "note": "Its ultimate also Staggers by 2 s: the sea Heirloom that is both sword and wall."
+    },
+    "sunbreaker_titan": {
+      "skill": "Sunguard Swing",
+      "ult": "Sunbreak",
+      "lean": "reach"
+    },
+    "ruin_tyrant": {
+      "skill": "Ruinous Swing",
+      "ult": "Cataclysm",
+      "lean": "power"
+    },
+    "crown_warden": {
+      "skill": "Crowncrack",
+      "ult": "Regicide",
+      "lean": "power"
+    },
+    "jade_regent": {
+      "skill": "Jade Rampart",
+      "ult": "Jadefall",
+      "lean": "duration"
+    },
+    "cobalt_tyrant": {
+      "skill": "Frostbite Swing",
+      "ult": "Maw of Winter",
+      "lean": "duration"
+    },
+    "spore_tyrant": {
+      "skill": "Spore Cleave",
+      "ult": "Rotburst",
+      "lean": "tempo"
+    },
+    "gloom_maw": {
+      "skill": "Dread Swing",
+      "ult": "Devour",
+      "lean": "tempo"
+    },
+    "surf_crusader": {
+      "skill": "Breaker Swing",
+      "ult": "Crashing Wave",
+      "lean": "reach"
+    },
+    "maelstrom_tyrant": {
+      "skill": "Undertow",
+      "ult": "Drown",
+      "lean": "power"
+    },
+    "grimhowl": {
+      "skill": "Howling Cleave",
+      "ult": "Grim Howl",
+      "extra": {
+        "skill": [
+          {
+            "kind": "rally",
+            "on": "self",
+            "value": 0.25,
+            "seconds": 0
+          }
+        ]
+      },
+      "note": "The lower its own health, the harder it hits (up to +50% at 10% health): a tank that wants to be hurt, so it pairs with a healer."
+    },
+    "maelfang": {
+      "skill": "Maelstrom Fang",
+      "ult": "Abyssal Maw",
+      "extra": {
+        "skill": [
+          {
+            "kind": "expose",
+            "on": "enemy",
+            "value": 0.15,
+            "seconds": 4
+          }
+        ]
+      },
+      "note": "Its Shield, when broken, Exposes the enemy for 4 s."
+    },
+    "grave_hammerer": {
+      "skill": "Grave Slam",
+      "ult": "Tombquake",
+      "lean": "power"
+    },
+    "thunder_smith": {
+      "skill": "Thunderclap",
+      "ult": "Skyforge",
+      "lean": "tempo"
+    },
+    "stormforger": {
+      "skill": "Dawn Strike",
+      "ult": "Starfall",
+      "lean": "reach"
+    },
+    "verdant_smith": {
+      "skill": "Crag Smash",
+      "ult": "Mountainheart",
+      "lean": "duration"
+    },
+    "amethyst_smith": {
+      "skill": "Violet Smite",
+      "ult": "Amethyst Rupture",
+      "lean": "power"
+    },
+    "iron_butcher": {
+      "skill": "Moss Maul",
+      "ult": "Overgrowth",
+      "lean": "tempo"
+    },
+    "anchor_smith": {
+      "skill": "Anchor Swing",
+      "ult": "Deepdrop",
+      "lean": "duration"
+    },
+    "barnacle_crusher": {
+      "skill": "Barnacle Crush",
+      "ult": "Shipwreck",
+      "lean": "power"
+    },
+    "grave_anvil": {
+      "skill": "Anvil Strike",
+      "ult": "Last Forge",
+      "extra": {
+        "ult": [
+          {
+            "kind": "stagger",
+            "on": "enemy",
+            "value": 1.5
+          }
+        ]
+      },
+      "note": "Quake staggers twice as long when the next enemy attack is a slam."
+    },
+    "clawbreaker": {
+      "skill": "Clawcrack",
+      "ult": "Pincer Break",
+      "extra": {
+        "skill": [
+          {
+            "kind": "charge",
+            "on": "self",
+            "value": 2
+          }
+        ]
+      },
+      "note": "Each Stagger it lands also Charges it by 2: the more it delays, the sooner its next Quake."
+    },
+    "seraph_lancer": {
+      "skill": "Seraph Thrust",
+      "ult": "Dawn Grace",
+      "lean": "reach",
+      "extra": {
+        "ult": [
+          {
+            "kind": "heal",
+            "on": "team",
+            "value": 0.25
+          }
+        ]
+      },
+      "note": "Keeps today's Dawn Grace: its ultimate also heals the team for 25%."
+    },
+    "dread_horseman": {
+      "skill": "Dread Thrust",
+      "ult": "Hellride",
+      "lean": "power"
+    },
+    "azure_cavalier": {
+      "skill": "Banner Thrust",
+      "ult": "Skyward Charge",
+      "lean": "duration"
+    },
+    "midnight_rider": {
+      "skill": "Moonpierce",
+      "ult": "Midnight Charge",
+      "lean": "tempo"
+    },
+    "plague_rider": {
+      "skill": "Blight Thrust",
+      "ult": "Plague Charge",
+      "lean": "duration"
+    },
+    "foam_cavalier": {
+      "skill": "Foam Lunge",
+      "ult": "Surf Charge",
+      "lean": "tempo"
+    },
+    "sunken_horseman": {
+      "skill": "Sunken Thrust",
+      "ult": "Riptide Charge",
+      "lean": "power"
+    },
+    "sunrider": {
+      "skill": "Sunlance",
+      "ult": "Daybreak Charge",
+      "extra": {
+        "skill": [
+          {
+            "kind": "rally",
+            "on": "front",
+            "value": 0.1,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "While any Shield it gave holds, the shielded cards hit 10% harder."
+    },
+    "pearlrider": {
+      "skill": "Pearl Lance",
+      "ult": "Tidal Cavalcade",
+      "extra": {
+        "ult": [
+          {
+            "kind": "heal",
+            "on": "team",
+            "value": 0.1
+          }
+        ]
+      },
+      "note": "When a Shield it gave breaks, that card heals 10% of its max health."
+    },
+    "valor_pikeman": {
+      "skill": "Valor Thrust",
+      "ult": "Heroic Lunge",
+      "lean": "power"
+    },
+    "wraith_impaler": {
+      "skill": "Wraith Pin",
+      "ult": "Soulfire Impale",
+      "lean": "tempo"
+    },
+    "molten_pikeman": {
+      "skill": "Molten Pin",
+      "ult": "Magma Lunge",
+      "lean": "tempo"
+    },
+    "rose_sentinel": {
+      "skill": "Quartz Pin",
+      "ult": "Prism Lunge",
+      "lean": "duration"
+    },
+    "royal_impaler": {
+      "skill": "Coil Strike",
+      "ult": "Crowned Impale",
+      "lean": "power"
+    },
+    "cinder_serpent": {
+      "skill": "Spine Pin",
+      "ult": "Serpent Strike",
+      "lean": "tempo"
+    },
+    "blood_serpent": {
+      "skill": "Blood Fang",
+      "ult": "Coil of Blood",
+      "lean": "duration"
+    },
+    "coral_hoplite": {
+      "skill": "Coral Pin",
+      "ult": "Reef Lunge",
+      "lean": "reach"
+    },
+    "kraken_impaler": {
+      "skill": "Kraken Barb",
+      "ult": "Ink Impale",
+      "lean": "tempo"
+    },
+    "skypiercer": {
+      "skill": "Skypin",
+      "ult": "Heavenpierce",
+      "extra": {
+        "ult": [
+          {
+            "kind": "focus",
+            "on": "self",
+            "value": 1,
+            "seconds": 1
+          }
+        ]
+      },
+      "note": "Its Piercing Lunge always crits against an Exposed enemy."
+    },
+    "bluestrike": {
+      "skill": "Blue Pin",
+      "ult": "Trench Lunge",
+      "extra": {
+        "skill": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.1,
+            "seconds": 3
+          }
+        ]
+      },
+      "note": "Its Pin also Weakens the enemy by 10% for 3 s."
+    },
+    "gleam_phantom": {
+      "skill": "Gleam Cut",
+      "ult": "Phantom Flurry",
+      "lean": "tempo"
+    },
+    "venom_stalker": {
+      "skill": "Venom Nick",
+      "ult": "Searing Flurry",
+      "lean": "duration"
+    },
+    "rose_phantom": {
+      "skill": "Ember Cut",
+      "ult": "Kindling Flurry",
+      "lean": "power"
+    },
+    "sky_gleamer": {
+      "skill": "Stone Nick",
+      "ult": "Gravel Flurry",
+      "lean": "tempo"
+    },
+    "jade_stalker": {
+      "skill": "Mint Cut",
+      "ult": "Jade Flurry",
+      "lean": "reach"
+    },
+    "bloodletter": {
+      "skill": "Red Sting",
+      "ult": "Bloodletting",
+      "lean": "power"
+    },
+    "violet_viper": {
+      "skill": "Nightshade Nick",
+      "ult": "Deadly Nightshade",
+      "lean": "duration"
+    },
+    "frost_viper": {
+      "skill": "Ice Sting",
+      "ult": "Frostbite Flurry",
+      "lean": "tempo"
+    },
+    "silver_minnow": {
+      "skill": "Fin Flick",
+      "ult": "Shoal Flurry",
+      "lean": "reach"
+    },
+    "reef_assassin": {
+      "skill": "Urchin Prick",
+      "ult": "Spine Storm",
+      "lean": "reach"
+    },
+    "nightsting": {
+      "skill": "Night Sting",
+      "ult": "Thousand Stings",
+      "extra": {
+        "ult": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.4,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "Its Wound counts once more for each other Wound on the enemy (up to three): the Wound team's core."
+    },
+    "venomplume": {
+      "skill": "Plume Prick",
+      "ult": "Venom Bloom",
+      "extra": {
+        "skill": [
+          {
+            "kind": "charge",
+            "on": "team",
+            "value": 1
+          }
+        ]
+      },
+      "note": "Its Quick Cut Charges every ally by 1 instead of one ally by 3."
+    },
+    "mercy_harvester": {
+      "skill": "Mercy Sweep",
+      "ult": "Merciful Reap",
+      "lean": "reach"
+    },
+    "grim_sovereign": {
+      "skill": "Grim Harvest",
+      "ult": "Sovereign Reap",
+      "lean": "power"
+    },
+    "azure_gleaner": {
+      "skill": "Dawn Gleaning",
+      "ult": "Harvest Sun",
+      "lean": "tempo"
+    },
+    "bog_reaper": {
+      "skill": "Bog Sweep",
+      "ult": "Greengrave Reap",
+      "lean": "duration"
+    },
+    "hollow_reaper": {
+      "skill": "Hollow Sweep",
+      "ult": "Empty Grave",
+      "lean": "power"
+    },
+    "frost_reaper": {
+      "skill": "Dust Sweep",
+      "ult": "Final Toll",
+      "lean": "tempo"
+    },
+    "kelp_harvester": {
+      "skill": "Kelp Sweep",
+      "ult": "Tidereap",
+      "lean": "reach"
+    },
+    "deep_sovereign": {
+      "skill": "Deep Sweep",
+      "ult": "Abyssal Reap",
+      "lean": "reach"
+    },
+    "last_breath": {
+      "skill": "Last Gasp",
+      "ult": "Final Breath",
+      "extra": {
+        "ult": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 0.35,
+            "below": 0.4
+          }
+        ]
+      },
+      "note": "Execute starts at 40% health instead of 30%."
+    },
+    "coilreaper": {
+      "skill": "Coil Sweep",
+      "ult": "Serpent's Toll",
+      "extra": {
+        "ult": [
+          {
+            "kind": "charge",
+            "on": "self",
+            "value": 5
+          }
+        ]
+      },
+      "note": "A kill by its Reap fills its gauge halfway for the next enemy."
+    },
+    "seraph_archer": {
+      "skill": "Seraph Shot",
+      "ult": "Heaven's Volley",
+      "lean": "tempo"
+    },
+    "wither_huntress": {
+      "skill": "Wither Shot",
+      "ult": "Scorch Volley",
+      "lean": "power"
+    },
+    "dawn_archer": {
+      "skill": "Sunthread Shot",
+      "ult": "Woven Dawn",
+      "lean": "reach"
+    },
+    "night_hunter": {
+      "skill": "Thorn Shot",
+      "ult": "Red Hunt",
+      "lean": "power"
+    },
+    "abyss_hunter": {
+      "skill": "Deep Shot",
+      "ult": "Abyss Volley",
+      "lean": "duration"
+    },
+    "ember_stalker": {
+      "skill": "Wing Shot",
+      "ult": "Talon Volley",
+      "lean": "tempo"
+    },
+    "moonlit_angler": {
+      "skill": "Moon Shot",
+      "ult": "Scaled Volley",
+      "lean": "duration"
+    },
+    "siren_huntress": {
+      "skill": "Siren Shot",
+      "ult": "Siren's Call",
+      "lean": "duration"
+    },
+    "starweaver": {
+      "skill": "Star Thread",
+      "ult": "Constellation",
+      "extra": {
+        "ult": [
+          {
+            "kind": "charge",
+            "on": "team",
+            "value": 3
+          }
+        ]
+      },
+      "note": "Each sure crit of its Volley adds 1 to every ally's gauge."
+    },
+    "mantaglide": {
+      "skill": "Glide Shot",
+      "ult": "Manta Rain",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "back",
+            "value": 0.08
+          }
+        ]
+      },
+      "note": "Its Aimed Shot also gives the back row a Shield of 8%."
+    },
+    "sanctum_oracle": {
+      "skill": "Sanctum Light",
+      "ult": "Sanctuary",
+      "lean": "reach"
+    },
+    "hex_warlock": {
+      "skill": "Hex Flame",
+      "ult": "Hex",
+      "lean": "duration",
+      "extra": {
+        "ult": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.2,
+            "seconds": 8
+          }
+        ]
+      },
+      "note": "Keeps today's Hex: its ultimate also Weakens the enemy by 20% for 8 s."
+    },
+    "orchid_oracle": {
+      "skill": "Orchid Bloom",
+      "ult": "Veil of Petals",
+      "lean": "duration"
+    },
+    "rift_mystic": {
+      "skill": "Rift Bolt",
+      "ult": "Soul Rift",
+      "lean": "power"
+    },
+    "tide_oracle": {
+      "skill": "Tidal Blessing",
+      "ult": "High Tide",
+      "lean": "tempo"
+    },
+    "murk_warlock": {
+      "skill": "Murk Bolt",
+      "ult": "Murkveil",
+      "lean": "duration"
+    },
+    "soulwell": {
+      "skill": "Soul Ember",
+      "ult": "Soulwell",
+      "extra": {
+        "ult": [
+          {
+            "kind": "heal",
+            "on": "lowest",
+            "value": 0.3
+          }
+        ]
+      },
+      "note": "Its Mend heals more the lower a card is (up to double at 10% health)."
+    },
+    "dreadbloom": {
+      "skill": "Dread Pollen",
+      "ult": "Black Bloom",
+      "extra": {
+        "skill": [
+          {
+            "kind": "drain",
+            "on": "team",
+            "value": 0.1
+          }
+        ]
+      },
+      "note": "Its Renew also Drains: the team heals for 10% of the damage it deals for 5 s."
+    },
+    "runemoss": {
+      "skill": "Moss Edge",
+      "ult": "Rootbreak Cleave",
+      "lean": "reach"
+    },
+    "stonegrove": {
+      "skill": "Boulder Swing",
+      "ult": "Landslide",
+      "lean": "duration"
+    },
+    "runeboulder": {
+      "skill": "Stone Knock",
+      "ult": "Bedrock",
+      "lean": "power"
+    },
+    "spiralhorn": {
+      "skill": "Root Thrust",
+      "ult": "Grove Charge",
+      "lean": "tempo"
+    },
+    "vinepike": {
+      "skill": "Thorn Pin",
+      "ult": "Taproot Lunge",
+      "lean": "reach"
+    },
+    "mossfang": {
+      "skill": "Moss Nick",
+      "ult": "Lichen Flurry",
+      "lean": "duration"
+    },
+    "mossreaper": {
+      "skill": "Fern Sweep",
+      "ult": "Mossreap",
+      "lean": "tempo"
+    },
+    "rootstring": {
+      "skill": "Acorn Shot",
+      "ult": "Canopy Volley",
+      "lean": "power"
+    },
+    "amberbough": {
+      "skill": "Sap Bloom",
+      "ult": "Heartwood",
+      "lean": "reach"
+    },
+    "emberthorn": {
+      "skill": "Thorn Slash",
+      "ult": "Briarfire Cleave",
+      "lean": "tempo"
+    },
+    "thornblaze": {
+      "skill": "Smoulder Swing",
+      "ult": "Wildfire",
+      "lean": "power"
+    },
+    "emberknot": {
+      "skill": "Ember Knock",
+      "ult": "Kindling Quake",
+      "lean": "duration"
+    },
+    "lavahorn": {
+      "skill": "Briar Thrust",
+      "ult": "Burning Charge",
+      "lean": "power"
+    },
+    "flarepike": {
+      "skill": "Redthorn Pin",
+      "ult": "Pyre Lunge",
+      "lean": "duration"
+    },
+    "cindersting": {
+      "skill": "Thorn Prick",
+      "ult": "Cinder Flurry",
+      "lean": "reach"
+    },
+    "ashreaper": {
+      "skill": "Ash Sweep",
+      "ult": "Burnt Harvest",
+      "lean": "power"
+    },
+    "firebriar": {
+      "skill": "Spark Shot",
+      "ult": "Ember Volley",
+      "lean": "tempo"
+    },
+    "emberroot": {
+      "skill": "Kindle",
+      "ult": "Ember Rite",
+      "lean": "reach"
+    },
+    "antlerblade": {
+      "skill": "Antler Cut",
+      "ult": "Stag Crown",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "front",
+            "value": 0.06
+          }
+        ]
+      },
+      "note": "Its Rally also Shields the front row for 6% of their max health."
+    },
+    "elderbark": {
+      "skill": "Bark Swing",
+      "ult": "Treantfall",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.075
+          }
+        ]
+      },
+      "note": "Its own Shield grows back at half strength 5 s after it breaks."
+    },
+    "alicorn": {
+      "skill": "Horn Thrust",
+      "ult": "Unicorn Charge",
+      "extra": {
+        "ult": [
+          {
+            "kind": "regen",
+            "on": "team",
+            "value": 0.01,
+            "seconds": 5
+          }
+        ]
+      },
+      "note": "While a Shield it gave holds, that card also Regens 1% of max health per second."
+    },
+    "toadmaul": {
+      "skill": "Spore Knock",
+      "ult": "Toadstool Quake",
+      "extra": {
+        "ult": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.1,
+            "seconds": 3
+          }
+        ]
+      },
+      "note": "While its Stagger delays the enemy, the enemy is also Weakened by 10%."
+    },
+    "owlwing": {
+      "skill": "Owl Eye",
+      "ult": "Silent Volley",
+      "extra": {
+        "skill": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 10
+          }
+        ]
+      },
+      "note": "The Focus from its Aimed Shot lasts until its next Aimed Shot, so the team never loses it."
+    },
+    "foxtail": {
+      "skill": "Foxtail Flick",
+      "ult": "Vixen Flurry",
+      "extra": {
+        "skill": [
+          {
+            "kind": "charge",
+            "on": "team",
+            "value": 1
+          }
+        ]
+      },
+      "note": "Its Quick Cut Charges the two emptiest gauges instead of one."
+    },
+    "phoenixquill": {
+      "skill": "Feather Cut",
+      "ult": "Rebirth Flurry",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "When it is knocked out, its Wound keeps ticking and the team gets Rally +15% for 6 s."
+    },
+    "bloodrose": {
+      "skill": "Rose Thorn",
+      "ult": "Blood Bloom",
+      "extra": {
+        "ult": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.2,
+            "seconds": 6
+          }
+        ]
+      },
+      "note": "Its Wound grows 10% stronger with every tick."
+    },
+    "emberscale": {
+      "skill": "Salamander Sweep",
+      "ult": "Firetail Reap",
+      "extra": {
+        "ult": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 0.2,
+            "below": 0.4
+          }
+        ]
+      },
+      "note": "Its Execute line rises by 5% for each Wound on the enemy."
+    },
+    "emberblossom": {
+      "skill": "Blossom Flame",
+      "ult": "Ember Bloom",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      },
+      "note": "Its Mend also Rallies the team by 10% for 5 s."
+    },
+    "geodefall": {
+      "skill": "Geode Crush",
+      "ult": "Tectonic Fall",
+      "lean": "duration"
+    },
+    "emberbrand": {
+      "skill": "Brand Cut",
+      "ult": "Pyre Cleave",
+      "lean": "power"
+    },
+    "tidecaller": {
+      "skill": "Rising Tide",
+      "ult": "Spring Tide",
+      "lean": "reach"
+    },
+    "dawnpiercer": {
+      "skill": "Dawn Thrust",
+      "ult": "Gleaming Charge",
+      "lean": "tempo"
+    },
+    "voidthorn": {
+      "skill": "Barbed Pin",
+      "ult": "Umbral Lunge",
+      "lean": "power"
+    }
+  }
+}

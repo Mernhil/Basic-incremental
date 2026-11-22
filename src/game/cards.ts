@@ -17,8 +17,7 @@ import { MAX_STARS, RANK_TIERS } from '../data/schemas';
 import { accountLevel } from './account';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { teamBonusPower } from './upgrades';
-import { activeWorkers, producerJob, workerModifiers, workerScope, workplaceOf } from './workers';
+import { slotWorkers, workerModifiers, workerScope, workplaceOf } from './camp';
 import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
@@ -65,6 +64,8 @@ export type CardFailure =
   | 'over-cost-cap'
   /** More than MAX_LOADOUT_HEIRLOOMS Heirloom cards in the loadout (DESIGN.md §5 Cost). */
   | 'too-many-heirlooms'
+  /** More than MAX_LOADOUT_STARTERS starter weapons in the loadout (DESIGN.md §2 Starter weapon). */
+  | 'too-many-starters'
   /** The card is away on an expedition (DESIGN.md §15). */
   | 'on-expedition'
   /** Not a valid slot. */
@@ -145,10 +146,12 @@ export function itemName(
   kind: ItemKind,
   tier: RankTier,
   side: CardSide | undefined,
-  card?: { heirloomName?: string | undefined },
+  card?: { heirloomName?: string | undefined; starterArt?: true | undefined; name?: string },
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
+  // a starter weapon (DESIGN.md §2) is named by its card, at every tier
+  if (card?.starterArt && card.name) return card.name;
   // a card's own weapon is named at Mythic or Void and as its Heirloom; below that the type's model
   if (card?.heirloomName && (tier === 'mythic' || tier === 'heirloom')) return card.heirloomName;
   switch (tier) {
@@ -245,6 +248,31 @@ export function breakthroughTier(
 }
 
 /**
+ * The tier a card's numbers are those of: its own, except a sealed starter weapon (DESIGN.md §2
+ * Starter weapon), which fights as the tier its broken seals allow, Wood with none broken.
+ */
+export function strengthTier(content: Content, owned: OwnedCard): RankTier {
+  if (owned.seal === undefined) return owned.tier;
+  if (owned.seal <= 0) return 'wood';
+  // every seal broken: an unsealed starter, fighting as an Heirloom (`starters.unsealedTier`)
+  if (owned.seal >= content.starters.seals.length) return content.starters.unsealedTier;
+  return content.starters.seals[owned.seal - 1]?.tier ?? owned.tier;
+}
+
+/** A team holds at most this many starter weapons, of any of the five (DESIGN.md §2). */
+export const MAX_LOADOUT_STARTERS = 1;
+
+/** Whether a card is one of the five starter weapons. */
+export function isStarterCard(content: Content, cardId: string): boolean {
+  return content.starters.base.includes(cardId) || content.starters.special.includes(cardId);
+}
+
+/** How many starter cards a list of card ids holds. */
+export function starterCount(content: Content, ids: readonly (string | null)[]): number {
+  return ids.filter((id) => id !== null && isStarterCard(content, id)).length;
+}
+
+/**
  * The step of a tier table (`power.tier`, `power.statTier`) a card stands on at its level (DESIGN.md
  * §5 Strength comes with the card's levels). A card is its tier from the first pull, but its numbers
  * climb the tiers with its own levels: it starts on the Wood step and gains the step to the next
@@ -278,11 +306,12 @@ export function tierStepAt(
  * at ★6) × the tier step the card stands on at its level (`tierStepAt`). 1 for any ★1 Lv 1 card.
  */
 export function cardPower(content: Content, owned: OwnedCard): number {
+  const tier = strengthTier(content, owned);
   const p = content.cardRules.power;
   const levelPart = 1 + p.perLevel * (owned.level - 1);
   const starPart =
     1 + p.perStar * (owned.stars - 1) + (owned.stars >= MAX_STARS ? p.star6Bonus : 0);
-  return levelPart * starPart * tierStepAt(content, p.tier, owned.tier, owned.level);
+  return levelPart * starPart * tierStepAt(content, p.tier, tier, owned.level);
 }
 
 /**
@@ -292,12 +321,11 @@ export function cardPower(content: Content, owned: OwnedCard): number {
  * with the smaller `tier` step.
  */
 export function cardStatPower(content: Content, owned: OwnedCard): number {
+  const tier = strengthTier(content, owned);
   const p = content.cardRules.power;
   const star = owned.stars <= 1 ? 1 : p.starMultiplier[owned.stars - 2]!;
   return (
-    (1 + p.perLevel * (owned.level - 1)) *
-    star *
-    tierStepAt(content, p.statTier, owned.tier, owned.level)
+    (1 + p.perLevel * (owned.level - 1)) * star * tierStepAt(content, p.statTier, tier, owned.level)
   );
 }
 
@@ -316,7 +344,9 @@ function weaponFactor(content: Content, card: Card, stat: 'damage' | 'health'): 
 export function cardHealth(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.health[ladderTier(card)]
+  return content.cardRules.health[
+    ladderTier(owned.seal === undefined ? card : { tier: strengthTier(content, owned) })
+  ]
     .mul(cardStatPower(content, owned))
     .mul(weaponFactor(content, card, 'health'));
 }
@@ -329,7 +359,9 @@ export function cardHealth(content: Content, cardId: string, owned: OwnedCard): 
 export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.baseDamage[ladderTier(card)]
+  return content.cardRules.baseDamage[
+    ladderTier(owned.seal === undefined ? card : { tier: strengthTier(content, owned) })
+  ]
     .mul(cardStatPower(content, owned))
     .mul(weaponFactor(content, card, 'damage'));
 }
@@ -379,10 +411,13 @@ export function settleCardLevels(state: GameState, content: Content, report: Tic
 // ---- cost and loadouts -----------------------------------------------------------------------
 
 /** Loadout cost of a card, by its tier (11.4); an Heirloom card has its own. 0 for unknown ids. */
-export function cardCost(content: Content, cardId: string): number {
+export function cardCost(content: Content, cardId: string, owned?: OwnedCard): number {
   const card = content.cardById.get(cardId);
   if (!card) return 0;
-  return card.heirloom ? content.cardRules.heirloomCost : content.cardRules.cost[ladderTier(card)];
+  if (card.heirloom) return content.cardRules.heirloomCost;
+  // A sealed starter weapon costs what the tier it fights as costs.
+  const tier = owned?.seal !== undefined ? strengthTier(content, owned) : card.tier;
+  return content.cardRules.cost[ladderTier({ tier })];
 }
 
 /** The fighting loadout's cost cap: base + perLevel × (account level − 1), through
@@ -447,8 +482,12 @@ export function arrangeSavedFormations(state: GameState, content: Content): void
 }
 
 /** Total cost of the cards in a loadout. */
-export function loadoutCost(content: Content, loadout: CardLoadout): number {
-  return loadoutCards(loadout).reduce((sum, id) => sum + cardCost(content, id), 0);
+export function loadoutCost(
+  content: Content,
+  loadout: CardLoadout,
+  owned?: Record<string, OwnedCard>,
+): number {
+  return loadoutCards(loadout).reduce((sum, id) => sum + cardCost(content, id, owned?.[id]), 0);
 }
 
 /** Where a card sits in the fighting loadout, or null. */
@@ -482,7 +521,11 @@ export function loadoutProblem(
   }
   if (new Set(ids).size !== ids.length) return 'duplicate';
   if (heirloomCount(content, ids) > MAX_LOADOUT_HEIRLOOMS) return 'too-many-heirlooms';
-  if (loadoutCost(content, loadout) > loadoutCostCap(state, content, job, modifiers)) {
+  if (starterCount(content, ids) > MAX_LOADOUT_STARTERS) return 'too-many-starters';
+  if (
+    loadoutCost(content, loadout, state.cards.owned) >
+    loadoutCostCap(state, content, job, modifiers)
+  ) {
     return 'over-cost-cap';
   }
   return null;
@@ -582,7 +625,7 @@ function boostTeamBonus(m: Modifier, power: Decimal): Modifier {
 export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
   // Upgrades make the team bonuses stronger (DESIGN.md §4).
-  const power = teamBonusPower(state, content, 'fighting');
+  const power = new Decimal(1);
   for (const id of state.cards.loadouts.fighting.slots) {
     if (id === null) continue;
     const owned = state.cards.owned[id];
@@ -609,9 +652,8 @@ export function cardsAtWork(
     seen.add(id);
     out.push({ cardId: id, scope: null });
   }
-  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
-    const job = producerJob(content, place)!;
-    for (const id of ids) out.push({ cardId: id, scope: workerScope(job, place) });
+  for (const w of slotWorkers(state, content)) {
+    out.push({ cardId: w.card, scope: workerScope(w.place, w.material) });
   }
   return out;
 }
@@ -935,7 +977,7 @@ export function cardInfo(state: GameState, content: Content, cardId: string): Ca
     xpToNext:
       owned && cap !== null && owned.level < cap ? xpToNextLevel(content, owned.level) : null,
     power: cardPower(content, preview),
-    cost: cardCost(content, cardId),
+    cost: cardCost(content, cardId, owned ?? undefined),
     slot: loadoutSlotOf(state, cardId),
     workplace: card.job === 'fighting' ? null : workplaceOf(state, content, cardId),
     maxRank: owned ? isMaxRank(owned) : false,
@@ -997,7 +1039,7 @@ export function loadoutInfo(
     job,
     slots: [...loadout.slots],
     nextRise: nextCapRise(content, accountLevel(state)),
-    cost: loadoutCost(content, loadout),
+    cost: loadoutCost(content, loadout, state.cards.owned),
     cap: loadoutCostCap(state, content, job, modifiers),
   };
 }

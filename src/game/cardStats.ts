@@ -2,9 +2,9 @@ import { burstStats, averageDamage, critFactor, critStats } from './combat';
 import type { Content } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth, loadoutCards } from './cards';
 import { Decimal } from './num';
-import { harvestCrit } from './production';
 import { newOwnedCard, type GameState, type OwnedCard } from './state';
-import { activeWorkers, producerJob, workerPower } from './workers';
+import { placeJob, slotWorkers } from './camp';
+import { workerPower } from './workers';
 
 /**
  * The numbers every card shows (DESIGN.md §5 Show the stats): what the card is worth on its own,
@@ -57,14 +57,13 @@ export function cardStatsFor(content: Content, cardId: string, owned: OwnedCard)
     };
   }
   const burst = burstStats(content, card.job, mods);
-  const crit = harvestCrit(content, card.job, mods);
   return {
     kind: 'worker',
     output: new Decimal(workerPower(content, cardId, owned)),
     health: null,
     hitSeconds: burst.interval,
-    critChance: crit.chance,
-    critDamage: crit.damage,
+    critChance: 0,
+    critDamage: new Decimal(1),
   };
 }
 
@@ -87,10 +86,7 @@ function comparedWith(state: GameState, content: Content, cardId: string): strin
     }
     return weakest;
   }
-  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
-    if (producerJob(content, place) === card.job && ids[0]) return ids[0];
-  }
-  return null;
+  return slotWorkers(state, content).find((w) => placeJob(w.place) === card.job)?.card ?? null;
 }
 
 /** The compare line's numbers; null when there is nothing to compare with or the card is that card. */

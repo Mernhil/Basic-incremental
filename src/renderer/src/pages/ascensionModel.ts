@@ -189,12 +189,12 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
         });
         break;
       }
-      case 'workers': {
-        const n = Object.values(state.production.workers).reduce((sum, ids) => sum + ids.length, 0);
+      case 'camp': {
+        const n = [...state.camp.forest, ...state.camp.cave].filter((slot) => slot.card).length;
         views.push({
           id,
           label,
-          detail: t.keptDetail.workers(n),
+          detail: t.keptDetail.camp(n),
           art: { kind: 'plaque', glyph: 'dungeons' },
         });
         break;
@@ -311,13 +311,8 @@ function effectText(mods: readonly Modifier[], fallback: Modifier | undefined): 
 function grantText(o: StarlightOffer, state: GameState, content: Content): string | null {
   const t = COPY.ascension;
   switch (o.item.grants) {
-    case 'second_worker_slots':
-      return o.locked && o.level === 0
-        ? t.slotsLocked
-        : t.slots(o.level, content.trees.length + content.mines.length);
-    case 'autobuyer_trees':
-    case 'autobuyer_mines':
-      return t.autobuyer(o.level > 0);
+    case 'camp_slots':
+      return t.slots(o.level * content.camp.starlightSlotsPerLevel);
     default:
       return null;
   }

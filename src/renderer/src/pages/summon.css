@@ -21,7 +21,7 @@
   --sm-mythic: #ff4fb8;
   --sm-void: #8a5cff;
   display: grid;
-  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 16px;
   /* the panels' outer edges bleed one step outside their boxes */
@@ -34,9 +34,23 @@
   min-width: 0;
   align-content: start;
 }
+/* "More from the portals": the other gates and the daily scrolls on the left, the selected gate's
+   Wishlist, odds or board with the last hand on the right */
+.sm-more {
+  display: grid;
+  grid-template-columns: minmax(300px, 430px) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+.sm-more__title {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 20px;
+  color: var(--px-gold);
+}
 @media (max-width: 1100px) {
-  .sm-table {
-    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  .sm-more {
+    grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   }
 }
 
@@ -141,7 +155,7 @@
 }
 .sm-board__row {
   display: grid;
-  grid-template-columns: 52px repeat(11, minmax(0, 1fr));
+  grid-template-columns: 92px repeat(11, minmax(0, 1fr));
   gap: 6px;
   align-items: stretch;
 }
@@ -1005,4 +1019,261 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 }
 .sm-tiers__reward {
   color: var(--px-muted);
+}
+
+/* ---- the three doors (user pick, 2026-11-22; picture: design/options/summon-look/b-page.png) ---- */
+.sm-doors {
+  --sm-door: 320px;
+  display: grid;
+  grid-template-columns: repeat(3, var(--sm-door));
+  justify-content: center;
+  gap: 24px 56px;
+  align-items: start;
+}
+.sm-door {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+}
+.sm-door__pic {
+  position: relative;
+  width: var(--sm-door);
+  height: var(--sm-door);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: 0;
+  transition: filter 0.2s ease-out;
+}
+.sm-door.is-on .sm-door__pic {
+  filter: drop-shadow(0 0 14px var(--sm-glow, var(--px-gold)));
+}
+.sm-door[data-door='focus_portal'] {
+  --sm-glow: #4aa8e8;
+}
+.sm-door[data-door='heirloom_gate'] {
+  --sm-glow: #ff7ab8;
+}
+.sm-door__pic:focus-visible {
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+.sm-door__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  user-select: none;
+}
+.sm-door__img--open {
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+}
+.sm-door.is-ajar .sm-door__img--open {
+  opacity: 1;
+}
+.sm-door__name {
+  margin: 0;
+  font-size: 24px;
+  color: var(--px-gold-hi, var(--px-gold));
+}
+.sm-door__about,
+.sm-door__hunt {
+  margin: 0;
+  min-height: 2.6em;
+  font-size: 13px;
+  color: var(--px-muted);
+  text-wrap: balance;
+}
+.sm-door__hunt {
+  min-height: 0;
+}
+.sm-door__hunt:empty {
+  display: none;
+}
+.sm-door__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px 12px;
+}
+.sm-door .sm-focus {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  max-width: var(--sm-door);
+}
+.sm-door .sm-pity {
+  width: 100%;
+  max-width: var(--sm-door);
+}
+
+/* ---- the strip under the doors ---- */
+.sm-strip {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.3fr;
+  gap: 24px;
+  padding: 12px 18px 16px;
+}
+.sm-strip__col {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+.sm-strip__head {
+  margin: 4px 0 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--px-gold);
+}
+.sm-strip__line {
+  margin: 0;
+  font-size: 12px;
+  color: var(--px-muted);
+}
+.sm-chances {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.sm-chances__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sm-chances__item[data-rarity] .sm-odds__swatch {
+  background: var(--sm-c);
+}
+.sm-chances__item[data-rarity='common'] {
+  --sm-c: var(--sm-common);
+}
+.sm-chances__item[data-rarity='uncommon'] {
+  --sm-c: var(--sm-uncommon);
+}
+.sm-chances__item[data-rarity='rare'] {
+  --sm-c: var(--sm-rare);
+}
+.sm-chances__item[data-rarity='epic'] {
+  --sm-c: var(--sm-epic);
+}
+.sm-chances__item[data-rarity='legendary'] {
+  --sm-c: var(--sm-legendary);
+}
+.sm-chances__item[data-rarity='mythic'] {
+  --sm-c: var(--sm-mythic);
+}
+.sm-chances__item[data-rarity='void'] {
+  --sm-c: var(--sm-void);
+}
+.sm-strip .sm-tiers {
+  display: grid;
+  gap: 6px;
+}
+.sm-strip .sm-tiers__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sm-strip .sm-tiers__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sm-strip .sm-tiers__count,
+.sm-strip .sm-tiers__reward {
+  font-size: 11px;
+}
+@media (max-width: 1100px) {
+  .sm-doors {
+    gap: 16px 24px;
+  }
+  .sm-strip {
+    grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm-door__pic,
+  .sm-door__img--open {
+    transition: none;
+  }
+}
+html[data-motion='reduced'] :is(.sm-door__pic, .sm-door__img--open) {
+  transition: none;
+}
+
+/* ---- the doors and the strip: colours and spacing (the doors stand on the page, the strip on a panel) ---- */
+.sm-table {
+  --sm-back-hi: #ffd968;
+}
+.sm-door {
+  color: #efe6d0;
+}
+.sm-door__name {
+  color: #f3dc9a;
+}
+.sm-door__about,
+.sm-door__hunt,
+.sm-door .sm-pity__top {
+  color: #b3a88f;
+}
+.sm-door .sm-pity__top b {
+  color: #efe6d0;
+}
+.sm-door[data-door='heirloom_gate'] {
+  --sm-back-hi: #ff7ab8;
+}
+.sm-strip .sm-strip__col:nth-child(2) {
+  --sm-back-hi: var(--sm-mythic);
+}
+.sm-door__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: var(--sm-door);
+}
+.sm-door .sm-pull {
+  padding: 3px 6px;
+  gap: 6px;
+  font-size: 14px;
+}
+.sm-door .sm-focus {
+  gap: 3px;
+  margin: 0;
+}
+.sm-door .sm-focus__kind {
+  padding: 1px 6px;
+  font-size: 12px;
+}
+.sm-strip .sm-tiers__about {
+  margin: 0;
+  font-size: 11px;
+}
+.sm-strip .sm-deck__first {
+  margin: 0;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sm-strip .sm-tiers__reward {
+  display: none;
+}
+.sm-strip .sm-strip__head,
+.sm-strip .sm-tiers__title {
+  color: var(--px-ink);
 }

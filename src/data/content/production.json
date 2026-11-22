@@ -1,147 +1,4 @@
 {
-  "tools": [
-    {
-      "id": "logging_yield",
-      "name": "Logging Yield",
-      "job": "logging",
-      "effect": "yield",
-      "stat": "production.rate",
-      "cost": {
-        "resource": "money",
-        "base": "220",
-        "growth": "1.37"
-      },
-      "ratePercent": "4",
-      "milestones": {
-        "every": 25,
-        "multiplier": "1.1"
-      }
-    },
-    {
-      "id": "logging_speed",
-      "name": "Logging Pace",
-      "job": "logging",
-      "effect": "strike speed",
-      "stat": "harvest.speed",
-      "cost": {
-        "resource": "money",
-        "base": "400",
-        "growth": "1.41"
-      },
-      "ratePercent": "2",
-      "milestones": {
-        "every": 25,
-        "multiplier": "1.08"
-      }
-    },
-    {
-      "id": "logging_crit_chance",
-      "name": "Logging Keen Edge",
-      "job": "logging",
-      "effect": "crit chance",
-      "stat": "harvest.critChance",
-      "cost": {
-        "resource": "money",
-        "base": "720",
-        "growth": "1.45"
-      },
-      "ratePercent": "0.5"
-    },
-    {
-      "id": "logging_crit_damage",
-      "name": "Logging Heavy Blow",
-      "job": "logging",
-      "effect": "crit damage",
-      "stat": "harvest.critDamage",
-      "cost": {
-        "resource": "money",
-        "base": "720",
-        "growth": "1.41"
-      },
-      "ratePercent": "5"
-    },
-    {
-      "id": "mining_yield",
-      "name": "Mining Yield",
-      "job": "mining",
-      "effect": "yield",
-      "stat": "production.rate",
-      "cost": {
-        "resource": "money",
-        "base": "220",
-        "growth": "1.37"
-      },
-      "ratePercent": "4",
-      "milestones": {
-        "every": 25,
-        "multiplier": "1.1"
-      }
-    },
-    {
-      "id": "mining_speed",
-      "name": "Mining Pace",
-      "job": "mining",
-      "effect": "strike speed",
-      "stat": "harvest.speed",
-      "cost": {
-        "resource": "money",
-        "base": "400",
-        "growth": "1.41"
-      },
-      "ratePercent": "2",
-      "milestones": {
-        "every": 25,
-        "multiplier": "1.08"
-      }
-    },
-    {
-      "id": "mining_crit_chance",
-      "name": "Mining Keen Edge",
-      "job": "mining",
-      "effect": "crit chance",
-      "stat": "harvest.critChance",
-      "cost": {
-        "resource": "money",
-        "base": "720",
-        "growth": "1.45"
-      },
-      "ratePercent": "0.5"
-    },
-    {
-      "id": "mining_crit_damage",
-      "name": "Mining Heavy Blow",
-      "job": "mining",
-      "effect": "crit damage",
-      "stat": "harvest.critDamage",
-      "cost": {
-        "resource": "money",
-        "base": "720",
-        "growth": "1.41"
-      },
-      "ratePercent": "5"
-    }
-  ],
-  "harvest": {
-    "crit": {
-      "chance": 0,
-      "damage": "2"
-    }
-  },
-  "workers": {
-    "slots": {
-      "base": 2,
-      "perAscension": 1,
-      "perProducer": 1
-    },
-    "tierPower": {
-      "wood": 1,
-      "bronze": 1.14,
-      "silver": 1.33,
-      "gold": 1.52,
-      "prismatic": 1.77,
-      "mythic": 2.12
-    }
-  },
   "forge": {
     "speed": "1",
     "recipes": [
@@ -166,18 +23,14 @@
       }
     ]
   },
-  "lucky": {
-    "logging": {
-      "name": "Golden tree",
-      "everySeconds": 180,
-      "windowSeconds": 12,
-      "payoutSeconds": 30
-    },
-    "mining": {
-      "name": "Rich vein",
-      "everySeconds": 180,
-      "windowSeconds": 12,
-      "payoutSeconds": 30
+  "workers": {
+    "tierPower": {
+      "wood": 1,
+      "bronze": 1.14,
+      "silver": 1.33,
+      "gold": 1.52,
+      "prismatic": 1.77,
+      "mythic": 2.12
     }
   }
 }
