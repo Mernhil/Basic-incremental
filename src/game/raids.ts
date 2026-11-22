@@ -14,7 +14,7 @@ import {
 } from './duel';
 import { computeStat, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { cloneRaids, cloneState, type GameState } from './state';
+import { cloneState, type GameState } from './state';
 
 /**
  * Raid bosses (DESIGN.md §2 Raid bosses): one timed fight with the team of four, scored by the

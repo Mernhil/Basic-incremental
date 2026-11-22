@@ -40,5 +40,7 @@ const result = runSim(content, {
     }
   },
 });
-console.log(`first Ascension at ${firstAt === null ? 'never' : (firstAt / 3600).toFixed(1) + ' h'}`);
+console.log(
+  `first Ascension at ${firstAt === null ? 'never' : (firstAt / 3600).toFixed(1) + ' h'}`,
+);
 console.log(`ascensions: ${result.log.ascensions.length}`);

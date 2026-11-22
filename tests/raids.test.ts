@@ -47,6 +47,15 @@ function withBoss(
   return { ...content, raidById: new Map([[id, change(boss(id))]]) };
 }
 
+/** A soft Tide Queen (no trick to speak of) the test team can score against. */
+const soft = (hp = 1e6): Content =>
+  withBoss('tide_queen', (b) => ({
+    ...b,
+    hp: new Decimal(hp),
+    attack: { ...b.attack, damage: new Decimal(1) },
+    trick: { ...b.trick, kind: 'rage', size: 0.0001, every: 0, answerAt: 0 },
+  }));
+
 describe('the raid data', () => {
   it('has the five bosses, one for each element, each with its trick', () => {
     expect(content.raids.bosses.map((b) => b.element).sort()).toEqual([
@@ -140,9 +149,8 @@ describe('the fight', () => {
 
   it('a tougher boss takes less off the same team', () => {
     const s = teamOf(SWORDS);
-    const weak = fightRaid(s, content, mods(s), 'tide_queen')!.share;
-    const tough = withBoss('tide_queen', (b) => ({ ...b, hp: b.hp.mul(1000) }));
-    expect(fightRaid(s, tough, mods(s), 'tide_queen')!.share).toBeLessThan(weak);
+    const weak = fightRaid(s, soft(1e6), mods(s), 'tide_queen')!.share;
+    expect(fightRaid(s, soft(1e12), mods(s), 'tide_queen')!.share).toBeLessThan(weak);
   });
 });
 
@@ -200,12 +208,12 @@ describe('the ladder and rewards', () => {
 
   it('pays each rank reward once per boss, and keeps the best score', () => {
     let s = teamOf(SWORDS);
-    const first = tryRaid(s, content, mods(s), 'tide_queen', TODAY);
+    const first = tryRaid(s, soft(1e12), mods(s), 'tide_queen', TODAY);
     if (!first.ok) throw new Error(first.reason);
     s = first.state;
     expect(s.raids.best['tide_queen']).toBe(first.result.fight.share);
     expect(s.raids.paid['tide_queen']).toBe(first.result.rank);
-    const second = tryRaid(s, content, mods(s), 'tide_queen', TODAY);
+    const second = tryRaid(s, soft(1e12), mods(s), 'tide_queen', TODAY);
     if (!second.ok) throw new Error(second.reason);
     // The same team gets the same score: no new best and nothing paid again.
     expect(second.result.newBest).toBe(false);

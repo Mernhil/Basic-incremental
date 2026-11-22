@@ -9,9 +9,9 @@
       "name": "Rootstone Titan",
       "element": "earth",
       "art": "raid-earth-colossus",
-      "hp": "2e9",
+      "hp": "3e7",
       "attack": {
-        "damage": "3000000",
+        "damage": "7000",
         "intervalSeconds": 2.5
       },
       "trick": {
@@ -28,9 +28,9 @@
       "name": "Ember Tyrant",
       "element": "fire",
       "art": "raid-fire-tyrant",
-      "hp": "2e9",
+      "hp": "2.5e7",
       "attack": {
-        "damage": "2500000",
+        "damage": "3500",
         "intervalSeconds": 2
       },
       "trick": {
@@ -47,9 +47,9 @@
       "name": "Tide Queen",
       "element": "water",
       "art": "raid-water-queen",
-      "hp": "2e9",
+      "hp": "3e7",
       "attack": {
-        "damage": "2500000",
+        "damage": "7000",
         "intervalSeconds": 2.5
       },
       "trick": {
@@ -66,9 +66,9 @@
       "name": "Dread Dragon Lich",
       "element": "dark",
       "art": "raid-dark-dragon-lich",
-      "hp": "2e9",
+      "hp": "3e7",
       "attack": {
-        "damage": "2500000",
+        "damage": "7000",
         "intervalSeconds": 2.5
       },
       "trick": {
@@ -85,9 +85,9 @@
       "name": "Dawn Seraph",
       "element": "light",
       "art": "raid-light-dawn-seraph",
-      "hp": "2e9",
+      "hp": "3e7",
       "attack": {
-        "damage": "2500000",
+        "damage": "5000",
         "intervalSeconds": 2.5
       },
       "trick": {
@@ -143,11 +143,11 @@
         "name": "Shard Syndicate",
         "cards": ["dawnblade_regent", "whisper_assassin", "facet_crusher", "halfmoon_reaper"],
         "scores": {
-          "rootstone_titan": 0.34,
-          "ember_tyrant": 0.34,
-          "tide_queen": 0.34,
-          "dread_dragon_lich": 0.34,
-          "dawn_seraph": 0.34
+          "rootstone_titan": 0.36,
+          "ember_tyrant": 0.36,
+          "tide_queen": 0.36,
+          "dread_dragon_lich": 0.36,
+          "dawn_seraph": 0.36
         }
       },
       {
@@ -155,11 +155,11 @@
         "name": "Ember Vanguard",
         "cards": ["emberthorn", "lavahorn", "firebriar", "emberroot"],
         "scores": {
-          "rootstone_titan": 0.46,
-          "ember_tyrant": 0.46,
-          "tide_queen": 0.52,
-          "dread_dragon_lich": 0.46,
-          "dawn_seraph": 0.46
+          "rootstone_titan": 0.5,
+          "ember_tyrant": 0.5,
+          "tide_queen": 0.55,
+          "dread_dragon_lich": 0.5,
+          "dawn_seraph": 0.5
         }
       },
       {
@@ -167,11 +167,11 @@
         "name": "Mossback Circle",
         "cards": ["runemoss", "spiralhorn", "rootstring", "amberbough"],
         "scores": {
-          "rootstone_titan": 0.6,
-          "ember_tyrant": 0.67,
-          "tide_queen": 0.6,
-          "dread_dragon_lich": 0.6,
-          "dawn_seraph": 0.6
+          "rootstone_titan": 0.68,
+          "ember_tyrant": 0.75,
+          "tide_queen": 0.68,
+          "dread_dragon_lich": 0.68,
+          "dawn_seraph": 0.68
         }
       },
       {
@@ -179,11 +179,11 @@
         "name": "Tidecallers",
         "cards": ["pearl_duelist", "foam_cavalier", "moonlit_angler", "tide_oracle"],
         "scores": {
-          "rootstone_titan": 0.9,
-          "ember_tyrant": 0.8,
-          "tide_queen": 0.8,
-          "dread_dragon_lich": 0.8,
-          "dawn_seraph": 0.8
+          "rootstone_titan": 0.99,
+          "ember_tyrant": 0.9,
+          "tide_queen": 0.9,
+          "dread_dragon_lich": 0.9,
+          "dawn_seraph": 0.9
         }
       },
       {
@@ -191,11 +191,11 @@
         "name": "Gloam Legion",
         "cards": ["brine_corsair", "midnight_rider", "siren_huntress", "murk_warlock"],
         "scores": {
-          "rootstone_titan": 1,
-          "ember_tyrant": 1,
-          "tide_queen": 1,
-          "dread_dragon_lich": 1,
-          "dawn_seraph": 1.12
+          "rootstone_titan": 1.1,
+          "ember_tyrant": 1.1,
+          "tide_queen": 1.1,
+          "dread_dragon_lich": 1.1,
+          "dawn_seraph": 1.21
         }
       },
       {
@@ -203,11 +203,11 @@
         "name": "Dawn Order",
         "cards": ["dawn_champion", "seraph_lancer", "seraph_archer", "sanctum_oracle"],
         "scores": {
-          "rootstone_titan": 1.2,
-          "ember_tyrant": 1.2,
-          "tide_queen": 1.2,
-          "dread_dragon_lich": 1.34,
-          "dawn_seraph": 1.2
+          "rootstone_titan": 1.3,
+          "ember_tyrant": 1.3,
+          "tide_queen": 1.3,
+          "dread_dragon_lich": 1.43,
+          "dawn_seraph": 1.3
         }
       },
       {
@@ -215,11 +215,11 @@
         "name": "Heirloom Court",
         "cards": ["solaris", "sunrider", "starweaver", "soulwell"],
         "scores": {
-          "rootstone_titan": 1.45,
-          "ember_tyrant": 1.45,
-          "tide_queen": 1.45,
-          "dread_dragon_lich": 1.45,
-          "dawn_seraph": 1.45
+          "rootstone_titan": 1.46,
+          "ember_tyrant": 1.46,
+          "tide_queen": 1.46,
+          "dread_dragon_lich": 1.46,
+          "dawn_seraph": 1.46
         }
       }
     ],

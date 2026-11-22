@@ -7,7 +7,10 @@
 import { readFileSync } from 'node:fs';
 import { loadContent } from '../../src/data';
 import {
+  buildTeam,
   cardAverageDps,
+  teamAverageDps,
+  teamMaxHealth,
   cloneState,
   collectModifiers,
   fightRaid,
@@ -31,9 +34,13 @@ function withTeam(state: GameState, ids: string[]): GameState {
   return s;
 }
 
-function line(label: string, f: RaidFight, bossId: string): string {
+function line(label: string, f: RaidFight, bossId: string, st?: GameState): string {
+  const team = st ? buildTeam(st, content, collectModifiers(st, content), bossId) : null;
+  const extra = team
+    ? `  dps ${teamAverageDps(team).toNumber().toExponential(2)} hp ${teamMaxHealth(team).toNumber().toExponential(2)}`
+    : '';
   const rank = raidRank(content, bossId, f.share) ?? '-';
-  return `    ${label.padEnd(8)} ${f.killed ? 'KILL' : 'no  '} share ${f.share.toFixed(2).padStart(5)}  rank ${String(rank).padStart(2)}  ${f.seconds.toFixed(0).padStart(3)}s  out ${f.out.length}  trick left ${f.trick.left.toFixed(2)}`;
+  return `    ${label.padEnd(8)} ${f.killed ? 'KILL' : 'no  '} share ${f.share.toFixed(2).padStart(5)}  rank ${String(rank).padStart(2)}  ${f.seconds.toFixed(0).padStart(3)}s  out ${f.out.length}  trick left ${f.trick.left.toFixed(2)}${extra}`;
 }
 
 function combos(n: number, k: number): number[][] {
@@ -50,7 +57,12 @@ function combos(n: number, k: number): number[][] {
 }
 
 for (const file of files) {
-  const state = readSave(readFileSync(file, 'utf8'), content).state;
+  // The sim labels its days its own way; the save format wants a date.
+  const envelope = JSON.parse(readFileSync(file, 'utf8')) as {
+    state: { summon: { dailyClaimedDay: unknown } };
+  };
+  envelope.state.summon.dailyClaimedDay = null;
+  const state = readSave(JSON.stringify(envelope), content).state;
   const mods = collectModifiers(state, content);
   const fighters = Object.keys(state.cards.owned)
     .filter((id) => content.cardById.get(id)?.job === 'fighting')
@@ -75,11 +87,13 @@ for (const file of files) {
       if (!best || f.share > best.f.share) best = { f, ids };
     }
     if (best) {
-      console.log(line('best', best.f, boss.id) + `   [${best.ids.join(', ')}]`);
+      console.log(
+        line('best', best.f, boss.id, withTeam(state, best.ids)) + `   [${best.ids.join(', ')}]`,
+      );
     }
     const loadout = fightRaid(state, content, mods, boss.id);
-    if (loadout) console.log(line('loadout', loadout, boss.id));
+    if (loadout) console.log(line('loadout', loadout, boss.id, state));
     const avg = fightRaid(withTeam(state, average), content, mods, boss.id);
-    if (avg) console.log(line('average', avg, boss.id));
+    if (avg) console.log(line('average', avg, boss.id, withTeam(state, average)));
   }
 }
