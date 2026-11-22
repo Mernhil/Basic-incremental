@@ -28,7 +28,7 @@ describe('settings preferences', () => {
   it('keeps valid choices', () => {
     expect(
       parsePrefs('{"motion":"reduced","numbers":"engineering","autosaveSeconds":300}'),
-    ).toEqual({ motion: 'reduced', autosaveSeconds: 300 });
+    ).toEqual({ motion: 'reduced', autosaveSeconds: 300, duelSpeed: 1 });
   });
 
   it('labels autosave intervals', () => {

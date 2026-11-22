@@ -4,6 +4,7 @@ import { pixelUnit } from '../ui/pixelFit';
 import { createMerger, overCap, popText } from './math';
 import { jitter, reducedMotion, stageHidden } from './motion';
 import './numbers.css';
+import { paced } from './duelPace';
 
 /**
  * Floating numbers (DESIGN.md §11, A4 B sticker numerals). Every colour, size and font comes from
@@ -121,7 +122,7 @@ export function popNumber(stage: HTMLElement, opts: PopOptions): HTMLElement | n
   numberLayer(stage).append(el);
   live.push(el);
   for (const old of overCap(live, MAX_POPUPS)) old.remove();
-  window.setTimeout(() => remove(el), TTL[opts.kind]);
+  window.setTimeout(() => remove(el), paced(TTL[opts.kind]));
   return el;
 }
 

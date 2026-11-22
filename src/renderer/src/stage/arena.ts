@@ -13,7 +13,11 @@ import {
   floorChallengeView,
   formatDuration,
   loadoutHealth,
+  DUEL_SPEEDS,
+  isSpeedUnlocked,
   nextFloorChallenge,
+  speedLocks,
+  usableSpeed,
   Decimal,
   overflowStage,
   recordDuel,
@@ -80,6 +84,7 @@ import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
 import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
+import { paced } from './duelPace';
 
 /**
  * The card duel (DESIGN.md §6 What the duel shows; UI_RULES.md §2 The duel's layout, Duel motion,
@@ -109,6 +114,8 @@ export interface ArenaContext {
   challenge?: () => void;
   /** Turns the dungeon's auto-challenge switch. */
   toggleAuto?: () => void;
+  /** The duel speed button's chosen speed and how to change it (DESIGN.md §2 Speed button). */
+  speed?: { chosen: () => number; set: (speed: number) => void };
 }
 
 export interface Arena {
@@ -228,11 +235,28 @@ export function createArena(ctx: ArenaContext): Arena {
   autoBtn.dataset['key'] = 'arena-auto';
   autoBtn.addEventListener('click', () => ctx.toggleAuto?.());
   attachTooltip(autoBtn, () => COPY.dungeons.autoTip);
+  const speedBtn = document.createElement('button');
+  speedBtn.type = 'button';
+  speedBtn.className = 'px-btn px-btn--dark du-ctrl__btn du-ctrl__speed';
+  speedBtn.dataset['key'] = 'arena-speed';
+  const usable = (): number => usableSpeed(ctx.state(), ctx.speed?.chosen() ?? 1);
+  speedBtn.addEventListener('click', () => {
+    const now = usable();
+    const open = DUEL_SPEEDS.filter((x) => isSpeedUnlocked(ctx.state(), x));
+    ctx.speed?.set(open.find((x) => x > now) ?? 1);
+    update();
+  });
+  attachTooltip(speedBtn, () =>
+    [
+      DUEL_COPY.speedTip,
+      ...Object.values(speedLocks(ctx.state())).map((k) => DUEL_COPY.speedLock[k]!),
+    ].join(' '),
+  );
   const chalMeter = div('du-timer');
   const chalFill = document.createElement('i');
   chalMeter.append(chalFill);
   chalMeter.setAttribute('aria-hidden', 'true');
-  ctrl.append(chalBtn, autoBtn);
+  ctrl.append(chalBtn, autoBtn, speedBtn);
   left.append(fall, chalMeter, ctrl);
 
   // ---- the enemy ahead: the card, its tag and feed, the plates beside it, the deck ----
@@ -543,7 +567,7 @@ export function createArena(ctx: ArenaContext): Arena {
     const from = getComputedStyle(node).opacity;
     node.style.opacity = String(opacity);
     if (calm() || !live()) return;
-    node.animate([{ opacity: from }, { opacity }], { duration: ms, easing: 'linear' });
+    node.animate([{ opacity: from }, { opacity }], { duration: paced(ms), easing: 'linear' });
   }
 
   // ---- the enemy ----
@@ -1018,6 +1042,14 @@ export function createArena(ctx: ArenaContext): Arena {
     autoBtn.setAttribute('aria-pressed', String(auto));
     autoBtn.classList.toggle('px-btn--gold', auto);
     autoBtn.classList.toggle('px-btn--dark', !auto);
+    const speed = usable();
+    setText(speedBtn, DUEL_COPY.speed(speed));
+    const locked = DUEL_SPEEDS.every((x) => x <= 1 || !isSpeedUnlocked(s, x));
+    speedBtn.classList.toggle('is-locked', locked);
+    speedBtn.setAttribute('aria-disabled', String(locked));
+    speedBtn.classList.toggle('px-btn--gold', speed > 1);
+    speedBtn.classList.toggle('px-btn--dark', speed <= 1);
+    speedBtn.hidden = !ctx.speed;
 
     // the wind-up before a slam
     const view = dungeon ? bossAttackView(s, content, mods) : null;
@@ -1241,10 +1273,10 @@ export function createArena(ctx: ArenaContext): Arena {
         { transform: `translateY(${-lift}px)`, offset: 0.45 },
         { transform: 'translateY(0)' },
       ],
-      { duration: slot.hopMs, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' },
+      { duration: paced(slot.hopMs), easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' },
     );
     slot.glow.animate([{ opacity: 0 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], {
-      duration: slot.hopMs * 1.4,
+      duration: paced(slot.hopMs * 1.4),
       easing: 'ease-out',
     });
   };
@@ -1308,7 +1340,7 @@ export function createArena(ctx: ArenaContext): Arena {
           { transform: `translate(${dx}px, ${e.slam ? 18 : 10}px)`, offset: 0.4 },
           { transform: 'none' },
         ],
-        { duration: e.slam ? 420 : 300, easing: 'ease-out' },
+        { duration: paced(e.slam ? 420 : 300), easing: 'ease-out' },
       );
       if (e.slam) {
         replay(slamFlash, 'is-hit', 460);
@@ -1332,7 +1364,7 @@ export function createArena(ctx: ArenaContext): Arena {
           scale: e.slam ? 1.6 : 1,
         });
       },
-      e.slam ? 200 : 140,
+      paced(e.slam ? 200 : 140),
     );
   });
 
@@ -1382,7 +1414,7 @@ export function createArena(ctx: ArenaContext): Arena {
     window.clearTimeout(verdictTimer);
     verdictTimer = window.setTimeout(
       () => (verdict.hidden = true),
-      shown.kind === 'victory' ? 1800 : 3200,
+      paced(shown.kind === 'victory' ? 1800 : 3200),
     );
     if (shown.kind === 'victory') play('kill');
   });

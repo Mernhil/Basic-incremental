@@ -3,6 +3,8 @@
  * autosave interval (numbers have one format and no setting). Stored per player in localStorage next to the sound settings.
  */
 
+import { DUEL_SPEEDS } from '../../../game';
+
 /** `system` follows the Windows animation setting; `reduced` and `full` override it. */
 export type MotionPref = 'system' | 'reduced' | 'full';
 
@@ -10,6 +12,8 @@ export interface UiPrefs {
   motion: MotionPref;
   /** Seconds between autosaves; one of AUTOSAVE_CHOICES. */
   autosaveSeconds: number;
+  /** The duel speed the player chose (DESIGN.md §2 Speed button); one of DUEL_SPEEDS. */
+  duelSpeed: number;
 }
 
 export const MOTION_PREFS: readonly MotionPref[] = ['system', 'reduced', 'full'];
@@ -18,6 +22,7 @@ export const AUTOSAVE_CHOICES: readonly number[] = [10, 30, 60, 120, 300];
 export const DEFAULT_PREFS: UiPrefs = {
   motion: 'system',
   autosaveSeconds: 30,
+  duelSpeed: 1,
 };
 
 export const PREFS_STORE_KEY = 'bi.ui';
@@ -38,6 +43,7 @@ export function parsePrefs(raw: string | null): UiPrefs {
   return {
     motion: pick(data['motion'], MOTION_PREFS, DEFAULT_PREFS.motion),
     autosaveSeconds: pick(data['autosaveSeconds'], AUTOSAVE_CHOICES, DEFAULT_PREFS.autosaveSeconds),
+    duelSpeed: pick(data['duelSpeed'], DUEL_SPEEDS, DEFAULT_PREFS.duelSpeed),
   };
 }
 

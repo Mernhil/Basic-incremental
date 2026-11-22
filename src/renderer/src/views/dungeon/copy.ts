@@ -27,6 +27,12 @@ export const DUEL_COPY = {
   team: (hp: string, max: string) => `Team ${hp} / ${max}`,
   autoOn: 'Auto: on',
   autoOff: 'Auto: off',
+  speed: (n: number) => `Speed ×${n}`,
+  speedTip: 'Speeds up Challenges and the fight animations. Farming pays the same.',
+  speedLock: {
+    clear: 'Speed ×2 opens after your first dungeon clear.',
+    ascend: 'Speed ×4 opens after your first Ascension.',
+  } as Record<string, string>,
   cardTip: (name: string, skill: string, role: string, desc: string, hp: string, max: string) =>
     `${name}. ${skill} (${role}): ${desc}. ${hp} / ${max} health`,
   movesTip: (skill: string | null, open: boolean, ult: string) =>

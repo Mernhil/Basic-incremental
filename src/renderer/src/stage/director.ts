@@ -16,6 +16,7 @@ import {
 } from '../../../game';
 import { bossHitShows, type ChunkSpan } from './bossHitModel';
 import { nextAverage, popupScale } from './math';
+import { paced } from './duelPace';
 
 /**
  * The stage director (DESIGN.md §11): turns the game loop's reports and the cards' rhythm into
@@ -94,7 +95,7 @@ export function createDirector(content: Content, state: () => GameState) {
         interval: stats.interval,
       });
     }
-    window.setTimeout(hitLoop, stats.interval * 1000);
+    window.setTimeout(hitLoop, paced(stats.interval * 1000));
   };
 
   // The boss's attacks come from the game's own schedule on the play-time clock (DESIGN.md §6),

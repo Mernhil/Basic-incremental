@@ -15,6 +15,7 @@ import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import type { SkillEvent, TickReport } from './report';
 import type { GameState } from './state';
+import { fightClock } from './speed';
 import { EFFECT_WORDS } from './moves';
 
 /**
@@ -67,7 +68,7 @@ export function teamView(
   const team = buildTeam(state, content, modifiers, state.activeDungeonId).filter((c) => c.id);
   const out = state.combat.knockoutSeconds > 0;
   const target = out ? null : enemyTarget(state, team);
-  const clock = state.stats.playTimeMs / 1000;
+  const clock = fightClock(state);
   const fx = activeEffects(team, clock);
   return team.map((card: TeamCard): TeamCardView => {
     const down = out || !isStanding(state, card);
@@ -117,7 +118,7 @@ export function enemyEffects(
 ): string[] {
   if (state.combat.knockoutSeconds > 0) return [];
   const team = buildTeam(state, content, modifiers, state.activeDungeonId).filter((c) => c.id);
-  return activeEffects(team, state.stats.playTimeMs / 1000).enemy.map((k) => EFFECT_WORDS[k]);
+  return activeEffects(team, fightClock(state)).enemy.map((k) => EFFECT_WORDS[k]);
 }
 
 /** The enemy standing ahead and the deck of the wave waiting behind it. */
