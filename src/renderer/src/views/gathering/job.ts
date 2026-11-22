@@ -434,8 +434,12 @@ export function createJobView(
         const ur = upgradeRow(s, content, line, count, mods);
         if (ur) {
           setSegments(ref, ur.segments);
-          set(ref.x2, `${ur.next} · ${ur.toGo}`);
-          ref.track.title = ur.next;
+          set(ref.x2, ur.next);
+          ref.x2.title = ur.nextTip;
+          ref.track.title = ur.nextTip
+            ? `${ur.next}
+${ur.nextTip}`
+            : ur.next;
           const badgeKey = ur.badges.map((x) => x.name).join('|');
           if (badgeKey !== ref.badgeKey) {
             ref.badgeKey = badgeKey;
