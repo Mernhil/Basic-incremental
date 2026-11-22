@@ -14,6 +14,7 @@ import './gathering.css';
 const campView = (id: 'logging' | 'mining', place: 'forest' | 'cave'): ViewDef => ({
   id,
   title: COPY.view.titles[id],
+  pile: { glyph: 'production', hint: () => ({ text: T.campHint }) },
   mount: (host, ctx) => createCampView(host, ctx, place),
 });
 

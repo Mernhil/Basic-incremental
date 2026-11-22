@@ -11,6 +11,7 @@ export const GATHERING_COPY = {
   slotRate: (name: string, rate: string) => `${name} ${rate}/s`,
   placeRate: (place: string, rate: string) => `${place}: ${rate}/s in all`,
   forgeHint: 'Recipes',
+  campHint: 'Slots and camp level',
 
   // the Forge view (mockup 4f)
   forgeNote: 'one recipe at a time · kept through Ascension',
