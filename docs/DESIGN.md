@@ -109,7 +109,6 @@ _Why (user, 2026-11-20): "another thing we need to work on ... is tghe summoning
 
 ### Dungeons and summons
 
-- The Shadow Slime's front-facing redraw is in the game and you have not seen it yet. Keep it or redo it?
 - The small enemy packs (Bloodroot, Obsidian Crab and the small Elie sprites) look small next to the other bodies. Double them? Whether their drawn size changed since was not checked.
 - The reveal show uses Claude's mockup r3 "Fan Deck", which you never picked. It is to be replaced by the redone reveal (section 2), and you pick the new look from mock-ups on the picker page. The game keeps the Fan Deck until then.
 

@@ -29,8 +29,11 @@ describe('pixel bosses (DESIGN.md §12)', () => {
   });
 
   it('bakes each boss at 160 x 172 with a soft aura colour and an idle effect, no sticker ring', () => {
+    // the three dungeon bosses' pictures were taken out (the duel card shows the placeholder)
     for (const art of BOSS_ARTS) {
-      expect(sprite(`boss-${art}`)).toMatchObject({ w: 160, h: 172 });
+      if (art === 'crystal_sentinel')
+        expect(sprite(`boss-${art}`)).toMatchObject({ w: 160, h: 172 });
+      else expect(sprite(`boss-${art}`)).toBeUndefined();
       expect(BOSS_LOOK[art].glow).toMatch(/^#[0-9a-f]{6}$/);
       expect(bossVector(art)).not.toContain('stroke="#fff" stroke-width="9"');
     }

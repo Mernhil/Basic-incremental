@@ -17,10 +17,27 @@ function spriteIds(): string[] {
 
 describe('the enemy roster art (ASSET_RULES §5)', () => {
   it('gives every sprite id a still and an idle strip on the boss canvas', () => {
+    // the approved newer pictures are stills (no idle strip); the pack enemies have a strip
+    const STILLS = [
+      'moss_slime',
+      'bramble_beast',
+      'frost_imp',
+      'ice_wisp',
+      'storm_harpy',
+      'drowned_deckhand',
+      'lantern_moth',
+      'gilded_acolyte',
+      'shade_mote',
+      'rift_maw',
+    ];
     for (const id of spriteIds()) {
       const still = MANIFEST[`foe-${id}`];
-      const strip = MANIFEST[`foe-${id}-anim`];
       expect(still, id).toMatchObject({ w: 160, h: 172 });
+      if (STILLS.includes(id)) {
+        expect(MANIFEST[`foe-${id}-anim`], id).toBeUndefined();
+        continue;
+      }
+      const strip = MANIFEST[`foe-${id}-anim`];
       expect(strip, id).toBeDefined();
       expect(strip!.w % 160, id).toBe(0);
       expect(still!.animated?.frames, id).toBe(strip!.w / 160);

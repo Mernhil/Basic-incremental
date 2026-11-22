@@ -232,12 +232,9 @@ export async function bakeSmall(): Promise<Baked[]> {
 /** Bosses (160 x 172, Brave Frontier technique, soft aura instead of a sticker ring) and shards. */
 export async function bakeBosses(): Promise<Baked[]> {
   const res: Baked[] = [];
-  for (const art of [
-    'root_warden',
-    'cinder_lich',
-    'glacier_colossus',
-    'crystal_sentinel',
-  ] as const) {
+  // root_warden, cinder_lich and glacier_colossus are not baked: their pictures were taken out of
+  // the game (art/foes.ts shows the placeholder); the drawings stay in art/vector/bosses.ts
+  for (const art of ['crystal_sentinel'] as const) {
     const { grid } = await rasterSvg(bossVector(art), BOSS_VB, 1);
     res.push(out(`boss-${art}`, sweepOrphans(outline(cleanOrphans(grid)))));
   }
