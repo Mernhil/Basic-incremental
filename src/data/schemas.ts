@@ -13,8 +13,10 @@ const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, 
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
-/** Card elements (DESIGN.md §12): each picks the card's element effect. */
-export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
+/** The five elements (DESIGN.md §2 Fights): water beats fire beats earth beats water; light and dark beat each other. */
+export const ELEMENTS = ['water', 'fire', 'earth', 'light', 'dark'] as const;
+/** The three that a boss can resist: nothing ever resists light or dark. */
+export const RESISTABLE_ELEMENTS = ['water', 'fire', 'earth'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
 
 /**
@@ -554,7 +556,8 @@ const cardBase = {
   tier: z.enum(RANK_TIERS),
   /** The side of a T6 or Heirloom card: Mythic (heroic) or Void (villainous). Only on those. */
   side: z.enum(['mythic', 'void']).optional(),
-  element: z.enum(ELEMENTS),
+  /** Only on a T6 or Heirloom card; Wood to Prismatic cards have none and do plain base damage. */
+  element: z.enum(ELEMENTS).optional(),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
   /**
@@ -850,7 +853,8 @@ export const dungeonSchema = z.strictObject({
     sprite: id.optional(),
     /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
     weakness: z.enum(ELEMENTS),
-    resistance: z.enum(ELEMENTS),
+    /** Absent when the boss has none (never light or dark). */
+    resistance: z.enum(RESISTABLE_ELEMENTS).optional(),
     hp: positiveDecimal,
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),

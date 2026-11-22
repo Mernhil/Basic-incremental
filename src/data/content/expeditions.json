@@ -5,7 +5,7 @@
       "id": "mossy_outskirts",
       "name": "Mossy Outskirts",
       "dungeon": "mossy_cellar",
-      "element": "nature",
+      "element": "earth",
       "rewards": {
         "materials": [
           {
@@ -47,7 +47,7 @@
       "id": "frostspire_pass",
       "name": "Frostspire Pass",
       "dungeon": "frostspire_vault",
-      "element": "crystal",
+      "element": "water",
       "rewards": {
         "materials": [
           {

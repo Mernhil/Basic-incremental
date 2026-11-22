@@ -231,14 +231,14 @@ describe('the stats the new skills read', () => {
         .find((m) => m.source.kind === 'element' && m.scope?.dungeon === 'mossy_cellar')
         ?.value.toNumber();
     const fire = bareState();
-    fire.cards.owned['ember_squire'] = newOwnedCard();
-    fire.cards.loadouts.fighting.slots[0] = 'ember_squire';
+    fire.cards.owned['grave_hammerer'] = newOwnedCard();
+    fire.cards.loadouts.fighting.slots[0] = 'grave_hammerer';
     expect(elem(fire)).toBe(50);
     fire.account.skills['elements_s1'] = 4; // Attunement: +5% a rank
     expect(elem(fire)).toBeCloseTo(60);
     const nature = bareState();
-    nature.cards.owned['fieldhand_archer'] = newOwnedCard();
-    nature.cards.loadouts.fighting.slots[0] = 'fieldhand_archer';
+    nature.cards.owned['jade_vanguard'] = newOwnedCard();
+    nature.cards.loadouts.fighting.slots[0] = 'jade_vanguard';
     expect(elem(nature)).toBe(-25);
     nature.account.skills['elements_s3'] = 4; // Ward: -5% malus a rank
     expect(elem(nature)).toBeCloseTo(-20);

@@ -355,7 +355,9 @@ export function createExpeditionsPanel(
           TEXT.card,
           v.available.map((c) => ({
             value: c.id,
-            text: `${cardDisplayName(ctx.content, c)} (${c.element})`,
+            text: c.element
+              ? `${cardDisplayName(ctx.content, c)} (${c.element})`
+              : cardDisplayName(ctx.content, c),
           })),
           pickCard,
           (x) => (pickCard = x),

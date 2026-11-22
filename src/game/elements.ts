@@ -4,20 +4,23 @@ import type { Modifier } from './modifiers';
 import type { GameState } from './state';
 
 /**
- * Elements in combat (DESIGN.md §6): each fighting card's element against a boss gives that card's
- * own damage a bonus or a malus, and a worker on a tree or mine of its own element a lighter one. Elements are a bonus, never a wall; every number is in `combat.json` `elements`.
+ * Elements in combat (DESIGN.md §2 Fights): water, fire, earth, light and dark. Each T6 or Heirloom
+ * fighting card's element against a boss gives that card's own damage a bonus or a malus, and a worker on a tree
+ * or mine of its own element a lighter one. A Wood to Prismatic card has no element: plain base damage,
+ * never strong or weak. Nothing resists light or dark. Elements are a bonus, never a wall; every number is
+ * in `combat.json` `elements`.
  */
 
 export type ElementRelation = 'weak' | 'resist' | 'neutral';
 
-/** How an element meets a dungeon's boss. Anything that is not one of the six bosses is neutral. */
+/** How an element meets a dungeon's boss. No element, or anything that is not one of the six bosses, is neutral. */
 export function elementRelation(
   content: Content,
   dungeonId: string,
-  element: CardElement,
+  element: CardElement | undefined,
 ): ElementRelation {
   const boss = content.dungeonById.get(dungeonId)?.boss;
-  if (!boss) return 'neutral';
+  if (!boss || !element) return 'neutral';
   if (boss.weakness === element) return 'weak';
   if (boss.resistance === element) return 'resist';
   return 'neutral';
@@ -27,7 +30,7 @@ export function elementRelation(
 export function elementDamagePercent(
   content: Content,
   dungeonId: string,
-  element: CardElement,
+  element: CardElement | undefined,
 ): Decimal {
   const { weakness, resistance } = content.combat.elements;
   const relation = elementRelation(content, dungeonId, element);
@@ -73,7 +76,8 @@ export function workerElementModifier(
   scope: NonNullable<Modifier['scope']>,
 ): Modifier[] {
   const place = content.treeById.get(placeId) ?? content.mineById.get(placeId);
-  if (!place || content.cardById.get(cardId)?.element !== place.element) return [];
+  const element = content.cardById.get(cardId)?.element;
+  if (!place || !element || element !== place.element) return [];
   return [
     {
       stat: 'production.rate',

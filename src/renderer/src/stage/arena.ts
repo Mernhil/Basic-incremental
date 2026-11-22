@@ -1051,7 +1051,8 @@ export function createArena(ctx: ArenaContext): Arena {
   function playSpecial(slot: HandSlot, skillId: string, damage: Total): boolean {
     const card = content.cardById.get(slot.cardId);
     const kind = card?.item?.kind;
-    if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
+    if (!card || slot.out || !hasSpecial(kind, card.element, card.tier) || document.hidden)
+      return false;
     const item = slot.body.querySelector<HTMLElement>('.bi-card__item [data-sprite]');
     const pic = weaponPic(item?.dataset['sprite'] ?? '');
     if (!item || !pic) return false;
@@ -1078,7 +1079,7 @@ export function createArena(ctx: ArenaContext): Arena {
     const before = tagShown;
     const played = special.play({
       kind: kind!,
-      element: card.element,
+      element: card.element ?? '',
       tier: card.tier,
       weapon: pic,
       card: cardNameById(content, slot.cardId) ?? slot.cardId,

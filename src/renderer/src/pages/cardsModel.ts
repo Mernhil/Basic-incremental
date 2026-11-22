@@ -112,7 +112,7 @@ export interface CardEntry {
   itemType: string;
   /** Signature item markup (art/items.ts). */
   item: string;
-  element: CardElement;
+  element?: CardElement;
   owned: boolean;
   /** Owned cards only; unowned cards show their starting rank greyed out. */
   rank: Rank;

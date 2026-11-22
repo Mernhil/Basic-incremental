@@ -103,3 +103,23 @@ export function stageCell(
     overflow: overflowSwitch(info),
   };
 }
+
+/** One element a boss is weak to or resists, with the percent it changes a card's damage by. */
+export interface BossElement {
+  element: string;
+  percent: number;
+}
+
+/**
+ * What the dungeon panel says about a boss's elements (DESIGN.md §2 Fights): the one it is weak to
+ * and, when it has one, the one it resists. `sizes` are the percents from `combat.json`.
+ */
+export function bossElements(
+  boss: { weakness: string; resistance?: string | undefined },
+  sizes: { weakness: number; resistance: number },
+): { weak: BossElement; resist?: BossElement } {
+  return {
+    weak: { element: boss.weakness, percent: sizes.weakness },
+    ...(boss.resistance ? { resist: { element: boss.resistance, percent: sizes.resistance } } : {}),
+  };
+}

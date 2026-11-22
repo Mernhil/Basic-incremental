@@ -505,7 +505,10 @@ export function createCardsPage(
     const info = heirloomEntry(state, content, card);
     const tree = heirloomTreeInfo(state, content, e.id);
     const side = COPY.summon.heirloomSide[info.side] ?? info.side;
-    const { el, body } = frame(e.name, COPY.cards.heirloomSub(e.itemType, side, cap1(e.element)));
+    const { el, body } = frame(
+      e.name,
+      COPY.cards.heirloomSub(e.itemType, side, cap1(e.element ?? '')),
+    );
     el.classList.add('cp-detail', 'cp-heirloom');
     el.dataset['deal'] = '';
     if (tree) body.append(treeHead(e, tree));
