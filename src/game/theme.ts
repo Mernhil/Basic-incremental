@@ -271,9 +271,11 @@ export interface Backdrop {
   motion?: 'sea';
 }
 
-/** The T6 card kit of a card: its batch's, and the first batch's (Dragon) for a card with no `batch` or an id not in the content. */
+/** The T6 card kit of a card: a starter weapon's own (`kit-starter-<id>`), else its batch's, and the first batch's (Dragon) for a card with no `batch` or an id not in the content. */
 export function baseKitOf(content: Content, cardId: string): string {
-  const batch = content.cardById.get(cardId)?.batch;
+  const card = content.cardById.get(cardId);
+  if (card?.starterArt) return `kit-starter-${card.id}`;
+  const batch = card?.batch;
   return (batch ? content.batchById.get(batch) : undefined)?.kit ?? content.batches[0]!.kit;
 }
 
