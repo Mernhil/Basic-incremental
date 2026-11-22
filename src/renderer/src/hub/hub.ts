@@ -53,7 +53,23 @@ export function createHub(
   outlines.setAttribute('class', 'hub__outlines');
   outlines.setAttribute('viewBox', `0 0 ${HUB_MAP_W} ${HUB_MAP_H}`);
   const tags = h('div', 'hub__tags');
-  stage.append(img, outlines, tags);
+  // Hover look: the rest of the map dims and the building under the mouse lifts one picture pixel
+  // and glows. Both layers are cut to the building's outline; nothing is drawn until a mouseover.
+  const dim = document.createElementNS(NS, 'svg');
+  dim.setAttribute('class', 'hub__dim');
+  dim.setAttribute('viewBox', `0 0 ${HUB_MAP_W} ${HUB_MAP_H}`);
+  dim.setAttribute('preserveAspectRatio', 'none');
+  const dimPath = document.createElementNS(NS, 'path');
+  dimPath.setAttribute('fill-rule', 'evenodd');
+  dim.append(dimPath);
+  const lift = h('div', 'hub__lift');
+  const liftImg = h('img', 'hub__lift-img') as HTMLImageElement;
+  liftImg.src = mapUrl;
+  liftImg.alt = '';
+  liftImg.draggable = false;
+  liftImg.setAttribute('aria-hidden', 'true');
+  lift.append(liftImg);
+  stage.append(img, dim, lift, outlines, tags);
   scroller.append(stage);
 
   const menu = h('div', 'hub__menu px-panel');
@@ -100,6 +116,7 @@ export function createHub(
 
     const show = (on: boolean): void => {
       tag.classList.toggle('is-on', on);
+      lit(on ? def : null);
     };
     shape.addEventListener('pointerenter', () => show(true));
     shape.addEventListener('pointerleave', () => show(false));
@@ -158,6 +175,30 @@ export function createHub(
   el.addEventListener('pointerdown', (e) => {
     if (!menu.hidden && !(e.target as Element).closest('.hub__menu, .hub__shape')) closeMenu();
   });
+
+  /** Lights one building (dims the rest, lifts it) or none. */
+  function lit(def: HubBuilding | null): void {
+    if (!def) {
+      dim.classList.remove('is-on');
+      lift.classList.remove('is-on');
+      return;
+    }
+    const w = HUB_MAP_W * scale;
+    const hh = HUB_MAP_H * scale;
+    const pts = def.shape.map((p) => `${p[0] * scale}px ${p[1] * scale}px`).join(', ');
+    // the whole map minus the building: two sub-paths, filled even-odd
+    const hole = def.shape.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]} ${p[1]}`).join(' ');
+    dimPath.setAttribute('d', `M0 0H${HUB_MAP_W}V${HUB_MAP_H}H0Z ${hole}Z`);
+    dim.classList.add('is-on');
+    const locked = def.action.kind === 'locked';
+    lift.classList.toggle('is-on', !locked);
+    if (!locked) {
+      liftImg.style.clipPath = `polygon(${pts})`;
+      lift.style.transform = `translateY(-${scale}px)`;
+      liftImg.style.width = `${w}px`;
+      liftImg.style.height = `${hh}px`;
+    }
+  }
 
   let scale = 0;
   let area = '';

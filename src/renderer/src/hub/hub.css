@@ -27,30 +27,45 @@
   display: block;
   overflow: visible;
 }
-/* an outline shows only under the mouse (or with the keyboard on it); until then the picture is clean */
+/* the shapes are only the click areas: nothing is drawn on them. A mouseover dims the rest of the map
+   and lifts the building one picture pixel with a warm glow (hub.ts `lit`). */
 .hub__shape {
   fill: transparent;
-  stroke: transparent;
-  stroke-width: 3px;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  stroke: none;
   cursor: pointer;
   outline: none;
-}
-.hub__shape:hover,
-.hub__shape:focus-visible {
-  stroke: var(--hub-gold, #f2c14e);
-  fill: color-mix(in srgb, #fff 10%, transparent);
-  filter: drop-shadow(0 0 4px var(--hub-gold, #f2c14e));
 }
 .hub__shape.is-locked {
   cursor: not-allowed;
 }
-.hub__shape.is-locked:hover,
-.hub__shape.is-locked:focus-visible {
-  stroke: #8a8a90;
-  fill: color-mix(in srgb, #000 40%, transparent);
-  filter: none;
+.hub__dim,
+.hub__lift {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+.hub__dim {
+  fill: rgb(8 6 14 / 42%);
+}
+.hub__dim path {
+  fill: rgb(8 6 14 / 44%);
+}
+.hub__dim.is-on,
+.hub__lift.is-on {
+  opacity: 1;
+}
+.hub__lift {
+  filter: drop-shadow(0 0 5px rgb(255 214 120 / 85%)) drop-shadow(0 0 14px rgb(255 190 80 / 45%));
+}
+.hub__lift-img {
+  display: block;
+  image-rendering: pixelated;
+  filter: brightness(1.16) saturate(1.1);
 }
 .hub__tags {
   position: absolute;
