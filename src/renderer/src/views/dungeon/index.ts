@@ -33,6 +33,7 @@ function ensureArena(ctx: TableContext): Arena {
       return (open === null || open === 'dungeon') && !document.hidden;
     },
     sound: ctx.sound,
+    speed: ctx.duelSpeed,
     challenge: () => {
       const r = startFloorChallenge(ctx.state(), ctx.content);
       if (r.ok) ctx.apply(r.state);

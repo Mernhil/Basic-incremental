@@ -19,6 +19,7 @@ export * from './stageStars';
 export * from './training';
 export * from './forge';
 export * from './loop';
+export * from './speed';
 export * from './offline';
 export * from './migrations';
 export * from './save';
