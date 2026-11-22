@@ -14,16 +14,21 @@ describe('a cost is shown once, with the material sprite', () => {
     expect(costText(content, 'summon_scroll', new Decimal(10))).toBe('10');
   });
 
-  it('a material with no sprite keeps its name in words', () => {
-    expect(hasCostArt(content, 'glimmer_dust')).toBe(false);
-    expect(costText(content, 'glimmer_dust', new Decimal(40))).toBe('40 Glimmer Dust');
+  it('Cores, Dust, Shards, Sigils and Starlight have a sprite, so their cost is the number alone', () => {
+    for (const id of [
+      'moss_core',
+      'frost_sigil',
+      'facet_shard',
+      'star_dust',
+      'glimmer_dust',
+      'starlight',
+    ])
+      expect(hasCostArt(content, id)).toBe(true);
+    expect(costText(content, 'frost_core', new Decimal(8))).toBe('8');
   });
 
-  it('Starlight and the scrolls have a sprite; Cores, Dust and Shards have none yet', () => {
-    for (const id of ['starlight', 'glamour_scroll', 'heirloom_scroll', 'summon_scroll'])
-      expect(hasCostArt(content, id)).toBe(true);
-    for (const id of ['moss_core', 'frost_sigil', 'facet_shard', 'star_dust'])
-      expect(hasCostArt(content, id)).toBe(false);
+  it('a resource with no sprite keeps its name in words', () => {
+    expect(hasCostArt(content, 'no_such_resource')).toBe(false);
   });
 
   it('the label always names the material, for the tooltip', () => {

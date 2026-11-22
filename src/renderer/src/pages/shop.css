@@ -303,8 +303,9 @@ html .shop-body .shop-price:not(.is-no):not(#_px) {
 }
 .shop-price__ico svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: 32px;
+  height: 32px;
+  margin: -8px 0;
 }
 .shop-price__ico .shop-icon {
   fill: currentColor;

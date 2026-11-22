@@ -38,11 +38,11 @@ import {
 } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import {
-  iconMarkup,
   isCrystal,
   isHeaderResource,
   moneyCoinArt,
   resourceIconId,
+  resourceIconMarkup,
 } from './ui/resourceIcons';
 import { createShell, h, type Currency } from './shell/shell';
 import { createTable } from './table/table';
@@ -64,11 +64,9 @@ import {
 } from './pages/progressionModel';
 import { createQuestScroll } from './shell/quest';
 import { playTierUps } from './stage/tierUp';
-import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
 import { setNumberMotion, setPixelTick } from './stage/numbers';
-import { starlightSvg } from './ui/skins';
 import { installPixelNumbers, refreshPixelNumbers } from './ui/pixelNumbers';
 import { showWelcomeBack } from './stage/welcome';
 import { initSound, playSound } from './sound/engine';
@@ -117,10 +115,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick?.visual.effect);
     setPixelTick(getComputedStyle(document.documentElement).getPropertyValue('--bi-tick-px'));
     refreshPixelNumbers();
-    shellRef?.setCurrencyArt(prestigeId, starlightSvg());
   };
-  let shellRef: { setCurrencyArt(id: string, art: string): void } | null = null;
-  const prestigeId = content.resources.find((r) => r.kind === 'prestige')?.id ?? '';
   applyTheme();
 
   // ---- layout ----
@@ -137,7 +132,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   // behind the Details button, where its coins fly. Icons are swappable ids (ui/resourceIcons).
   const currencies: Currency[] = content.resources.map((r) => {
     const iconId = resourceIconId(r);
-    const placeholder = iconMarkup(iconId);
+    const art = resourceIconMarkup(r);
     return {
       id: r.id,
       name: r.name,
@@ -145,9 +140,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       iconId,
       inDetails: !isHeaderResource(r),
       crystal: isCrystal(r),
-      ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
-      ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
-      ...(!r.gem && r.kind !== 'prestige' && placeholder ? { art: placeholder } : {}),
+      ...(art ? { art } : {}),
       tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
     };
   });
@@ -189,7 +182,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     returnFocus: () => shell.levelButton.focus(),
   });
   shell.setLevel(levelBadge(accountInfo(loop.state, content)));
-  shellRef = shell;
   installPixelNumbers(shell.el);
   // the one table (UI_RULES.md §2, "The table"): the window, the wings, the dock and the views
   const table = createTable();
@@ -388,8 +380,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         s.resources[r.id] ?? new Decimal(0),
         header ? incomePerSecond(s, content, r.id, mods) : null,
       );
-      // the coin shows the gem's mastery metal (E2)
-      if (r.gem) shell.setCurrencyArt(r.id, svg(gemCoin(r.gem, gemMastery(s, content, r.id).tier)));
     }
     shell.setLevel(levelBadge(accountInfo(s, content)));
     details.update();
