@@ -23,6 +23,8 @@ export interface BossRow {
   trickKind: RaidBoss['trick']['kind'];
   trickLine: string;
   answer: string;
+  /** The boss's level (kills so far). */
+  level: number;
   triesLeft: number;
   triesMax: number;
   /** Best score as a share of the boss's HP, or null with none. */
@@ -44,6 +46,7 @@ export function bossRows(state: GameState, content: Content, today: string): Bos
       trickKind: b.trick.kind,
       trickLine: b.trick.line,
       answer: b.trick.answer,
+      level: state.raids.level[b.id] ?? 0,
       triesLeft: raidTriesLeft(state, content, b.id, today),
       triesMax: content.raids.triesPerDay,
       best,

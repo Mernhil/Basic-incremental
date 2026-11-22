@@ -40,5 +40,8 @@ export const RAIDS_COPY = {
     judgement: 'Judgement',
   },
   trickLeft: (percent: number) => `The trick still works at ${percent}% against your team`,
+  level: (n: number) => `Level ${n + 1}`,
+  levelUp: (n: number) =>
+    `Each kill raises the boss: it is now level ${n + 1}, with more health and a harder hit. Your best score starts again; rank rewards already paid stay paid.`,
   tabBosses: 'Bosses',
 };

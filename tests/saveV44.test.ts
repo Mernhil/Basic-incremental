@@ -18,14 +18,14 @@ describe('v43 -> v44 (raids)', () => {
     envelope.version = 43;
     delete envelope.state['raids'];
     const back = readSave(JSON.stringify(envelope), content).state;
-    expect(back.raids).toEqual({ day: null, used: {}, best: {}, paid: {} });
+    expect(back.raids).toEqual({ day: null, used: {}, best: {}, paid: {}, level: {} });
     expect(back.prestigeCount).toBe(2);
   });
 
   it('migrates the raw state directly', () => {
     expect(MIGRATIONS[43]!({ a: 1 })).toEqual({
       a: 1,
-      raids: { day: null, used: {}, best: {}, paid: {} },
+      raids: { day: null, used: {}, best: {}, paid: {}, level: {} },
     });
   });
 
@@ -36,6 +36,7 @@ describe('v43 -> v44 (raids)', () => {
       used: { tide_queen: 2 },
       best: { tide_queen: 0.42 },
       paid: { tide_queen: 8 },
+      level: { tide_queen: 2 },
     };
     const back = readSave(createSaveText(state, 0), content).state;
     expect(back.raids).toEqual(state.raids);

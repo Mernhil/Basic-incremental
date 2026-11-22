@@ -304,7 +304,7 @@ describe('v26 -> v27 (the table update)', () => {
     // format 43: the starter weapon's pick is offered once to a save that began before it
     camped['starter'] = { done: false, skippable: true };
     // format 44: an empty raid record (DESIGN.md §2 Raid bosses)
-    const raided = { ...camped, raids: { day: null, used: {}, best: {}, paid: {} } };
+    const raided = { ...camped, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
     expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

@@ -917,6 +917,8 @@ export const raidsSchema = z
     durationSeconds: z.number().positive(),
     /** A kill ends the fight; its score is the HP times 1 + killBonus x (time left / duration). */
     killBonus: z.number().min(0),
+    /** A kill raises that boss one level: its HP and attack grow by these factors for each level. */
+    levelGrowth: z.strictObject({ hp: z.number().min(1), attack: z.number().min(1) }),
     bosses: z
       .array(
         z.strictObject({

@@ -200,8 +200,9 @@ export const serializedStateSchema = z.object({
       used: z.record(z.string(), z.number().int().min(0)),
       best: z.record(z.string(), z.number().min(0).finite()),
       paid: z.record(z.string(), z.number().int().min(1)),
+      level: z.record(z.string(), z.number().int().min(0)).default({}),
     })
-    .default({ day: null, used: {}, best: {}, paid: {} }),
+    .default({ day: null, used: {}, best: {}, paid: {}, level: {} }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
   }),
@@ -813,6 +814,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
     used: { ...saved.raids.used },
     best: { ...saved.raids.best },
     paid: { ...saved.raids.paid },
+    level: { ...saved.raids.level },
   };
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,

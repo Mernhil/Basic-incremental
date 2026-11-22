@@ -147,12 +147,25 @@ export interface RaidFight {
   out: string[];
   samples: RaidSample[];
   trick: TrickEffect;
+  /** The boss's level in this fight (kills so far). */
+  level: number;
 }
 
-/** The boss's HP after the `combat.bossHp` modifiers (scope: the boss id). */
-export function raidBossHp(boss: RaidBoss, modifiers: readonly Modifier[]): Decimal {
+/** A boss's level: one for each kill so far (0 = never killed). */
+export function raidLevel(state: GameState, bossId: string): number {
+  return state.raids.level[bossId] ?? 0;
+}
+
+/** The boss's HP at a level, after the `combat.bossHp` modifiers (scope: the boss id). */
+export function raidBossHp(
+  content: Content,
+  boss: RaidBoss,
+  modifiers: readonly Modifier[],
+  level = 0,
+): Decimal {
+  const base = boss.hp.mul(Decimal.pow(content.raids.levelGrowth.hp, level));
   return Decimal.max(
-    computeStat('combat.bossHp', boss.hp, modifiers, { job: 'fighting', dungeon: boss.id }).value,
+    computeStat('combat.bossHp', base, modifiers, { job: 'fighting', dungeon: boss.id }).value,
     1,
   );
 }
@@ -173,8 +186,11 @@ export function fightRaid(
   const cfg = content.raids;
   const team = buildTeam(state, content, modifiers, boss.id);
   const trick = bossTrick(boss, team);
-  const hp = raidBossHp(boss, modifiers);
-  const attack = boss.attack.damage.mul(1 - defencePercent(modifiers, boss.id) / 100);
+  const level = raidLevel(state, boss.id);
+  const hp = raidBossHp(content, boss, modifiers, level);
+  const attack = boss.attack.damage
+    .mul(Decimal.pow(cfg.levelGrowth.attack, level))
+    .mul(1 - defencePercent(modifiers, boss.id) / 100);
   const scratch = cloneState(state);
   reviveTeam(scratch);
   const every = boss.attack.intervalSeconds;
@@ -258,6 +274,7 @@ export function fightRaid(
     out: [...scratch.combat.cardsOut],
     samples,
     trick,
+    level,
   };
 }
 
@@ -313,6 +330,9 @@ export interface RaidTry {
   /** The player's best rank on this boss after the try. */
   rank: number | null;
   newBest: boolean;
+  /** The boss's new level when this try killed it, else null: its HP and attack grow and the
+   *  best score starts again (the rank rewards already paid stay paid). */
+  levelUp: number | null;
   /** Rewards this try paid (rank rewards, each paid once per boss). */
   rewards: { resource: string; amount: Decimal }[];
 }
@@ -358,5 +378,11 @@ export function tryRaid(
     }
     next.raids.paid[bossId] = Math.min(paid, rank);
   }
-  return { ok: true, state: next, result: { fight, rank, newBest, rewards } };
+  let levelUp: number | null = null;
+  if (fight.killed) {
+    levelUp = raidLevel(next, bossId) + 1;
+    next.raids.level[bossId] = levelUp;
+    delete next.raids.best[bossId];
+  }
+  return { ok: true, state: next, result: { fight, rank, newBest, levelUp, rewards } };
 }

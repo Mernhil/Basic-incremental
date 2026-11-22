@@ -3,6 +3,7 @@ import {
   collectModifiers,
   localDay,
   raidBossHp,
+  raidLevel,
   raidsOpen,
   tryRaid,
   type RaidTry,
@@ -99,6 +100,7 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     chips.append(
       h('span', `rd-chip rd-chip--${row.element}`, cap(row.element)),
       h('span', 'rd-chip', T.weakTo(row.weakTo)),
+      h('span', 'rd-chip rd-chip--level', T.level(row.level)),
     );
     const trick = h('p', 'rd-boss__trick');
     trick.append(
@@ -114,9 +116,12 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
         ? T.noBest
         : T.best(
             fmt(
-              raidBossHp(content.raidById.get(row.id)!, collectModifiers(ctx.state(), content)).mul(
-                row.best,
-              ),
+              raidBossHp(
+                content,
+                content.raidById.get(row.id)!,
+                collectModifiers(ctx.state(), content),
+                row.level,
+              ).mul(row.best),
             ),
             shareText(row.best),
             row.rank,
@@ -241,6 +246,8 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     const score = h('p', 'bi-num', T.score(fmt(fight.score), shareText(fight.share)));
     result.replaceChildren(head, score);
     if (newBest) result.append(h('p', 'rd-gold', T.newBest));
+    if (played.try.levelUp !== null)
+      result.append(h('p', 'rd-gold', T.levelUp(played.try.levelUp)));
     if (rank !== null)
       result.append(h('p', 'bi-num', T.rank(rank, content.raids.ladder.teams.length + 1)));
     result.append(
@@ -273,7 +280,12 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
   function buildLadder(bossId: string): void {
     const state = ctx.state();
     const boss = content.raidById.get(bossId)!;
-    const hp = raidBossHp(boss, collectModifiers(state, content));
+    const hp = raidBossHp(
+      content,
+      boss,
+      collectModifiers(state, content),
+      raidLevel(state, bossId),
+    );
     const panel = h('section', 'rd-ladder px-panel');
     panel.append(h('h2', 'px-display', T.ladderTitle(boss.name)), h('p', 'rd-note', T.ladderNote));
     const table = h('ol', 'rd-ladder__rows');

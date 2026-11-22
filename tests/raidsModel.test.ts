@@ -26,6 +26,7 @@ const fight = (over: Partial<RaidFight> = {}): RaidFight => ({
     { t: 20, dealt: 0.5, down: 1 },
   ],
   trick: { kind: 'rage', left: 1 },
+  level: 0,
   ...over,
 });
 
@@ -37,12 +38,14 @@ describe('the Raids view model', () => {
       used: { ember_tyrant: 1 },
       best: { ember_tyrant: 0.8 },
       paid: {},
+      level: { ember_tyrant: 1 },
     };
     const rows = bossRows(s, content, '2026-12-01');
     expect(rows).toHaveLength(5);
     const tyrant = rows.find((r) => r.id === 'ember_tyrant')!;
     expect(tyrant.weakTo).toBe('water');
     expect(tyrant.triesLeft).toBe(2);
+    expect(tyrant.level).toBe(1);
     expect(tyrant.best).toBe(0.8);
     expect(tyrant.rank).not.toBeNull();
     expect(rows.find((r) => r.id === 'tide_queen')!.rank).toBeNull();
@@ -78,7 +81,13 @@ describe('the Raids view model', () => {
 
   it('lists the ladder with the player and the rewards with what is paid', () => {
     const s = freshState();
-    s.raids = { day: null, used: {}, best: { tide_queen: 0.5 }, paid: { tide_queen: 7 } };
+    s.raids = {
+      day: null,
+      used: {},
+      best: { tide_queen: 0.5 },
+      paid: { tide_queen: 7 },
+      level: {},
+    };
     const lines = ladderLines(s, content, 'tide_queen', new Decimal(1000));
     expect(lines.filter((l) => l.you)).toHaveLength(1);
     expect(lines).toHaveLength(content.raids.ladder.teams.length + 1);

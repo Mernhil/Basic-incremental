@@ -3,6 +3,10 @@
   "triesPerDay": 3,
   "durationSeconds": 90,
   "killBonus": 0.5,
+  "levelGrowth": {
+    "hp": 1.6,
+    "attack": 1.25
+  },
   "bosses": [
     {
       "id": "rootstone_titan",

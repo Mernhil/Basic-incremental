@@ -6,7 +6,9 @@ import {
   elementRelation,
   fightRaid,
   newOwnedCard,
+  raidBossHp,
   raidLadder,
+  raidLevel,
   raidRank,
   raidsOpen,
   raidTriesLeft,
@@ -235,5 +237,42 @@ describe('the ladder and rewards', () => {
     const again = tryRaid(s, strong, mods(s), 'tide_queen', TODAY);
     if (!again.ok) throw new Error(again.reason);
     expect(again.result.rewards).toEqual([]);
+  });
+});
+
+describe('raid levels', () => {
+  it('a kill raises the boss a level: more health, a harder hit, the best score starts again', () => {
+    let s = teamOf(SWORDS);
+    const easy = withBoss('tide_queen', (b) => ({
+      ...b,
+      hp: new Decimal(1000),
+      attack: { ...b.attack, damage: new Decimal(1) },
+      trick: { ...b.trick, kind: 'rage', size: 0.0001, every: 0, answerAt: 0 },
+    }));
+    const r = tryRaid(s, easy, mods(s), 'tide_queen', TODAY);
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.result.fight.killed).toBe(true);
+    expect(r.result.levelUp).toBe(1);
+    s = r.state;
+    expect(raidLevel(s, 'tide_queen')).toBe(1);
+    expect(s.raids.best['tide_queen']).toBeUndefined();
+    // the rank reward it earned stays paid
+    expect(s.raids.paid['tide_queen']).toBeDefined();
+    const g = content.raids.levelGrowth.hp;
+    expect(
+      raidBossHp(content, boss('tide_queen'), mods(s), 1)
+        .div(raidBossHp(content, boss('tide_queen'), mods(s), 0))
+        .toNumber(),
+    ).toBeCloseTo(g);
+    expect(fightRaid(s, content, mods(s), 'ember_tyrant')!.level).toBe(0);
+    expect(fightRaid(s, content, mods(s), 'tide_queen')!.level).toBe(1);
+  });
+
+  it('a try that does not kill leaves the level alone', () => {
+    const s = teamOf(SWORDS);
+    const r = tryRaid(s, content, mods(s), 'rootstone_titan', TODAY);
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.result.levelUp).toBeNull();
+    expect(raidLevel(r.state, 'rootstone_titan')).toBe(0);
   });
 });

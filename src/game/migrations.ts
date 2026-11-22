@@ -347,7 +347,7 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
 
 /** v43 -> v44 (DESIGN.md §2 Raid bosses): an empty raid record. */
 function v43ToV44(state: Record<string, unknown>): Record<string, unknown> {
-  return { ...state, raids: { day: null, used: {}, best: {}, paid: {} } };
+  return { ...state, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
 }
 
 /** v40 -> v41 (DESIGN.md §2 Three attacks per card): every owned card gets `skillOpen: false`. */

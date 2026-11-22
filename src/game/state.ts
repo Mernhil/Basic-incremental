@@ -132,14 +132,22 @@ export interface RaidState {
   best: Record<string, number>;
   /** Boss id -> best (lowest) ladder rank whose reward is already paid. */
   paid: Record<string, number>;
+  /** Boss id -> its level, one for each kill so far (0 = never killed). */
+  level: Record<string, number>;
 }
 
 export function initialRaids(): RaidState {
-  return { day: null, used: {}, best: {}, paid: {} };
+  return { day: null, used: {}, best: {}, paid: {}, level: {} };
 }
 
 export function cloneRaids(r: RaidState): RaidState {
-  return { day: r.day, used: { ...r.used }, best: { ...r.best }, paid: { ...r.paid } };
+  return {
+    day: r.day,
+    used: { ...r.used },
+    best: { ...r.best },
+    paid: { ...r.paid },
+    level: { ...r.level },
+  };
 }
 
 export function initialSummon(): SummonState {
