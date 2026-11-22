@@ -2,7 +2,7 @@ import type { Bond, Content, Job } from '../data';
 import { loadoutCards } from './cards';
 import type { Modifier } from './modifiers';
 import { cloneState, type GameState } from './state';
-import { activeWorkers } from './workers';
+import { slotWorkers } from './camp';
 
 /**
  * Bonds (DESIGN.md §15 Bonds): two specific cards at work together give a small named bonus. A
@@ -31,7 +31,7 @@ export function bondActive(state: GameState, content: Content, bond: Bond): bool
     const team = loadoutCards(state.cards.loadouts.fighting);
     return team.includes(a) && team.includes(b);
   }
-  const working = Object.values(activeWorkers(state, content)).flat();
+  const working = slotWorkers(state, content).map((w) => w.card);
   return working.includes(a) && working.includes(b);
 }
 

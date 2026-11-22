@@ -4,7 +4,7 @@ import {
   buildTeam,
   elementRelation,
   newOwnedCard,
-  producerRate,
+  materialRate,
   type GameState,
 } from '../src/game';
 import { ELEMENTS, loadContent } from '../src/data';
@@ -138,19 +138,21 @@ describe('workers on matching places', () => {
     const state = bareState();
     own(state, worker);
     state.clearedDungeons = content.dungeons.map((d) => d.id);
-    state.production.workers = { [id]: [worker] };
+    state.camp.level = 40;
+    const where = job === 'logging' ? 'forest' : 'cave';
+    state.camp[where] = [{ material: id, card: worker }];
     const mods = collectModifiers(state, content);
     const producer = (job === 'logging' ? content.treeById : content.mineById).get(id)!;
     const element = mods.filter((m) => m.source.kind === 'element');
-    return { mods, element, rate: producerRate(producer, job, mods) };
+    const bare = materialRate(state, content, producer, []);
+    return { mods, element, rate: materialRate(state, content, producer, mods), bare };
   };
   it('+15% to production.rate on a matching tree or mine, nothing elsewhere', () => {
     const iron = place('emerald_seer', 'iron_deeps', 'mining');
     expect(iron.element.map((m) => [m.stat, m.kind, m.value.toNumber()])).toEqual([
       ['production.rate', 'percent', 15],
     ]);
-    const bare = producerRate(content.mineById.get('iron_deeps')!, 'mining', []);
-    expect(iron.rate.div(bare).toNumber()).toBeGreaterThan(1.15 - 1e-9);
+    expect(iron.rate.div(iron.bare).toNumber()).toBeGreaterThan(1.15 - 1e-9);
     expect(place('azure_delver', 'crystal_grotto', 'mining').element).toHaveLength(1);
     // A water worker on the Iron Deeps (earth) gets nothing.
     expect(place('azure_delver', 'iron_deeps', 'mining').element).toHaveLength(0);

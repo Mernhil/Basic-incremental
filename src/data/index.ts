@@ -14,6 +14,8 @@ import type {
   HeirloomsConfig,
   HeirloomTree,
   Bond,
+  CampConfig,
+  DummyConfig,
   ExpeditionsConfig,
   Card,
   CardRules,
@@ -58,6 +60,8 @@ import type {
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
+import campJson from './content/camp.json';
+import dummyJson from './content/dummy.json';
 import minesJson from './content/mines.json';
 import productionJson from './content/production.json';
 import cardsJson from './content/cards.json';
@@ -97,6 +101,8 @@ export * from './schemas';
 
 export interface Content {
   resources: Resource[];
+  camp: CampConfig;
+  dummy: DummyConfig;
   trees: Tree[];
   mines: Mine[];
   production: ProductionConfig;
@@ -231,6 +237,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
 
   const {
     resources,
+    camp,
+    dummy,
     trees,
     mines,
     production,
@@ -271,13 +279,13 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
-  checkProduction({ resources, trees, mines, production }, issues);
+  checkProduction({ resources, trees, mines, production, camp, dungeons }, issues);
   checkBatches(batches, cards, issues);
   checkCosmetics(cosmetics, rarities, issues);
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
   checkItems({ cards, items }, issues);
-  checkPrestige({ resources, cosmetics, prestige, trees, mines }, issues);
+  checkPrestige({ resources, cosmetics, prestige }, issues);
   checkAchievements(
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
@@ -285,7 +293,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkQuests({ resources, dungeons, trials, quests }, issues);
   checkWeb({ resources, web }, issues);
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
-  checkPerks({ resources, trees, mines, production, training, perks }, issues);
+  checkPerks({ resources, training, perks }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
@@ -335,6 +343,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
 
   return {
     resources,
+    camp,
+    dummy,
     trees,
     mines,
     production,
@@ -499,7 +509,7 @@ function checkTableUpdate(
 }
 
 function checkProduction(
-  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production'>,
+  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production' | 'camp' | 'dungeons'>,
   issues: string[],
 ): void {
   const resources = new Map(c.resources.map((r) => [r.id, r]));
@@ -510,41 +520,6 @@ function checkProduction(
     if (c.production.forge.recipes.findIndex((o) => o.id === recipe.id) !== i)
       issues.push(`${where}: duplicate recipe id "${recipe.id}"`);
   });
-  c.production.tools.forEach((tool, i) => {
-    if (!resources.has(tool.cost.resource))
-      issues.push(
-        `production.json › tools › [${i}] › cost: unknown resource "${tool.cost.resource}"`,
-      );
-  });
-  const checkCost = (where: string, resource: string, kind: Resource['kind']): void => {
-    const res = resources.get(resource);
-    if (!res) issues.push(`${where}: unknown resource "${resource}"`);
-    else if (res.kind !== kind)
-      issues.push(`${where}: "${resource}" is ${res.kind}, expected ${kind}`);
-  };
-
-  // Tree kinds are unlocked with tree gems (DESIGN.md §4).
-  c.trees.forEach((tree, i) =>
-    tree.unlockCost.forEach((cost, j) =>
-      checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
-    ),
-  );
-  // Tree levels and mine levels are bought with Money (DESIGN.md §4, §3).
-  c.trees.forEach((tree, i) =>
-    checkCost(
-      `trees.json › [${i}] › level › cost › resource`,
-      tree.level.cost.resource,
-      'currency',
-    ),
-  );
-  c.mines.forEach((mine, i) =>
-    checkCost(
-      `mines.json › [${i}] › level › cost › resource`,
-      mine.level.cost.resource,
-      'currency',
-    ),
-  );
-
   // Producer ids are shared by modifier scopes and harvest targets, so they must be unique.
   const treeIds = new Set(c.trees.map((t) => t.id));
   c.mines.forEach((mine, i) => {
@@ -553,13 +528,36 @@ function checkProduction(
     }
   });
 
-  // Every kind produces once it is unlocked, so each job needs one from the start.
-  if (!c.trees.some((t) => t.unlockCost.length === 0)) {
-    issues.push('trees.json: at least one tree must be unlocked from the start (no unlockCost)');
+  // Each place needs one material open from the start, or its slots would be empty.
+  if (!c.trees.some((t) => t.unlockedByDungeon === null)) {
+    issues.push(
+      'trees.json: at least one wood must be open from the start (unlockedByDungeon null)',
+    );
   }
   if (!c.mines.some((m) => m.unlockedByDungeon === null)) {
-    issues.push('mines.json: at least one mine must be available from the start');
+    issues.push('mines.json: at least one ore must be open from the start');
   }
+  const dungeonIds = new Set(c.dungeons.map((d) => d.id));
+  for (const [file, list] of [
+    ['trees', c.trees],
+    ['mines', c.mines],
+  ] as const) {
+    list.forEach((m, i) => {
+      if (m.unlockedByDungeon && !dungeonIds.has(m.unlockedByDungeon)) {
+        issues.push(
+          `${file}.json › [${i}] › unlockedByDungeon: unknown dungeon "${m.unlockedByDungeon}"`,
+        );
+      }
+    });
+  }
+  c.camp.levelCost.forEach((cost, i) => {
+    const kind = resources.get(cost.resource)?.kind;
+    if (kind && kind !== 'tree_gem' && kind !== 'mine_gem') {
+      issues.push(
+        `camp.json › levelCost › [${i}] › resource: "${cost.resource}" must be a wood or an ore`,
+      );
+    }
+  });
 }
 
 /** Batch ids and kits are unique, and every card's `batch` names a later batch (the first has none). */
@@ -634,18 +632,12 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
 
 /** Milestone pick rules (DESIGN.md §4): every milestone names a line that exists, each line's
  *  levels are distinct, and ids are unique across milestones and options. */
-function checkPerks(
-  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production' | 'training' | 'perks'>,
-  issues: string[],
-): void {
+function checkPerks(c: Pick<Content, 'resources' | 'training' | 'perks'>, issues: string[]): void {
   const currency = c.resources.find((r) => r.id === c.perks.currency);
   if (currency?.kind !== 'currency') {
     issues.push(`perks.json › currency: "${c.perks.currency}" must be a currency resource`);
   }
   const lines: Record<string, Set<string>> = {
-    tree: new Set(c.trees.map((t) => t.id)),
-    mine: new Set(c.mines.map((m) => m.id)),
-    tool: new Set(c.production.tools.map((t) => t.id)),
     training: new Set(c.training.map((t) => t.id)),
   };
   const ids = new Set<string>();
@@ -949,7 +941,7 @@ function checkAchievements(
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
 function checkPrestige(
-  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige' | 'trees' | 'mines'>,
+  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige'>,
   issues: string[],
 ): void {
   const currency = c.resources.find((r) => r.id === c.prestige.currency);
@@ -973,14 +965,8 @@ function checkPrestige(
       issues.push(`prestige.json › shop › [${i}]: needs perLevel modifiers or a grants rule`);
     }
   });
-  const slotItems = c.prestige.shop.filter((x) => x.grants === 'second_worker_slots');
-  if (slotItems.length > 1) issues.push('prestige.json › shop: only one second-slot item');
-  const places = c.trees.length + c.mines.length;
-  if (slotItems[0] && slotItems[0].maxLevel > places) {
-    issues.push(
-      `prestige.json › shop › ${slotItems[0].id} › maxLevel: ${slotItems[0].maxLevel} is more than the ${places} trees and mines`,
-    );
-  }
+  const slotItems = c.prestige.shop.filter((x) => x.grants === 'camp_slots');
+  if (slotItems.length > 1) issues.push('prestige.json › shop: only one camp-slot item');
   const cosmetics = new Set(c.cosmetics.map((x) => x.id));
   c.prestige.rewards.forEach((reward, i) =>
     reward.cosmetics.forEach((id, j) => {
@@ -1467,6 +1453,8 @@ function checkLegacyGates(sets: WeaponSkinSet[], portals: Portal[], issues: stri
 export function bundledRawContent(): RawContent {
   return {
     resources: resourcesJson,
+    camp: campJson,
+    dummy: dummyJson,
     trees: treesJson,
     mines: minesJson,
     production: productionJson,

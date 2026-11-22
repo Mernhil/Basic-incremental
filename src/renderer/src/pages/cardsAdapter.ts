@@ -180,7 +180,7 @@ export function createCardsModel(
           o.enhancements,
         ]),
         state.cards.loadouts,
-        state.production.workers,
+        state.camp,
         state.cardSkins,
         state.legacySkins,
         state.cards.shards,

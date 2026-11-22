@@ -1,0 +1,5 @@
+{
+  "defaultDamage": "100",
+  "hitIntervalSeconds": 1,
+  "maxDamage": "1e30"
+}

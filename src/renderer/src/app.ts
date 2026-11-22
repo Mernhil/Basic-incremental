@@ -230,7 +230,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const goalView = (row: GoalRow): ViewId | null => {
     switch (row.page) {
       case 'production':
-        return content.mineById.has(row.id.slice(row.id.indexOf(':') + 1)) ? 'mining' : 'logging';
+        return 'logging';
       case 'dungeons':
         return 'dungeon';
       case 'home':

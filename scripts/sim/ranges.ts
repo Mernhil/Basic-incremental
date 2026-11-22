@@ -18,10 +18,9 @@ import {
   difficultyScale,
   floorSpec,
   formatShort,
-  mineLevelCost,
-  productionPerSecond,
+  campLevelCost,
+  campPerSecond,
   teamAverageDps,
-  treeLevelCost,
   xpToNextLevel,
   type Difficulty,
   type GameState,
@@ -122,13 +121,10 @@ export function sample(state: GameState, content: Content): Sample {
       );
     }
   }
-  const prices = [
-    ...content.trees.map((t) => treeLevelCost(state, content, t.id, modifiers)?.amount),
-    ...content.mines.map((m) => mineLevelCost(state, content, m.id, modifiers)?.amount),
-  ].map((d) => (d ? d.toNumber() : 0));
-  const rates = Object.values(productionPerSecond(state, content, modifiers)).map((d) =>
-    d.toNumber(),
+  const prices = [...campLevelCost(state, content, modifiers).map((p) => p.amount)].map((d) =>
+    d ? d.toNumber() : 0,
   );
+  const rates = Object.values(campPerSecond(state, content, modifiers)).map((d) => d.toNumber());
   const gems = Object.entries(state.resources)
     .filter(([id]) => id.endsWith('_gem'))
     .map(([, d]) => new Decimal(d).toNumber());

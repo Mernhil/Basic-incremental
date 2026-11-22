@@ -2,8 +2,8 @@ import { COPY } from '../../copy';
 import type { ViewDef, ViewPackage } from '../../table/contract';
 import { GATHERING_COPY as T } from './copy';
 import { createForgeView } from './forge';
-import { createJobView } from './job';
-import { createWing } from './wing';
+import { createCampView } from './camp';
+import './camp.css';
 import './gathering.css';
 
 /**
@@ -11,33 +11,19 @@ import './gathering.css';
  * 4c, 4e, 4f; UI_RULES.md §2). `job.ts` is the Logging and Mining view, `forge.ts` the Forge.
  */
 
-const jobView = (job: 'logging' | 'mining'): ViewDef => ({
-  id: job,
-  title: COPY.view.titles[job],
-  mount: (host, ctx, api) => createJobView(host, ctx, api, job),
+const campView = (id: 'logging' | 'mining', place: 'forest' | 'cave'): ViewDef => ({
+  id,
+  title: COPY.view.titles[id],
+  mount: (host, ctx) => createCampView(host, ctx, place),
 });
 
 const forgeView: ViewDef = {
   id: 'forge',
   title: COPY.view.titles.forge,
   pile: { glyph: 'production', hint: () => ({ text: T.forgeHint }) },
-  mount: (host, ctx, api) => createForgeView(host, ctx, api),
+  mount: (host, ctx) => createForgeView(host, ctx),
 };
 
 export const gatheringViews: ViewPackage = {
-  pieces: [
-    {
-      slot: 'left',
-      view: 'logging',
-      label: COPY.table.open(COPY.view.titles.logging),
-      mount: (host, ctx) => createWing(host, ctx, 'logging'),
-    },
-    {
-      slot: 'right',
-      view: 'mining',
-      label: COPY.table.open(COPY.view.titles.mining),
-      mount: (host, ctx) => createWing(host, ctx, 'mining'),
-    },
-  ],
-  views: [jobView('logging'), jobView('mining'), forgeView],
+  views: [campView('logging', 'forest'), campView('mining', 'cave'), forgeView],
 };

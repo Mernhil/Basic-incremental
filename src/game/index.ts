@@ -16,10 +16,7 @@ export * from './floors';
 /** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
 export * from './stageStars';
 export * from './training';
-export * from './toolLines';
-export * from './depth';
 export * from './forge';
-export * from './lucky';
 export * from './loop';
 export * from './offline';
 export * from './migrations';
@@ -27,36 +24,19 @@ export * from './save';
 export * from './theme';
 export * from './modifiers';
 export * from './production';
-// ---- Workers (DESIGN.md §4): the contract with the UI ----------------------------------------
+// ---- The forge's worker, the camp and the Training ground's dummy -------------------------
 export * from './workers';
-export {
-  /** The pattern (style, interval, strikes) a worker card strikes with. */
-  workerPattern,
-  /** A place's harvest burst numbers (gauge size, fill, seconds of output). */
-  harvestBurstStats,
-} from './harvest';
-export {
-  /** Ready-to-show view of one production job's workers: card, rhythm and gauge per place. */
-  productionStageView,
-  /** The cards a place's worker picker offers, strongest first. */
-  workerChoices,
-  type ProductionStageView,
-  type StageCard,
-  type StageTarget,
-  type WorkerChoice,
-} from './productionView';
+export * from './camp';
+export * from './dummy';
 export * from './hpBars';
 export * from './cards';
 export * from './milestones';
 export * from './bulk';
-export * from './previews';
 export * from './mastery';
-export * from './stages';
 export * from './goals';
 export * from './portals';
 export * from './tierRewards';
 export * from './heirlooms';
-export * from './autobuyers';
 export * from './prestige';
 export * from './challenges';
 export * from './wardrobe';
@@ -270,10 +250,6 @@ export {
   type MasteryInfo,
 } from './mastery';
 export {
-  /** Growth stage 0..4 of a tree / mine tile (mine and tree level milestones). */
-  tileStage,
-} from './stages';
-export {
   /** The item type to draw in a card. */
   cardItemKind,
   /** The item to draw with its name at the card's tier, and whether it is an Heirloom. */
@@ -340,20 +316,6 @@ export {
   type StageReadout,
 } from './combat';
 export {
-  /** A mine type's milestone info by id ("Lv 25: x2"). */
-  mineLevelMilestone,
-  /** A tree kind's milestone info by id ("Lv 25: x2"). */
-  treeLevelMilestone,
-  /** A tree kind's level (0 = none bought). Reset on ascension. */
-  treeLevel,
-  /** Level of a tree or mine in a job. */
-  producerLevel,
-  /** Money price of a tree kind's next level. */
-  treeLevelCost,
-  /** Buys one level of a tree kind (`buyTreeLevels` does x10 / x100 / Max). */
-  buyTreeLevel,
-} from './production';
-export {
   /** Milestones reached at a level. */
   milestonesReached,
   /** Output multiplier at a level (multiplier ^ milestones reached). */
@@ -377,29 +339,9 @@ export {
   curveMaxAffordable,
   /** A buy button's offer on a curve: count, price, affordable, fill-bar progress 0..1. */
   curveOffer,
-  /** Buy offer of a mine type's levels. */
-  mineLevelOffer,
-  /** Buys mine levels in bulk. */
-  buyMineLevels,
-  /** Buy offer of a tree kind's levels (x1 / x10 / x100 / Max). */
-  treeLevelOffer,
-  /** Buys tree levels in bulk. */
-  buyTreeLevels,
   type BuyCount,
   type BuyOffer,
-  type BulkBuyResult,
 } from './bulk';
-export {
-  /** Mine level purchase preview: gem per second before / after. */
-  previewMineLevel,
-  /** Tree level purchase preview: gem per second before / after. */
-  previewTreeLevel,
-  /** The output gain of a preview as a multiplier (1.03 for "x1.03 output"), null while the producer makes nothing. */
-  outputGainMultiplier,
-  type MinePreview,
-  type TreePreview,
-} from './previews';
-
 // ---- Boss hits in chunks (DESIGN.md §6): the contract with the UI, one line each ----------
 
 export {

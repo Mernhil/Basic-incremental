@@ -519,72 +519,29 @@ describe('the starter table defines every table token', () => {
 describe('production data', () => {
   it('catches wrong cost resources and shared ids', () => {
     const bad = raw();
-    const trees = bad.trees as { unlockCost: { resource: string }[] }[];
-    trees[1]!.unlockCost[0]!.resource = 'copper_gem';
-    const mines = bad.mines as { id: string; level: { cost: { resource: string } } }[];
-    mines[0]!.level.cost.resource = 'oak_gem';
+    (bad.camp as { levelCost: { resource: string }[] }).levelCost[0]!.resource = 'money';
+    const mines = bad.mines as { id: string }[];
     mines[2]!.id = 'oak';
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'trees.json › [1] › unlockCost › [0] › resource: "copper_gem" is mine_gem, expected tree_gem',
-    );
-    expect(issues).toContain(
-      'mines.json › [0] › level › cost › resource: "oak_gem" is tree_gem, expected currency',
+      'camp.json › levelCost › [0] › resource: "money" must be a wood or an ore',
     );
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
   });
 
-  it('has no plots or expansions: the harvest rules and the worker slots and power', () => {
-    expect(Object.keys(production).sort()).toEqual([
-      'forge',
-      'harvest',
-      'lucky',
-      'tools',
-      'workers',
-    ]);
-  });
-
-  it('keeps a worker ability on its own place: data never names a place in it', () => {
+  it('needs a wood and an ore open from the start, since every slot farms one', () => {
     const bad = raw();
-    const card = (bad.cards as { id: string; worker?: { modifiers: unknown[] } }[]).find(
-      (c) => c.id === 'apprentice_feller',
-    )!;
-    card.worker!.modifiers = [
-      { stat: 'production.rate', kind: 'percent', value: '5', scope: { producer: 'oak' } },
-    ];
-    expect(issuesFor(bad).some((i) => i.includes('acts on its own place'))).toBe(true);
-  });
-
-  it('refuses a logging or mining card with a main ability, or a fighting card without one', () => {
-    const bad = raw();
-    const card = (bad.cards as Record<string, unknown>[]).find(
-      (c) => c['id'] === 'apprentice_feller',
-    )!;
-    card['main'] = { description: 'Steady output' };
-    expect(issuesFor(bad).length).toBeGreaterThan(0);
-  });
-
-  it('needs a tree and a mine available from the start, since every unlocked kind produces', () => {
-    const bad = raw();
-    for (const t of bad.trees as { unlockCost: unknown[] }[]) {
-      t.unlockCost = [{ resource: 'oak_gem', amount: '1' }];
+    for (const t of bad.trees as { unlockedByDungeon: string | null }[]) {
+      t.unlockedByDungeon = 'mossy_cellar';
     }
     for (const m of bad.mines as { unlockedByDungeon: string | null }[]) {
       m.unlockedByDungeon = 'mossy_cellar';
     }
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'trees.json: at least one tree must be unlocked from the start (no unlockCost)',
+      'trees.json: at least one wood must be open from the start (unlockedByDungeon null)',
     );
-    expect(issues).toContain('mines.json: at least one mine must be available from the start');
-  });
-
-  it('rejects a cost curve that shrinks', () => {
-    const bad = raw();
-    (bad.mines as { level: { cost: { growth: string } } }[])[0]!.level.cost.growth = '0.9';
-    expect(issuesFor(bad)).toContain(
-      'mines.json › [0] › level › cost › growth: must be at least 1',
-    );
+    expect(issues).toContain('mines.json: at least one ore must be open from the start');
   });
 });
 
@@ -602,13 +559,10 @@ describe('the three loops (DESIGN.md §3)', () => {
     expect(c.resourceById.get('moss_sigil')).toBeUndefined();
   });
 
-  it('prices tree levels and mine levels in Money, and unlocks in gems', () => {
+  it('prices the camp level in woods and ores', () => {
     const c = loadContent();
-    for (const t of c.trees) expect(t.level.cost.resource).toBe('money');
-    for (const m of c.mines) expect(m.level.cost.resource).toBe('money');
-    for (const t of c.trees) {
-      for (const cost of t.unlockCost)
-        expect(c.resourceById.get(cost.resource)!.kind).toBe('tree_gem');
+    for (const line of c.camp.levelCost) {
+      expect(['tree_gem', 'mine_gem']).toContain(c.resourceById.get(line.resource)!.kind);
     }
   });
 
@@ -651,11 +605,11 @@ describe('crit and milestone data (DESIGN.md §6, §4)', () => {
   });
 
   it('rejects milestones every 0 levels or with a multiplier below 1', () => {
-    const bad = mines.map((m) => ({
-      ...m,
-      level: { ...m.level, milestones: { every: 0, multiplier: '0.5' } },
+    const bad = (raw().training as { milestones: unknown }[]).map((t) => ({
+      ...t,
+      milestones: { every: 0, multiplier: '0.5' },
     }));
-    const issues = issuesFor(raw({ mines: bad }));
+    const issues = issuesFor(raw({ training: bad }));
     expect(issues.some((i) => i.includes('milestones › every'))).toBe(true);
     expect(issues.some((i) => i.includes('milestones › multiplier'))).toBe(true);
   });
@@ -664,12 +618,12 @@ describe('crit and milestone data (DESIGN.md §6, §4)', () => {
     const input = raw();
     const list = (input as unknown as { perks: { milestones: Record<string, unknown>[] } }).perks
       .milestones;
-    list[0]!['line'] = { kind: 'tree', id: 'redwood' };
-    list[1]!['level'] = 50; // oak_25 moves onto oak_50's level
-    list[3]!['id'] = list[4]!['id'];
+    list[0]!['line'] = { kind: 'training', id: 'redwood' };
+    list[2]!['level'] = 15; // sharpen_30 moves onto sharpen_15's level
+    list[4]!['id'] = list[5]!['id'];
     const found = issuesFor(input).join(' | ');
-    expect(found).toMatch(/unknown tree "redwood"/);
-    expect(found).toMatch(/two milestones at tree:oak:50/);
+    expect(found).toMatch(/unknown training "redwood"/);
+    expect(found).toMatch(/two milestones at training:sharpen:15/);
     expect(found).toMatch(/duplicate id/);
   });
 });
