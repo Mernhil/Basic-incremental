@@ -1,11 +1,40 @@
-/* Package 9b: the Forge view (mockup 4f): recipes, the recipe being forged with its worker, and
-   the tool lines of both jobs (their compact rows are styled in job.css). */
+/* The Forge view, the anvil stage (picker 2026-11-23, Forge A): recipes left, the scene at the
+   centre, the out tray and the worker right. The whole stage fills the space under the header;
+   the glow behind it covers all of it, the props are laid out in a 320 x 240 scene at a whole
+   device-pixel unit `--u` (forgeStage.ts `sceneUnit`). */
 
-.fv-layout {
+.gv-forge .fv-stage {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: #14100d;
+}
+.fv-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.fv-ui {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.5fr) minmax(340px, 1.3fr);
-  gap: 20px;
-  align-items: start;
+  grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
+  gap: 16px;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.fv-ui > * {
+  pointer-events: auto;
+  min-height: 0;
+}
+.fv-left {
+  display: grid;
+  grid-template-rows: auto auto;
+  align-content: space-between;
+  gap: 12px;
+  min-height: 0;
 }
 .fv-panel {
   display: grid;
@@ -13,11 +42,13 @@
   margin: 0;
   padding: 14px 16px;
   min-width: 0;
+  align-content: start;
 }
-.fv-tools {
-  display: grid;
-  gap: 16px;
-  min-width: 0;
+.fv-recipes {
+  min-height: 0;
+}
+.fv-workerpanel {
+  min-height: 0;
 }
 .fv-title {
   margin: 0;
@@ -29,76 +60,92 @@
   font-size: 12px;
   color: var(--bi-frame-ink-muted);
 }
+.fv-icon {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+.fv-icon svg {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* ---- recipes ---- */
 .fv-recipes__list {
   display: grid;
   gap: 10px;
 }
 .fv-recipe {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   padding: 8px 10px;
   text-align: left;
   font: inherit;
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--bi-frame-ink);
   background: var(--px-lo);
   border: 0;
   cursor: pointer;
   box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
-.fv-recipe b {
-  font-size: 14px;
+.fv-recipe__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.fv-recipe span {
-  color: var(--bi-frame-ink-muted);
+.fv-recipe__op {
+  color: var(--bi-chrome-accent);
+}
+.fv-recipe__amounts {
+  white-space: nowrap;
 }
 .fv-recipe.is-on {
   box-shadow: 0 0 0 var(--fs-sm) var(--bi-chrome-accent);
 }
 .fv-recipe.is-placeholder {
+  display: grid;
   cursor: default;
   opacity: 0.6;
+  font-weight: 400;
+  font-size: 12px;
 }
 .fv-recipe:focus-visible {
   outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 3px;
 }
 .fv-recipes__foot {
-  margin-top: 12px;
+  margin-top: 4px;
 }
-.fv-flow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  padding: 6px 0;
-}
-.fv-flow[hidden],
-.fv-bar[hidden],
-.fv-progress[hidden],
-.fv-stock[hidden] {
-  display: none;
-}
-.fv-flow__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 700;
-}
-.fv-flow__icon {
-  width: 44px;
-  height: 44px;
+
+/* ---- the centre ---- */
+.fv-mid {
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-content: stretch;
+  min-width: 0;
+  min-height: 0;
 }
-.fv-flow__icon svg {
-  width: 100%;
-  height: 100%;
+.fv-plate {
+  grid-row: 1;
+  display: grid;
+  gap: 8px;
+  width: min(100%, 440px);
+  justify-self: center;
+  padding: 10px 14px;
+  text-align: center;
+  box-sizing: border-box;
 }
-.fv-flow__op {
-  font-size: 20px;
-  color: var(--bi-chrome-accent);
+.fv-plate .fv-title {
+  font-size: 18px;
+}
+.fv-bar[hidden],
+.fv-progress[hidden] {
+  display: none;
 }
 .fv-bar {
   height: calc(var(--fs-sm) * 5);
@@ -109,7 +156,6 @@
   display: block;
   height: 100%;
   background: var(--bi-chrome-accent);
-  /* segment ticks over the fill */
   -webkit-mask-image: repeating-linear-gradient(
     90deg,
     #000 0,
@@ -129,6 +175,193 @@
   font-weight: 700;
   color: var(--bi-frame-ink);
 }
+
+/* ---- the scene (placeholders: see the PR; the art controller names the real pictures) ---- */
+.fv-scene__box {
+  --u: 2;
+  position: absolute;
+  width: calc(var(--u) * 640px);
+  height: calc(var(--u) * 360px);
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+.fv-scene__box > * {
+  position: absolute;
+}
+.fv-ingot {
+  left: calc(var(--u) * 304px);
+  top: calc(var(--u) * 204px);
+  width: calc(var(--u) * 32px);
+  height: calc(var(--u) * 32px);
+  opacity: 0;
+}
+.has-recipe .fv-ingot {
+  opacity: 1;
+}
+.fv-ingot svg,
+.fv-hammer svg {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.fv-hammer {
+  left: calc(var(--u) * 270px);
+  top: calc(var(--u) * 168px);
+  width: calc(var(--u) * 44px);
+  height: calc(var(--u) * 53px);
+  transform-origin: 15% 95%;
+  display: none;
+}
+.has-worker .fv-hammer {
+  display: block;
+}
+/* the furnace mouth (scene pixels 502-562 x 160-230): a hard 4-step brightness pulse over it, no blur */
+.fv-fire {
+  left: calc(var(--u) * 502px);
+  top: calc(var(--u) * 160px);
+  width: calc(var(--u) * 60px);
+  height: calc(var(--u) * 70px);
+  border-radius: 50% 50% 0 0 / 38% 38% 0 0;
+  mix-blend-mode: screen;
+  background: #ff8a2a;
+  opacity: 0;
+}
+.is-working .fv-fire {
+  animation: fv-flicker 0.48s steps(1, end) infinite;
+}
+/* the hit effect (art/fx/hit-hammer.png, 10 pictures of 160 x 152) on the anvil face at each hit */
+.fv-sparks {
+  left: calc(var(--u) * 323px - var(--k, 1) * 80px);
+  top: calc(var(--u) * 222px - var(--k, 1) * 76px);
+  width: calc(var(--k, 1) * 160px);
+  height: calc(var(--k, 1) * 152px);
+  background: url('../../art/fx/hit-hammer.png') 0 0 / calc(var(--k, 1) * 1600px)
+    calc(var(--k, 1) * 152px) no-repeat;
+  image-rendering: pixelated;
+  opacity: 0;
+}
+
+.is-working .fv-hammer {
+  animation: fv-hammer 1.2s linear infinite;
+}
+.is-working .fv-sparks {
+  animation: fv-spark 1.2s linear infinite;
+}
+
+/* the 2-frame wind-up, the hit, the settle */
+@keyframes fv-hammer {
+  0%,
+  30% {
+    transform: rotate(0deg);
+  }
+  38%,
+  52% {
+    transform: rotate(-18deg);
+  }
+  56%,
+  60% {
+    transform: rotate(-32deg);
+  }
+  64% {
+    transform: rotate(36deg);
+    animation-timing-function: ease-out;
+  }
+  72% {
+    transform: rotate(28deg);
+  }
+  90%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes fv-spark {
+  0%,
+  63% {
+    opacity: 0;
+    background-position: 0 0;
+  }
+  64% {
+    opacity: 1;
+    background-position: 0 0;
+    animation-timing-function: steps(9, jump-none);
+  }
+  82% {
+    opacity: 1;
+    background-position: calc(var(--k, 1) * -1440px) 0;
+  }
+  83%,
+  100% {
+    opacity: 0;
+    background-position: calc(var(--k, 1) * -1440px) 0;
+  }
+}
+@keyframes fv-flicker {
+  0% {
+    opacity: 0.22;
+  }
+  25% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  75% {
+    opacity: 0.16;
+  }
+}
+
+/* ---- the out tray: a strip along the bottom, the furnace stays free ---- */
+.fv-tray {
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  width: fit-content;
+  max-width: 100%;
+  justify-self: center;
+  padding: 10px 14px;
+  box-sizing: border-box;
+}
+.fv-tray .fv-title {
+  font-size: 18px;
+}
+.fv-tray__tiles {
+  display: flex;
+  gap: 6px;
+}
+.fv-tray__tile {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.fv-tray__tile.is-empty {
+  opacity: 0.45;
+}
+.fv-tray__tile .fv-icon {
+  width: 80%;
+  height: 80%;
+}
+.fv-tray__note {
+  white-space: nowrap;
+}
+.fv-stock {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+}
+.fv-stock[hidden] {
+  display: none;
+}
+.fv-stock__value {
+  font-weight: 700;
+}
+
+/* ---- the worker ---- */
 .fv-worker {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -165,22 +398,29 @@
 .fv-pick[hidden] {
   display: none;
 }
+.fv-pick:not([hidden]) {
+  position: fixed;
+  z-index: 5;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, 90vw);
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 14px;
+  background: #1b1916;
+  box-shadow: 0 0 0 var(--fs-sm) var(--bi-chrome-accent);
+}
 .fv-pick .pp-pick__opt {
   grid-template-areas: 'name';
   grid-template-columns: minmax(0, 1fr);
 }
-.fv-stock {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 8px 0 0;
-}
-.fv-stock__value {
-  font-weight: 700;
-}
 
-@media (max-width: 1099px) {
-  .fv-layout {
-    grid-template-columns: minmax(0, 1fr);
+/* reduced motion: the worker stands, the fire burns steady, no sparks */
+@media (prefers-reduced-motion: reduce) {
+  .is-working .fv-hammer,
+  .is-working .fv-sparks,
+  .is-working .fv-fire {
+    animation: none;
   }
 }

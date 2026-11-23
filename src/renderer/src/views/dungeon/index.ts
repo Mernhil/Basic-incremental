@@ -10,15 +10,13 @@ import { DUEL_PANELS, togglePanel, type DuelPanel } from './duelModel';
 import './dungeon.css';
 
 /**
- * Package 9a: the dungeon window in the centre of the table and the dungeon full view (mockups 4a,
- * 4b and 4g; UI_RULES.md §2 The duel's layout, The dungeon full view). The duel is one element
- * (`stage/arena.ts`): it sits in the window while the table shows and moves into the view when it
- * opens, so the fight never restarts. The view adds the Dungeons, Weapon and Training buttons at the
- * right end of its title bar; each opens its panel as a framed sheet over the fight, which keeps running.
+ * The dungeon window (UI_RULES.md §2 The duel's layout): the one dungeon view. The duel
+ * (`stage/arena.ts`) fills it with its own controls (Challenge, auto, speed), and the Dungeons,
+ * Weapon and Training buttons sit at its top left; each opens its panel as a framed sheet over the
+ * fight, which keeps running. There is no second, full-screen view of the dungeon.
  */
 
 let arena: Arena | null = null;
-let windowBody: HTMLElement | null = null;
 
 function ensureArena(ctx: TableContext): Arena {
   if (arena) return arena;
@@ -27,11 +25,8 @@ function ensureArena(ctx: TableContext): Arena {
     state: ctx.state,
     director: ctx.director,
     coins: ctx.coins,
-    // the fight is on screen on the table and in its own view
-    active: () => {
-      const open = ctx.current();
-      return (open === null || open === 'dungeon') && !document.hidden;
-    },
+    // the fight is on screen while no view covers the table
+    active: () => ctx.current() === null && !document.hidden,
     sound: ctx.sound,
     speed: ctx.duelSpeed,
     challenge: () => {
@@ -57,26 +52,12 @@ export const dungeonViews: ViewPackage = {
   pieces: [
     {
       slot: 'centre',
-      view: 'dungeon',
-      label: COPY.table.open(COPY.view.titles.dungeon),
+      view: null,
+      label: COPY.view.titles.dungeon,
       mount(host, ctx) {
-        windowBody = host;
         host.classList.add('dv-window');
         const a = ensureArena(ctx);
         host.append(a.el);
-        return { render: () => a.update() };
-      },
-    },
-  ],
-  views: [
-    {
-      id: 'dungeon',
-      title: COPY.view.titles.dungeon,
-      mount(host, ctx, api) {
-        const a = ensureArena(ctx);
-        host.classList.add('dv-view', 'shell-page--stage');
-        const stage = h('div', 'dv-stage');
-        stage.dataset.deal = '';
 
         // ---- the panels: one framed sheet over the fight ----
         let panels: DungeonPanels | null = null;
@@ -109,9 +90,7 @@ export const dungeonViews: ViewPackage = {
           buttons.set(id, b);
           bar.append(b);
         }
-        stage.append(sheet);
-        api.setTools(bar);
-        host.append(stage);
+        host.append(bar, sheet);
 
         let open: DuelPanel | null = null;
         function show(next: DuelPanel | null): void {
@@ -162,11 +141,11 @@ export const dungeonViews: ViewPackage = {
           back.focus();
         }
         back.addEventListener('click', () => show(null));
-        // Esc closes the panel first, not the view
+        // Esc closes the panel first (the hub button comes after)
         document.addEventListener(
           'keydown',
           (e) => {
-            if (e.key !== 'Escape' || !open || !api.visible()) return;
+            if (e.key !== 'Escape' || !open || ctx.current() !== null) return;
             e.preventDefault();
             show(null);
           },
@@ -178,17 +157,9 @@ export const dungeonViews: ViewPackage = {
             a.update();
             if (open) panels?.render();
           },
-          opened: () => {
-            stage.prepend(a.el);
-            a.refit();
-          },
-          closed: () => {
-            show(null);
-            windowBody?.append(a.el);
-            a.refit();
-          },
         };
       },
     },
   ],
+  views: [],
 };

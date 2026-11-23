@@ -7,6 +7,7 @@ import {
   HUB_BUILDINGS,
   HUB_MAP_H,
   HUB_MAP_W,
+  hubOffset,
   hubScale,
   scaled,
   sealWhy,
@@ -220,9 +221,10 @@ export function createHub(
     if (key === area) return;
     area = key;
     scale = hubScale(w, hh);
-    // centred: the stage may be taller than the window, then the top and bottom edge are cut
-    stage.style.left = `${Math.floor((w - HUB_MAP_W * scale) / 2)}px`;
-    stage.style.top = `${Math.floor((hh - HUB_MAP_H * scale) / 2)}px`;
+    // centred: the stage is bigger than the window, the overflow is cut evenly off the edges
+    const off = hubOffset(w, hh, scale);
+    stage.style.left = `${off.x}px`;
+    stage.style.top = `${off.y}px`;
     for (const node of [stage, img, glow]) {
       node.style.width = `${HUB_MAP_W * scale}px`;
       node.style.height = `${HUB_MAP_H * scale}px`;

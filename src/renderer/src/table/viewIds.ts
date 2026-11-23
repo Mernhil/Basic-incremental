@@ -1,6 +1,5 @@
 /** Every full view the table can open. The dock order is fixed in `table/registry.ts`. */
 export const VIEW_IDS = [
-  'dungeon',
   'logging',
   'mining',
   'cards',
