@@ -152,8 +152,29 @@ export interface DetailNext {
 }
 
 /** The weapon panel's read-only detail of an owned card (stats, what it does, what comes next). */
+/** One corner of the stat graph: the stat as a 0 to 1 share of the strongest card's, now and after. */
+export interface GraphAxis {
+  key: DetailStatKey;
+  now: number;
+  /** After the next level / the next star (null when there is none). */
+  level: number | null;
+  star: number | null;
+}
+
+/** The power number (a display sum, see `powerOf`) now and what the next star and level make of it. */
+export interface PowerView {
+  now: string;
+  /** Power with the next star (null at six stars). */
+  withStar: string | null;
+  /** What the next level adds (null at the level cap). */
+  levelGain: string | null;
+}
+
 export interface WeaponDetail {
   stats: DetailStat[];
+  power: PowerView;
+  /** The six-corner stat graph of a fighting card (null for a worker). */
+  graph: GraphAxis[] | null;
   does: DetailEntry[];
   nextLevel: DetailNext;
   nextStar: DetailNext;

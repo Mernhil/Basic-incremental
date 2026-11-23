@@ -93,7 +93,9 @@ const scrolled = async (base, scope) => {
 };
 
 for (const [w, h] of [
+  [1274, 815],
   [1280, 720],
+  [1600, 900],
   [1920, 1080],
 ]) {
   await page.setViewportSize({ width: w, height: h });

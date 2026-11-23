@@ -1267,7 +1267,30 @@ export const COPY = {
     /** The panel's read-only detail (stats, what the card does, what comes next). */
     detail: {
       statsTitle: 'Stats',
-      doesTitle: 'Abilities',
+      doesTitle: 'Skills',
+      power: 'Power',
+      powerWithStar: (star: number) => `with ★${star}`,
+      powerWord: 'power',
+      graphLabel: 'Stat graph',
+      nextLevelN: (n: number) => `Next level ${n}`,
+      axis: {
+        hit: 'ATK',
+        speed: 'ATK SPD',
+        dps: 'DPS',
+        health: 'HP',
+        crit: 'CRIT',
+        critdmg: 'CRIT DMG',
+      },
+      /** Stat plaque labels: the short name, then what the number is. */
+      plaque: {
+        hit: ['ATK', 'one hit'],
+        speed: ['ATK SPD', 'hits per second'],
+        dps: ['DPS', 'average per second'],
+        health: ['HP', 'health'],
+        crit: ['CRIT', 'chance'],
+        critdmg: ['CRIT DMG', 'multiplier'],
+        output: ['OUTPUT', 'power'],
+      },
       stateOpen: 'Ready',
       stateLocked: 'Locked',
       stateNone: 'Not at this tier',

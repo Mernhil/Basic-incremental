@@ -1,0 +1,399 @@
+/* The weapon panel's stat side (ui/weaponStats.ts): power plaque and stat graph, chip row, stat
+   plaques with icons and green gains, the next-level plaque and the skill rows. Dark charcoal
+   plaques with a gold edge; the values are the game's pixel numerals (ui/pixelValue.ts), whole
+   scales only. The stat colours are one set, used by the graph, the plaque labels and the icons' frames. */
+.wp {
+  --st-hit: #e8765f;
+  --st-speed: #f2c14e;
+  --st-dps: #ff8a3c;
+  --st-health: #7fd98c;
+  --st-crit: #6cb8ff;
+  --st-critdmg: #b18cff;
+  --st-plaque: rgba(0, 0, 0, 0.42);
+  --st-edge: #5a4a2a;
+  --st-gold: #f2c14e;
+}
+.pxv {
+  display: inline-flex;
+  line-height: 0;
+}
+.pxv svg {
+  display: block;
+}
+.wst-hl {
+  font-weight: 700;
+  color: #ffd86b;
+}
+.wst-hl--up {
+  color: #7fe08a;
+}
+
+/* ---- top: power plaque and the graph ---- */
+.wst-top {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.1fr);
+  gap: 12px;
+  align-items: center;
+}
+.wst-power {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: var(--st-plaque);
+  box-shadow:
+    0 0 0 2px var(--st-edge),
+    inset 0 0 0 2px #14120e;
+}
+.wst-power__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--bi-frame-ink-muted);
+}
+.wst-power__num {
+  color: var(--st-gold);
+}
+.wst-power__up {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #7fe08a;
+}
+.wst-power__up::before,
+.wst-gain::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-top-width: 0;
+  border-bottom: 6px solid currentColor;
+}
+.wst-power__up small {
+  font-size: 11px;
+}
+.wst-power__sub {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: var(--bi-frame-ink-muted);
+}
+.wst-graph {
+  justify-self: center;
+  width: 100%;
+  max-width: 300px;
+}
+.wst-graph__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.wst-graph__rim {
+  fill: rgba(0, 0, 0, 0.3);
+  stroke: #8a6f2e;
+  stroke-width: 2;
+}
+.wst-graph__grid {
+  fill: none;
+  stroke: #4a3d22;
+  stroke-width: 1;
+}
+.wst-graph__spoke {
+  stroke: #4a3d22;
+  stroke-width: 1;
+}
+.wst-graph__shape {
+  fill: rgba(108, 184, 255, 0.45);
+  stroke: #a6d4ff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.wst-graph__after {
+  fill: none;
+  stroke: #7fe08a;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+  stroke-linejoin: round;
+}
+.wst-graph__label {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--bi-frame-ink-muted);
+}
+.wst-graph__label[data-k='hit'] {
+  fill: var(--st-hit);
+}
+.wst-graph__label[data-k='speed'] {
+  fill: var(--st-speed);
+}
+.wst-graph__label[data-k='dps'] {
+  fill: var(--st-dps);
+}
+.wst-graph__label[data-k='health'] {
+  fill: var(--st-health);
+}
+.wst-graph__label[data-k='crit'] {
+  fill: var(--st-crit);
+}
+.wst-graph__label[data-k='critdmg'] {
+  fill: var(--st-critdmg);
+}
+
+/* ---- chips ---- */
+.wst-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.wst-chip {
+  padding: 2px 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--bi-frame-ink-muted);
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px #4a3d22;
+}
+.wst-chip--role {
+  color: #6cb8ff;
+  box-shadow: 0 0 0 2px #3f6a99;
+}
+.wst-chip--dps {
+  color: #ec7a62;
+  box-shadow: 0 0 0 2px #944a3b;
+}
+.wst-chip--support {
+  color: #7fd98c;
+  box-shadow: 0 0 0 2px #3f7a49;
+}
+.wst-chip--element {
+  color: #ffe9a8;
+  box-shadow: 0 0 0 2px #b8923a;
+}
+.wst-chip--tier {
+  color: #c9a8ff;
+  box-shadow: 0 0 0 2px #6e4db3;
+}
+
+/* ---- stat plaques ---- */
+.wst-plaques {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 8px;
+}
+.wst-plaque {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 7px 8px;
+  background: var(--st-plaque);
+  box-shadow:
+    0 0 0 2px var(--st-edge),
+    inset 0 0 0 2px #14120e;
+}
+.wst-icon {
+  --pq-n: max(1, round(down, calc(32 * var(--dpr, 1) / 32), 1));
+  display: block;
+  width: calc(32px * var(--pq-n) / var(--dpr, 1));
+  height: calc(32px * var(--pq-n) / var(--dpr, 1));
+  image-rendering: pixelated;
+}
+.wst-plaque__txt {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.wst-plaque__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--st-c, var(--bi-frame-ink-muted));
+}
+.wst-plaque[data-k='hit'] {
+  --st-c: var(--st-hit);
+}
+.wst-plaque[data-k='speed'] {
+  --st-c: var(--st-speed);
+}
+.wst-plaque[data-k='dps'],
+.wst-plaque[data-k='output'] {
+  --st-c: var(--st-dps);
+}
+.wst-plaque[data-k='health'] {
+  --st-c: var(--st-health);
+}
+.wst-plaque[data-k='crit'] {
+  --st-c: var(--st-crit);
+}
+.wst-plaque[data-k='critdmg'] {
+  --st-c: var(--st-critdmg);
+}
+.wst-plaque__val {
+  color: #fff1c8;
+}
+.wst-gains {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+.wst-gain {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 5px;
+  color: #7fe08a;
+  background: rgba(20, 70, 30, 0.7);
+  box-shadow: 0 0 0 2px #3f8a4c;
+}
+.wst-gain small {
+  font-size: 10px;
+  font-weight: 700;
+  color: #b9e8c0;
+}
+
+/* ---- next level ---- */
+.wst-next {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 9px 10px;
+  background: var(--st-plaque);
+  box-shadow:
+    0 0 0 2px var(--st-edge),
+    inset 0 0 0 2px #14120e;
+}
+.wst-next__label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6cb8ff;
+}
+.wst-next.is-end .wst-next__label {
+  color: var(--bi-frame-ink-muted);
+}
+.wst-next__pct {
+  color: #7fe08a;
+}
+.wst-next__bar {
+  width: 100%;
+  height: 8px;
+  background: #14120e;
+  box-shadow: 0 0 0 2px #4a3d22;
+}
+.wst-next__bar i {
+  display: block;
+  height: 100%;
+  background: var(--st-gold);
+}
+.wst-next__power {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bi-frame-ink-muted);
+}
+.wst-next__power small {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---- skill rows ---- */
+.wst-rows {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wst-row {
+  --rc: #c8a24a;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 13px;
+  background: var(--st-plaque);
+  box-shadow:
+    0 0 0 2px var(--st-edge),
+    inset 4px 0 0 var(--rc);
+}
+.wst-row--hit {
+  --rc: #e8765f;
+}
+.wst-row--skill {
+  --rc: #7fd98c;
+}
+.wst-row--ult {
+  --rc: #6cb8ff;
+}
+.wst-row--ability {
+  --rc: #f2c14e;
+}
+.wst-row--team {
+  --rc: #ffa24a;
+}
+.wst-row--bond {
+  --rc: #ff8fd0;
+}
+.wst-row__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 0;
+}
+.wst-row__kind {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bi-frame-ink-muted);
+}
+.wst-row__name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rc);
+}
+.wst-row__state {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffd86b;
+}
+.wst-row.is-none .wst-row__state {
+  color: var(--bi-frame-ink-muted);
+}
+.wst-row__text {
+  line-height: 1.35;
+  color: var(--bi-frame-ink);
+}
+.wst-row__note {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.wst-fx {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.wst-fx__chip {
+  padding: 1px 7px;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink);
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 2px var(--rc);
+}
+.wst-fx__chip--state {
+  font-weight: 700;
+}
+.wst-row.is-active .wst-fx__chip--state {
+  color: #7fe08a;
+}

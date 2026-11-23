@@ -1,11 +1,13 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
 import {
+  Decimal,
   bondActive,
   bondJob,
   cardNameById,
   cardStatsFor,
   isFrontSlot,
+  newOwnedCard,
   type CardInfo,
   type CardStats,
   type GameState,
@@ -15,7 +17,14 @@ import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import { effectText } from '../shell/modifierText';
 import type { AttackRow, MovesView } from './movesModel';
-import type { DetailEntry, DetailNext, DetailStat, WeaponDetail } from './cardsModel';
+import type {
+  DetailEntry,
+  DetailNext,
+  DetailStat,
+  GraphAxis,
+  PowerView,
+  WeaponDetail,
+} from './cardsModel';
 
 type Up = { level: CardStats | null; star: CardStats | null };
 
@@ -206,6 +215,86 @@ function step(
   return { label, text: changes(now, after, fighting).join(' · '), note, available: true };
 }
 
+/**
+ * The power number of the panel: damage per second plus a quarter of the health. A display sum for
+ * comparing a card with its own upgrades; it is not a game rule and nothing reads it back.
+ */
+export function powerOf(s: CardStats): Decimal {
+  return s.output.add((s.health ?? new Decimal(0)).div(4));
+}
+
+/** The six graph values of a fighting card's stats: attack, speed, damage per second, health, crit, crit damage. */
+function graphValues(s: CardStats): number[] {
+  // the three numbers that grow by orders of magnitude are drawn by their square root
+  const root = (d: Decimal): number => {
+    const n = d.toNumber();
+    return Math.sqrt(Number.isFinite(n) ? n : 1e300);
+  };
+  return [
+    root(s.hit),
+    1 / s.hitSeconds,
+    root(s.output),
+    s.health ? root(s.health) : 0,
+    s.critChance,
+    s.critDamage.toNumber(),
+  ];
+}
+
+const refCache = new WeakMap<Content, Map<string, number[]>>();
+/** The strongest value on each graph axis among the cards of one tier at their level cap and six stars. */
+function graphRefs(content: Content, tier: string): number[] {
+  let byTier = refCache.get(content);
+  if (!byTier) {
+    byTier = new Map();
+    refCache.set(content, byTier);
+  }
+  const hit = byTier.get(tier);
+  if (hit) return hit;
+  const max = [1e-9, 1e-9, 1e-9, 1e-9, 1e-9, 1e-9];
+  for (const card of content.cards) {
+    if (card.job !== 'fighting' || card.tier !== tier) continue;
+    const owned: OwnedCard = {
+      ...newOwnedCard(card.tier),
+      level: content.cardRules.levelCaps[card.tier],
+      stars: MAX_STARS,
+    };
+    const s = cardStatsFor(content, card.id, owned);
+    if (!s) continue;
+    graphValues(s).forEach((v, i) => {
+      if (v > max[i]!) max[i] = v;
+    });
+  }
+  byTier.set(tier, max);
+  return max;
+}
+
+const GRAPH_KEYS = ['hit', 'speed', 'dps', 'health', 'crit', 'critdmg'] as const;
+const FLOOR = 0.08;
+
+function graphOf(content: Content, tier: string, now: CardStats, next: Up): GraphAxis[] {
+  const refs = graphRefs(content, tier);
+  const shape = (s: CardStats | null): number[] | null =>
+    s ? graphValues(s).map((v, i) => Math.min(1, Math.max(FLOOR, Math.sqrt(v / refs[i]!)))) : null;
+  const n = shape(now)!;
+  const l = shape(next.level);
+  const st = shape(next.star);
+  return GRAPH_KEYS.map((key, i) => ({
+    key,
+    now: n[i]!,
+    level: l ? l[i]! : null,
+    star: st ? st[i]! : null,
+  }));
+}
+
+function powerView(now: CardStats, next: Up): PowerView {
+  const p = powerOf(now);
+  return {
+    now: fmt(p),
+    withStar: next.star ? fmt(powerOf(next.star)) : null,
+    levelGain: next.level ? fmt(powerOf(next.level).sub(p)) : null,
+  };
+}
+
 /** The weapon panel's detail of an owned card; null when the card is not owned. */
 export function weaponDetail(
   content: Content,
@@ -229,6 +318,10 @@ export function weaponDetail(
 
   return {
     stats: statRows(info, now, fighting, { level: levelStats, star: starStats }),
+    power: powerView(now, { level: levelStats, star: starStats }),
+    graph: fighting
+      ? graphOf(content, card.tier, now, { level: levelStats, star: starStats })
+      : null,
     does: doEntries(content, state, info),
     nextLevel: step(t.nextLevel, now, levelStats, fighting, t.levelCap, ''),
     nextStar: step(

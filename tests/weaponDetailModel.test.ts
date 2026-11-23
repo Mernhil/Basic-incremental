@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Decimal, cardInfo, cardStats, newOwnedCard, type OwnedCard } from '../src/game';
 import { movesView } from '../src/renderer/src/pages/movesModel';
-import { attackEntries, weaponDetail } from '../src/renderer/src/pages/weaponDetailModel';
+import { attackEntries, powerOf, weaponDetail } from '../src/renderer/src/pages/weaponDetailModel';
 import { content, freshState } from './helpers';
 
 function detail(id: string, patch: Partial<OwnedCard> = {}, inLoadout = false) {
@@ -149,3 +149,45 @@ function freshStateWith(id: string, patch: Partial<OwnedCard>) {
   state.cards.owned[id] = { ...newOwnedCard(), ...patch };
   return state;
 }
+
+describe('weapon panel detail: power and stat graph', () => {
+  it('power is damage per second plus a quarter of the health', () => {
+    const { state, d } = detail('ember_squire', { level: 5 });
+    const s = cardStats(state, content, 'ember_squire')!;
+    expect(powerOf(s).toNumber()).toBeCloseTo(s.output.toNumber() + s.health!.toNumber() / 4);
+    expect(d.power.now).toBeTruthy();
+    // the next star and level make it stronger
+    expect(d.power.withStar).toBeTruthy();
+    expect(d.power.levelGain).toBeTruthy();
+  });
+
+  it('the graph has six corners from 0 to 1, and an after-shape per upgrade', () => {
+    const { d } = detail('ember_squire', { level: 5 });
+    expect(d.graph!.map((a) => a.key)).toEqual([
+      'hit',
+      'speed',
+      'dps',
+      'health',
+      'crit',
+      'critdmg',
+    ]);
+    for (const a of d.graph!) {
+      expect(a.now).toBeGreaterThan(0);
+      expect(a.now).toBeLessThanOrEqual(1);
+    }
+    // a level adds damage, so the ATK corner grows; crit does not
+    expect(d.graph![0]!.level!).toBeGreaterThan(d.graph![0]!.now);
+    expect(d.graph![4]!.level!).toBeCloseTo(d.graph![4]!.now);
+  });
+
+  it('at six stars there is no star after-shape or power with a star', () => {
+    const { d } = detail('ember_squire', { stars: 6 });
+    expect(d.power.withStar).toBeNull();
+    expect(d.graph!.every((a) => a.star === null)).toBe(true);
+  });
+
+  it('a worker has no graph', () => {
+    const worker = content.cards.find((c) => c.job !== 'fighting')!;
+    expect(detail(worker.id).d.graph).toBeNull();
+  });
+});

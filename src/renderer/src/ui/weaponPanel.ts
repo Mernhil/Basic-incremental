@@ -1,18 +1,22 @@
 import type { Content } from '../../../data';
 import type { GameState } from '../../../game';
 import { COPY } from '../copy';
-import type {
-  CardEntry,
-  DetailEntry,
-  StatChange,
-  WeaponDetail,
-  WeaponView,
-} from '../pages/cardsModel';
+import type { CardEntry, StatChange, WeaponDetail, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
 import { setStarText } from './stars';
 import { costMarkup } from './costMarkup';
 import { movesView, type MovesView } from '../pages/movesModel';
 import { attackEntries } from '../pages/weaponDetailModel';
+import {
+  chipRow,
+  nextLevelPlaque,
+  powerPlaque,
+  skillRow,
+  statGraph,
+  statPlaques,
+  type GraphMode,
+  type StatGraph,
+} from './weaponStats';
 import './weaponPanel.css';
 
 /**
@@ -102,6 +106,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   let detailSig = '';
   let detailData: WeaponDetail | null = null;
   let movesData: MovesView | null = null;
+  let weaponData: WeaponView | null = null;
   function section(title: string, ...body: HTMLElement[]): HTMLElement {
     const sec = h('section', 'wp-sec');
     sec.append(h('h4', 'wp-sec__title', title), ...body);
@@ -126,138 +131,31 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     box.append(b, price);
     return box;
   }
-  /** Text with its numbers picked out in colour: "+12%" green, every other number gold. */
-  function highlight(text: string): Node[] {
-    return text.split(/(\+\d[\d.,]*%|×?\d[\d.,]*\s?(?:%|s\b|[kMBT]\b)?)/g).map((part, i) => {
-      if (i % 2 === 0) return document.createTextNode(part);
-      return h('b', part.startsWith('+') ? 'wp-hl wp-hl--up bi-num' : 'wp-hl bi-num', part);
-    });
-  }
-  const richLine = (cls: string, text: string): HTMLElement => {
-    const n = h('span', cls);
-    n.append(...highlight(text));
-    return n;
-  };
-  const STAT_CHIP: Record<string, string> = {
-    hit: 'HIT',
-    speed: 'SPD',
-    dps: 'DPS',
-    crit: 'CRT',
-    critdmg: 'CDM',
-    health: 'HP',
-    output: 'OUT',
-  };
-  const MAIN_STATS = new Set(['hit', 'dps', 'health', 'output']);
-  const TAG_STATS = new Set(['role', 'element', 'position', 'cost', 'works']);
-  /** The attack the Abilities section shows in full (kept across redraws). */
-  let picked: 'hit' | 'skill' | 'ult' = 'hit';
-  const stateWord = (e: DetailEntry): string =>
-    e.state === 'locked'
-      ? COPY.weapon.detail.stateLocked
-      : e.state === 'none'
-        ? COPY.weapon.detail.stateNone
-        : COPY.weapon.detail.stateOpen;
-
-  function statsBlock(d: WeaponDetail): HTMLElement {
-    const t = COPY.weapon.detail;
-    const stats = h('dl', 'wp-stats');
-    const tags = h('div', 'wp-tags');
-    for (const r of d.stats) {
-      if (TAG_STATS.has(r.key)) {
-        const tag = h('span', `wp-tagchip wp-tagchip--${r.key}`);
-        tag.dataset['v'] = r.value.toLowerCase();
-        tag.title = r.label;
-        tag.append(h('small', '', r.label), h('b', '', r.value));
-        tags.append(tag);
-        continue;
-      }
-      const row = h('div', `wp-stat${MAIN_STATS.has(r.key) ? ' is-main' : ''}`);
-      if (r.title) row.title = r.title;
-      const chip = h('i', 'wp-stat__chip', STAT_CHIP[r.key] ?? '');
-      chip.dataset['k'] = r.key;
-      chip.setAttribute('aria-hidden', 'true');
-      row.append(
-        chip,
-        h('dt', 'wp-stat__label', r.label),
-        h('dd', 'wp-stat__value bi-num', r.value),
-      );
-      if (r.up) {
-        const ups = h('span', 'wp-ups');
-        for (const [word, v] of [
-          [t.upLevel, r.up.level],
-          [t.upStar, r.up.star],
-        ] as const) {
-          if (!v) continue;
-          const up = h('b', 'wp-up bi-num', v);
-          up.prepend(h('small', '', word));
-          ups.append(up);
-        }
-        row.append(ups);
-      }
-      stats.append(row);
+  let graph: StatGraph | null = null;
+  let graphMode: GraphMode = 'level';
+  /** The after-shape follows the upgrade under the pointer (next level by default). */
+  root.addEventListener('pointerover', (ev) => {
+    const t = ev.target as Element;
+    const mode: GraphMode | null = t.closest('.wst-next, .wp-unlock')
+      ? 'level'
+      : t.closest('.wp-starbtn, .wp-stars, .wp-tile--tier')
+        ? 'star'
+        : null;
+    if (mode && mode !== graphMode) {
+      graphMode = mode;
+      graph?.show(mode);
     }
-    const box = h('div', 'wp-statbox');
-    box.append(stats, tags);
-    return box;
-  }
+  });
+  root.addEventListener('pointerleave', () => {
+    graphMode = 'level';
+    graph?.show('level');
+  });
 
-  function attackBlock(
-    entries: readonly DetailEntry[],
-    unlock: MovesView['unlock'] | undefined,
-  ): HTMLElement {
-    const box = h('div', 'wp-moves');
-    const attacks = entries.filter(
-      (e) => e.kind === 'hit' || e.kind === 'skill' || e.kind === 'ult',
-    );
-    if (attacks.length === 0) return box;
-    const sel = attacks.find((e) => e.kind === picked) ?? attacks[0]!;
-    const row = h('div', 'wp-tiles');
-    row.setAttribute('role', 'group');
-    for (const e of attacks) {
-      const b = h('button', `wp-move px-tile wp-move--${e.kind} is-${e.state ?? 'open'}`);
-      b.type = 'button';
-      b.dataset.key = `wp-move-${e.kind}`;
-      b.setAttribute('aria-pressed', String(e === sel));
-      b.classList.toggle('is-selected', e === sel);
-      b.append(
-        h('b', 'wp-move__word px-display', e.kindLabel),
-        h('small', 'wp-move__state', stateWord(e)),
-      );
-      b.addEventListener('click', () => {
-        picked = e.kind as typeof picked;
-        detailSig = '';
-        renderDetail();
-        restEl.querySelector<HTMLElement>(`[data-key="wp-move-${e.kind}"]`)?.focus();
-      });
-      row.append(b);
-    }
-    const pane = h('div', `wp-movepane wp-movepane--${sel.kind}`);
-    const head = h('p', 'wp-movepane__head');
-    head.append(
-      h('b', 'wp-movepane__name', sel.name || sel.kindLabel),
-      h('span', `wp-statechip is-${sel.state ?? 'open'}`, stateWord(sel)),
-    );
-    pane.append(head);
-    if (sel.text) pane.append(richLine('wp-movepane__text', sel.text));
-    if (sel.effects?.length) {
-      const ul = h('ul', 'wp-movepane__effects');
-      for (const f of sel.effects) {
-        const li = h('li');
-        li.append(...highlight(f));
-        ul.append(li);
-      }
-      pane.append(ul);
-    }
-    if (sel.note) pane.append(h('span', 'wp-do__note', sel.note));
-    if (sel.kind === 'skill' && unlock) pane.append(unlockBox(unlock));
-    box.append(row, pane);
-    return box;
-  }
-
-  /** Draws stats, abilities (the three attacks as tiles) and what comes next; only on change. */
+  /** Draws the stat side and the skills; only on change. */
   function renderDetail(): void {
     const d = detailData;
-    const sig = JSON.stringify([d, movesData, picked]);
+    const w = weaponData;
+    const sig = JSON.stringify([d, movesData, w?.tierName, w?.level, w?.xpNow, w?.atCap]);
     if (sig === detailSig) return;
     detailSig = sig;
     const keep = restEl.contains(document.activeElement);
@@ -265,46 +163,37 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     restEl.replaceChildren();
     statsEl.hidden = !d;
     restEl.hidden = !d;
-    if (!d) return;
+    graph = null;
+    if (!d || !w) return;
     const t = COPY.weapon.detail;
-    const entries = [...attackEntries(movesData), ...d.does];
-    const others = h('ul', 'wp-does');
-    for (const e of entries) {
-      if (e.kind === 'hit' || e.kind === 'skill' || e.kind === 'ult') continue;
-      const li = h('li', `wp-do wp-do--${e.kind}`);
-      if (e.title) li.title = e.title;
-      li.classList.toggle('is-active', Boolean(e.active));
-      const head = h('span', 'wp-do__head');
-      head.append(h('b', `wp-kind wp-kind--${e.kind}`, e.kindLabel));
-      if (e.name) head.append(h('span', 'wp-do__name', e.name));
-      li.append(head);
-      if (e.text) li.append(richLine('wp-do__text', e.text));
-      if (e.values.length) {
-        const vals = h('span', 'wp-do__values');
-        for (const v of e.values) vals.append(h('i', 'wp-do__value bi-num', v));
-        li.append(vals);
-      }
-      others.append(li);
-    }
-    const next = h('ul', 'wp-next');
-    for (const n of [d.nextLevel, d.nextStar]) {
-      const li = h('li', 'wp-nx');
-      li.classList.toggle('is-end', !n.available);
-      li.append(h('b', 'wp-nx__label', n.label), richLine('wp-nx__text bi-num', n.text));
-      if (n.note) li.append(h('small', 'wp-nx__note bi-num', n.note));
-      next.append(li);
-    }
-    statsEl.append(section(t.statsTitle, statsBlock(d)));
-    restEl.append(
-      section(t.doesTitle, attackBlock(entries, movesData?.unlock), others),
-      section(t.nextTitle, next),
+    const role = d.stats.find((r) => r.key === 'role')?.value;
+    const top = h('div', 'wst-top');
+    top.append(
+      powerPlaque(d, w.stars + 1, [w.tierName, role].filter(Boolean).join(' · ').toUpperCase()),
     );
-    if (keep) {
-      (
-        restEl.querySelector<HTMLElement>('[data-key="wp-skill"]') ??
-        restEl.querySelector<HTMLElement>(`[data-key="wp-move-${picked}"]`)
-      )?.focus();
+    if (d.graph) {
+      graph = statGraph(d.graph);
+      graph.show(graphMode);
+      top.append(graph.el);
     }
+    statsEl.append(
+      top,
+      chipRow(d.stats, {
+        tierName: w.tierName,
+        xpText: w.atCap ? '' : `${w.xpNow} / ${w.xpNeed}`,
+      }),
+      statPlaques(d.stats),
+      nextLevelPlaque(d, w.level, w.xp, w.atCap),
+    );
+    const entries = [...attackEntries(movesData), ...d.does];
+    const list = h('ul', 'wst-rows');
+    for (const e of entries) {
+      list.append(
+        skillRow(e, e.kind === 'skill' && movesData?.unlock ? unlockBox(movesData.unlock) : null),
+      );
+    }
+    restEl.append(section(t.doesTitle, list));
+    if (keep) restEl.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus();
   }
 
   // ---- card variant: the tiles (tier and stars, card XP) ----
@@ -612,6 +501,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       if (variant === 'card') drawTiles(w);
       drawSide(w);
       detailData = entry.detail;
+      weaponData = w;
       readMoves(entry.id);
       renderDetail();
     },
