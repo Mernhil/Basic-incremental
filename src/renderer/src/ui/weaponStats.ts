@@ -62,9 +62,9 @@ function svg<K extends keyof SVGElementTagNameMap>(
 }
 
 // ---- the stat graph ----
-const CX = 130;
-const CY = 100;
-const R = 62;
+const CX = 135;
+const CY = 105;
+const R = 90;
 export type GraphMode = 'level' | 'star' | 'none';
 
 export interface StatGraph {
@@ -76,7 +76,7 @@ export interface StatGraph {
 export function statGraph(axes: readonly GraphAxis[]): StatGraph {
   const t = COPY.weapon.detail;
   const el = h('div', 'wst-graph');
-  const root = svg('svg', { viewBox: '0 0 260 200', class: 'wst-graph__svg' });
+  const root = svg('svg', { viewBox: '0 0 270 210', class: 'wst-graph__svg' });
   root.setAttribute('role', 'img');
   root.setAttribute(
     'aria-label',
@@ -120,7 +120,7 @@ export function statGraph(axes: readonly GraphAxis[]): StatGraph {
     after,
   );
   axes.forEach((a, i) => {
-    const [x, y] = pt(i, R + 12);
+    const [x, y] = pt(i, R + 10);
     const anchor = Math.abs(x - CX) < 6 ? 'middle' : x > CX ? 'start' : 'end';
     const label = svg('text', {
       class: 'wst-graph__label',

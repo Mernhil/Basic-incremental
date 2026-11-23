@@ -103,6 +103,8 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   // the stats sit beside the weapon (in the side); what it does and what comes next below it
   const statsEl = h('div', 'wp-detail wp-detail--stats');
   const restEl = h('div', 'wp-detail wp-detail--rest');
+  /** The power plaque and the stat graph: beside the ring in the dungeon, on top of the stats in Cards. */
+  const topEl = h('div', 'wst-top');
   let detailSig = '';
   let detailData: WeaponDetail | null = null;
   let movesData: MovesView | null = null;
@@ -160,24 +162,24 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     detailSig = sig;
     const keep = restEl.contains(document.activeElement);
     statsEl.replaceChildren();
+    topEl.replaceChildren();
     restEl.replaceChildren();
     statsEl.hidden = !d;
+    topEl.hidden = !d;
     restEl.hidden = !d;
     graph = null;
     if (!d || !w) return;
     const t = COPY.weapon.detail;
     const role = d.stats.find((r) => r.key === 'role')?.value;
-    const top = h('div', 'wst-top');
-    top.append(
+    topEl.append(
       powerPlaque(d, w.stars + 1, [w.tierName, role].filter(Boolean).join(' · ').toUpperCase()),
     );
     if (d.graph) {
       graph = statGraph(d.graph);
       graph.show(graphMode);
-      top.append(graph.el);
+      topEl.append(graph.el);
     }
     statsEl.append(
-      top,
       chipRow(d.stats, {
         tierName: w.tierName,
         xpText: w.atCap ? '' : `${w.xpNow} / ${w.xpNeed}`,
@@ -302,7 +304,9 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     stage.querySelectorAll('.wp-badge, .wp-xp, .wp-plate').forEach((n) => {
       n.setAttribute('aria-hidden', 'true');
     });
-    root.append(stage, side, statsEl, restEl);
+    const hero = h('div', 'wp-hero');
+    hero.append(stage, topEl);
+    root.append(hero, side, statsEl, restEl);
   } else {
     const tierTile = h('div', 'wp-tile px-tile wp-tile--tier');
     const pipRow = h('span', 'wp-pips');
@@ -321,7 +325,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     );
     const xpTile = h('div', 'wp-tile px-tile wp-tile--xp');
     xpTile.append(h('span', 'wp-tile__label', COPY.weapon.xpLabelShort), xpTileValue, xpBar);
-    root.append(tierTile, xpTile, statsEl, restEl, tagHost);
+    root.append(tierTile, xpTile, topEl, statsEl, restEl, tagHost);
   }
 
   // ---- card variant: the overlay (the large level badge) ----

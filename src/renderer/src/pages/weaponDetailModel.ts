@@ -269,7 +269,7 @@ function graphRefs(content: Content, tier: string): number[] {
 }
 
 const GRAPH_KEYS = ['hit', 'speed', 'dps', 'health', 'crit', 'critdmg'] as const;
-const FLOOR = 0.08;
+const FLOOR = 0.2;
 
 function graphOf(content: Content, tier: string, now: CardStats, next: Up): GraphAxis[] {
   const refs = graphRefs(content, tier);

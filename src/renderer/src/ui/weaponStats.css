@@ -423,3 +423,63 @@
   font-size: 18px;
   font-weight: 400;
 }
+
+/* ---- round 2 (art controller): the ring, power and graph on one row; bigger graph; big screens ---- */
+:root {
+  --wzoom: 1;
+}
+/* on a 1920 x 1080 screen the dungeon's Weapon panel is drawn 1.5 times the size and its sheet is
+   1.5 times as wide, so it takes the same share of the screen as at 1280; the sprite and the
+   icons are then two device pixels per art pixel */
+@media (min-width: 1700px) and (min-height: 950px) {
+  :root {
+    --wzoom: 1.5;
+  }
+  html .dv-sheet[data-panel='weapon']:not(#_w) {
+    width: min(840px, calc(100% - 32px));
+  }
+  .dv-sheet[data-panel='weapon'] .dv-sheet__head,
+  .dv-sheet[data-panel='weapon'] .dv-sheet__body {
+    zoom: var(--wzoom);
+  }
+}
+.wp--drawer .wp-hero {
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.wp--drawer .wp-hero .wst-top {
+  flex: 1 1 0;
+  min-width: 0;
+  grid-template-columns: minmax(104px, 0.8fr) minmax(150px, 1.4fr);
+  gap: 6px;
+}
+.wp--drawer .wp-hero .wst-power {
+  padding: 8px 4px;
+}
+.wp--drawer .wp-side {
+  flex: 1 0 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 4px 12px;
+}
+.wp--drawer .wp-side .wp-taghost {
+  grid-column: 1 / -1;
+}
+.wst-top {
+  grid-template-columns: minmax(130px, 1fr) minmax(170px, 1.4fr);
+}
+.wp--card .wst-graph {
+  max-width: 230px;
+}
+.wst-icon {
+  --pq-n: max(1, round(down, calc(32 * var(--dpr, 1) / 32), 1));
+}
+@media (min-width: 1700px) and (min-height: 950px) {
+  .wst-icon {
+    width: calc(64px / var(--dpr, 1) / var(--wzoom));
+    height: calc(64px / var(--dpr, 1) / var(--wzoom));
+  }
+}

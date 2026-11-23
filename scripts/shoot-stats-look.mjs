@@ -72,6 +72,12 @@ await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 
 // scrolls the panel's stats, then its abilities, to the top of their scroller and shoots each
 const scrolled = async (base, scope) => {
+  // the top of the panel first (every scroller above the stats back to 0)
+  await page.evaluate((q) => {
+    for (let n = document.querySelector(q); n; n = n.parentElement) n.scrollTop = 0;
+  }, `${scope} .wp-detail--stats`);
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: `${base}.png` });
   for (const [name, sel] of [
     ['stats', `${scope} .wp-detail--stats`],
     ['abilities', `${scope} .wp-detail--rest`],
@@ -109,7 +115,6 @@ for (const [w, h] of [
     const tab = page.getByRole('tab', { name: re }).first();
     if ((await tab.count()) > 0) await tab.click().catch(() => undefined);
     await page.waitForTimeout(700);
-    await page.screenshot({ path: `${out}/${w}-dungeon-${kind}.png` });
     await scrolled(`${out}/${w}-dungeon-${kind}`, '.dp-weapon');
   }
   await page.keyboard.press('Escape');
@@ -124,7 +129,6 @@ for (const [w, h] of [
     }
     await tile.click();
     await page.waitForTimeout(800);
-    await page.screenshot({ path: `${out}/${w}-cards-${kind}.png` });
     await scrolled(`${out}/${w}-cards-${kind}`, '.cp-detail');
   }
   await page.keyboard.press('Escape');

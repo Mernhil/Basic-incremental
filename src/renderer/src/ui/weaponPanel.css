@@ -576,3 +576,34 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   background: #2c2820;
   box-shadow: 0 0 0 2px #c8a24a;
 }
+
+/* the dungeon's ring at about 60% of its first size (user: keep the stars, not the ring's size);
+   the weapon is still one device pixel per art pixel (100 device px wide) */
+.wp--drawer .wp-stage {
+  width: 162px;
+  height: 157px;
+}
+.wp--drawer .wp-item {
+  --one: calc(100px / var(--dpr) / var(--wzoom, 1));
+}
+.wp--drawer .wp-badge {
+  left: 2px;
+  top: 6px;
+  width: 38px;
+  height: 41px;
+}
+.wp--drawer .wp-badge b {
+  font-size: 15px;
+}
+.wp--drawer .wp-badge small {
+  font-size: 7px;
+}
+.wp--drawer .wp-xp {
+  right: -4px;
+  top: -8px;
+  font-size: 10px;
+}
+.wp--drawer .wp-plate {
+  font-size: 11px;
+  padding: 0 9px;
+}
