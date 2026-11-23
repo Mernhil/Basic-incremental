@@ -52,7 +52,6 @@ function pinStarBar(bundled: Content): Content {
 export function neutralStars(base: Content): Content {
   const stageStars = {
     ...base.combat.stageStars,
-    damagePerLevel: 0,
     lootPerLevel: 0,
     chests: { ...base.combat.stageStars.chests, rewards: [] },
   };

@@ -74,7 +74,6 @@
   },
   "stageStars": {
     "kills": [1, 10, 100, 1000, 10000, 100000],
-    "damagePerLevel": 0.05,
     "lootPerLevel": 0.1,
     "overflowFromLevel": 3,
     "chests": {

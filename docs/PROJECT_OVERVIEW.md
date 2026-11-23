@@ -513,7 +513,7 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 ### Stage stars, closed (`src/game/stageStars.ts`)
 
 - The stage stars are closed (DESIGN.md §2 Dungeons): a boss or mini-boss kill is no longer counted on its stage, so the kills a save already holds keep their star levels (`stageStarLevel`, `totalStageStarLevels`: the skill points from them stay, the achievements on them stay). A chest earned and never opened is still paid with the next boss kill on that stage (`payStageChests`).
-- A stage no longer adds damage. The loot the levels gave belongs to the difficulty now: `difficultyLootFactor` (`combat.json` `difficultyLoot`, in step-sized levels: Normal 2, Hard 3, Nightmare 4, endless 4, each worth `stageStars.lootPerLevel`, the skill web's `stars.loot` widens the step) multiplies Money purses and material chances on every floor of the difficulty (`killEnemies`). The skill web's `stars.damage` nodes do nothing now.
+- A stage no longer adds damage. The loot the levels gave belongs to the difficulty now: `difficultyLootFactor` (`combat.json` `difficultyLoot`, in step-sized levels: Normal 2, Hard 3, Nightmare 4, endless 4, each worth `stageStars.lootPerLevel`, the skill web's `stars.loot` widens the step) multiplies Money purses and material chances on every floor of the difficulty (`killEnemies`). The skill nodes that gave stage-star damage now give crit damage (`combat.critDamage`, same percents, to be retuned by the full sim).
 - The overflow switch (`setOverflow`) is open on every stage; when on, damage left over from a kill carries into the next enemy. Other floors follow a stage's switch (`overflowStage`).
 
 ### Pay

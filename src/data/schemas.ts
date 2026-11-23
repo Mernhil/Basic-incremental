@@ -371,8 +371,6 @@ export const STATS = [
   'element.production',
   /** Chest of each stage star level, base 1 (DESIGN.md §6 Stage stars). Scope: dungeon. */
   'stars.chest',
-  /** The damage each star level adds on its stage, base 1 (= the +5% a level). Scope: dungeon. */
-  'stars.damage',
   /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
   'stars.loot',
   /** Expedition slots (DESIGN.md §15 Expeditions): base 1, the account tree and the Starlight shop add. */
@@ -1127,8 +1125,6 @@ const stageStarsSchema = z.strictObject({
     .array(z.number().int().min(1))
     .length(STAGE_STAR_LEVELS)
     .refine(increasing, { message: 'kill counts must increase' }),
-  /** Damage on that stage per star level: 0.05 = +5% a level. */
-  damagePerLevel: z.number().min(0),
   /** Loot on that stage per star level (Money purses and material chances): 0.1 = +10%. */
   lootPerLevel: z.number().min(0),
   /** The star level (1-based) from which the stage's overflow switch can be turned on. */
