@@ -245,8 +245,8 @@ html .wm-plate.is-picked:not(#_px) {
 /* the stops: markers at 2x (96 px) centred on their point; the road's studs stop short of them */
 .wm-stud {
   position: absolute;
-  width: 96px;
-  height: 96px;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
   max-width: none;
   transform: translate(-50%, -50%);
   image-rendering: pixelated;
@@ -265,14 +265,14 @@ html .wm-plate.is-picked:not(#_px) {
   transform: translate(-50%, -50%);
 }
 .wm-stop--wave {
-  width: 96px;
-  height: 96px;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
 }
 .wm-stop__img {
   position: absolute;
   inset: 0;
-  width: 96px;
-  height: 96px;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
   max-width: none;
   image-rendering: pixelated;
 }
@@ -334,16 +334,16 @@ html .wm-plate.is-picked:not(#_px) {
   position: absolute;
   display: grid;
   justify-items: center;
-  width: 96px;
-  height: 96px;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
   transform: translateX(-50%);
   pointer-events: none;
 }
 .wm-flag img {
   position: absolute;
   inset: 0;
-  width: 96px;
-  height: 96px;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
   max-width: none;
   image-rendering: pixelated;
 }

@@ -47,6 +47,7 @@ import {
   sceneName,
   sceneScale,
   STOP_CLEAR,
+  STUD_GAP,
   studsBetween,
   type MapStop,
   type Point,
@@ -412,7 +413,11 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     // the road
     const kindOf = (floor: number) => floorKind(content, d, floor, difficulty);
     const stops = pathStops({ floors: pos.floors, best: pos.best, kindOf });
-    const layout = layoutRoad(stops.length, width, height);
+    // markers at 2x, or at 1x in a small pane so the road fits without crowding the room
+    const unit = height < 640 ? 0.5 : 1;
+    road.style.setProperty('--wm-m', `${96 * unit}px`);
+    const clear = (k: MapStop['kind']): number => STOP_CLEAR[k] * unit;
+    const layout = layoutRoad(stops.length, width, height, unit);
     road.style.height = `${layout.height}px`;
     const pts = layout.points;
     const studs: Point[] = [];
@@ -421,8 +426,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
         ...studsBetween(
           pts[i]!,
           pts[i + 1]!,
-          STOP_CLEAR[stops[i]!.kind],
-          STOP_CLEAR[stops[i + 1]!.kind],
+          clear(stops[i]!.kind),
+          clear(stops[i + 1]!.kind),
+          unit === 1 ? STUD_GAP : 20,
         ),
       );
     }
@@ -463,7 +469,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       } else {
         const pic = portrait(
           spriteOf(d, stop.kind),
-          stop.kind === 'boss' ? 92 : 64,
+          (stop.kind === 'boss' ? 92 : 64) * (unit === 1 ? 1 : 0.75),
           'wm-stop__pic',
         );
         b.append(
@@ -471,7 +477,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
           h(
             'span',
             'wm-stop__cap',
-            `${stop.floor} ${stop.kind === 'boss' ? DUEL_COPY.bossKind : DUEL_COPY.miniKind}`,
+            unit === 1
+              ? `${stop.floor} ${stop.kind === 'boss' ? DUEL_COPY.bossKind : DUEL_COPY.miniKind}`
+              : `${stop.floor} ${stop.kind === 'boss' ? DUEL_COPY.bossKind : 'Mini'}`,
           ),
         );
       }
@@ -491,7 +499,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       if (flagFloor && at) {
         const flag = h('span', 'wm-flag');
         flag.style.left = `${at.x}px`;
-        flag.style.top = `${at.y - 92}px`;
+        flag.style.top = `${at.y - 92 * unit}px`;
         const img = h('img') as HTMLImageElement;
         img.src = art('team_banner_1');
         img.alt = '';
@@ -499,7 +507,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
         road.append(flag);
         const tag = h('span', 'wm-flag__text', DUEL_COPY.yourTeam);
         tag.style.left = `${at.x}px`;
-        tag.style.top = `${at.y + STOP_CLEAR[flagFloor.kind] - 6}px`;
+        tag.style.top = `${at.y + clear(flagFloor.kind) - 6}px`;
         road.append(tag);
       }
     }

@@ -93,18 +93,24 @@ export interface RoadLayout {
  * ROAD_COLUMNS going right, then left, the first row at the bottom, each stop nudged up or down
  * alternately so the road winds. A short road is centred in the box; a long one grows it.
  */
-export function layoutRoad(count: number, width: number, minHeight: number): RoadLayout {
+export function layoutRoad(
+  count: number,
+  width: number,
+  minHeight: number,
+  /** 1 for markers at 2x, 0.5 for markers at 1x (a small pane): the road's spacing follows. */
+  unit = 1,
+): RoadLayout {
   const rows = Math.max(1, Math.ceil(count / ROAD_COLUMNS));
   const padX = Math.min(90, width * 0.1);
-  const padTop = 64;
-  const padBottom = 52;
+  const padTop = 64 * unit;
+  const padBottom = 52 * unit;
   const span = Math.min(260, (width - padX * 2) / (ROAD_COLUMNS - 1));
   const left = (width - span * (ROAD_COLUMNS - 1)) / 2;
   const pitch =
     rows > 1
       ? Math.min(
-          Math.max(150, minHeight * 0.22),
-          Math.max(100, (minHeight - padTop - padBottom) / (rows - 1)),
+          Math.max(150 * unit, minHeight * 0.22 * unit),
+          Math.max(100 * unit, (minHeight - padTop - padBottom) / (rows - 1)),
         )
       : 0;
   const roadHeight = (rows - 1) * pitch;
@@ -118,13 +124,13 @@ export function layoutRoad(count: number, width: number, minHeight: number): Roa
     const col = row % 2 === 0 ? step : ROAD_COLUMNS - 1 - step;
     points.push({
       x: Math.round(left + col * span),
-      y: Math.round(bottom - row * pitch + (step % 2 === 1 ? -22 : 14)),
+      y: Math.round(bottom - row * pitch + (step % 2 === 1 ? -22 : 14) * unit),
     });
   }
   return { points, height: Math.round(height) };
 }
 
-/** The radius that keeps studs clear of a stop (its picture and a little air). */
+/** The radius (at unit 1) that keeps studs clear of a stop (its picture and a little air). */
 export const STOP_CLEAR: Record<StopKind, number> = { wave: 34, miniboss: 52, boss: 66 };
 
 /** Spacing of the studs along the road. */
