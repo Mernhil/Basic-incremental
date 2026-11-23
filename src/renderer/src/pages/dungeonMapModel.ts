@@ -96,7 +96,7 @@ export interface RoadLayout {
 export function layoutRoad(count: number, width: number, minHeight: number): RoadLayout {
   const rows = Math.max(1, Math.ceil(count / ROAD_COLUMNS));
   const padX = Math.min(90, width * 0.1);
-  const padTop = 124;
+  const padTop = 64;
   const padBottom = 52;
   const span = Math.min(260, (width - padX * 2) / (ROAD_COLUMNS - 1));
   const left = (width - span * (ROAD_COLUMNS - 1)) / 2;

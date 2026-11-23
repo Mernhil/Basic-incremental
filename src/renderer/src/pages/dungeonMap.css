@@ -26,6 +26,7 @@
 /* ---- the plates ---- */
 .wm-list,
 .wm-side {
+  zoom: var(--wm-z, 1);
   min-height: 0;
   padding: 10px;
   overflow-y: auto;
@@ -161,7 +162,7 @@ html .wm-plate.is-picked:not(#_px) {
 }
 .wm-scroll {
   position: absolute;
-  inset: 0;
+  inset: calc(84px * var(--wm-z, 1)) 0 0 0;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-color: var(--px-gold) #1b1a19;
@@ -171,20 +172,30 @@ html .wm-plate.is-picked:not(#_px) {
   width: 100%;
   overflow: hidden;
 }
-.wm-head {
+/* the band over the top of the scene holds the title and the badges; the road scrolls under it,
+   never behind a plate */
+.wm-band {
   position: absolute;
-  top: 12px;
-  left: 14px;
+  inset: 0 0 auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 84px;
+  zoom: var(--wm-z, 1);
+  box-sizing: border-box;
+  padding: 0 14px;
+  background: rgba(20, 18, 17, 0.86);
+  border-bottom: 2px solid #8a6a1c;
+}
+.wm-map--light .wm-band {
+  background: rgba(20, 18, 17, 0.94);
+}
+.wm-head {
   display: grid;
   gap: 2px;
-  max-width: calc(100% - 270px);
-  pointer-events: none;
+  min-width: 0;
   color: #efe6d0;
-}
-.wm-map--light .wm-head {
-  padding: 6px 12px;
-  background: rgba(20, 18, 17, 0.82);
-  border: 2px solid #8a6a1c;
 }
 .wm-title {
   margin: 0;
@@ -198,14 +209,9 @@ html .wm-plate.is-picked:not(#_px) {
   text-shadow: 0 1px 0 #000;
 }
 .wm-diff {
-  position: absolute;
-  top: 12px;
-  right: 18px;
   display: flex;
+  flex: none;
   gap: 2px;
-  padding: 3px;
-  background: rgba(27, 26, 25, 0.92);
-  border: 2px solid #8a6a1c;
 }
 .wm-badge {
   display: grid;
@@ -408,8 +414,8 @@ html .wm-plate.is-picked:not(#_px) {
 /* a drop's approved icon: 32 x 32 at 1x */
 .wm-drop__ico {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: calc(32px * var(--wm-s, 1));
+  height: calc(32px * var(--wm-s, 1));
   margin: -6px 0;
 }
 .wm-drop__ico svg {

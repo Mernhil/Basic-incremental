@@ -129,10 +129,16 @@ function opaqueBox(
  * shoulders at 1x for a big figure; a small pack figure at the whole zoom the game itself uses
  * for it (`foeZoom`), so it fills the window. Never smoothed or stretched.
  */
-function portrait(spriteId: string | undefined, size: number, cls = ''): HTMLElement {
+function portrait(
+  spriteId: string | undefined,
+  size: number,
+  cls = '',
+  /** CSS px per art pixel: 1, or the whole art scale over the panel's zoom in the side panels. */
+  px = 1,
+): HTMLElement {
   const box = h('span', `wm-por ${cls}`.trim());
-  box.style.width = `${size}px`;
-  box.style.height = `${size}px`;
+  box.style.width = `${size * px}px`;
+  box.style.height = `${size * px}px`;
   const pic = spriteId ? (sprite(`foe-${spriteId}`) ?? sprite(`boss-${spriteId}`)) : undefined;
   if (!pic || !spriteId) {
     box.append(h('b', '', '?'));
@@ -146,8 +152,8 @@ function portrait(spriteId: string | undefined, size: number, cls = ''): HTMLEle
     const left = -Math.round(cx - size / 2);
     const top =
       b.h * z >= size ? -Math.max(0, b.y * z - 2) : -Math.round((b.y + b.h / 2) * z - size / 2);
-    box.style.backgroundPosition = `${left}px ${top}px`;
-    box.style.backgroundSize = `${FOE_W * z}px ${FOE_H * z}px`;
+    box.style.backgroundPosition = `${left * px}px ${top * px}px`;
+    box.style.backgroundSize = `${FOE_W * z * px}px ${FOE_H * z * px}px`;
   });
   return box;
 }
@@ -165,6 +171,20 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
   const sideCol = h('aside', 'wm-side px-panel');
   el.append(listCol, pane, sideCol);
 
+  // The side panels grow with the window (the same share of it as at 1280 x 720): the layout
+  // zooms, and the pictures are drawn at a whole art scale (2x on a big window).
+  let zoom = 1;
+  let art2 = 1;
+  function applyZoom(): void {
+    const w = window.innerWidth;
+    const hgt = window.innerHeight;
+    zoom = w >= 1800 && hgt >= 1000 ? 1.5 : w >= 1500 && hgt >= 840 ? 1.25 : 1;
+    art2 = zoom >= 1.5 ? 2 : 1;
+    el.style.setProperty('--wm-z', String(zoom));
+    el.style.setProperty('--wm-s', String(art2 / zoom));
+  }
+  const sidePx = (): number => art2 / zoom;
+
   let picked: string | null = null;
   let selected: number | null = null;
   let selectedFor = '';
@@ -180,7 +200,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
   const diffBox = h('div', 'wm-diff');
   diffBox.setAttribute('role', 'group');
   diffBox.setAttribute('aria-label', COPY.dungeons.difficultyLabel);
-  pane.append(sceneBox, scroll, head, diffBox);
+  const band = h('header', 'wm-band');
+  band.append(head, diffBox);
+  pane.append(sceneBox, scroll, band);
 
   const act = (next: GameState | null, focusKey?: string): void => {
     if (!next) return;
@@ -280,7 +302,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     const bossSprite = special
       ? (foe as Trial['target']).art
       : ((foe as Dungeon['boss']).sprite ?? (foe as Dungeon['boss']).art);
-    b.append(portrait(bossSprite, 56), body);
+    b.append(portrait(bossSprite, 56, '', sidePx()), body);
     b.addEventListener('click', () => {
       picked = entry.id;
       selected = null;
@@ -331,8 +353,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       head.append(h('h3', 'wm-title px-display', t?.name ?? COPY.arena.idleTitle));
       return;
     }
-    const width = Math.floor(pane.clientWidth);
-    const height = Math.floor(pane.clientHeight);
+    const width = Math.floor(scroll.clientWidth);
+    const height = Math.floor(scroll.clientHeight);
     if (width <= 0 || height <= 0) return;
     const pos = floorPosition(s, d);
     const difficulty = pos.difficulty;
@@ -365,8 +387,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       const img = h('img') as HTMLImageElement;
       img.src = art(`difficulty-${diff}`);
       img.alt = '';
-      img.width = 48;
-      img.height = 48;
+      img.style.width = 'calc(48px * var(--wm-s, 1))';
+      img.style.height = 'calc(48px * var(--wm-s, 1))';
       b.append(img, h('span', '', COPY.dungeons.difficulty[diff] ?? diff));
       attachTooltip(b, () =>
         !open && i > 0
@@ -530,7 +552,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     const box = h('div', 'wm-stage');
     box.append(h('h3', 'wm-h', DUEL_COPY.stageHeading(floor)));
     const who = h('div', 'wm-who');
-    who.append(portrait(spriteId, 84, 'wm-who__pic'), h('span', 'wm-who__text', ''));
+    who.append(portrait(spriteId, 84, 'wm-who__pic', sidePx()), h('span', 'wm-who__text', ''));
     const text = who.lastElementChild as HTMLElement;
     text.append(
       h('b', '', lead?.name ?? ''),
@@ -782,7 +804,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
   function render(): void {
     const s = ctx.state();
     if (picked && !content.dungeonById.has(picked) && !content.trialById.has(picked)) picked = null;
-    const now = `${pane.clientWidth}x${pane.clientHeight}`;
+    applyZoom();
+    const now = `${pane.clientWidth}x${pane.clientHeight}x${zoom}`;
     const key = signature(s);
     // another dungeon starts at its own stage
     if (selectedFor !== (chosenId(s) ?? '')) {
