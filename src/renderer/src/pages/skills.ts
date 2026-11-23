@@ -727,7 +727,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         (focusKey === 'buy' && selected
           ? wrap.querySelector<HTMLElement>(`[data-key="node-${selected}"]`)
           : null);
-      target?.focus();
+      target?.focus({ preventScroll: true });
     }
   }
 

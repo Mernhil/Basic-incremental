@@ -297,7 +297,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       readout,
       ...rows,
     );
-    if (focused) wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus();
+    if (focused)
+      wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus({ preventScroll: true });
   }
 
   // ---- the tier collection: a check box per tier ----
@@ -448,7 +449,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         busy = false;
         // the buttons are enabled again before the focus goes back to the one that was used
         render();
-        (decks.get(portalId) ?? doors.get(portalId))?.single.el.focus();
+        (decks.get(portalId) ?? doors.get(portalId))?.single.el.focus({ preventScroll: true });
       },
     });
   }
@@ -828,7 +829,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       onClose: () => {
         busy = false;
         render();
-        doors.get(heirloomId)?.single.el.focus();
+        doors.get(heirloomId)?.single.el.focus({ preventScroll: true });
       },
     });
   }
@@ -916,7 +917,9 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     row.addEventListener('click', () => {
       openGate = id;
       render();
-      deck.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+      deck
+        .querySelector<HTMLButtonElement>('button:not(:disabled)')
+        ?.focus({ preventScroll: true });
     });
     root.append(row, deck);
     gates.set(id, { root, row, rowLine, rowPity, deck });

@@ -4,10 +4,11 @@
  * other art is in `pixelScale.css`.
  */
 import './pixelScale.css';
+import { isDesignScaled } from './designScale';
 import { cardBoxScale, cleanDpr, pickCardScale, pickRowScale } from './pixelScale';
 
-/** The screen's pixel ratio right now (browser zoom counts, so does a 125 % Windows scale). */
-export const screenDpr = (): number => cleanDpr(window.devicePixelRatio);
+/** The pixel ratio the layout is drawn for: 1 under the design-size zoom (the window scale is the zoom's), else the screen's (browser zoom counts, so does a 125 % Windows scale). */
+export const screenDpr = (): number => (isDesignScaled() ? 1 : cleanDpr(window.devicePixelRatio));
 
 export interface Fit {
   /** CSS px wide the card should be (a function when it depends on the window). */

@@ -153,18 +153,13 @@ export function sealWhy(def: HubBuilding, state: GameState, content: Content): s
   return null;
 }
 
-/** A window a few pixels short of a whole scale (a frame, a scrollbar) still counts as covered. */
-export const HUB_FILL_SLACK = 8;
-
 /**
- * The whole scale the map is shown at: the smallest that covers the area under the header (give or
- * take `HUB_FILL_SLACK` pixels), so the map always fills it; the overflow is cut evenly off the
- * edges (see `hubOffset`). 2x at 1280 x 720, 3x at 1920 x 1080; at least 1.
+ * The scale the map is shown at: the smallest that covers the area under the header exactly, so the
+ * map always fills it; the overflow is cut evenly off the edges (see `hubOffset`). The UI is laid
+ * out at 1920 x 1080 and zoomed to the window (ui/designScale.ts), so this is 3 at any 16:9 window.
  */
 export function hubScale(width: number, height: number): number {
-  const byWidth = Math.ceil((width - HUB_FILL_SLACK) / HUB_MAP_W);
-  const byHeight = Math.ceil((height - HUB_FILL_SLACK) / HUB_MAP_H);
-  return Math.max(1, byWidth, byHeight);
+  return Math.max(1, width / HUB_MAP_W, height / HUB_MAP_H);
 }
 
 /** Where the scaled map's top left corner sits in the area: centred, so the overflow is cut evenly
@@ -173,6 +168,27 @@ export function hubOffset(width: number, height: number, scale: number): { x: nu
   return {
     x: Math.floor((width - HUB_MAP_W * scale) / 2),
     y: Math.floor((height - HUB_MAP_H * scale) / 2),
+  };
+}
+
+/**
+ * Where the map's top left corner sits after the player panned it by `pan` from the centred spot:
+ * clamped so the map always covers the area (an axis the map does not overflow stays centred).
+ */
+export function hubPanned(
+  width: number,
+  height: number,
+  scale: number,
+  pan: { x: number; y: number },
+): { x: number; y: number } {
+  const at = hubOffset(width, height, scale);
+  const clamp = (v: number, size: number, box: number): number => {
+    const min = Math.min(0, box - size);
+    return Math.min(0, Math.max(min, v));
+  };
+  return {
+    x: clamp(at.x + pan.x, HUB_MAP_W * scale, width),
+    y: clamp(at.y + pan.y, HUB_MAP_H * scale, height),
   };
 }
 

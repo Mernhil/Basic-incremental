@@ -239,9 +239,9 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
     confirm.hidden = next !== 'confirm';
     done.hidden = next !== 'done';
     render();
-    if (next === 'confirm') goBtn.focus();
-    else if (focus && next === 'ready') ascendBtn.focus();
-    else if (focus && next === 'done') nextBtn.focus();
+    if (next === 'confirm') goBtn.focus({ preventScroll: true });
+    else if (focus && next === 'ready') ascendBtn.focus({ preventScroll: true });
+    else if (focus && next === 'done') nextBtn.focus({ preventScroll: true });
   }
 
   const rewardLi = (r: RewardView): HTMLElement => {

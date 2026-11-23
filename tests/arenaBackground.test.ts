@@ -57,18 +57,16 @@ describe('arena backgrounds (DESIGN.md §6)', () => {
   });
 });
 
-describe('the picture covers the duel at a whole scale', () => {
-  it('2x at 1280 x 720 and 3x at 1920 x 1080', () => {
-    expect(stageScale(1280, 656)).toBe(2);
+describe('the picture covers the duel exactly (the UI is laid out at 1920 x 1080)', () => {
+  it('3x at the design size, whatever the window (the zoom scales the rest)', () => {
     expect(stageScale(1920, 1016)).toBe(3);
-    expect(stageScale(1600, 836)).toBe(3);
+    expect(stageScale(1920, 1080)).toBe(3);
     expect(stageScale(300, 200)).toBe(1);
   });
 
-  it('a few pixels short of a whole scale still counts as covered', () => {
-    expect(stageScale(1274, 751)).toBe(3);
-    expect(stageScale(1274, 728)).toBe(2);
-    expect(stageScale(1280, 728)).toBe(2);
+  it('a taller design area grows the picture just enough to cover it', () => {
+    expect(stageScale(1920, 1164)).toBeCloseTo(1164 / 360, 6);
+    expect(stageScale(2400, 1016)).toBeCloseTo(3.75, 6);
   });
 
   it('is centred, the overflow cut evenly off both edges', () => {
@@ -76,6 +74,6 @@ describe('the picture covers the duel at a whole scale', () => {
     expect(b).toEqual({ x: 0, y: -32, w: 1920, h: 1080, scale: 3 });
     expect(b.x * 2 + b.w).toBeGreaterThanOrEqual(1920);
     expect(stageBox(1280, 656).y).toBe(-32);
-    expect(stageBox(1274, 751).x).toBe(-323);
+    expect(stageBox(1920, 1164).x).toBe(Math.floor((1920 - 640 * (1164 / 360)) / 2));
   });
 });

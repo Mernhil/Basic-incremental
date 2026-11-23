@@ -184,7 +184,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const track = createRewardTrack(shell.track, {
     content,
     setOpen: (open) => shell.setTrackOpen(open),
-    returnFocus: () => shell.levelButton.focus(),
+    returnFocus: () => shell.levelButton.focus({ preventScroll: true }),
   });
   shell.setLevel(levelBadge(accountInfo(loop.state, content)));
   installPixelNumbers(shell.el);

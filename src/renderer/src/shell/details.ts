@@ -136,10 +136,10 @@ export function createDetailsPanel(opts: {
       const last = items[items.length - 1]!;
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
-        last.focus();
+        last.focus({ preventScroll: true });
       } else if (!e.shiftKey && document.activeElement === last) {
         e.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     }
   };
@@ -150,7 +150,7 @@ export function createDetailsPanel(opts: {
     build();
     update();
     document.addEventListener('keydown', onKey);
-    closeBtn.focus();
+    closeBtn.focus({ preventScroll: true });
     opts.onToggle?.(true);
   }
 
@@ -159,7 +159,7 @@ export function createDetailsPanel(opts: {
     el.hidden = true;
     built = false;
     document.removeEventListener('keydown', onKey);
-    opts.returnFocus()?.focus();
+    opts.returnFocus()?.focus({ preventScroll: true });
     opts.onToggle?.(false);
   }
 

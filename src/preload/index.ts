@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webFrame } from 'electron';
 import { IPC_CHANNELS, type AppApi } from './api';
 
 function subscribe(channel: string, callback: () => void): () => void {
@@ -22,8 +22,14 @@ const api: AppApi = {
   devBackupSave: () => ipcRenderer.invoke(IPC_CHANNELS.devBackupSave) as Promise<string | null>,
   devReloadView: () => ipcRenderer.send(IPC_CHANNELS.devReloadView),
   readLogTail: (lines) => ipcRenderer.invoke(IPC_CHANNELS.readLogTail, lines) as Promise<string[]>,
+  // the page zoom that scales the whole UI to the window (renderer/ui/designScale.ts)
+  getUiZoom: () => webFrame.getZoomFactor(),
+  setUiZoom: (factor) => webFrame.setZoomFactor(factor),
   getSystemInfo: () =>
     ipcRenderer.invoke(IPC_CHANNELS.getSystemInfo) as ReturnType<AppApi['getSystemInfo']>,
 };
+
+// the user never zooms by hand: the game fits the window by itself
+webFrame.setVisualZoomLevelLimits(1, 1);
 
 contextBridge.exposeInMainWorld('api', api);

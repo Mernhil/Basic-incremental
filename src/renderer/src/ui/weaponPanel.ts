@@ -195,7 +195,8 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       );
     }
     restEl.append(section(t.doesTitle, list));
-    if (keep) restEl.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus();
+    if (keep)
+      restEl.querySelector<HTMLElement>('[data-key="wp-skill"]')?.focus({ preventScroll: true });
   }
 
   // ---- card variant: the tiles (tier and stars, card XP) ----
@@ -419,7 +420,9 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     if (variant === 'card') end.classList.add('wp-tile', 'px-tile');
     tagHost.append(end);
     if (keep && focused) {
-      (root.querySelector<HTMLElement>(`[data-key="${focused}"]`) ?? starLine).focus();
+      (root.querySelector<HTMLElement>(`[data-key="${focused}"]`) ?? starLine).focus({
+        preventScroll: true,
+      });
     }
   }
 

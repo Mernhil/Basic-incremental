@@ -8,11 +8,10 @@ import {
 } from '../src/renderer/src/views/gathering/forgeStage';
 
 describe('forge stage model', () => {
-  it('picks the smallest whole scale that covers the space, at least 1', () => {
-    expect(sceneUnit(1280, 600)).toBe(2);
-    expect(sceneUnit(1274, 700)).toBe(2);
-    expect(sceneUnit(1274, 760)).toBe(3);
+  it('picks the scale that covers the space exactly, at least 1 (3 at the 1920 x 1080 design size)', () => {
+    expect(sceneUnit(1920, 1016)).toBe(3);
     expect(sceneUnit(1920, 960)).toBe(3);
+    expect(sceneUnit(2400, 1016)).toBeCloseTo(3.75, 6);
     expect(sceneUnit(300, 200)).toBe(1);
   });
 

@@ -7,6 +7,7 @@
   overflow: hidden;
 }
 .hub__view {
+  touch-action: none;
   position: absolute;
   inset: 0;
   overflow: hidden;
