@@ -127,7 +127,8 @@ html.r-shell-gold
   --o-out: 0;
   --o-fill: fill;
 }
-html.r-shell-gold :is(.du-read, .du-plate, .ar__readout, .hub__plate):not(#_o):not(#_o):not(#_o) {
+html.r-shell-gold
+  :is(.du-read, .du-plate, .ar__readout, .hub__plate, .wp-sec__title):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/gold/pill.png');
   --o-bg: #393939;
   --o-slice: 10;
@@ -581,14 +582,6 @@ html.r-shell-gold
   :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true'])
   :is(.wm-plate__sub, .wm-plate__hint):not(#_o):not(#_o) {
   color: var(--gold-action-ink);
-}
-
-/* The dungeon room keeps its own purple brick: its wall, floor and mortar are mixed from the dark
-   chrome tokens, so the room reads the dark surface set (not the header's grey) */
-html.r-shell-gold .ar__scene {
-  --bi-chrome-bg: #2a2238;
-  --bi-chrome-rail-bg: #17131f;
-  --bi-frame-hi: #54456d;
 }
 
 /* ---- text that sits on the dark table or on a wooden sign, not on a cream sheet ---------------- */

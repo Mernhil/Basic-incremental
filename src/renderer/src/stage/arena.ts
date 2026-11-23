@@ -67,7 +67,7 @@ import {
   slotColour,
   type Plate,
 } from '../views/dungeon/duelModel';
-import { backgroundFor } from './arenaBackground';
+import { TRIAL_BACKGROUND_ID, backgroundFor, stageBox } from './arenaBackground';
 import { edgeStrength, fallBanner, windupProgress, windupSeconds } from './bossHitModel';
 import type { Director } from './director';
 import { flyCoins } from './fly';
@@ -161,12 +161,8 @@ export function createArena(ctx: ArenaContext): Arena {
   // ---- the room behind the fight (the dungeon's background, CSS until art exists) ----
   const scene = div('ar__scene');
   scene.setAttribute('aria-hidden', 'true');
-  const torch = (side: 'l' | 'r'): HTMLElement => {
-    const t = div(`ar__torch ar__torch--${side}`);
-    for (const part of ['glow', 'stick', 'cup', 'flame']) t.append(div(`ar__torch-${part}`));
-    return t;
-  };
-  scene.append(div('ar__wall'), div('ar__bricks'), torch('l'), torch('r'), div('ar__floor'));
+  const bg = div('ar__bg');
+  scene.append(bg);
 
   // ---- top: the plate and the floor's pips ----
   const top = div('du-top');
@@ -332,6 +328,16 @@ export function createArena(ctx: ArenaContext): Arena {
   el.append(scene, top, verdict, left, foeZone, plates, sheet, hand, ko, empty, edge, slamFlash);
 
   // ---- sizes: the hand's whole scale follows the duel's height ----
+  // the painted room at the smallest whole scale that covers the duel, centred; the enemy and the hand
+  // follow the same scale (`--ar-s`)
+  const fitScene = (): void => {
+    const box = stageBox(el.clientWidth || 1280, el.clientHeight || 720);
+    bg.style.setProperty('--ar-bg-x', `${box.x}px`);
+    bg.style.setProperty('--ar-bg-y', `${box.y}px`);
+    bg.style.setProperty('--ar-bg-w', `${box.w}px`);
+    bg.style.setProperty('--ar-bg-h', `${box.h}px`);
+    el.style.setProperty('--ar-s', String(box.scale));
+  };
   const fitHand = (): void => {
     const h = el.clientHeight || 480;
     // the view lifts the hand above its buttons (`--du-hand-gap`); the table's window does not
@@ -343,6 +349,11 @@ export function createArena(ctx: ArenaContext): Arena {
     const n = fitCard(hand, { want, max: () => Math.min(max, wide) });
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
+    fitScene();
+    // the enemy card stands a quarter taller than a hand card (same 132 x 186 shape) (user, 2026-11-23: it looked far too small)
+    const stageS = Number(el.style.getPropertyValue('--ar-s')) || 2;
+    const foeWant = Math.min((n / screenDpr()) * HAND.cardH * 1.25, 116 * stageS);
+    el.style.setProperty('--du-foe-want', `${Math.round(foeWant)}px`);
     el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
   fitHand();
@@ -384,7 +395,12 @@ export function createArena(ctx: ArenaContext): Arena {
     const box = foeBody.getBoundingClientRect();
     if (box.width < 1 || box.height < 1) return;
     const dpr = screenDpr();
-    const device = Math.max(1, Math.floor(Math.min(box.width / FOE_W, box.height / FOE_H) * dpr));
+    // the picture's own pixels fill about 72% of its width and 77% of its height; the empty margin may
+    // overflow the box, so an enemy can stand a whole scale larger (user, 2026-11-23: sprites too small)
+    const device = Math.max(
+      1,
+      Math.floor(Math.min(box.width / (FOE_W * 0.72), box.height / (FOE_H * 0.77)) * dpr),
+    );
     const key = `${foeSprite}:${device}:${dpr}`;
     if (foeBody.dataset['foe'] === key) return;
     foeBody.dataset['foe'] = key;
@@ -906,7 +922,9 @@ export function createArena(ctx: ArenaContext): Arena {
     const fighting = Boolean(dungeon ?? t);
     el.classList.toggle('du--idle', !fighting);
     el.classList.toggle('du--trial', Boolean(t));
-    scene.className = `ar__scene ${backgroundFor(dungeon?.background).cls}`;
+    const room = backgroundFor(dungeon?.background ?? (t ? TRIAL_BACKGROUND_ID : undefined));
+    bg.style.setProperty('--ar-bg-img', `url("${room.url}")`);
+    el.classList.toggle('ar--bright', room.bright);
     for (const part of [top, left, foeZone, sheet, hand]) part.hidden = !fighting;
     empty.hidden = fighting;
     hp.el.hidden = !dungeon;

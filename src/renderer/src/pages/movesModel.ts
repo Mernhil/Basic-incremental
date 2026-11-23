@@ -32,6 +32,8 @@ export interface AttackRow {
   effects: string[];
   /** Why a skill does not fire yet (its tier has none, or it is not opened), else null. */
   note: string | null;
+  /** Open (fires now), locked (a skill slot not opened yet: Cores open it) or none (no slot at this tier). */
+  state: 'open' | 'locked' | 'none';
 }
 
 export interface SkillUnlockView {
@@ -119,6 +121,7 @@ export function movesView(
     text: solo ? c.hitText(num(solo.hit), secs(solo.interval)) : c.hitPlain,
     effects: [],
     note: null,
+    state: 'open',
   });
 
   if (moves.skill) {
@@ -132,6 +135,7 @@ export function movesView(
         : c.skillPlain(secs(s.every), pct(s.strike)),
       effects: s.effects.map((e) => effectText(e, moves.element)),
       note: s.open ? null : c.closed,
+      state: s.open ? 'open' : 'locked',
     });
   } else {
     const kit = content.moves.kits[moves.kind].skill;
@@ -142,6 +146,7 @@ export function movesView(
       text: '',
       effects: [],
       note: c.noSlot(firstSkillTier(content)),
+      state: 'none',
     });
   }
 
@@ -165,6 +170,7 @@ export function movesView(
       u.effects.length === 0 && u.strike > 0 && !content.moves.tiers[card.tier].ultEffects
         ? c.ultEffectsLater
         : null,
+    state: 'open',
   });
 
   let unlock: SkillUnlockView | null = null;
