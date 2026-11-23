@@ -479,3 +479,29 @@
     height: calc(64px / var(--dpr, 1));
   }
 }
+
+/* at 1920 x 1080 the rest of the sheet's text reads at the stat side's size (text only; the ring
+   and the sprite stay as they are) */
+@media (min-width: 1700px) and (min-height: 950px) {
+  html .dv-sheet[data-panel='weapon'] .dp-wtab__name:not(#_w) {
+    font-size: calc(13px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] .dp-wtab__level:not(#_w) {
+    font-size: calc(12px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] :is(.wp-stars, .wp-changes):not(#_w) {
+    font-size: calc(12px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] .wp-end:not(#_w) {
+    font-size: calc(12.5px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] .wp-add:not(#_w) {
+    font-size: calc(12px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] .dv-sheet__title:not(#_w) {
+    font-size: calc(22px * var(--wzoom));
+  }
+  html .dv-sheet[data-panel='weapon'] .dv-sheet__back:not(#_w) {
+    font-size: calc(12.5px * var(--wzoom));
+  }
+}
