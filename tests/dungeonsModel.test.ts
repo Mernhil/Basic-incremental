@@ -5,9 +5,6 @@ import {
   barsGone,
   bossElements,
   healthPercent,
-  overflowSwitch,
-  stageCell,
-  starTotal,
 } from '../src/renderer/src/pages/dungeonsModel';
 
 describe('arena counts', () => {
@@ -26,38 +23,6 @@ describe('arena counts', () => {
     expect(healthPercent(0)).toBe(0);
     expect(healthPercent(Number.NaN)).toBe(0);
     expect(healthPercent(1.4)).toBe(100);
-  });
-});
-
-describe('the stage map and overflow switch (DESIGN.md §6 Stage stars, Overflow)', () => {
-  it('reads a cell: its pips, kills, kills to the next level and its switch; a closed tier is locked', () => {
-    const info = {
-      level: 3,
-      kills: 150,
-      nextKills: 1000,
-      overflowUnlocked: true,
-      overflowOn: false,
-    };
-    expect(stageCell(info, true)).toEqual({
-      locked: false,
-      level: 3,
-      kills: 150,
-      toNext: 850,
-      overflow: 'off',
-    });
-    expect(stageCell({ ...info, level: 6, nextKills: null }, true).toNext).toBeNull();
-    expect(stageCell({ ...info, level: 9 }, false)).toMatchObject({ locked: true, level: 6 });
-  });
-
-  it('keeps the switch locked until the stage opens it, then shows it off or on', () => {
-    expect(overflowSwitch({ overflowUnlocked: false, overflowOn: false })).toBe('locked');
-    expect(overflowSwitch({ overflowUnlocked: true, overflowOn: false })).toBe('off');
-    expect(overflowSwitch({ overflowUnlocked: true, overflowOn: true })).toBe('on');
-  });
-
-  it('counts a dungeon’s stars against the most it can have', () => {
-    expect(starTotal(4, 36)).toEqual({ levels: 4, max: 36 });
-    expect(starTotal(40, 36)).toEqual({ levels: 36, max: 36 });
   });
 });
 

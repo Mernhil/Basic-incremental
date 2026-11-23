@@ -51,7 +51,7 @@ describe('enemy pictures: a picture or the placeholder, never nothing', () => {
     for (const d of content.allDungeons) {
       const list = [
         ...d.enemies.map((e) => ({ id: e.id, sprite: e.sprite, boss: false })),
-        { id: d.miniBoss.id, sprite: d.miniBoss.sprite, boss: false },
+        ...d.miniBosses.map((m) => ({ id: m.id, sprite: m.sprite, boss: false })),
         { id: d.boss.id, sprite: d.boss.sprite, boss: true },
       ];
       for (const e of list) {

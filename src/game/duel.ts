@@ -334,7 +334,7 @@ export function cardRun(card: TeamCard, t0: number, t1: number): { hits: number;
   return { hits: h1 - h0, bursts: signaturesIn(card, h1) - signaturesIn(card, h0) };
 }
 
-/** Damage the cards deal in (t0, t1], times `factor` (the stage's star damage). */
+/** Damage the cards deal in (t0, t1], times `factor`. */
 export function teamDealt(cards: readonly TeamCard[], t0: number, t1: number, factor = 1): Decimal {
   let dealt = new Decimal(0);
   for (const card of cards) {
@@ -675,7 +675,7 @@ export function activeEffects(team: readonly TeamCard[], t: number): ActiveEffec
 }
 
 /** Average damage per second of one card: hits, signature attacks and crits at their expected
- *  value (before the stage's star damage). */
+ *  value. */
 export function cardAverageDps(card: TeamCard): Decimal {
   const perHit = card.fill > 0 ? card.signature.mul(card.fill / card.size) : new Decimal(0);
   return card.hit.add(perHit).div(card.interval);

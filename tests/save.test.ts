@@ -35,6 +35,7 @@ function busyState() {
     prestigeCount: 3,
     resources: { ...state.resources, oak_gem: new Decimal('1.5e500') },
   };
+  state.combat.stageKills = { 'mossy_cellar:normal:1': 2 };
   state.combat.trialBest = { glimmer_trial: 0.5 };
   state.combat.trialAttempt = { elapsedSeconds: 12.5, dealt: new Decimal('3e400') };
   state.pity = { root_warden: 17 };

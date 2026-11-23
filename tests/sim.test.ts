@@ -292,29 +292,6 @@ describe('balance sim: where to fight', () => {
     expect(chooseDungeon(state, withDps(1e7, content))).toBe('ember_crypt');
   });
 
-  it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {
-    const state = freshState();
-    state.clearedDungeons = ['mossy_cellar'];
-    lead(state, 'storm_duelist', 'fighting'); // Epic: its Wood step is waiting for Moss Cores
-    const squire = state.cards.owned['storm_duelist']!;
-    squire.level = 20;
-    squire.stars = 6;
-    squire.starFill = 1;
-    // Harmless boss, so only the kill time decides; a ★6 squire needs a sturdier one to take
-    // over ten minutes.
-    const boss = content.dungeonById.get('ember_crypt')!.boss;
-    const { damage } = boss.attack;
-    const { hp } = boss;
-    boss.attack.damage = new Decimal(0);
-    boss.hp = hp.mul(100);
-    try {
-      expect(chooseDungeon(state, content)).toBe('mossy_cellar');
-    } finally {
-      boss.attack.damage = damage;
-      boss.hp = hp;
-    }
-  });
-
   it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'glimmer_trial'];

@@ -21,9 +21,14 @@
   background: var(--bi-chrome-rail-bg);
   /* the enemy card: its height follows the duel, its width the card shape */
   /* --du-foe-room: what the hand leaves the enemy card (stage/arena.ts fitHand) */
-  --du-foe-h: clamp(170px, min(46cqh, var(--du-foe-room, 9999px)), 300px);
+  --du-foe-h: clamp(
+    170px,
+    min(var(--du-foe-want, 46cqh), var(--du-foe-room, 9999px)),
+    max(300px, calc(var(--ar-s, 2) * 150px))
+  );
   /* never narrower than a 160 px picture plus its frame, so no picture reaches the card's edge */
-  --du-foe-w: max(calc(var(--du-foe-h) * 0.74), 186px);
+  /* the same fixed rectangle as a hand card (132 x 186) */
+  --du-foe-w: calc(var(--du-foe-h) * 132 / 186);
   --du-top: 66px;
   /* the room's torches stand either side of the enemy */
   --ar-hpw: calc(var(--du-foe-w) + 220px);
@@ -54,179 +59,26 @@
   display: none !important;
 }
 
-/* ---- the room: the default brick room (background id with no art of its own) ---- */
-/* ---- the room: the default brick room (background id with no art of its own) ---- */
+/* ---- the room: one painted 640 x 360 picture per dungeon, at the smallest whole scale that covers the
+   duel, centred, the overflow cut evenly (stage/arenaBackground.ts sets --ar-bg-*) ---- */
 .ar__scene {
-  --ar-wall: color-mix(in srgb, var(--bi-chrome-bg) 78%, var(--bi-chrome-rail-bg));
-  --ar-mortar: color-mix(in srgb, var(--bi-chrome-rail-bg) 78%, #000);
-  --ar-brick-lit: color-mix(in srgb, var(--bi-frame-hi) 38%, transparent);
-  --ar-floor: color-mix(in srgb, #6a4630 34%, var(--bi-chrome-rail-bg));
-  --ar-seam: color-mix(in srgb, #1a0f0a 70%, var(--bi-chrome-rail-bg));
-  --ar-plank-lit: color-mix(in srgb, #b98a5c 24%, transparent);
-  --ar-grain: color-mix(in srgb, #1a0f0a 55%, transparent);
-  --ar-floor-top: 71%;
-  --ar-u: var(--fs, 4px);
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
+  background: #0b0a10;
 }
-.ar__wall,
-.ar__bricks {
+.ar__bg {
   position: absolute;
-  inset: 0 0 calc(100% - var(--ar-floor-top)) 0;
-}
-.ar__wall {
-  background:
-    radial-gradient(70% 90% at 50% 100%, transparent 40%, rgba(0, 0, 0, 0.45)),
-    linear-gradient(180deg, color-mix(in srgb, var(--ar-wall) 82%, #000), var(--ar-wall));
-}
-/* the mortar between the bricks and a lit top edge on each brick: one 16 x 16 tile of two rows, drawn as masks so the
-   colours stay tokens (each brick 16 x 8 steps of --fs) */
-.ar__bricks {
-  background: var(--ar-mortar);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h16v1H0zM0 8h16v1H0zM0 0h1v8H0zM8 8h1v8H8z'/%3E%3C/svg%3E");
-  mask-size: calc(16 * var(--ar-u)) calc(16 * var(--ar-u));
-  mask-position: left top;
+  left: var(--ar-bg-x, 0);
+  top: var(--ar-bg-y, 0);
+  width: var(--ar-bg-w, 100%);
+  height: var(--ar-bg-h, 100%);
+  background-image: var(--ar-bg-img);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   image-rendering: pixelated;
-}
-.ar__bricks::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--ar-brick-lit);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h15v1H1zM0 9h8v1H0zM9 9h7v1H9z'/%3E%3C/svg%3E");
-  mask-size: calc(16 * var(--ar-u)) calc(16 * var(--ar-u));
-  mask-position: left top;
-}
-/* the plank floor: rows of planks with staggered ends, darker at the wall */
-.ar__floor {
-  position: absolute;
-  inset: var(--ar-floor-top) 0 0 0;
-  background:
-    linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 38%),
-    radial-gradient(60% 80% at 50% 0%, transparent 30%, rgba(0, 0, 0, 0.32)), var(--ar-floor);
-  box-shadow:
-    inset 0 var(--ar-u) 0 color-mix(in srgb, var(--ar-seam) 70%, #000),
-    inset 0 calc(var(--ar-u) * 2) 0 color-mix(in srgb, var(--bi-frame-hi) 14%, transparent);
-}
-.ar__floor::before,
-.ar__floor::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  mask-size: calc(32 * var(--ar-u)) calc(16 * var(--ar-u));
-  mask-position: left top;
-}
-.ar__floor::before {
-  background: var(--ar-seam);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h32v1H0zM0 8h32v1H0zM0 0h1v8H0zM16 8h1v8h-1z'/%3E%3C/svg%3E");
-}
-.ar__floor::after {
-  background: var(--ar-plank-lit);
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h31v1H1zM0 9h16v1H0zM17 9h15v1H17z'/%3E%3C/svg%3E");
-}
-
-/* two torches on the wall: a bracket, a stick and a flame drawn square by square (1 square = --fs) */
-.ar__torch {
-  position: absolute;
-  top: 25%;
-  width: calc(var(--ar-u) * 5);
-  height: calc(var(--ar-u) * 22);
-  --o: #e4702a;
-  --y: #ffc94d;
-  --w: #fff2b8;
-}
-.ar__torch--l {
-  left: calc(var(--ar-cx) - var(--ar-hpw) / 2 - 56px);
-}
-.ar__torch--r {
-  left: min(calc(var(--ar-cx) + var(--ar-hpw) / 2 + 40px), calc(100cqw - 210px));
-}
-/* a narrow arena has no room between the medal and the readout chips for the second torch */
-@container (max-width: 1060px) {
-  .ar__torch--r {
-    display: none;
-  }
-}
-.ar__torch-glow {
-  position: absolute;
-  left: 50%;
-  top: calc(var(--ar-u) * 3);
-  width: 380px;
-  height: 380px;
-  translate: -50% -50%;
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 168, 70, 0.3),
-    rgba(255, 120, 40, 0.11) 55%,
-    transparent
-  );
-  animation: ar-torch-glow 1.7s steps(4, jump-none) infinite alternate;
-}
-.ar__torch-stick {
-  position: absolute;
-  left: var(--ar-u);
-  top: calc(var(--ar-u) * 8);
-  width: calc(var(--ar-u) * 3);
-  height: calc(var(--ar-u) * 14);
-  background: linear-gradient(90deg, #6b4a30 0 33%, #4d3422 33% 100%);
-  box-shadow: 0 0 0 var(--ar-u) rgba(0, 0, 0, 0.3);
-}
-.ar__torch-cup {
-  position: absolute;
-  left: 0;
-  top: calc(var(--ar-u) * 7);
-  width: calc(var(--ar-u) * 5);
-  height: calc(var(--ar-u) * 3);
-  background: linear-gradient(180deg, #6d6a78 0 33%, #3c3947 33% 100%);
-  box-shadow: 0 0 0 var(--ar-u) rgba(0, 0, 0, 0.3);
-}
-.ar__torch-flame {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--ar-u);
-  height: var(--ar-u);
-  --u: var(--ar-u);
-  box-shadow:
-    calc(var(--u) * 2) 0 0 0 var(--o),
-    calc(var(--u) * 1) calc(var(--u) * 1) 0 0 var(--o),
-    calc(var(--u) * 2) calc(var(--u) * 1) 0 0 var(--y),
-    calc(var(--u) * 1) calc(var(--u) * 2) 0 0 var(--o),
-    calc(var(--u) * 2) calc(var(--u) * 2) 0 0 var(--y),
-    calc(var(--u) * 3) calc(var(--u) * 2) 0 0 var(--o),
-    0 calc(var(--u) * 3) 0 0 var(--o),
-    calc(var(--u) * 1) calc(var(--u) * 3) 0 0 var(--y),
-    calc(var(--u) * 2) calc(var(--u) * 3) 0 0 var(--y),
-    calc(var(--u) * 3) calc(var(--u) * 3) 0 0 var(--y),
-    calc(var(--u) * 4) calc(var(--u) * 3) 0 0 var(--o),
-    0 calc(var(--u) * 4) 0 0 var(--o),
-    calc(var(--u) * 1) calc(var(--u) * 4) 0 0 var(--y),
-    calc(var(--u) * 2) calc(var(--u) * 4) 0 0 var(--w),
-    calc(var(--u) * 3) calc(var(--u) * 4) 0 0 var(--y),
-    calc(var(--u) * 4) calc(var(--u) * 4) 0 0 var(--o),
-    0 calc(var(--u) * 5) 0 0 var(--o),
-    calc(var(--u) * 1) calc(var(--u) * 5) 0 0 var(--y),
-    calc(var(--u) * 2) calc(var(--u) * 5) 0 0 var(--w),
-    calc(var(--u) * 3) calc(var(--u) * 5) 0 0 var(--y),
-    calc(var(--u) * 4) calc(var(--u) * 5) 0 0 var(--o),
-    calc(var(--u) * 1) calc(var(--u) * 6) 0 0 var(--o),
-    calc(var(--u) * 2) calc(var(--u) * 6) 0 0 var(--y),
-    calc(var(--u) * 3) calc(var(--u) * 6) 0 0 var(--o);
-  animation: ar-torch-flame 0.5s steps(1) infinite;
-}
-@keyframes ar-torch-glow {
-  to {
-    opacity: 0.78;
-  }
-}
-@keyframes ar-torch-flame {
-  50% {
-    translate: 0 calc(var(--ar-u) * -1);
-    filter: brightness(1.12);
-  }
 }
 
 /* ---- boss hits (DESIGN.md §6, "Screen edge pulse") ---- */
@@ -439,6 +291,14 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 
 /* ---- the left column ---- */
+/* on the two bright rooms (Frostspire Vault, Sunken Sanctum) a dark plate behind the info keeps it readable */
+.ar--bright .du-left {
+  padding: 8px;
+  margin: -8px 0 0 -8px;
+  background: rgba(12, 14, 22, 0.66);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(12, 14, 22, 0.66);
+}
 .du-left {
   position: absolute;
   top: var(--du-top);
@@ -456,18 +316,6 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   font-size: 12.5px;
   font-weight: 700;
   white-space: nowrap;
-}
-.du-read--stars {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.du-read--stars[hidden] {
-  display: none;
-}
-.du-stars {
-  display: flex;
-  gap: 2px;
 }
 .du-read--doing[data-doing='challenge'] {
   color: var(--du-gold);
@@ -531,6 +379,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   inset: 0;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  /* a picture wider than the card must not widen it */
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   padding: 8px 8px 10px;
   box-sizing: border-box;
@@ -559,6 +409,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   pointer-events: none;
 }
 .du-foe__head {
+  width: 100%;
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -566,14 +417,21 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 .du-foe__name {
   margin: 0;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   overflow: hidden;
   font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* the long mini-boss names ("Drowned Leviathanbeard High Admiral") wrap on two lines */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .du-foe__kind {
   font-size: 11px;
@@ -592,15 +450,26 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   position: relative;
   min-height: 0;
   display: grid;
-  place-items: center;
+  /* the picture is centred on the card whatever its width */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  /* the enemy stands at the bottom of the card, its feet just above the health bar */
+  place-items: end center;
 }
 .du-foe__body {
   width: 100%;
   height: 100%;
-  display: grid;
-  place-items: center;
-  /* a picture wider than the box overflows on both sides, never only to the right */
+  /* the enemy stands on the bottom of the box, just above the health bar; a picture taller or wider than
+     the box overflows upward and to both sides, never down over the bar */
+  display: flex;
+  align-items: flex-end;
   justify-content: center;
+  padding-bottom: 14px;
+  box-sizing: border-box;
+}
+/* the picture keeps its own size and centre: a card narrower than the picture never squeezes it */
+.du-foe__body > * {
+  flex: none;
 }
 .du-foe__body svg {
   width: 100%;
@@ -714,12 +583,12 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 
 /* the hit feed: the latest hits, under the tag, newest on top */
-/* the tag over the feed in one column: the tag overlaps the
-   card's top left corner and neither its coming nor its width moves the feed */
+/* the tag over the feed in one column, beside the card's top left corner; neither its coming nor its width moves the feed */
 .du-damage {
   position: absolute;
   top: -12px;
-  right: calc(100% - 26px);
+  /* beside the card, never over its name */
+  right: calc(100% + 6px);
   z-index: 4;
   display: flex;
   flex-direction: column-reverse;
@@ -731,8 +600,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   display: grid;
   justify-items: end;
   gap: 4px;
-  /* the lines stop short of the enemy card (the tag overlaps its corner by 26 px) */
-  margin: 0 30px 0 0;
+  /* the lines stand beside the enemy card */
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -1155,7 +1024,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     0 0 0 calc(var(--du-u) * 2) var(--du-c),
     0 0 18px 6px color-mix(in srgb, var(--du-c) 70%, transparent);
 }
-/* knocked out: a grey overlay whose saturation blend greys the card, faded in with opacity */
+/* knocked out: a grey overlay whose saturation blend greys the card and a dark layer takes it to about 45%
+   brightness, faded in with opacity; the card itself stays opaque */
 .du-card__grey {
   position: absolute;
   inset: 0;
@@ -1169,7 +1039,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgb(10 8 14 / 0.45);
+  background: rgb(8 6 12 / 0.55);
   mix-blend-mode: normal;
 }
 /* the card the enemy hits next: a small red marker over it */
@@ -1233,8 +1103,9 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     transform: translateX(-2px);
   }
 }
-.du-hand.is-ko {
-  opacity: 0.6;
+/* a knocked-out team stays opaque: the cards darken (the grey overlay), they never fade into the room */
+.du-hand.is-ko .du-card {
+  filter: brightness(0.9);
 }
 /* a whole-team knockout: the countdown over the hand */
 .du-ko {
@@ -1269,7 +1140,11 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 /* the window: a tighter duel (the table's centre is about 816 x 492) */
 .dv-window .ar {
   --du-top: 60px;
-  --du-foe-h: clamp(150px, min(44cqh, var(--du-foe-room, 9999px)), 240px);
+  --du-foe-h: clamp(
+    150px,
+    min(var(--du-foe-want, 44cqh), var(--du-foe-room, 9999px)),
+    max(240px, calc(var(--ar-s, 2) * 150px))
+  );
 }
 @container (max-width: 760px) {
   .du-left {
@@ -1289,143 +1164,6 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 .ar--calm .du-sheet__row > i {
   transition: none;
-}
-
-/* ---- the rooms of Dungeons 4 to 6: the brick room re-tinted and given a mood of its own (DESIGN.md §6, Three new dungeons).
-   Each class only sets the room's tokens, the torch colours and one overlay (::after), so the layout never changes. ---- */
-.ar-bg--cove {
-  --ar-wall: #12303a;
-  --ar-mortar: #0a1a22;
-  --ar-brick-lit: rgba(110, 220, 220, 0.22);
-  --ar-floor: #1d3a44;
-  --ar-seam: #0a1a20;
-  --ar-plank-lit: rgba(120, 210, 215, 0.2);
-  --ar-grain: rgba(5, 15, 20, 0.6);
-}
-.ar-bg--cove .ar__torch {
-  --o: #1aa6a0;
-  --y: #6ff0e0;
-  --w: #e6ffff;
-}
-.ar-bg--cove .ar__torch-glow {
-  background: radial-gradient(
-    closest-side,
-    rgba(70, 230, 220, 0.28),
-    rgba(30, 150, 160, 0.1) 55%,
-    transparent
-  );
-}
-/* sea mist and drifting wave lines low on the wall */
-.ar-bg--cove::after {
-  content: '';
-  position: absolute;
-  inset: 40% 0 0 0;
-  background:
-    repeating-linear-gradient(
-      180deg,
-      transparent 0 calc(var(--ar-u) * 6),
-      rgba(140, 235, 235, 0.14) calc(var(--ar-u) * 6) calc(var(--ar-u) * 7)
-    ),
-    linear-gradient(180deg, transparent, rgba(40, 140, 150, 0.3));
-  animation: ar-cove-drift 3.2s steps(8, jump-none) infinite alternate;
-}
-@keyframes ar-cove-drift {
-  to {
-    transform: translateY(calc(var(--ar-u) * 2));
-  }
-}
-
-.ar-bg--sanctum {
-  --ar-wall: #8a7f6a;
-  --ar-mortar: #5a5142;
-  --ar-brick-lit: rgba(255, 244, 205, 0.4);
-  --ar-floor: #b9ad92;
-  --ar-seam: #6f6552;
-  --ar-plank-lit: rgba(255, 250, 225, 0.38);
-  --ar-grain: rgba(80, 70, 50, 0.5);
-}
-.ar-bg--sanctum .ar__torch {
-  --o: #e8b030;
-  --y: #ffe680;
-  --w: #ffffff;
-}
-.ar-bg--sanctum .ar__torch-glow {
-  background: radial-gradient(
-    closest-side,
-    rgba(255, 235, 150, 0.34),
-    rgba(255, 215, 110, 0.12) 55%,
-    transparent
-  );
-}
-/* shafts of holy light falling from the top of the hall */
-.ar-bg--sanctum::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 20% 0;
-  background:
-    linear-gradient(105deg, transparent 12%, rgba(255, 240, 180, 0.2) 18%, transparent 26%),
-    linear-gradient(105deg, transparent 38%, rgba(255, 240, 180, 0.16) 44%, transparent 54%),
-    linear-gradient(105deg, transparent 64%, rgba(255, 240, 180, 0.2) 70%, transparent 80%);
-  animation: ar-sanctum-rays 4s steps(6, jump-none) infinite alternate;
-}
-@keyframes ar-sanctum-rays {
-  to {
-    opacity: 0.55;
-  }
-}
-
-.ar-bg--void {
-  --ar-wall: #1c1030;
-  --ar-mortar: #0a0516;
-  --ar-brick-lit: rgba(170, 110, 255, 0.2);
-  --ar-floor: #120a22;
-  --ar-seam: #3a1a70;
-  --ar-plank-lit: rgba(160, 100, 255, 0.14);
-  --ar-grain: rgba(0, 0, 0, 0.7);
-}
-.ar-bg--void .ar__torch {
-  --o: #6a2cc8;
-  --y: #b784ff;
-  --w: #f0e0ff;
-}
-.ar-bg--void .ar__torch-glow {
-  background: radial-gradient(
-    closest-side,
-    rgba(160, 90, 255, 0.34),
-    rgba(100, 50, 200, 0.12) 55%,
-    transparent
-  );
-}
-/* a violet rift glowing in the dark and motes rising from the floor */
-.ar-bg--void::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(40% 55% at 50% 72%, rgba(150, 80, 255, 0.28), transparent),
-    radial-gradient(
-      circle at 20% 80%,
-      rgba(200, 150, 255, 0.5) 0 calc(var(--ar-u) / 2),
-      transparent calc(var(--ar-u) / 2)
-    ),
-    radial-gradient(
-      circle at 78% 66%,
-      rgba(200, 150, 255, 0.5) 0 calc(var(--ar-u) / 2),
-      transparent calc(var(--ar-u) / 2)
-    );
-  animation: ar-void-pulse 3.6s steps(6, jump-none) infinite alternate;
-}
-@keyframes ar-void-pulse {
-  to {
-    opacity: 0.5;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ar-bg--cove::after,
-  .ar-bg--sanctum::after,
-  .ar-bg--void::after {
-    animation: none;
-  }
 }
 
 /* ---- the special attack (stage/specialAttack.ts): the stage dims, the enemy and the source card stay lit ---- */

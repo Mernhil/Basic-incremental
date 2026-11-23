@@ -93,7 +93,8 @@ export function stageStars(state: GameState, content: Content, key: string): Sta
   const config = content.combat.stageStars;
   const kills = stageKills(state, key);
   const level = starLevelForKills(content, kills);
-  const unlocked = level >= config.overflowFromLevel;
+  // The overflow switch is open on every stage: stage stars are closed (DESIGN.md §2 Dungeons).
+  const unlocked = true;
   return {
     key,
     dungeonId: ref.dungeonId,
@@ -108,51 +109,20 @@ export function stageStars(state: GameState, content: Content, key: string): Sta
   };
 }
 
-/** The star level of a floor as the fight sees it (0 for a wave floor or a depth). */
-function floorStarLevel(
-  state: GameState,
+/**
+ * What a difficulty multiplies its loot by (Money purses, material chances): the loot the stage
+ * stars used to give, now part of the difficulty (DESIGN.md §2 Dungeons). `combat.json`
+ * `difficultyLoot` holds the star-level equivalent per difficulty; the skill tree's `stars.loot`
+ * widens the step. It applies to every floor of that difficulty.
+ */
+export function difficultyLootFactor(
   content: Content,
-  dungeon: Dungeon,
   difficulty: Difficulty,
-  floor: number,
-): number {
-  if (!isStageFloor(content, dungeon, difficulty, floor)) return 0;
-  return starLevelForKills(content, stageKills(state, stageKey(dungeon.id, difficulty, floor)));
-}
-
-/** What a stage's star levels multiply our damage by there: +5% a level (1 off a stage); the
- *  skill tree's `stars.damage` widens the step when `modifiers` are given. */
-export function stageDamageFactor(
-  state: GameState,
-  content: Content,
-  dungeon: Dungeon,
-  difficulty: Difficulty,
-  floor: number,
   modifiers: readonly Modifier[] = [],
 ): number {
-  const level = floorStarLevel(state, content, dungeon, difficulty, floor);
-  if (level === 0) return 1;
-  const step = statValue('stars.damage', content.combat.stageStars.damagePerLevel, modifiers, {
-    dungeon: dungeon.id,
-  });
-  return 1 + level * Math.max(0, step.toNumber());
-}
-
-/** What a stage's star levels multiply its loot by (Money purses, material chances). */
-export function stageLootFactor(
-  state: GameState,
-  content: Content,
-  dungeon: Dungeon,
-  difficulty: Difficulty,
-  floor: number,
-  modifiers: readonly Modifier[] = [],
-): number {
-  const level = floorStarLevel(state, content, dungeon, difficulty, floor);
-  if (level === 0) return 1;
-  const step = statValue('stars.loot', content.combat.stageStars.lootPerLevel, modifiers, {
-    dungeon: dungeon.id,
-  });
-  return 1 + level * Math.max(0, step.toNumber());
+  const levels = content.combat.difficultyLoot[difficulty];
+  const step = statValue('stars.loot', content.combat.stageStars.lootPerLevel, modifiers);
+  return 1 + levels * Math.max(0, step.toNumber());
 }
 
 /**

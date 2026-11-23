@@ -66,9 +66,14 @@
       "xp": 2.25
     }
   },
+  "difficultyLoot": {
+    "normal": 2,
+    "hard": 3,
+    "nightmare": 4,
+    "endless": 4
+  },
   "stageStars": {
     "kills": [1, 10, 100, 1000, 10000, 100000],
-    "damagePerLevel": 0.05,
     "lootPerLevel": 0.1,
     "overflowFromLevel": 3,
     "chests": {

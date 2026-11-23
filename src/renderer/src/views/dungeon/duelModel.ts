@@ -74,7 +74,7 @@ export const HAND_MARGIN = 8;
 
 /**
  * CSS px wide a hand card wants to be in a duel `height` CSS px tall, and the most it may take:
- * the hand stands about 42% of the height and never more than 55%, and never taller than the room
+ * the hand stands about 34% of the height and never more than 42% (the enemy card is as tall as a hand card, so the two read as the same size; user, 2026-11-23), and never taller than the room
  * under the enemy card at its smallest, so the whole hand shows (user, 2026-11-12). The screen
  * scale then rounds it to a whole scale (`fitCard`) and the enemy card gives way (`foeRoom`);
  * only a duel too short for the smallest scale cuts the hand.
@@ -84,8 +84,8 @@ export function handCardWant(height: number, margin = HAND_MARGIN): { want: numb
   const room = Math.max(0, foeRoom(height, 0, margin) - DUEL_FOE_MIN);
   const cardRoom = (room * HAND.cardH) / (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
   return {
-    want: Math.min(height * 0.42, cardRoom) * ratio,
-    max: Math.min(height * 0.55, cardRoom) * ratio,
+    want: Math.min(height * 0.34, cardRoom) * ratio,
+    max: Math.min(height * 0.42, cardRoom) * ratio,
   };
 }
 

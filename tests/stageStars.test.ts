@@ -18,10 +18,9 @@ import {
   setOverflow,
   simulateOffline,
   stageChest,
-  stageDamageFactor,
+  difficultyLootFactor,
   stageFloors,
   stageKey,
-  stageLootFactor,
   stageMap,
   stageStarLevel,
   stageStars,
@@ -87,11 +86,9 @@ describe('stages', () => {
     expect(isStageFloor(real, crypt, 'normal', 30)).toBe(false);
   });
 
-  it('has six star levels at 1, 10, 100, 1,000, 10,000 and 100,000 kills, +5% damage each', () => {
+  it('keeps six star levels at 1, 10, 100, 1,000, 10,000 and 100,000 kills for saves that earned them', () => {
     const stars = real.combat.stageStars;
     expect(stars.kills).toEqual([1, 10, 100, 1000, 10_000, 100_000]);
-    expect(stars.damagePerLevel).toBe(0.05);
-    expect(stars.overflowFromLevel).toBe(3); // Silver
     expect(
       [0, 1, 9, 10, 99, 100, 99_999, 100_000, 1e9].map((k) => starLevelForKills(real, k)),
     ).toEqual([0, 1, 1, 2, 2, 3, 5, 6, 6]);
@@ -99,28 +96,14 @@ describe('stages', () => {
 });
 
 describe('kills and star levels', () => {
-  it('counts boss kills on the stage of their tier only', () => {
+  it('no longer counts kills on a stage: a save keeps the star levels it earned', () => {
     const content = harmless(withDps(1e12, neutral));
-    const normal = run(at(content, 10, 'normal'), content, 5).state;
-    expect(normal.combat.stageKills).toEqual({ [BOSS]: 5 });
-    const hard = run(at(content, 10, 'hard'), content, 3).state;
-    expect(hard.combat.stageKills).toEqual({ [HARD_BOSS]: 3 });
-    expect(stageStarLevel(hard, content, BOSS)).toBe(0);
-    expect(stageStarLevel(hard, content, HARD_BOSS)).toBe(1);
-  });
-
-  it('counts mini-boss kills on their own stage and wave kills nowhere', () => {
-    const content = harmless(withDps(1e12, neutral));
-    const active = setActiveDungeon(freshState(), content, 'mossy_cellar');
-    if (!active.ok) throw new Error(active.reason);
-    active.state.clearedDungeons = ['mossy_cellar'];
-    const inCrypt = setActiveDungeon(withAutoChallenge(active.state, true), content, 'ember_crypt');
-    if (!inCrypt.ok) throw new Error(inCrypt.reason);
-    // Challenging from floor 1 at one kill a hit: floor 10 (a mini-boss) falls after the waves of
-    // floors 1 to 9 (3 to 5 enemies each), and the 11th floor's wave does not count.
-    const { state } = run(inCrypt.state, content, 50);
-    expect(floorPosition(state, crypt).best).toBeGreaterThan(10);
-    expect(state.combat.stageKills).toEqual({ [stageKey('ember_crypt', 'normal', 10)]: 1 });
+    const state = at(content, 10, 'normal');
+    state.combat.stageKills[BOSS] = 10;
+    const after = run(state, content, 5).state;
+    expect(after.combat.stageKills).toEqual({ [BOSS]: 10 });
+    expect(stageStarLevel(after, content, BOSS)).toBe(2);
+    expect(run(at(content, 10, 'hard'), content, 3).state.combat.stageKills).toEqual({});
   });
 
   it('describes a stage: kills, level, kills for the next level, chests, overflow', () => {
@@ -191,24 +174,7 @@ describe('chests', () => {
     for (const level of [4, 5, 6]) expect(dust(level)).toBeGreaterThan(0);
   });
 
-  it('pays the Wood chest with the first kill and the Bronze chest with the tenth, never again', () => {
-    const content = harmless(withDps(1e12, real));
-    const start = at(content, 10);
-    const wood = stageChest(real, 'normal', 1).find((p) => p.resource === 'summon_scroll')!;
-    const bronze = stageChest(real, 'normal', 2).find((p) => p.resource === 'summon_scroll')!;
-    const first = run(start, content, 1);
-    expect(first.state.combat.stageKills[BOSS]).toBe(1);
-    expect(first.state.combat.stageChests[BOSS]).toBe(1);
-    // Farming a beaten floor pays no first-clear purse and no first-win lump: those come with the Challenge.
-    expect(crystals(first.state) - crystals(start)).toBeCloseTo(wood.amount.toNumber(), 6);
-    const tenth = run(first.state, content, 9);
-    expect(tenth.state.combat.stageChests[BOSS]).toBe(2);
-    expect(crystals(tenth.state) - crystals(first.state)).toBeCloseTo(bronze.amount.toNumber(), 6);
-    const later = run(tenth.state, content, 5);
-    expect(crystals(later.state) - crystals(tenth.state)).toBeCloseTo(0, 6);
-  });
-
-  it('pays a save from before the stars for every level its old kills reach, with its next kill', () => {
+  it('pays the chests a save earned but never opened, once, with its next boss kill', () => {
     // Format 26 turned each dungeon's boss kills into kills on its Normal last floor, with no
     // chest paid (DESIGN.md §6 Stage stars, the [Default] for migrated saves).
     const content = harmless(withDps(1e12, real));
@@ -223,6 +189,8 @@ describe('chests', () => {
     const after = run(start, content, 1);
     expect(after.state.combat.stageChests[BOSS]).toBe(3);
     expect(crystals(after.state) - crystals(start)).toBeCloseTo(owed, 6);
+    const later = run(after.state, content, 5);
+    expect(crystals(later.state) - crystals(after.state)).toBeCloseTo(0, 6);
   });
 
   it('turns a real 0.5.5 save into stage kills that reach star levels', () => {
@@ -238,72 +206,63 @@ describe('chests', () => {
   });
 });
 
-describe('damage and loot on a starred stage', () => {
-  it('adds +5% damage a level on that stage only', () => {
-    const state = freshState();
-    state.combat.stageKills[BOSS] = 100; // Silver
-    expect(stageDamageFactor(state, real, cellar, 'normal', 10)).toBeCloseTo(1.15);
-    expect(stageDamageFactor(state, real, cellar, 'hard', 10)).toBe(1);
-    expect(stageDamageFactor(state, real, cellar, 'normal', 9)).toBe(1);
-    // The fight deals it: a boss that takes many hits loses 15% more per hit.
-    const content = harmless(withDps(100, real));
-    const plainFight = run(at(content, 10), content, 10).state;
+describe('loot of the difficulties (DESIGN.md §2 Dungeons)', () => {
+  it('pays +20% on Normal, +30% on Hard, +40% on Nightmare and in the depths', () => {
+    expect(difficultyLootFactor(real, 'normal')).toBeCloseTo(1.2);
+    expect(difficultyLootFactor(real, 'hard')).toBeCloseTo(1.3);
+    expect(difficultyLootFactor(real, 'nightmare')).toBeCloseTo(1.4);
+    expect(difficultyLootFactor(real, 'endless')).toBeCloseTo(1.4);
+  });
+
+  it('adds no damage on a starred stage any more', () => {
+    const content = harmless(withDps(100, neutral));
+    const plain = run(at(content, 10), content, 10).state;
     const starred = at(content, 10);
-    starred.combat.stageKills[BOSS] = 100;
+    starred.combat.stageKills[BOSS] = 100000;
     const starFight = run(starred, content, 10).state;
     const hp = fightStage(starred, content, 'mossy_cellar')!.hp;
     const dealt = (s: GameState) => hp.sub(s.bossHp ?? hp).toNumber();
-    expect(dealt(starFight) / dealt(plainFight)).toBeCloseTo(1.15, 9);
-    expect(secondsPerKill(starred, content, 'mossy_cellar')!).toBeLessThan(
-      secondsPerKill(at(content, 10), content, 'mossy_cellar')!,
+    expect(dealt(starFight)).toBeCloseTo(dealt(plain), 9);
+    expect(secondsPerKill(starred, content, 'mossy_cellar')).toBe(
+      secondsPerKill(at(content, 10), content, 'mossy_cellar'),
     );
   });
 
-  it('pays better loot there: Money purses and material chances grow with the level', () => {
-    const state = freshState();
-    state.combat.stageKills[BOSS] = 1000; // Gold
-    expect(stageLootFactor(state, real, cellar, 'normal', 10)).toBeCloseTo(1.4);
-    expect(stageLootFactor(state, real, cellar, 'normal', 5)).toBe(1);
-    const content = harmless(
-      withDps(1e12, {
-        ...real,
-        combat: {
-          ...real.combat,
-          stageStars: {
-            ...real.combat.stageStars,
-            chests: { ...real.combat.stageStars.chests, rewards: [] },
-          },
+  it('pays Money on every floor of a difficulty by its loot, stars or not', () => {
+    const noChests = {
+      ...real,
+      combat: {
+        ...real.combat,
+        stageStars: {
+          ...real.combat.stageStars,
+          chests: { ...real.combat.stageStars.chests, rewards: [] },
         },
-      }),
-    );
+      },
+    };
+    const content = harmless(withDps(1e12, noChests));
+    const flat = harmless(withDps(1e12, neutral));
     const money = (s: GameState) => s.resources['money']!.toNumber();
-    // Silver (+30%) against Gold (+40%): each holds its level for the whole run.
-    const plainStart = at(content, 10);
-    plainStart.clearedDungeons = ['mossy_cellar'];
-    plainStart.combat.stageKills[BOSS] = 100;
-    const starred = at(content, 10);
-    starred.clearedDungeons = ['mossy_cellar'];
-    starred.combat.stageKills[BOSS] = 1000;
-    const rng = () => constantRng(0.5);
-    const plainGain = money(run(plainStart, content, 10, rng()).state) - money(plainStart);
-    const starGain = money(run(starred, content, 10, rng()).state) - money(starred);
     const wage = cellar.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber() * 10;
-    expect((starGain - wage) / (plainGain - wage)).toBeCloseTo(1.4 / 1.3, 2);
+    for (const floor of [5, 10]) {
+      const a = at(content, floor);
+      a.clearedDungeons = ['mossy_cellar'];
+      const b = at(flat, floor);
+      b.clearedDungeons = ['mossy_cellar'];
+      const gainA = money(run(a, content, 10).state) - money(a);
+      const gainB = money(run(b, flat, 10).state) - money(b);
+      expect((gainA - wage) / (gainB - wage)).toBeCloseTo(1.2, 2);
+    }
   });
 });
 
 describe('overflow switch', () => {
-  it('opens at Silver on that stage and tier, and can always be turned off', () => {
+  it('is open on every stage and tier, and can always be turned off', () => {
     const state = freshState();
-    state.combat.stageKills[BOSS] = 99;
-    expect(setOverflow(state, real, BOSS, true)).toEqual({ ok: false, reason: 'locked' });
-    state.combat.stageKills[BOSS] = 100;
     const on = setOverflow(state, real, BOSS, true);
     if (!on.ok) throw new Error(on.reason);
     expect(on.state.combat.overflow).toEqual({ [BOSS]: true });
     expect(stageStars(on.state, real, BOSS)!.overflowOn).toBe(true);
-    // Hard is its own stage: still locked there.
-    expect(setOverflow(on.state, real, HARD_BOSS, true)).toEqual({ ok: false, reason: 'locked' });
+    expect(setOverflow(on.state, real, HARD_BOSS, true).ok).toBe(true);
     const off = setOverflow(on.state, real, BOSS, false);
     if (!off.ok) throw new Error(off.reason);
     expect(off.state.combat.overflow).toEqual({});
@@ -327,7 +286,6 @@ describe('overflow switch', () => {
       floor: 20,
     });
     const state = freshState();
-    state.combat.stageKills[stageKey('ember_crypt', 'normal', 10)] = 100;
     state.combat.overflow[stageKey('ember_crypt', 'normal', 10)] = true;
     expect(overflowActive(state, real, crypt, 'normal', 7)).toBe(true);
     expect(overflowActive(state, real, crypt, 'normal', 10)).toBe(true);
@@ -398,15 +356,12 @@ describe('the same totals online, offline and in any split of time', () => {
       ['a boss that takes several hits', 3000],
       ['a boss every hit kills, two and a half times over', 32_250],
     ] as const) {
-      it(`farms ${name} with overflow ${overflow ? 'on' : 'off'}, through star levels`, () => {
-        // Real stars: the boss reaches Wood, Bronze and Silver within the span, so the damage
-        // and loot change mid-span; the attacks are real too.
+      it(`farms ${name} with overflow ${overflow ? 'on' : 'off'}`, () => {
+        // The real loot of the difficulty and real attacks.
         const content = noRareDrops(withDps(dps, real));
         let start = at(content, 10);
         start.clearedDungeons = ['mossy_cellar'];
         if (overflow) {
-          // The switch is open from Silver: start just short of Gold, with the switch on.
-          start.combat.stageKills[BOSS] = 900;
           start = withOverflowOn(start);
         }
         const seconds = 600;
@@ -418,10 +373,6 @@ describe('the same totals online, offline and in any split of time', () => {
         // Offline farms the same floor (it never pushes, and this one is farmed anyway).
         const away = simulateOffline(start, content, 0, seconds * 1000, createSeededRng(7));
         expectSame(away.state, once.state);
-        // The span crossed at least one star level, so the damage and loot changed inside it.
-        expect(stageStarLevel(once.state, content, BOSS)).toBeGreaterThan(
-          stageStarLevel(start, content, BOSS),
-        );
       });
     }
   }
@@ -453,7 +404,7 @@ function noRareDrops(base: Content): Content {
   return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
 }
 
-/** The Mossy Cellar boss's overflow switch on (the stage must already be at Silver). */
+/** The Mossy Cellar boss's overflow switch on. */
 function withOverflowOn(state: GameState): GameState {
   const result = setOverflow(state, real, BOSS, true);
   if (!result.ok) throw new Error(result.reason);

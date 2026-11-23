@@ -1,0 +1,451 @@
+/* The winding map of the Dungeons panel (DESIGN.md §2 Dungeons): the plates on the left, the scene
+   with its road in the middle, the selected stage on the right. The scene is drawn at a whole
+   scale; the markers at 2x; the enemy windows at 1x; nothing is stretched. */
+
+.wm {
+  display: grid;
+  grid-template-columns: minmax(200px, 17%) minmax(0, 1fr) minmax(240px, 22%);
+  gap: calc(12px * var(--wm-z, 1));
+  height: 100%;
+  min-height: 0;
+}
+.wm-h {
+  margin: 0 0 calc(8px * var(--wm-z, 1));
+  font-size: calc(12.5px * var(--wm-z, 1));
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bi-frame-accent, var(--px-gold));
+}
+.wm-note {
+  margin: 0;
+  font-size: calc(12.5px * var(--wm-z, 1));
+  color: var(--px-muted);
+}
+
+/* ---- the plates ---- */
+.wm-list,
+.wm-side {
+  min-height: 0;
+  padding: calc(10px * var(--wm-z, 1));
+  overflow-y: auto;
+  scrollbar-color: var(--px-hi) var(--px-lo);
+}
+.wm-list__dungeons,
+.wm-list__trials {
+  display: grid;
+  gap: calc(6px * var(--wm-z, 1));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wm-list__trials {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: var(--fs-sm) solid var(--px-lo);
+}
+.wm-plate {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: calc(8px * var(--wm-z, 1));
+  align-items: start;
+  width: 100%;
+  padding: calc(5px * var(--wm-z, 1)) calc(6px * var(--wm-z, 1));
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+html .wm-plate.is-picked:not(#_px) {
+  --px-edge: var(--px-gold);
+  --px-top: var(--px-gold);
+  outline: 2px solid var(--px-gold);
+  outline-offset: -2px;
+}
+.wm-plate.is-locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.wm-plate__body {
+  display: grid;
+  gap: calc(3px * var(--wm-z, 1));
+  min-width: 0;
+  justify-items: start;
+}
+.wm-plate__name {
+  font-size: calc(13.5px * var(--wm-z, 1));
+  font-weight: 800;
+  line-height: 1.15;
+}
+.wm-plate__sub,
+.wm-plate__hint {
+  font-size: calc(12px * var(--wm-z, 1));
+  color: var(--px-muted);
+}
+.wm-plate:focus-visible,
+.wm-badge:focus-visible,
+.wm-stop:focus-visible,
+.wm-fight:focus-visible,
+.dp-switch:focus-visible {
+  outline: var(--fs-sm) solid var(--px-gold);
+  outline-offset: 3px;
+}
+.wm-bar {
+  display: block;
+  width: 100%;
+  height: calc(8px * var(--wm-z, 1));
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.wm-bar i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+}
+.wm-tag {
+  padding: calc(1px * var(--wm-z, 1)) calc(6px * var(--wm-z, 1));
+  font-size: calc(11px * var(--wm-z, 1));
+  font-weight: 800;
+  color: #f6ead0;
+  background: #8a7a5c;
+  border: 1px solid #00000066;
+}
+.wm-tag--done {
+  background: #2f6b2c;
+}
+.wm-tag--cur {
+  background: #a8301f;
+}
+.wm-medal {
+  display: inline-block;
+  width: calc(22px * var(--wm-z, 1));
+  height: calc(22px * var(--wm-z, 1));
+}
+.wm-medal svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* an enemy window: cut from its picture at 1x */
+.wm-por {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  overflow: hidden;
+  background-color: #1b1a19;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px var(--px-edge, #8a6a1c);
+  font-size: 22px;
+  color: var(--px-muted);
+}
+
+/* ---- the map: the scene behind, the road scrolling over it ---- */
+.wm-map {
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: #120a07;
+  border: 3px solid var(--px-gold);
+  box-shadow:
+    0 0 0 2px #1b1a19,
+    0 0 0 4px #8a6a1c;
+}
+.wm-scene {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+.wm-scroll {
+  position: absolute;
+  inset: calc(84px * var(--wm-z, 1)) 0 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-color: var(--px-gold) #1b1a19;
+}
+.wm-road {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+/* the band over the top of the scene holds the title and the badges; the road scrolls under it,
+   never behind a plate */
+.wm-band {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(12px * var(--wm-z, 1));
+  height: calc(84px * var(--wm-z, 1));
+  box-sizing: border-box;
+  padding: 0 calc(14px * var(--wm-z, 1));
+  background: rgba(20, 18, 17, 0.86);
+  border-bottom: 2px solid #8a6a1c;
+}
+.wm-map--light .wm-band {
+  background: rgba(20, 18, 17, 0.94);
+}
+.wm-head {
+  display: grid;
+  gap: calc(2px * var(--wm-z, 1));
+  min-width: 0;
+  color: #efe6d0;
+}
+.wm-title {
+  margin: 0;
+  font-size: calc(22px * var(--wm-z, 1));
+  color: #f0c35a;
+  text-shadow: 0 2px 0 #000;
+}
+.wm-sub {
+  font-size: calc(12.5px * var(--wm-z, 1));
+  font-weight: 700;
+  text-shadow: 0 1px 0 #000;
+}
+.wm-diff {
+  display: flex;
+  flex: none;
+  gap: calc(2px * var(--wm-z, 1));
+}
+.wm-badge {
+  display: grid;
+  justify-items: center;
+  gap: calc(1px * var(--wm-z, 1));
+  padding: calc(3px * var(--wm-z, 1)) calc(5px * var(--wm-z, 1)) calc(2px * var(--wm-z, 1));
+  font: inherit;
+  font-size: calc(11px * var(--wm-z, 1));
+  font-weight: 800;
+  color: #b3a88f;
+  background: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.wm-badge img {
+  image-rendering: pixelated;
+}
+.wm-badge.is-on {
+  color: #efe6d0;
+  background: #2c2b2a;
+  border-color: #f0c35a;
+}
+.wm-badge:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.wm-badge:disabled img {
+  filter: grayscale(1) brightness(0.7);
+}
+
+/* the stops: markers at 2x (96 px) centred on their point; the road's studs stop short of them */
+.wm-stud {
+  position: absolute;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
+  max-width: none;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.wm-stop {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font: inherit;
+  color: #efe6d0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+.wm-stop--wave {
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
+}
+.wm-stop__img {
+  position: absolute;
+  inset: 0;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
+  max-width: none;
+  image-rendering: pixelated;
+}
+.wm-stop__num {
+  position: relative;
+  font-size: calc(15px * var(--wm-u, 1));
+  font-weight: 800;
+  text-shadow:
+    0 1px 0 #000,
+    1px 0 0 #000,
+    -1px 0 0 #000,
+    0 -1px 0 #000;
+}
+.wm-stop--wave.is-selected .wm-stop__img {
+  filter: drop-shadow(0 0 3px #f0c35a) drop-shadow(0 0 1px #f0c35a);
+}
+.wm-stop--miniboss,
+.wm-stop--boss {
+  box-sizing: content-box;
+  padding: 4px;
+  background: #1b1a19;
+  border: 3px solid #c9a13a;
+  box-shadow: 0 0 0 2px #000;
+}
+.wm-stop--boss {
+  padding: 6px;
+  border-width: 4px;
+}
+.wm-stop--miniboss.is-locked,
+.wm-stop--boss.is-locked {
+  border-color: #6b6659;
+}
+.wm-stop--miniboss.is-locked .wm-por,
+.wm-stop--boss.is-locked .wm-por {
+  filter: grayscale(0.8) brightness(0.65);
+}
+.wm-stop--miniboss.is-current,
+.wm-stop--boss.is-current {
+  border-color: #d2402a;
+}
+.wm-stop--miniboss.is-selected,
+.wm-stop--boss.is-selected {
+  outline: 3px solid #f6ead0;
+  outline-offset: 3px;
+}
+.wm-stop__cap {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 2px;
+  font-size: calc(10px * var(--wm-u, 1));
+  font-weight: 800;
+  white-space: nowrap;
+  text-align: center;
+  background: rgba(20, 10, 6, 0.86);
+}
+.wm-flag {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.wm-flag img {
+  position: absolute;
+  inset: 0;
+  width: var(--wm-m, 96px);
+  height: var(--wm-m, 96px);
+  max-width: none;
+  image-rendering: pixelated;
+}
+.wm-flag__text {
+  position: absolute;
+  transform: translateX(-50%);
+  pointer-events: none;
+  padding: 0 6px;
+  font-size: calc(11px * var(--wm-u, 1));
+  font-weight: 800;
+  white-space: nowrap;
+  color: #efe6d0;
+  background: #2c2b2a;
+  border: 2px solid #c9a13a;
+}
+
+/* ---- the selected stage ---- */
+.wm-stage {
+  display: grid;
+  gap: calc(12px * var(--wm-z, 1));
+  align-content: start;
+}
+.wm-who {
+  display: flex;
+  align-items: center;
+  gap: calc(10px * var(--wm-z, 1));
+}
+.wm-who__text {
+  display: grid;
+  gap: calc(2px * var(--wm-z, 1));
+  min-width: 0;
+}
+.wm-fight {
+  width: 100%;
+  padding: calc(7px * var(--wm-z, 1)) calc(10px * var(--wm-z, 1));
+  font-size: calc(13px * var(--wm-z, 1));
+}
+.wm-fightnote:empty {
+  display: none;
+}
+.wm-drops {
+  display: grid;
+  gap: calc(6px * var(--wm-z, 1));
+}
+.wm-droplist {
+  display: grid;
+  gap: calc(4px * var(--wm-z, 1));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.wm-drop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(10px * var(--wm-z, 1));
+  font-size: calc(12.5px * var(--wm-z, 1));
+}
+.wm-drop--rare .wm-drop__name {
+  color: var(--bi-frame-accent, var(--px-gold));
+  font-weight: 700;
+}
+.wm-drop__name {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px * var(--wm-z, 1));
+}
+/* a drop's approved icon: 32 x 32 at 1x */
+.wm-drop__ico {
+  display: inline-flex;
+  width: calc(32px * var(--wm-s, 1));
+  height: calc(32px * var(--wm-s, 1));
+  margin: -6px 0;
+}
+.wm-drop__ico svg {
+  width: 100%;
+  height: 100%;
+}
+.wm-pity {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: calc(8px * var(--wm-z, 1));
+  font-size: calc(12px * var(--wm-z, 1));
+}
+.wm-pity__track {
+  height: calc(8px * var(--wm-z, 1));
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.wm-pity__track i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+  transform-origin: left;
+}
+.wm-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8px * var(--wm-z, 1));
+  font-size: calc(12.5px * var(--wm-z, 1));
+  color: var(--px-muted);
+}
+.wm-who__text b {
+  font-size: calc(15px * var(--wm-z, 1));
+}

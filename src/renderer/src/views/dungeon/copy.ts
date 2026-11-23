@@ -1,4 +1,3 @@
-import { formatShort } from '../../../../game';
 /** On-screen text of package 9a: the duel and the dungeon full view (DESIGN.md §6 What the duel shows). */
 export const DUEL_COPY = {
   hand: 'Your hand',
@@ -54,17 +53,26 @@ export const DUEL_COPY = {
   fightHere: 'Fight here',
   fightingHere: 'Fighting here',
   locked: 'Locked',
-  overflowOpens: (name: string) => `Overflow opens at ${name}`,
   stageFloor: (floor: number) => `Floor ${floor}`,
-  stageKills: (kills: number, toNext: number | null) =>
-    toNext === null
-      ? `${formatShort(kills)} kills · all stars`
-      : `${formatShort(kills)} kills · ${formatShort(toNext)} to next`,
-  starsDone: 'All stars',
-  starsNext: (kills: number, next: number) => `${formatShort(kills)} / ${formatShort(next)} kills`,
-  starLegend: 'Star levels',
-  starNote: 'Each level: a chest, +5% damage and +10% loot on that stage, a skill point',
-  rowMeta: (boss: string, parts: string[]) => [boss, ...parts].join(' · '),
   listLabel: 'Dungeon list',
-  mapOf: (name: string) => `${name}: stages and stars`,
+  // the winding map (DESIGN.md §2 Dungeons)
+  chooseDungeon: 'Choose a dungeon',
+  stageCount: (n: number) => (n === 1 ? '1 stage' : `${n} stages`),
+  stageOf: (stage: number, of: number) => `Stage ${stage} of ${of}`,
+  finished: 'Finished',
+  stageWord: 'Stage',
+  done: 'beaten',
+  next: 'next to beat',
+  pathDone: (tier: string) => `Whole path beaten on ${tier}`,
+  stageOnTier: (stage: number, of: number, tier: string) => `Stage ${stage} of ${of} on ${tier}`,
+  depthOnTier: (depth: number, tier: string) => `Depth ${depth} on ${tier}`,
+  difficultyLoot: (percent: number) => `Loot: +${percent}%.`,
+  yourTeam: 'Your team',
+  waveOf: (n: number) => (n === 1 ? 'Enemy' : `Wave of ${n}`),
+  stageHeading: (stage: number) => `Stage ${stage}`,
+  hpOf: (hp: string) => `${hp} HP`,
+  fightStage: (stage: number) => `Fight stage ${stage}`,
+  cannotChallenge: 'The team cannot challenge it now.',
+  dropsHere: 'Drops here',
+  harderMore: 'Harder difficulty: more loot',
 };

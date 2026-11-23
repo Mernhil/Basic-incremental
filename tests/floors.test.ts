@@ -169,8 +169,8 @@ describe('what a floor holds', () => {
     expect(spec.enemies).toHaveLength(1);
     const mini = spec.enemies[0]!;
     expect(mini.kind).toBe('miniboss');
-    expect(mini.id).toBe(crypt.miniBoss.id);
-    expect(mini.name).toBe(crypt.miniBoss.name);
+    expect(mini.id).toBe(crypt.miniBosses[0]!.id);
+    expect(mini.name).toBe(crypt.miniBosses[0]!.name);
     expect(crypt.enemies.some((e) => e.id === mini.id)).toBe(false);
     const wave = floorSpec(plain, crypt, 'normal', 9);
     expect(mini.hp.gt(wave.hp)).toBe(true);
@@ -542,11 +542,10 @@ describe('clearing', () => {
     expect(cleared).toEqual(['mossy_cellar']);
     expect(mines).toEqual(['iron_deeps']);
     expect(opened).toContain('ember_crypt');
-    expect(state.combat.stageKills['mossy_cellar:normal:10']).toBe(1);
     // The boss floor is farmed from then on: there is nothing deeper to challenge.
     const later = run(state, content, 300).state;
     expect(floorPosition(later, cellar).floor).toBe(10);
-    expect(later.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(1);
+    expect(later.stats.bossKills).toBeGreaterThan(1);
   });
 
   it('pays the first-clear purse once', () => {
@@ -616,7 +615,6 @@ describe('drops of normal enemies', () => {
     const { state, report } = run(start.state, content, 5, constantRng(0.999));
     expect(report.bossKills).toBe(5);
     expect(report.enemyKills).toBe(0);
-    expect(state.combat.stageKills['mossy_cellar:normal:10']).toBe(5);
     expect(state.stats.bossKills).toBe(5);
     expect(state.pity['root_warden']).toBe(5);
     expect(report.currencies['money']).toBeGreaterThanOrEqual(cellar.drops.currencies[0]!.max * 5);
@@ -796,7 +794,6 @@ describe('save formats 24 and 25: floors', () => {
     // ... and it plays on: down the floors to the boss, which opens Hard.
     const later = advance(state, floorsContent, 600_000, createSeededRng(2));
     expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 10, best: 10 });
-    expect(later.state.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(70);
     expect(isDifficultyUnlocked(later.state, cellar, 'hard')).toBe(true);
   });
 });

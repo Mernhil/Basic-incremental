@@ -502,14 +502,6 @@ html.r-shell-oak
   color: #fff1d0;
 }
 
-/* The dungeon room keeps its own purple brick: its wall, floor and mortar are mixed from the dark
-   chrome tokens, so the room reads the dark surface set (not the oak header's brown) */
-html.r-shell-oak .ar__scene {
-  --bi-chrome-bg: #2a2238;
-  --bi-chrome-rail-bg: #17131f;
-  --bi-frame-hi: #54456d;
-}
-
 /* ---- text that sits on the dark table or on a wooden sign, not on a cream sheet ---------------- */
 html.r-shell-oak :is(.cp-sort, .wd-items__count, .wd-coming__row):not(#_o):not(#_o) {
   color: var(--bi-on-table-muted);
