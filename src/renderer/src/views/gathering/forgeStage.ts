@@ -33,8 +33,8 @@ export function craftFinished(
   return next.fraction < prev.fraction - 0.5;
 }
 
-/** Most finished items the tray draws as tiles; more are counted in the line under it. */
-export const TRAY_TILES = 14;
+/** The last items made the tray keeps as tiles; the count of all of them is in the line beside it. */
+export const TRAY_TILES = 5;
 
 export interface TrayItem {
   id: number;
@@ -55,4 +55,19 @@ export const emptyTray = (): Tray => ({ items: [], total: 0, next: 1 });
 export function trayAdd(tray: Tray, resource: string): Tray {
   const items = [...tray.items, { id: tray.next, resource }].slice(-TRAY_TILES);
   return { items, total: tray.total + 1, next: tray.next + 1 };
+}
+
+/** Warm tones of the hit effect, lightest first (gold to orange). */
+export const WARM_TONES: readonly (readonly [number, number, number])[] = [
+  [0xff, 0xf1, 0xb8],
+  [0xff, 0xd6, 0x6e],
+  [0xff, 0xa8, 0x3a],
+  [0xe0, 0x70, 0x1c],
+  [0xa8, 0x43, 0x0f],
+];
+
+/** The warm tone for a brightness 0..255: bright pixels light gold, dark ones deep orange. */
+export function warmTone(lum: number): readonly [number, number, number] {
+  const i = Math.min(4, Math.max(0, Math.floor((1 - lum / 256) * 5)));
+  return WARM_TONES[i]!;
 }

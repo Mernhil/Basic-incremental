@@ -5,6 +5,7 @@ import {
   sceneUnit,
   trayAdd,
   TRAY_TILES,
+  warmTone,
 } from '../src/renderer/src/views/gathering/forgeStage';
 
 describe('forge stage model', () => {
@@ -31,5 +32,10 @@ describe('forge stage model', () => {
     expect(t.items).toHaveLength(TRAY_TILES);
     expect(t.total).toBe(TRAY_TILES + 3);
     expect(t.items[0]!.id).toBe(4);
+  });
+
+  it('tints the hit effect warm, light to deep', () => {
+    expect(warmTone(255)).toEqual([0xff, 0xf1, 0xb8]);
+    expect(warmTone(0)).toEqual([0xa8, 0x43, 0x0f]);
   });
 });

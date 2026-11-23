@@ -26,9 +26,10 @@ import {
   SCENE_W,
   sceneUnit,
   trayAdd,
-  TRAY_TILES,
+  warmTone,
   type Tray,
 } from './forgeStage';
+import hitUrl from '../../art/fx/hit-hammer.png';
 import sceneUrl from './forge-scene-640x360.png';
 import { reducedMotion } from '../../art/pixel/live';
 import './forge.css';
@@ -40,6 +41,8 @@ import './forge.css';
  * rules are untouched: `setForgeRecipe`, `assignForgeWorker`, `advanceForge`.
  */
 
+const HOP_MS = 480;
+
 const set = (node: HTMLElement, text: string): void => {
   if (node.textContent !== text) node.textContent = text;
 };
@@ -49,6 +52,35 @@ function resourceArt(content: Content, id: string): string {
   const res = content.resourceById.get(id);
   if (!res) return '';
   return resourceIconMarkup(res) ?? '';
+}
+
+/** The hit sheet (white and blue) in warm gold and orange tones, every pixel opaque or clear. */
+function warmSheet(src: string, done: (dataUrl: string) => void): void {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
+    const g = c.getContext('2d');
+    if (!g) return;
+    g.drawImage(img, 0, 0);
+    const d = g.getImageData(0, 0, c.width, c.height);
+    for (let i = 0; i < d.data.length; i += 4) {
+      if (d.data[i + 3]! < 128) {
+        d.data[i + 3] = 0;
+        continue;
+      }
+      const lum = d.data[i]! * 0.299 + d.data[i + 1]! * 0.587 + d.data[i + 2]! * 0.114;
+      const [r, gr, b] = warmTone(lum);
+      d.data[i] = r;
+      d.data[i + 1] = gr;
+      d.data[i + 2] = b;
+      d.data[i + 3] = 255;
+    }
+    g.putImageData(d, 0, 0);
+    done(c.toDataURL());
+  };
+  img.src = src;
 }
 
 export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandle {
@@ -89,6 +121,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
   scene.setAttribute('aria-hidden', 'true');
   const sceneBox = h('div', 'fv-scene__box');
   sceneBox.style.backgroundImage = `url(${sceneUrl})`;
+  warmSheet(hitUrl, (url) => sparks.style.setProperty('--hit', `url(${url})`));
   const fire = h('div', 'fv-fire');
   const ingot = h('span', 'fv-ingot');
   const hammer = h('span', 'fv-hammer');
@@ -150,6 +183,8 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
     sceneBox.style.setProperty('--u', String(u));
     // the hit sheet's pictures are 160 x 152: shown at a whole scale of their own (1x at 2x and 3x)
     sceneBox.style.setProperty('--k', String(Math.max(1, Math.floor(u / 2))));
+    // the worker and the dust pile: 1x at 2x, 2x at 3x (whole scales)
+    sceneBox.style.setProperty('--w', String(Math.max(1, u - 1)));
     sceneBox.style.left = `${Math.floor((r.width - SCENE_W * u) / 2)}px`;
     sceneBox.style.top = `${Math.floor((r.height - SCENE_H * u) / 2)}px`;
   };
@@ -161,6 +196,8 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
   let traySig = '';
   let last: { recipe: string; fraction: number } | null = null;
   let trayHopId = 0;
+  let stockHoldUntil = 0;
+  let stockShown = '';
   let artSig = '';
   let picking = false;
 
@@ -258,11 +295,6 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
           recipeButtons.set(r.id, b);
           return b;
         }),
-        (() => {
-          const more = h('div', 'fv-recipe is-placeholder');
-          more.append(h('b', '', T.moreRecipes), h('span', '', T.moreRecipesNote));
-          return more;
-        })(),
       );
     }
     for (const r of v.recipes) {
@@ -314,6 +346,11 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
     if (st.recipe && craftFinished(last, now)) {
       tray = trayAdd(tray, st.recipe.output.resource);
       trayHopId = tray.next - 1;
+      // the stock number ticks up as the item lands in the tray
+      if (!reducedMotion()) {
+        stockHoldUntil = performance.now() + HOP_MS;
+        window.setTimeout(update, HOP_MS + 30);
+      }
     }
     last = now;
     drawTray();
@@ -323,7 +360,10 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
     stock.hidden = !out;
     if (out) {
       const have = s.resources[out.output.resource] ?? new Decimal(0);
-      set(stockValue, `${fmt(have)} ${content.resourceById.get(out.output.resource)?.name ?? ''}`);
+      if (performance.now() >= stockHoldUntil || stockShown === '')
+        stockShown = `${fmt(have)} ${content.resourceById.get(out.output.resource)?.name ?? ''}`;
+      set(stockValue, stockShown);
+      void `${fmt(have)} ${content.resourceById.get(out.output.resource)?.name ?? ''}`;
     }
   }
 
@@ -346,13 +386,13 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
         t.append(iconBox(it.resource));
         return t;
       });
-      const empties = Math.max(0, TRAY_TILES - tiles.length);
-      for (let i = 0; i < empties; i++) tiles.push(h('div', 'fv-tray__tile is-empty'));
       trayTiles.replaceChildren(...tiles);
       const newest = tray.items.length ? tiles[tray.items.length - 1] : undefined;
       if (newest && trayHopId === tray.next - 1 && !reducedMotion()) hop(newest);
     }
-    set(trayNote, tray.total > 0 ? T.trayMade(tray.total) : T.trayEmpty);
+    set(trayNote, tray.total > 0 ? T.trayMade(tray.total) : '');
+    trayNote.hidden = tray.total === 0;
+    trayTiles.hidden = tray.items.length === 0;
   }
 
   function hop(tile: HTMLElement): void {
@@ -371,7 +411,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext): ViewHandl
         },
         { transform: 'translate(0, 0) scale(1)', opacity: 1, offset: 1 },
       ],
-      { duration: 480, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' },
+      { duration: HOP_MS, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)' },
     );
   }
 

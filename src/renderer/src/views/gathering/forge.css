@@ -107,13 +107,6 @@
 .fv-recipe.is-on {
   box-shadow: 0 0 0 var(--fs-sm) var(--bi-chrome-accent);
 }
-.fv-recipe.is-placeholder {
-  display: grid;
-  cursor: default;
-  opacity: 0.6;
-  font-weight: 400;
-  font-size: 12px;
-}
 .fv-recipe:focus-visible {
   outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 3px;
@@ -189,10 +182,11 @@
   position: absolute;
 }
 .fv-ingot {
-  left: calc(var(--u) * 304px);
-  top: calc(var(--u) * 204px);
-  width: calc(var(--u) * 32px);
-  height: calc(var(--u) * 32px);
+  /* the dust pile sits in the middle of the anvil face, a little right (342, 238); 64 px at 2x, 128 px at 3x */
+  left: calc(var(--u) * 342px - var(--w, 1) * 32px);
+  top: calc(var(--u) * 238px - var(--w, 1) * 64px);
+  width: calc(var(--w, 1) * 64px);
+  height: calc(var(--w, 1) * 64px);
   opacity: 0;
 }
 .has-recipe .fv-ingot {
@@ -205,10 +199,11 @@
   image-rendering: pixelated;
 }
 .fv-hammer {
-  left: calc(var(--u) * 270px);
-  top: calc(var(--u) * 168px);
-  width: calc(var(--u) * 44px);
-  height: calc(var(--u) * 53px);
+  /* held by its pivot (298, 219): 88 x 106 px at 2x, 176 x 212 px at 3x */
+  left: calc(var(--u) * 298px - var(--w, 1) * 13.2px);
+  top: calc(var(--u) * 219px - var(--w, 1) * 100.7px);
+  width: calc(var(--w, 1) * 88px);
+  height: calc(var(--w, 1) * 106px);
   transform-origin: 15% 95%;
   display: none;
 }
@@ -231,12 +226,11 @@
 }
 /* the hit effect (art/fx/hit-hammer.png, 10 pictures of 160 x 152) on the anvil face at each hit */
 .fv-sparks {
-  left: calc(var(--u) * 323px - var(--k, 1) * 80px);
+  left: calc(var(--u) * 342px - var(--k, 1) * 80px);
   top: calc(var(--u) * 222px - var(--k, 1) * 76px);
   width: calc(var(--k, 1) * 160px);
   height: calc(var(--k, 1) * 152px);
-  background: url('../../art/fx/hit-hammer.png') 0 0 / calc(var(--k, 1) * 1600px)
-    calc(var(--k, 1) * 152px) no-repeat;
+  background: var(--hit, none) 0 0 / calc(var(--k, 1) * 1600px) calc(var(--k, 1) * 152px) no-repeat;
   image-rendering: pixelated;
   opacity: 0;
 }
@@ -337,9 +331,6 @@
   height: 40px;
   background: var(--px-lo);
   box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
-}
-.fv-tray__tile.is-empty {
-  opacity: 0.45;
 }
 .fv-tray__tile .fv-icon {
   width: 80%;
