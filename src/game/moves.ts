@@ -6,7 +6,13 @@ import type {
   MoveTarget,
   RankTier,
 } from '../data';
-import { computeStat, type Modifier, type StatContext } from './modifiers';
+import {
+  collectModifiers,
+  computeStat,
+  statValue,
+  type Modifier,
+  type StatContext,
+} from './modifiers';
 import { Decimal } from './num';
 import { cloneState, type GameState, type OwnedCard } from './state';
 
@@ -403,10 +409,18 @@ export function applyMoves(cards: readonly MoveFighter[]): MoveOutcome[] {
 export function skillUnlockCost(
   content: Content,
   cardId: string,
+  modifiers: readonly Modifier[] = [],
 ): { resource: string; amount: number } | null {
   const card = content.cardById.get(cardId);
   if (!card || card.job !== 'fighting' || !content.moves.tiers[card.tier].skill) return null;
-  return content.moves.unlock[card.tier] ?? null;
+  const base = content.moves.unlock[card.tier];
+  if (!base) return null;
+  // Faster skill unlocks (Starlight shop) lowers the price, never below 1 Core.
+  const amount = Math.max(
+    1,
+    Math.round(statValue('moves.unlockCost', base.amount, modifiers).toNumber()),
+  );
+  return { resource: base.resource, amount: Math.min(base.amount, amount) };
 }
 
 export type SkillOpenFailure = 'not-owned' | 'no-skill' | 'open' | 'cost';
@@ -417,7 +431,7 @@ export type SkillOpenResult =
 export function openCardSkill(state: GameState, content: Content, cardId: string): SkillOpenResult {
   const owned = state.cards.owned[cardId];
   if (!owned) return { ok: false, reason: 'not-owned' };
-  const cost = skillUnlockCost(content, cardId);
+  const cost = skillUnlockCost(content, cardId, collectModifiers(state, content));
   if (!cost) return { ok: false, reason: 'no-skill' };
   if (owned.skillOpen) return { ok: false, reason: 'open' };
   const have = state.resources[cost.resource] ?? new Decimal(0);

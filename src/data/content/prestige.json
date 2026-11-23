@@ -6,7 +6,7 @@
     "exponent": 0.45,
     "minimum": 1,
     "progress": {
-      "perFloor": "0.25",
+      "perFloor": "0.08",
       "dungeonStep": 0.5,
       "bossFloors": 4,
       "difficultyWeights": {
@@ -88,9 +88,26 @@
       "grants": "keep_training"
     },
     {
+      "id": "faster_skills",
+      "name": "Faster Skill Unlocks",
+      "description": "Opening a card's skill costs 4% fewer Cores per level",
+      "maxLevel": 5,
+      "cost": {
+        "base": "15",
+        "growth": "1.6"
+      },
+      "perLevel": [
+        {
+          "stat": "moves.unlockCost",
+          "kind": "percent",
+          "value": "-4"
+        }
+      ]
+    },
+    {
       "id": "head_start",
       "name": "Head Start",
-      "description": "Each run starts 8% deeper into your best floors",
+      "description": "Each run starts 4% deeper into your best floors",
       "maxLevel": 5,
       "cost": {
         "base": "10",
@@ -98,7 +115,7 @@
       },
       "perLevel": [],
       "grants": "head_start",
-      "percent": 8
+      "percent": 4
     },
     {
       "id": "long_night",
@@ -153,26 +170,18 @@
     }
   ],
   "multiplier": {
-    "step": "0.5",
-    "growth": "0.1"
+    "step": "0.2",
+    "growth": "0.03"
   },
   "firstAscension": {
     "dungeon": "frostspire_vault"
   },
   "prizes": {
-    "summonScrolls": "5",
-    "cores": "5",
+    "summonScrolls": "3",
+    "cores": "2",
     "pulls": [
       {
-        "ascension": 2,
-        "tier": "mythic"
-      },
-      {
         "ascension": 4,
-        "tier": "heirloom"
-      },
-      {
-        "ascension": 6,
         "tier": "mythic"
       },
       {
@@ -180,15 +189,7 @@
         "tier": "heirloom"
       },
       {
-        "ascension": 10,
-        "tier": "mythic"
-      },
-      {
         "ascension": 12,
-        "tier": "heirloom"
-      },
-      {
-        "ascension": 14,
         "tier": "mythic"
       },
       {
@@ -196,12 +197,8 @@
         "tier": "heirloom"
       },
       {
-        "ascension": 18,
-        "tier": "mythic"
-      },
-      {
         "ascension": 20,
-        "tier": "heirloom"
+        "tier": "mythic"
       }
     ]
   }

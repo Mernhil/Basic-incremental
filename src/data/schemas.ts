@@ -282,6 +282,8 @@ export const STATS = [
   'offline.capHours',
   /** Raid tries a day on each boss (the base is `raids.json` `triesPerDay`). */
   'raids.tries',
+  /** Multiplier on the Cores that open a card's skill (the Starlight shop lowers it). */
+  'moves.unlockCost',
   /** Account XP gained. Scope: job. */
   'xp.account',
   /** Card XP gained. Scope: job. */

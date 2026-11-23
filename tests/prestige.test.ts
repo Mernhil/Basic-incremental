@@ -160,10 +160,12 @@ describe('ascend', () => {
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.resources['summon_scroll']!.toNumber()).toBe(45); // 40 kept + the Ascension prize
+    expect(s.resources['summon_scroll']!.toNumber()).toBe(
+      40 + content.prestige.prizes.summonScrolls.toNumber(),
+    ); // 40 kept + the prize
     expect(s.resources['glamour_scroll']!.toNumber()).toBe(75);
     expect(s.resources['money']!.eq(content.resourceById.get('money')!.startAmount!)).toBe(true);
-    expect(s.resources['moss_core']!.toNumber()).toBe(5); // the prize, not the 7 farmed
+    expect(s.resources['moss_core']!.toNumber()).toBe(content.prestige.prizes.cores.toNumber()); // the prize, not the 7 farmed
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 

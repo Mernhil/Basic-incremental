@@ -13,6 +13,7 @@ import {
   openSlots,
   raidTriesLeft,
   readSave,
+  skillUnlockCost,
   starlightBreakdown,
   statValue,
   type GameState,
@@ -36,7 +37,7 @@ describe('the permanent multiplier', () => {
   it('is x1 before any Ascension and grows faster with each one', () => {
     const m = (n: number) => ascensionMultiplier(content, n).toNumber();
     expect(m(0)).toBe(1);
-    expect(m(1)).toBeGreaterThan(1.4);
+    expect(m(1)).toBeGreaterThan(1.15);
     expect(m(2) - m(1)).toBeGreaterThan(m(1) - m(0));
     expect(m(5) - m(4)).toBeGreaterThan(m(2) - m(1));
   });
@@ -124,9 +125,9 @@ describe('the first Ascension', () => {
 describe('prizes, preview and the new run', () => {
   it('pays scrolls and Cores every time, and a guaranteed card at the listed counts', () => {
     const state = openAscension(climbed(25));
-    state.prestigeCount = 1;
+    state.prestigeCount = 3;
     const p = ascensionPreview(state, content);
-    expect(p.ascension).toBe(2);
+    expect(p.ascension).toBe(4);
     expect(p.prizes.pull).toBe('mythic');
     const before = state.resources['summon_scroll']!.toNumber();
     const r = ascend(state, content);
@@ -144,7 +145,7 @@ describe('prizes, preview and the new run', () => {
 
   it('gives an Heirloom at an Heirloom count', () => {
     const state = openAscension(climbed(25));
-    state.prestigeCount = 3;
+    state.prestigeCount = 7;
     expect(ascensionPreview(state, content).prizes.pull).toBe('heirloom');
     const r = ascend(state, content);
     if (!r.ok) throw new Error(r.reason);
@@ -226,10 +227,10 @@ describe('the Starlight shop of unlocks', () => {
     state.combat.floors['mossy_cellar']!.tiers['normal'] = { floor: 30, best: 30 };
     expect(headStartPercent(state, content)).toBe(50);
     state.prestige.shop['head_start'] = 2;
-    expect(headStartPercent(state, content)).toBe(66);
+    expect(headStartPercent(state, content)).toBe(58);
     const r = ascend(state, content);
     if (!r.ok) throw new Error(r.reason);
-    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(19);
+    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(17);
   });
 
   it('Auto-push gates the auto-challenge switch and an Ascension keeps it on only when owned', () => {
@@ -241,6 +242,19 @@ describe('the Starlight shop of unlocks', () => {
     const withIt = ascend(state, content);
     if (!withIt.ok) throw new Error(withIt.reason);
     expect(withIt.state.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
+  });
+
+  it('Faster Skill Unlocks lowers the Core price of opening a skill, 4% a level', () => {
+    const base = skillUnlockCost(content, 'brass_vanguard')!;
+    const state = freshState();
+    state.prestige.shop['faster_skills'] = 5;
+    const cheaper = skillUnlockCost(content, 'brass_vanguard', collectModifiers(state, content))!;
+    expect(cheaper.resource).toBe(base.resource);
+    expect(cheaper.amount).toBe(Math.round(base.amount * 0.8));
+    expect(cheaper.amount).toBeLessThan(base.amount);
+    expect(
+      skillUnlockCost(content, 'brass_vanguard', collectModifiers(freshState(), content)),
+    ).toEqual(base);
   });
 
   it('the third raid try adds one try a day on every boss', () => {

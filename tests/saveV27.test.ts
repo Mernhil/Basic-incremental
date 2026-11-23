@@ -432,7 +432,9 @@ describe('format 27 state through an Ascension', () => {
     const r = ascend(before, content);
     if (!r.ok) throw new Error(r.reason);
     const s = r.state;
-    expect(s.resources['summon_scroll']!.toNumber()).toBe(4 + 5); // + the Ascension prize
+    expect(s.resources['summon_scroll']!.toNumber()).toBe(
+      4 + content.prestige.prizes.summonScrolls.toNumber(),
+    ); // + the Ascension prize
     expect(s.resources['glamour_scroll']!.toNumber()).toBe(2);
     expect(s.presets).toEqual(before.presets);
     expect(s.discoveredBonds).toEqual(before.discoveredBonds);
