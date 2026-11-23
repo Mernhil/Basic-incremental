@@ -8,6 +8,7 @@ import {
   HUB_MAP_H,
   HUB_MAP_W,
   hubOffset,
+  hubPanned,
   hubScale,
   scaled,
   sealWhy,
@@ -79,6 +80,8 @@ export function createHub(
 
   let scale = 0;
   let area = '';
+  let areaSize = { w: 0, h: 0 };
+  const pan = { x: 0, y: 0 };
   let mapPixels: ImageData | null = null;
   let hovered: Place | null = null;
 
@@ -200,7 +203,7 @@ export function createHub(
       menu.hidden = false;
       menu.style.left = `${Math.max(8, Math.min(r.left - host.left, host.width - 280))}px`;
       menu.style.top = `${Math.max(8, r.top - host.top + Math.min(r.height, 40))}px`;
-      (menu.querySelector('button') as HTMLElement | null)?.focus();
+      (menu.querySelector('button') as HTMLElement | null)?.focus({ preventScroll: true });
     }
   }
 
@@ -214,6 +217,75 @@ export function createHub(
     if (!menu.hidden && !(e.target as Element).closest('.hub__menu, .hub__spot')) closeMenu();
   });
 
+  /** Puts the stage where the pan says (centred until the player drags or wheels). */
+  function place(): void {
+    const off = hubPanned(areaSize.w, areaSize.h, scale, pan);
+    // keep the pan inside the clamp, so a drag past the edge does not pile up
+    pan.x = off.x - hubOffset(areaSize.w, areaSize.h, scale).x;
+    pan.y = off.y - hubOffset(areaSize.w, areaSize.h, scale).y;
+    stage.style.left = `${off.x}px`;
+    stage.style.top = `${off.y}px`;
+  }
+
+  // drag the map, or use the wheel, along the axis cover cut off (a window that is not 16:9)
+  let drag: { id: number; x: number; y: number; moved: boolean } | null = null;
+  let dragged = false;
+  scroller.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
+  });
+  scroller.addEventListener('pointermove', (e) => {
+    if (!drag || drag.id !== e.pointerId) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+    if (!drag.moved) {
+      drag.moved = true;
+      scroller.setPointerCapture(e.pointerId);
+      closeMenu();
+      light(null);
+    }
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+    pan.x += dx;
+    pan.y += dy;
+    place();
+  });
+  const endDrag = (e: PointerEvent): void => {
+    if (!drag || drag.id !== e.pointerId) return;
+    dragged = drag.moved;
+    drag = null;
+    // the click that ends a drag is not a click on a place
+    if (dragged) setTimeout(() => (dragged = false), 0);
+  };
+  scroller.addEventListener('pointerup', endDrag);
+  scroller.addEventListener('pointercancel', endDrag);
+  scroller.addEventListener(
+    'click',
+    (e) => {
+      if (dragged) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    },
+    true,
+  );
+  scroller.addEventListener(
+    'wheel',
+    (e) => {
+      const tall = HUB_MAP_H * scale > areaSize.h + 0.5;
+      const wide = HUB_MAP_W * scale > areaSize.w + 0.5;
+      if (!tall && !wide) return;
+      e.preventDefault();
+      closeMenu();
+      if (tall) pan.y -= e.deltaY;
+      else pan.x -= e.deltaY || e.deltaX;
+      if (tall && wide) pan.x -= e.deltaX;
+      place();
+    },
+    { passive: false },
+  );
+
   function layout(): void {
     const w = scroller.clientWidth;
     const hh = scroller.clientHeight;
@@ -221,10 +293,10 @@ export function createHub(
     if (key === area) return;
     area = key;
     scale = hubScale(w, hh);
-    // centred: the stage is bigger than the window, the overflow is cut evenly off the edges
-    const off = hubOffset(w, hh, scale);
-    stage.style.left = `${off.x}px`;
-    stage.style.top = `${off.y}px`;
+    // the stage is bigger than the window: it starts centred (the overflow cut evenly) and the player
+    // can pan it along the cut axis, clamped to the map's edges
+    areaSize = { w, h: hh };
+    place();
     for (const node of [stage, img, glow]) {
       node.style.width = `${HUB_MAP_W * scale}px`;
       node.style.height = `${HUB_MAP_H * scale}px`;

@@ -12,6 +12,7 @@ import '@fontsource/atkinson-hyperlegible/700.css';
 import { installBrowserApi } from './web/installBrowserApi';
 import { installLogCapture } from './settings/logBuffer';
 import { installMotionPref } from './settings/motion';
+import { installDesignScale } from './ui/designScale';
 import { installPixelScale } from './ui/pixelFit';
 
 // before anything else: recent log lines for Report an issue, and the reduced-motion override
@@ -19,6 +20,8 @@ installLogCapture();
 // in a plain browser (the phone build) there is no desktop shell: saves go to browser storage
 installBrowserApi();
 installMotionPref();
+// the whole UI is laid out at 1920 x 1080 and zoomed to the window (before the pixel scale reads it)
+installDesignScale();
 // Clean pixels (DESIGN.md §12): the screen scale decides every pixel-art size
 installPixelScale();
 

@@ -70,7 +70,7 @@ export function createBuyToggle(): HTMLElement {
       e.preventDefault();
       const next = COUNTS[(COUNTS.indexOf(count) + step + COUNTS.length) % COUNTS.length]!;
       setBuyCount(next);
-      buttons[COUNTS.indexOf(next)]?.focus();
+      buttons[COUNTS.indexOf(next)]?.focus({ preventScroll: true });
     });
     return b;
   });

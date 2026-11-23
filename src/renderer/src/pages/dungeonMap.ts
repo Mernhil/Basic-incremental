@@ -210,7 +210,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     if (!next) return;
     ctx.apply(next);
     render();
-    if (focusKey) el.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+    if (focusKey)
+      el.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus({ preventScroll: true });
   };
 
   const chosenId = (s: GameState): string | null => picked ?? s.activeDungeonId;
@@ -309,7 +310,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       picked = entry.id;
       selected = null;
       render();
-      el.querySelector<HTMLElement>(`[data-key="row-${entry.id}"]`)?.focus();
+      el.querySelector<HTMLElement>(`[data-key="row-${entry.id}"]`)?.focus({ preventScroll: true });
     });
     li.append(b);
     return li;
@@ -492,7 +493,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       b.addEventListener('click', () => {
         selected = stop.floor;
         render();
-        el.querySelector<HTMLElement>(`[data-key="stop-${stop.floor}"]`)?.focus();
+        el.querySelector<HTMLElement>(`[data-key="stop-${stop.floor}"]`)?.focus({
+          preventScroll: true,
+        });
       });
       road.append(b);
       if (stop.state === 'current') currentEl = b;
