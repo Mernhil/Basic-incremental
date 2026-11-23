@@ -108,11 +108,11 @@ describe('the circle', () => {
 });
 
 describe('boss elements', () => {
-  it('each of the six bosses has one element, derived from its old weakness', () => {
+  it('each of the six bosses has one element, derived from its old weakness (Frostspire changed to water)', () => {
     const want: Record<string, CardElement> = {
       mossy_cellar: 'earth', // was weak to fire
       ember_crypt: 'dark', // was weak to light
-      frostspire_vault: 'fire', // was weak to water
+      frostspire_vault: 'water', // was fire (weak to water); an ice colossus is water, controller 2026-11-23
       thunderpeak_aerie: 'water', // was weak to earth
       sunken_sanctum: 'light', // was weak to dark
       void_hollow: 'dark', // was weak to light
@@ -127,7 +127,7 @@ describe('boss elements', () => {
     const weak: Record<string, CardElement> = {
       mossy_cellar: 'fire',
       ember_crypt: 'light',
-      frostspire_vault: 'water',
+      frostspire_vault: 'earth',
       thunderpeak_aerie: 'earth',
       sunken_sanctum: 'dark',
       void_hollow: 'light',
@@ -143,10 +143,10 @@ describe('boss elements', () => {
     expect(elementPercent(fight(FIRE), 'mossy_cellar', FIRE)).toBe(50);
     expect(elementPercent(fight(WATER), 'mossy_cellar', WATER)).toBe(-25);
     expect(elementPercent(fight(EARTH), 'mossy_cellar', EARTH)).toBe(0);
-    // Frostspire is fire: water beats it, earth is beaten by it; fire on fire is plain.
-    expect(elementPercent(fight(WATER), 'frostspire_vault', WATER)).toBe(50);
-    expect(elementPercent(fight(EARTH), 'frostspire_vault', EARTH)).toBe(-25);
-    expect(elementPercent(fight(FIRE), 'frostspire_vault', FIRE)).toBe(0);
+    // Frostspire is water: earth beats it, fire is beaten by it; water on water is plain.
+    expect(elementPercent(fight(EARTH), 'frostspire_vault', EARTH)).toBe(50);
+    expect(elementPercent(fight(FIRE), 'frostspire_vault', FIRE)).toBe(-25);
+    expect(elementPercent(fight(WATER), 'frostspire_vault', WATER)).toBe(0);
     // Aerie is water: earth beats it, fire is beaten by it (not only when the boss lists water).
     expect(elementPercent(fight(EARTH), 'thunderpeak_aerie', EARTH)).toBe(50);
     expect(elementPercent(fight(FIRE), 'thunderpeak_aerie', FIRE)).toBe(-25);

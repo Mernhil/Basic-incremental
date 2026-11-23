@@ -105,7 +105,9 @@ import {
   setDifficulty,
   setAutoChallenge,
   setOverflow,
+  stageFloors,
   stageStars,
+  STAR_DIFFICULTIES,
   DIFFICULTIES,
   type Difficulty,
   setActiveDungeon,
@@ -2062,9 +2064,6 @@ export function chooseFight(
     const farm = fastestFarm(state, content, resource, modifiers);
     if (farm) return farm;
   }
-  // A stage a few minutes from its next star level: its chest, star dust and skill point.
-  const stars = starFarm(state, content, modifiers);
-  if (stars) return stars;
   // Nothing is waiting: climb the tiers and the endless depths.
   const climb = climbTarget(state, content, modifiers);
   if (climb) return climb;
@@ -2122,39 +2121,6 @@ export function fastestFarm(
 const dropsResource = (d: Content['dungeons'][number], resource: string): boolean =>
   d.drops.material.resource === resource ||
   d.drops.extraMaterials.some((e) => e.resource === resource);
-
-/** A stage is farmed for its next star level when that takes at most this long, in seconds. */
-export const STAR_FARM_SECONDS = 900;
-
-/**
- * Stage stars (DESIGN.md §6): a stage whose next star level is at most STAR_FARM_SECONDS of kills
- * away is worth a detour (a chest, star dust from Gold up, a skill point, more damage and loot
- * there). The player cannot pick a floor, so only the last-floor boss of a tier it stands on the
- * last floor of is farmed; the quickest one wins.
- */
-export function starFarm(
-  state: GameState,
-  content: Content,
-  modifiers: Modifier[] = collectModifiers(state, content),
-): FightChoice | null {
-  let best: (FightChoice & { seconds: number }) | null = null;
-  for (const dungeon of content.dungeons) {
-    for (const difficulty of heldTiers(state, content, dungeon.id, modifiers)) {
-      if (difficulty === 'endless') continue;
-      const position = floorPosition(state, dungeon, difficulty);
-      if (position.floor !== position.floors) continue;
-      const info = stageStars(state, content, stageKey(dungeon.id, difficulty, position.floor));
-      if (!info || info.nextKills === null) continue;
-      const spk = secondsPerKill(state, content, dungeon.id, modifiers, position.floor, difficulty);
-      if (spk === null || !Number.isFinite(spk)) continue;
-      const seconds = (info.nextKills - info.kills) * spk;
-      if (seconds <= STAR_FARM_SECONDS && (!best || seconds < best.seconds)) {
-        best = { id: dungeon.id, difficulty, seconds };
-      }
-    }
-  }
-  return best && { id: best.id, difficulty: best.difficulty };
-}
 
 /** The dungeon or special dungeon `chooseFight` picks. */
 export function chooseDungeon(
@@ -2293,16 +2259,20 @@ export function chooseAutoChallenge(
 }
 
 /**
- * Overflow (DESIGN.md §6): the player turns on every stage's overflow switch as soon as the stage
- * reaches the star level that opens it, so no damage is wasted. (Package 10 teaches the rest.)
+ * Overflow (DESIGN.md §6): the player turns on every stage's overflow switch (open on every stage
+ * since the stage stars closed, DESIGN.md §2 Dungeons), so no damage is wasted.
  */
 export function chooseOverflow(state: GameState, content: Content): GameState {
   let next = state;
-  for (const key of Object.keys(state.combat.stageKills)) {
-    const info = stageStars(next, content, key);
-    if (!info || !info.overflowUnlocked || info.overflowOn) continue;
-    const result = setOverflow(next, content, key, true);
-    if (result.ok) next = result.state;
+  for (const dungeon of content.dungeons) {
+    for (const difficulty of STAR_DIFFICULTIES) {
+      for (const floor of stageFloors(content, dungeon)) {
+        const key = stageKey(dungeon.id, difficulty, floor);
+        if (next.combat.overflow[key] === true) continue;
+        const result = setOverflow(next, content, key, true);
+        if (result.ok) next = result.state;
+      }
+    }
   }
   return next;
 }

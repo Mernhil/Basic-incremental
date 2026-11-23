@@ -626,12 +626,12 @@
           "requires": ["small_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "20"
             }
           ],
-          "description": "+20% stage star damage"
+          "description": "+20% crit damage"
         },
         {
           "id": "capstone",
@@ -640,7 +640,7 @@
           "requires": ["large_a", "large_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "100"
             },
@@ -650,7 +650,7 @@
               "value": "50"
             }
           ],
-          "description": "+100% stage star damage, +50% stage star loot"
+          "description": "+100% crit damage, +50% stage star loot"
         }
       ]
     },
@@ -1604,12 +1604,12 @@
           "requires": ["small_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "20"
             }
           ],
-          "description": "+20% stage star damage"
+          "description": "+20% crit damage"
         },
         {
           "id": "capstone",
@@ -1618,7 +1618,7 @@
           "requires": ["large_a", "large_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "100"
             },
@@ -1628,7 +1628,7 @@
               "value": "50"
             }
           ],
-          "description": "+100% stage star damage, +50% stage star loot"
+          "description": "+100% crit damage, +50% stage star loot"
         }
       ]
     },
@@ -2403,12 +2403,12 @@
           "requires": ["small_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "20"
             }
           ],
-          "description": "+20% stage star damage"
+          "description": "+20% crit damage"
         },
         {
           "id": "capstone",
@@ -2417,7 +2417,7 @@
           "requires": ["large_a", "large_b"],
           "modifiers": [
             {
-              "stat": "stars.damage",
+              "stat": "combat.critDamage",
               "kind": "percent",
               "value": "100"
             },
@@ -2427,7 +2427,7 @@
               "value": "50"
             }
           ],
-          "description": "+100% stage star damage, +50% stage star loot"
+          "description": "+100% crit damage, +50% stage star loot"
         }
       ]
     },

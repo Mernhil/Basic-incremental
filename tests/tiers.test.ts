@@ -154,7 +154,7 @@ describe('difficulty tiers', () => {
     const content = harmless(withDps(1e40, plain));
     // Hard is fought first here (set by the dev cheat); the Normal boss was never killed.
     const state = run(on(inCellar(content), content, 10, 'hard'), content, 1.01).state;
-    expect(state.combat.stageKills['mossy_cellar:hard:10']).toBeGreaterThan(0);
+    expect(state.stats.bossKills).toBeGreaterThan(0);
     expect(isDungeonCleared(state, 'mossy_cellar')).toBe(false);
   });
 
