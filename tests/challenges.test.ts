@@ -22,7 +22,7 @@ import {
   slotWorkers,
   type GameState,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, freshState, openAscension } from './helpers';
 
 /** Ascension challenges (DESIGN.md §15, src/game/challenges.ts). */
 
@@ -118,6 +118,7 @@ describe('starting and leaving', () => {
     expect(left.ascensionChallenges.active).toBeNull();
     expect(left.ascensionChallenges.completions).toEqual({});
     expect(s.ascensionChallenges.active).toBe('drought');
+    openAscension(s);
     const r = ascend(s, content);
     if (!r.ok) throw new Error(r.reason);
     expect(r.state.ascensionChallenges.active).toBeNull();
@@ -126,6 +127,7 @@ describe('starting and leaving', () => {
   it('an Ascension keeps the completions', () => {
     const s = ready();
     s.ascensionChallenges.completions['drought'] = 2;
+    openAscension(s);
     const r = ascend(s, content);
     if (!r.ok) throw new Error(r.reason);
     expect(r.state.ascensionChallenges.completions).toEqual({ drought: 2 });
@@ -142,7 +144,9 @@ describe('completing', () => {
     expect(settleChallenges(s, content)).toBe('drought');
     expect(s.ascensionChallenges).toEqual({ active: null, completions: { drought: 1 } });
     expect(settleChallenges(s, content)).toBeNull();
-    const base = statValue('production.rate', 1, collectModifiers(freshState(), content));
+    const same = freshState();
+    same.prestigeCount = s.prestigeCount; // the Ascension multiplier is in both
+    const base = statValue('production.rate', 1, collectModifiers(same, content));
     const now = statValue('production.rate', 1, collectModifiers(s, content));
     expect(now.div(base).toNumber()).toBeCloseTo(1.1);
   });

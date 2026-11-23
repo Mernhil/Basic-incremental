@@ -107,7 +107,7 @@ describe('farming slots', () => {
     );
   });
 
-  it('slots open with the camp level and grow with the Starlight item', () => {
+  it('slots open with the camp level alone; Wider Grounds adds yield, not slots', () => {
     const state = freshState();
     state.camp.level = 3;
     expect(openSlots(state, content, 'forest')).toBe(2);
@@ -115,8 +115,8 @@ describe('farming slots', () => {
     state.camp.level = 28;
     expect(openSlots(state, content, 'forest')).toBe(6);
     state.prestige.shop['second_hands'] = 2;
-    expect(openSlots(state, content, 'forest')).toBe(8);
-    expect(openSlots(state, content, 'cave')).toBe(8);
+    expect(openSlots(state, content, 'forest')).toBe(6);
+    expect(openSlots(state, content, 'cave')).toBe(6);
   });
 
   it('puts a card on an open slot of its own place, and a card is in one slot at a time', () => {

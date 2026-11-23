@@ -34,6 +34,7 @@ import {
   newGame,
   withDps,
   withFarmers,
+  openAscension,
 } from './helpers';
 
 /** Only account levels give skill points here (see `levelPointsOnly`). */
@@ -103,6 +104,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
     const run = freshState();
     run.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    openAscension(run);
     const ascended = ascend(run, content);
     if (!ascended.ok) throw new Error(ascended.reason);
     expect(ascended.state.account.xp.eq(A.xp.perAscension)).toBe(true);
@@ -271,6 +273,7 @@ describe('account tree (DESIGN.md §10a)', () => {
     const state = withPoints(4);
     state.account.freeRespecsUsed = 1;
     state.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.account.freeRespecsUsed).toBe(0);

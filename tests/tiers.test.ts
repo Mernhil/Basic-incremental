@@ -34,6 +34,7 @@ import {
   withAutoChallenge,
   withDps,
   withOverflow,
+  openAscension,
 } from './helpers';
 
 /**
@@ -237,6 +238,7 @@ describe('difficulty tiers', () => {
   it('keeps every tier through an Ascension and restarts each at half of its best floor', () => {
     const state = on(on(freshState(), plain, 8, 'hard'), plain, 4, 'nightmare');
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
+    openAscension(state);
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
     const after = result.state;
@@ -319,6 +321,7 @@ describe('endless depths', () => {
   it('resets the depth to half of the best one on an Ascension and keeps the best', () => {
     const state = on(freshState(), plain, 31, 'endless');
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
+    openAscension(state);
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
     expect(floorPosition(result.state, cellar, 'endless')).toMatchObject({ floor: 15, best: 31 });

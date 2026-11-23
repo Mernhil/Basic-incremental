@@ -1,0 +1,256 @@
+/* The Ascension screen: three panels in the shell's charcoal and gold, filling the view. Panels,
+   tiles and buttons are the shell's (.px-panel, .px-tile, .px-btn); numbers are the pixel numerals
+   (.bi-num); the ring and coin are the kept shop sprites. */
+.shell-page:has(> .asc) {
+  max-width: none;
+}
+.asc {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: stretch;
+  height: var(--mv-h, 100%);
+  min-height: 0;
+  box-sizing: border-box;
+  padding: 4px 8px 0;
+}
+@media (max-width: 1100px) {
+  .asc {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .asc-col--shop {
+    grid-column: 1 / -1;
+  }
+}
+.asc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  min-height: 0;
+  padding: 14px;
+}
+.asc-head {
+  margin: 0;
+  font-size: 22px;
+  color: var(--px-gold, #ffd66e);
+}
+.asc-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.asc p,
+.asc h3,
+.asc ul {
+  margin: 0;
+}
+.asc-sub {
+  font-size: 15px;
+  color: var(--bi-frame-ink, #e8e2d4);
+}
+.asc-note {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-label {
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-nth {
+  font-size: 16px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+
+/* the big number beside the ring */
+.asc-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.asc-top .shop-ring {
+  flex: none;
+  margin: 0;
+}
+.asc-gainbox {
+  min-width: 0;
+}
+.asc-gain {
+  font-size: 40px;
+  line-height: 1;
+  color: var(--px-gold, #ffd66e);
+}
+.asc-unit {
+  font-size: 14px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-parts {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+
+/* the multiplier tile */
+.asc-mult {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+}
+.asc-multvalue {
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--px-gold, #ffd66e);
+}
+.asc-faster {
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--bi-frame-ink, #e8e2d4);
+}
+.asc-locked {
+  font-size: 14px;
+  color: var(--px-gold, #ffd66e);
+}
+
+/* lists with a gold bullet, and a red one for what starts over */
+.asc-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--bi-frame-ink, #e8e2d4);
+}
+.asc-list:not(.asc-shop) li::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 8px 1px 0;
+  background: var(--px-gold, #ffd66e);
+}
+.asc-list--reset li::before {
+  background: #d9534f;
+}
+.asc-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+}
+.asc-actions[hidden] {
+  display: none;
+}
+.asc-go {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 22px;
+}
+
+/* what changes */
+.asc-lists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.asc-keep {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 8px 10px 10px;
+  min-width: 0;
+}
+
+/* the shop */
+.asc-have {
+  font-size: 14px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-have b {
+  font-size: 22px;
+  color: var(--px-gold, #ffd66e);
+}
+.asc-shop {
+  gap: 8px;
+}
+.asc-it {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name level'
+    'desc desc'
+    'effect effect'
+    'track price';
+  gap: 4px 10px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #1c1c20;
+  box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
+}
+.asc-it__name {
+  grid-area: name;
+  font-size: 15px;
+}
+.asc-it__level {
+  grid-area: level;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-it__desc {
+  grid-area: desc;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.asc-it__effect {
+  grid-area: effect;
+  font-size: 13px;
+  color: var(--px-gold, #ffd66e);
+}
+.asc-lv {
+  grid-area: track;
+  display: block;
+  height: 8px;
+  background: #0f0f12;
+  box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
+}
+.asc-lv u {
+  display: block;
+  height: 100%;
+  background: var(--px-gold, #ffd66e);
+}
+.asc-it.is-maxed {
+  opacity: 0.75;
+}
+.asc-price {
+  grid-area: price;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+}
+.asc-price__ico {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+.asc-price__ico svg,
+.asc-price__ico img {
+  width: 100%;
+  height: 100%;
+}
+.asc-price.no-ico .asc-price__ico {
+  display: none;
+}
+.asc [aria-disabled='true'] {
+  cursor: default;
+}
+.asc.is-walking .shop-ring {
+  animation: none;
+}

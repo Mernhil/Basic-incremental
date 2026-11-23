@@ -1,9 +1,10 @@
-import { accountInfo, Decimal, waitingPicks } from '../../../../game';
+import { accountInfo, ascensionPreview, Decimal, waitingPicks } from '../../../../game';
 import { COPY } from '../../copy';
 import { levelBadge } from '../../pages/accountModel';
 import { createAchievementsPage } from '../../pages/achievements';
 import { shardsText } from '../../pages/achievementsModel';
 import { createSettingsPage } from '../../pages/settings';
+import { createAscensionPage } from '../../pages/ascension';
 import { createShopPage } from '../../pages/shop';
 import { createSkillsPage } from '../../pages/skills';
 import { h } from '../../shell/shell';
@@ -93,12 +94,7 @@ export const metaViews: ViewPackage = {
       title: COPY.view.titles.shop,
       pile: {
         glyph: 'shop',
-        hint: (ctx) => {
-          const res = ctx.content.resources.find((r) => r.kind === 'prestige');
-          if (!res) return null;
-          const amount = ctx.state().resources[res.id] ?? new Decimal(0);
-          return { text: T.amount(fmt(amount), res.name) };
-        },
+        hint: (ctx) => ({ text: T.amount(shardsText(ctx.state()), 'Shards') }),
       },
       mount(host, ctx, api) {
         host.classList.add('mv-fit', 'mv-shop');
@@ -110,9 +106,40 @@ export const metaViews: ViewPackage = {
           sound: ctx.sound,
         });
         const sync = (): void => {
+          set(T.shop.subtitle(shardsText(ctx.state())));
+        };
+        sync();
+        return {
+          render() {
+            page.render();
+            sync();
+          },
+        };
+      },
+    },
+    {
+      id: 'ascension',
+      title: COPY.view.titles.ascension,
+      pile: {
+        glyph: 'shop',
+        hint: (ctx) => {
+          const p = ascensionPreview(ctx.state(), ctx.content);
+          return p.canAscend ? { text: T.ascension.ready, ready: true } : null;
+        },
+      },
+      mount(host, ctx, api) {
+        host.classList.add('mv-fit', 'mv-ascension');
+        const set = subtitle(api);
+        const page = createAscensionPage(host, {
+          content: ctx.content,
+          state: ctx.state,
+          apply: ctx.apply,
+          sound: ctx.sound,
+        });
+        const sync = (): void => {
           const s = ctx.state();
           const starlight = s.resources[ctx.content.prestige.currency] ?? new Decimal(0);
-          set(T.shop.subtitle(fmt(starlight), shardsText(s)));
+          set(T.ascension.subtitle(s.prestigeCount, fmt(starlight)));
         };
         sync();
         return {

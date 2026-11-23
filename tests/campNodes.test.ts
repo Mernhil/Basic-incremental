@@ -133,7 +133,7 @@ describe('v44 -> v45', () => {
     expect(waitingSlots(state, content, 'forest')).toEqual([]);
   });
 
-  it('keeps a chosen material and counts the Starlight slots', () => {
+  it('keeps a chosen material; the slots Wider Grounds once added are gone at format 46', () => {
     const parsed = build((s) => {
       s.camp.level = 3;
       s.prestige.shop['second_hands'] = 1;
@@ -143,7 +143,7 @@ describe('v44 -> v45', () => {
       { material: 'ironbark', card: null },
     ];
     const { state } = readSave(JSON.stringify(parsed), content);
-    expect(state.camp.forest.map((s) => s.material)).toEqual(['oak', 'ironbark', 'oak']);
+    expect(state.camp.forest.map((s) => s.material)).toEqual(['oak', 'ironbark']);
     expect(waitingSlots(state, content, 'forest')).toEqual([]);
     expect(waitingSlots(state, content, 'cave')).toEqual([]);
   });

@@ -26,7 +26,7 @@ import { STAGE_STAR_NAMES, stageStars } from './stageStars';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { pullPrice } from './portals';
-import { runPoints, starlightGain } from './prestige';
+import { firstAscensionOpen, runPoints, starlightBreakdown, starlightGain } from './prestige';
 import { Decimal } from './num';
 import { type Price } from './production';
 import type { GameState } from './state';
@@ -365,13 +365,20 @@ const starUpRule: RuleFn = (state, content) =>
  */
 const ascensionRule: RuleFn = (state, content, modifiers) => {
   const { divisor, exponent, minimum, tierWeights } = content.prestige.gain;
+  if (!firstAscensionOpen(state, content)) return [];
+  const parts = starlightBreakdown(state, content, modifiers);
+  // The Starlight a floor of progress and a pile of materials add up to, before rounding down.
+  const exact = parts.materials.add(parts.progress);
   const gain = starlightGain(state, content, modifiers);
-  const progress = clamp01(gain.toNumber() / minimum);
+  const progress = clamp01(exact.toNumber() / minimum);
   let eta: number | null = 0;
-  if (gain.lt(minimum)) {
-    // Points needed so that (points / divisor) ^ exponent, through prestige.gain, reaches it.
+  if (exact.lt(minimum)) {
+    // Materials points still needed so that (points / divisor) ^ exponent, through prestige.gain,
+    // makes up what the climb does not already give.
     const factor = statValue('prestige.gain', 1, modifiers).toNumber();
-    const needed = factor > 0 ? divisor.mul(new Decimal(minimum / factor).pow(1 / exponent)) : null;
+    const stillNeeded = Math.max(0, minimum - parts.progress.toNumber());
+    const needed =
+      factor > 0 ? divisor.mul(new Decimal(stillNeeded / factor).pow(1 / exponent)) : null;
     let rate = new Decimal(0);
     for (const r of content.resources) {
       if (r.kind !== 'tree_gem' && r.kind !== 'mine_gem') continue;

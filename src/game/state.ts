@@ -232,10 +232,13 @@ export interface PrestigeState {
   shop: Record<string, number>;
   /** Starlight gained over every ascension. */
   starlightEarned: Decimal;
+  /** `dungeon:difficulty` -> the floor the run started that tier on (0 = nothing beaten). Starlight
+   *  from progress counts the floors climbed past it. Save format 46. */
+  runFloors: Record<string, number>;
 }
 
 export function initialPrestige(): PrestigeState {
-  return { runStart: {}, shop: {}, starlightEarned: new Decimal(0) };
+  return { runStart: {}, shop: {}, starlightEarned: new Decimal(0), runFloors: {} };
 }
 
 /** One portal's pull counters. */
@@ -588,6 +591,7 @@ export function cloneState(state: GameState): GameState {
       runStart: { ...state.prestige.runStart },
       shop: { ...state.prestige.shop },
       starlightEarned: state.prestige.starlightEarned,
+      runFloors: { ...state.prestige.runFloors },
     },
     cosmetics: {
       loadout: {

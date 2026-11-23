@@ -1739,7 +1739,7 @@
         "kind": "ascensions",
         "amount": 1
       },
-      "page": "shop",
+      "page": "ascension",
       "reward": [
         {
           "resource": "summon_scroll",
@@ -1759,7 +1759,7 @@
         "kind": "ascensions",
         "amount": 3
       },
-      "page": "shop",
+      "page": "ascension",
       "reward": [
         {
           "resource": "summon_scroll",

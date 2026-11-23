@@ -92,8 +92,14 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
   {
     id: 'shrine',
     name: 'Shrine',
-    action: { kind: 'view', view: 'skills' },
-    marks: ['skills'],
+    action: {
+      kind: 'menu',
+      choices: [
+        { view: 'skills', label: 'Skill web' },
+        { view: 'ascension', label: 'Ascension' },
+      ],
+    },
+    marks: ['skills', 'ascension'],
   },
   {
     id: 'forge',

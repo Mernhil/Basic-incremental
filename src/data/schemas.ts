@@ -243,8 +243,6 @@ export const campSchema = z.strictObject({
       }),
     )
     .min(1),
-  /** Slots one level of the Starlight item granting `camp_slots` adds to each place. */
-  starlightSlotsPerLevel: z.number().int().min(0),
 });
 export type CampConfig = z.output<typeof campSchema>;
 
@@ -282,6 +280,8 @@ export const STATS = [
   'drops.currencyAmount',
   /** Offline progress cap in hours. */
   'offline.capHours',
+  /** Raid tries a day on each boss (the base is `raids.json` `triesPerDay`). */
+  'raids.tries',
   /** Account XP gained. Scope: job. */
   'xp.account',
   /** Card XP gained. Scope: job. */
@@ -1016,6 +1016,7 @@ export const GOAL_PAGES = [
   'summon',
   'shop',
   'skills',
+  'ascension',
 ] as const;
 export type GoalPage = (typeof GOAL_PAGES)[number];
 /**
@@ -1669,7 +1670,40 @@ export const prestigeSchema = z.strictObject({
     tierWeights: z.array(positiveDecimal).min(1),
     divisor: positiveDecimal,
     exponent: z.number().gt(0).max(1),
+    /** Starlight an Ascension needs at least (the first one also needs `firstAscension`). */
     minimum: z.number().int().min(1),
+    /** Starlight from progress (DESIGN.md Ascension): every floor climbed this run, past the one
+     *  the run started on, pays `perFloor` x the dungeon's weight (1 + its order x `dungeonStep`)
+     *  x the difficulty's weight; a dungeon's last floor (its boss) pays `bossFloors` floors more. */
+    progress: z.strictObject({
+      perFloor: positiveDecimal,
+      dungeonStep: z.number().min(0),
+      bossFloors: z.number().min(0),
+      difficultyWeights: z.strictObject({
+        normal: positiveDecimal,
+        hard: positiveDecimal,
+        nightmare: positiveDecimal,
+        endless: positiveDecimal,
+      }),
+    }),
+  }),
+  /** The permanent multiplier on all damage and all yields: after n Ascensions it is
+   *  1 + `step` x n + `growth` x n(n - 1) / 2, so each Ascension adds more than the one before. */
+  multiplier: z.strictObject({ step: positiveDecimal, growth: positiveDecimal }),
+  /** The first Ascension opens once this dungeon is cleared on Normal. */
+  firstAscension: z.strictObject({ dungeon: id }),
+  /** What every Ascension pays for sure, listed for the preview. `cores` is that many of each
+   *  Core. `pulls` gives one guaranteed card of the tier at that Ascension (a Mythic card or an
+   *  Heirloom the player does not own yet, else an Heirloom's shards). */
+  prizes: z.strictObject({
+    summonScrolls: positiveDecimal,
+    cores: positiveDecimal,
+    pulls: z.array(
+      z.strictObject({
+        ascension: z.number().int().min(1),
+        tier: z.enum(['mythic', 'heirloom']),
+      }),
+    ),
   }),
   /** Starlight shop: permanent levels, each adding `perLevel` once more (source `prestige`). */
   shop: z.array(
@@ -1678,13 +1712,15 @@ export const prestigeSchema = z.strictObject({
       name,
       description: z.string().min(1),
       maxLevel: z.number().int().min(1),
-      /** Starlight price of level n + 1 (0-based n): base × growth^n. */
+      /** Starlight price of level n + 1 (0-based n): base x growth^n. */
       cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
       perLevel: z.array(modifierSchema).default([]),
-      /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
-       *  `camp_slots` (each level opens more farming slots in the forest and the cave), `expedition_slot` (each level one more expedition
-       *  slot, §15). */
-      grants: z.enum(['camp_slots', 'expedition_slot']).optional(),
+      /** A rule a level opens instead of a modifier: `auto_push` (Challenges start by themselves),
+       *  `keep_training` (training levels survive an Ascension), `head_start` (a run starts on
+       *  `percent` per level more of the best floor), `expedition_slot` (one more expedition slot). */
+      grants: z.enum(['auto_push', 'keep_training', 'head_start', 'expedition_slot']).optional(),
+      /** The number a `head_start` level adds, in percent of the best floor. */
+      percent: z.number().min(0).max(100).optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */

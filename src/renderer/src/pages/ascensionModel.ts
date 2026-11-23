@@ -61,8 +61,20 @@ export interface GateView {
   nth: string;
   ascension: number;
   rewards: RewardView[];
-  /** Button label: "Ascend" or "Ascend at 10 Starlight". */
+  /** Button label: "Ascend", "Ascend at 10 Starlight" or "Locked". */
   button: string;
+  /** "4 Starlight from progress: 9 floors climbed, 1 boss beaten", empty when none. */
+  progressLine: string;
+  materialsLine: string;
+  /** The permanent multiplier now and after, as "1.5" and "2.1". */
+  multiplierNow: string;
+  multiplierAfter: string;
+  /** "Your next run reaches Frostspire Vault, floor 30 about x1.4 faster". */
+  fasterLine: string;
+  /** The guaranteed prizes, one line each. */
+  prizes: { id: string; text: string }[];
+  /** "Clear Frostspire Vault on Normal to open your first Ascension.", empty once open. */
+  lockedText: string;
   resets: ResetView[];
   kept: KeptView[];
 }
@@ -258,9 +270,30 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
   return views;
 }
 
+const multText = (m: Decimal): string => String(Number(m.toNumber().toFixed(2)));
+
+function prizeViews(preview: AscensionPreview): { id: string; text: string }[] {
+  const t = COPY.ascension;
+  const p = preview.prizes;
+  const out = [
+    { id: 'summon', text: t.prizeSummon(fmt(p.summonScrolls)) },
+    { id: 'cores', text: t.prizeCores(fmt(p.cores)) },
+  ];
+  if (p.heirloomScrolls.gt(0)) {
+    out.push({ id: 'heirloom_scroll', text: t.prizeHeirloomScroll(fmt(p.heirloomScrolls)) });
+  }
+  if (p.pull) out.push({ id: `pull_${p.pull}`, text: t.prizePull[p.pull] });
+  return out;
+}
+
 /** Everything the gate shows before (and while) confirming. */
 export function gateView(preview: AscensionPreview, state: GameState, content: Content): GateView {
   const t = COPY.ascension;
+  const landmark = preview.landmark
+    ? t.landmarkName(preview.landmark.name, preview.landmark.difficulty, preview.landmark.floor)
+    : null;
+  const faster = multText(new Decimal(preview.faster));
+  const dungeon = content.dungeonById.get(content.prestige.firstAscension.dungeon);
   const gain = fmt(preview.gain);
   const progress = preview.canAscend
     ? 1
@@ -273,7 +306,22 @@ export function gateView(preview: AscensionPreview, state: GameState, content: C
     nth: t.nth(preview.ascension),
     ascension: preview.ascension,
     rewards: preview.rewards.map((id) => rewardView(content, id)),
-    button: preview.canAscend ? t.ascend : t.ascendLocked(preview.minimum),
+    button: preview.locked
+      ? t.lockedButton
+      : preview.canAscend
+        ? t.ascend
+        : t.ascendLocked(preview.minimum),
+    materialsLine: t.fromMaterials(fmt(preview.breakdown.materials.floor())),
+    progressLine: t.fromProgress(
+      fmt(preview.breakdown.progress.floor()),
+      preview.breakdown.floors,
+      preview.breakdown.bosses,
+    ),
+    multiplierNow: multText(preview.multiplierNow),
+    multiplierAfter: multText(preview.multiplierAfter),
+    fasterLine: landmark ? t.fasterLine(faster, landmark) : t.fasterPlain(faster),
+    prizes: prizeViews(preview),
+    lockedText: preview.locked ? t.lockedFirst(dungeon?.name ?? '') : '',
     resets: preview.resets.map((id) => {
       const [label, detail] = t.resetParts[id];
       return { id, label, detail };
@@ -308,11 +356,15 @@ function effectText(mods: readonly Modifier[], fallback: Modifier | undefined): 
 }
 
 /** The effect line of an item that opens a rule instead of a bonus, or null for a modifier item. */
-function grantText(o: StarlightOffer, state: GameState, content: Content): string | null {
+function grantText(o: StarlightOffer): string | null {
   const t = COPY.ascension;
   switch (o.item.grants) {
-    case 'camp_slots':
-      return t.slots(o.level * content.camp.starlightSlotsPerLevel);
+    case 'auto_push':
+    case 'keep_training':
+    case 'expedition_slot':
+      return o.level > 0 ? t.unlocked : t.notUnlocked;
+    case 'head_start':
+      return t.headStart(50 + (o.item.percent ?? 0) * o.level);
     default:
       return null;
   }
@@ -331,8 +383,7 @@ export function starlightViews(
     const template = o.next[0] ?? o.current[0];
     const now = effectText(o.current, template);
     const preview =
-      grantText(o, state, content) ??
-      (maxed ? t.maxedEffect(now) : t.effect(now, effectText(o.next, template)));
+      grantText(o) ?? (maxed ? t.maxedEffect(now) : t.effect(now, effectText(o.next, template)));
     const price = o.price ?? { resource: currency, amount: new Decimal(0) };
     // a maxed line shows no fill bar
     const progress = maxed

@@ -15,7 +15,7 @@ import {
   type GameState,
 } from '../src/game';
 import { loadContent } from '../src/data';
-import { content } from './helpers';
+import { content, openAscension } from './helpers';
 
 /** The shipped numbers: the play-through tests below need the real floors. */
 const real = loadContent();
@@ -304,7 +304,13 @@ describe('v26 -> v27 (the table update)', () => {
     // format 43: the starter weapon's pick is offered once to a save that began before it
     camped['starter'] = { done: false, skippable: true };
     // format 44: an empty raid record (DESIGN.md §2 Raid bosses)
-    const raided = { ...camped, raids: { day: null, used: {}, best: {}, paid: {}, level: {} } };
+    const raided: Record<string, unknown> = {
+      ...camped,
+      raids: { day: null, used: {}, best: {}, paid: {}, level: {} },
+    };
+    // format 46: Auto-push is given, and the run's start floors are empty
+    const prestige = raided['prestige'] as { shop: Record<string, number> };
+    raided['prestige'] = { ...prestige, shop: { ...prestige.shop, auto_push: 1 }, runFloors: {} };
     expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
@@ -422,10 +428,11 @@ describe('format 27 state through an Ascension', () => {
     ];
     before.ascensionChallenges.completions = { some_challenge: 1 };
     before.summon.focusKind = 'bow';
+    openAscension(before);
     const r = ascend(before, content);
     if (!r.ok) throw new Error(r.reason);
     const s = r.state;
-    expect(s.resources['summon_scroll']!.toNumber()).toBe(4);
+    expect(s.resources['summon_scroll']!.toNumber()).toBe(4 + 5); // + the Ascension prize
     expect(s.resources['glamour_scroll']!.toNumber()).toBe(2);
     expect(s.presets).toEqual(before.presets);
     expect(s.discoveredBonds).toEqual(before.discoveredBonds);

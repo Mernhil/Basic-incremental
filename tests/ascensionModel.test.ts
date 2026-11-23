@@ -6,7 +6,7 @@ import {
   rewardView,
   starlightViews,
 } from '../src/renderer/src/pages/ascensionModel';
-import { content, freshState } from './helpers';
+import { content, freshState, openAscension } from './helpers';
 
 const gem = content.resources.find((r) => r.kind === 'tree_gem' && r.tier === 1)!;
 
@@ -14,7 +14,7 @@ const gem = content.resources.find((r) => r.kind === 'tree_gem' && r.tier === 1)
 function readyState(): GameState {
   const s = freshState();
   s.mastery.harvested[gem.id] = new Decimal(1e14);
-  return s;
+  return openAscension(s);
 }
 
 describe('ascension gate', () => {
@@ -25,7 +25,16 @@ describe('ascension gate', () => {
     expect(v.gain).toBe('0');
     expect(v.progress).toBe(0);
     expect(v.needs).toBe(`0 of ${content.prestige.gain.minimum} needed to ascend`);
-    expect(v.button).toBe(`Ascend at ${content.prestige.gain.minimum} Starlight`);
+    // a new game has not cleared Frostspire Vault: the first Ascension is locked
+    expect(v.button).toBe('Locked');
+    expect(v.lockedText).toMatch(/^Clear Frostspire Vault on Normal/);
+    const open = openAscension(freshState());
+    expect(gateView(ascensionPreview(open, content), open, content).button).toBe(
+      `Ascend at ${content.prestige.gain.minimum} Starlight`,
+    );
+    expect(v.multiplierNow).toBe('1');
+    expect(Number(v.multiplierAfter)).toBeGreaterThan(1);
+    expect(v.prizes.map((p) => p.id)).toEqual(['summon', 'cores']);
     expect(v.nth).toBe('Ascension 1');
   });
 
@@ -76,12 +85,12 @@ describe('Starlight shop', () => {
     const s = freshState();
     s.resources[content.prestige.currency] = new Decimal(100);
     const views = starlightViews(starlightShop(s, content), s, content);
-    const groves = views.find((v) => v.id === 'starlit_groves')!;
-    expect(groves.levelText).toBe('Lv 0 / 25');
+    const groves = views.find((v) => v.id === 'second_hands')!;
+    expect(groves.levelText).toBe('Lv 0 / 8');
     expect(groves.maxed).toBe(false);
     expect(groves.buy.label).toBe('Buy level');
-    expect(groves.buy.price).toBe('2 Starlight');
-    expect(groves.buy.preview).toBe('+0% → +10%');
+    expect(groves.buy.price).toBe('12 Starlight');
+    expect(groves.buy.preview).toBe('+0% → +20%');
     expect(groves.buy.offer.affordable).toBe(true);
     expect(groves.buy.offer.progress).toBe(1);
     const night = views.find((v) => v.id === 'long_night')!;
@@ -91,16 +100,16 @@ describe('Starlight shop', () => {
   it('fills toward the price when short, and shows max level', () => {
     const s = freshState();
     s.resources[content.prestige.currency] = new Decimal(1);
-    s.prestige.shop['wide_skies'] = 5;
+    s.prestige.shop['long_night'] = 4;
     const views = starlightViews(starlightShop(s, content), s, content);
-    const groves = views.find((v) => v.id === 'starlit_groves')!;
+    const groves = views.find((v) => v.id === 'second_hands')!;
     expect(groves.buy.offer.affordable).toBe(false);
-    expect(groves.buy.offer.progress).toBeCloseTo(0.5);
-    const skies = views.find((v) => v.id === 'wide_skies')!;
+    expect(groves.buy.offer.progress).toBeCloseTo(1 / 12);
+    const skies = views.find((v) => v.id === 'long_night')!;
     expect(skies.maxed).toBe(true);
     expect(skies.buy.available).toBe(false);
     expect(skies.buy.label).toBe('Max level');
     expect(skies.buy.price).toBe('');
-    expect(skies.buy.preview).toBe('-5%, max level');
+    expect(skies.buy.preview).toBe('+4, max level');
   });
 });

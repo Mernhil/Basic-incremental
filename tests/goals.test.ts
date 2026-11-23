@@ -19,6 +19,7 @@ import {
   plainContent as plain,
   withDps,
   withFarmers,
+  openAscension,
 } from './helpers';
 
 /** The test content deals exactly 100 damage per second to anyone, cards or bare hands. */
@@ -213,12 +214,12 @@ describe('ascension goal', () => {
   const pointsFor = (gain: number) => g.divisor.toNumber() * Math.pow(gain, 1 / g.exponent);
 
   it('shows once the Starlight gain reaches 25% of the minimum, with an ETA', () => {
-    const state = withFarmers(bareState());
+    const state = openAscension(withFarmers(bareState()));
     state.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum * 0.55));
     const goal = find(allGoals(state, realContent), 'ascension:ascension');
     expect(goal).toBeDefined();
-    expect(goal!.page).toBe('shop');
-    expect(goal!.progress).toBeCloseTo(Math.floor(g.minimum * 0.55) / g.minimum, 9);
+    expect(goal!.page).toBe('ascension');
+    expect(goal!.progress).toBeCloseTo(0.55, 9);
     // ETA = missing points / weighted rate (Oak and Copper, both tier 1: weight 1).
     const missing = pointsFor(g.minimum) - pointsFor(g.minimum * 0.55);
     const rate =
@@ -228,10 +229,10 @@ describe('ascension goal', () => {
   });
 
   it('is not offered below 25% of the minimum, and is done at it', () => {
-    const low = bareState();
+    const low = openAscension(bareState());
     low.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum * 0.2));
     expect(find(allGoals(low, realContent), 'ascension:ascension')).toBeUndefined();
-    const ready = bareState();
+    const ready = openAscension(bareState());
     ready.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum) * 1.01);
     const goal = find(allGoals(ready, realContent), 'ascension:ascension')!;
     expect(goal.progress).toBe(1);

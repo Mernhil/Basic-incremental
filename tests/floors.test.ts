@@ -48,6 +48,7 @@ import {
   withAutoChallenge,
   withDps,
   withOverflow,
+  openAscension,
 } from './helpers';
 
 /**
@@ -229,8 +230,8 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     expect(status.enemy.kind).toBe('enemy');
     expect(status.wave.index).toBe(1);
     expect(status.challenge).toBeNull();
-    // A new game's dungeon has the switch on (floors.ts `initialProgress`).
-    expect(initialProgress().autoChallenge).toBe(true);
+    // A new game's dungeon has the switch off: Auto-push is bought with Starlight.
+    expect(initialProgress().autoChallenge).toBe(false);
   });
 
   it('farms the farmed floor on a loop and never climbs while auto-challenge is off', () => {
@@ -384,6 +385,11 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     });
     const same = setAutoChallenge(state, plain, 'mossy_cellar', false);
     expect(same.ok && same.state).toBe(state);
+    expect(setAutoChallenge(state, plain, 'mossy_cellar', true)).toEqual({
+      ok: false,
+      reason: 'locked',
+    });
+    state.prestige.shop['auto_push'] = 1;
     const on = setAutoChallenge(state, plain, 'mossy_cellar', true);
     expect(on.ok && floorPosition(on.state, cellar).autoChallenge).toBe(true);
   });
@@ -659,6 +665,8 @@ describe('offline, Ascension and goals', () => {
     state.combat.enemyIndex = 2;
     state.clearedDungeons = ['mossy_cellar'];
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
+    openAscension(state);
+    state.prestige.shop['auto_push'] = 1; // the switch comes back on only with Auto-push
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.combat.floors['mossy_cellar']).toMatchObject({
@@ -777,7 +785,7 @@ describe('save formats 24 and 25: floors', () => {
     for (const dungeon of [cellar, crypt, floorsContent.dungeonById.get('frostspire_vault')!]) {
       expect(floorPosition(state, dungeon)).toMatchObject({
         difficulty: 'normal',
-        autoChallenge: true,
+        autoChallenge: false,
         floor: 1,
         best: 0,
       });
@@ -794,6 +802,8 @@ describe('save formats 24 and 25: floors', () => {
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(bossStatus(state, floorsContent)!.floor).toBe(1);
     // ... and it plays on: down the floors to the boss, which opens Hard.
+    state.prestige.shop['auto_push'] = 1;
+    withAutoChallenge(state, true);
     const later = advance(state, floorsContent, 600_000, createSeededRng(2));
     expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 10, best: 10 });
     expect(later.state.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(70);

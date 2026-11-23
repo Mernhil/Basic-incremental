@@ -12,7 +12,7 @@ import {
   weakenFactor,
   type TeamCard,
 } from './duel';
-import { computeStat, type Modifier } from './modifiers';
+import { collectModifiers, computeStat, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { cloneState, type GameState } from './state';
 
@@ -44,7 +44,12 @@ export function raidTriesLeft(
   today: string,
 ): number {
   const used = state.raids.day === today ? (state.raids.used[bossId] ?? 0) : 0;
-  return Math.max(0, content.raids.triesPerDay - used);
+  const perDay = statValue(
+    'raids.tries',
+    content.raids.triesPerDay,
+    collectModifiers(state, content),
+  ).toNumber();
+  return Math.max(0, Math.floor(perDay) - used);
 }
 
 // ---- what the team answers the tricks with -------------------------------------------------------

@@ -116,6 +116,11 @@ export const MIGRATIONS: MigrationTable = {
   /** v44 -> v45: material nodes (DESIGN.md §2 Base camp): every open slot is on the material it
    *  farmed, so none waits to be placed. */
   44: v44ToV45,
+  /** v45 -> v46: Ascension reworked (DESIGN.md Ascension): the stat items leave the Starlight shop
+   *  and their Starlight comes back, Wider Grounds raises yield instead of slots (the extra slots
+   *  are gone, the levels stay), Auto-push is given to every save, and a run's start floors are
+   *  recorded. */
+  45: v45ToV46,
 };
 
 /**
@@ -361,6 +366,56 @@ const V44_CAMP_SLOTS: readonly (readonly [number, number, number])[] = [
 ];
 /** The Starlight item that adds a slot to each place (`prestige.json` `second_hands`, 1 a level). */
 const V44_SLOT_ITEM = 'second_hands';
+
+/** The Starlight shop items v46 removed: [id, base price, growth], to pay their levels back. */
+const V46_REMOVED_ITEMS: readonly (readonly [string, number, number])[] = [
+  ['starlit_groves', 2, 1.5],
+  ['starlit_veins', 2, 1.5],
+  ['starforged_edge', 3, 1.6],
+  ['celestial_ward', 3, 1.7],
+  ['constellation_crystals', 5, 1.8],
+  ['wide_skies', 8, 2],
+];
+
+/**
+ * v45 -> v46: the Starlight spent on the removed stat items is paid back (the sum of their level
+ * prices) and the items go; Wider Grounds keeps its levels (now +20% yield each) and the camp
+ * keeps only the slots its level opens; Auto-push is owned by every existing save; the run's start
+ * floors are empty (the whole run so far counts as the climb).
+ */
+function v45ToV46(state: Record<string, unknown>): Record<string, unknown> {
+  const prestige = isRecord(state['prestige']) ? { ...state['prestige'] } : {};
+  const shop: Record<string, unknown> = isRecord(prestige['shop']) ? { ...prestige['shop'] } : {};
+  let refund = 0;
+  for (const [id, base, growth] of V46_REMOVED_ITEMS) {
+    const level = typeof shop[id] === 'number' ? Math.max(0, Math.floor(shop[id])) : 0;
+    for (let i = 0; i < level; i += 1) refund += Math.ceil(base * growth ** i);
+    delete shop[id];
+  }
+  shop['auto_push'] = 1;
+  prestige['shop'] = shop;
+  prestige['runFloors'] = {};
+  const resources: Record<string, unknown> = isRecord(state['resources'])
+    ? { ...state['resources'] }
+    : {};
+  if (refund > 0) {
+    const held = typeof resources['starlight'] === 'string' ? Number(resources['starlight']) : 0;
+    resources['starlight'] = String((Number.isFinite(held) ? held : 0) + refund);
+  }
+  const camp = isRecord(state['camp']) ? { ...state['camp'] } : null;
+  if (camp) {
+    const level = typeof camp['level'] === 'number' ? Math.max(1, Math.floor(camp['level'])) : 1;
+    for (const [place, column] of [
+      ['forest', 1],
+      ['cave', 2],
+    ] as const) {
+      let open = 0;
+      for (const row of V44_CAMP_SLOTS) if (row[0] <= level) open = row[column];
+      if (Array.isArray(camp[place])) camp[place] = (camp[place] as unknown[]).slice(0, open);
+    }
+  }
+  return { ...state, prestige, resources, ...(camp ? { camp } : {}) };
+}
 
 /**
  * v44 -> v45 (DESIGN.md §2 Base camp): a slot belongs to a material node, placed when it opens. A

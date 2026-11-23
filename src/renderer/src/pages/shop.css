@@ -647,3 +647,9 @@ html .shop-body .shop-ascend.px-display:not(#_px) {
   min-height: 0;
   overflow-y: auto;
 }
+
+/* the Market sells for shards only now: one counter, centred */
+.shop-table:has(> .shop-stall:only-child) {
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}

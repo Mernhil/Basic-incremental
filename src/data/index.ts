@@ -1066,9 +1066,10 @@ function checkPrestige(
     if (item.perLevel.length === 0 && !item.grants) {
       issues.push(`prestige.json › shop › [${i}]: needs perLevel modifiers or a grants rule`);
     }
+    if (item.grants === 'head_start' && item.percent === undefined) {
+      issues.push(`prestige.json › shop › [${i}]: head_start needs a percent`);
+    }
   });
-  const slotItems = c.prestige.shop.filter((x) => x.grants === 'camp_slots');
-  if (slotItems.length > 1) issues.push('prestige.json › shop: only one camp-slot item');
   const cosmetics = new Set(c.cosmetics.map((x) => x.id));
   c.prestige.rewards.forEach((reward, i) =>
     reward.cosmetics.forEach((id, j) => {

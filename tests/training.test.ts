@@ -16,7 +16,7 @@ import {
   trainingMultiplier,
   type GameState,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, freshState, openAscension } from './helpers';
 
 /**
  * Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer, bought with
@@ -144,6 +144,7 @@ describe('training lines', () => {
   it('is reset by an Ascension', () => {
     const state = buy(rich(), 'sharpen', 30);
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.combat.training).toEqual({});

@@ -108,9 +108,9 @@ export function parseStageKey(key: string): StageRef | null {
   return { dungeonId, difficulty: difficulty as Difficulty, floor };
 }
 
-/** A dungeon's progress as a new game has it: Normal, auto-challenge on, floor 1, nothing beaten. */
+/** A dungeon's progress as a new game has it: Normal, auto-challenge off (Auto-push is bought), floor 1, nothing beaten. */
 export function initialProgress(): DungeonProgress {
-  return { difficulty: 'normal', autoChallenge: true, tiers: {} };
+  return { difficulty: 'normal', autoChallenge: false, tiers: {} };
 }
 
 /** How many floors a dungeon has on a difficulty; the endless depths have no last floor. */
@@ -217,9 +217,9 @@ export function hasDeeperFloor(position: Pick<FloorPosition, 'floor' | 'floors'>
   return position.floor < position.floors;
 }
 
-/** The floor an Ascension starts a dungeon tier on: half of the best floor, at least floor 1. */
-export function ascensionStartFloor(best: number): number {
-  return Math.max(1, Math.floor(best / 2));
+/** The floor an Ascension starts a dungeon tier on: `percent` (50 and Head Start's levels) of the best floor, at least floor 1. */
+export function ascensionStartFloor(best: number, percent = 50): number {
+  return Math.max(1, Math.floor((best * percent) / 100));
 }
 
 /**
