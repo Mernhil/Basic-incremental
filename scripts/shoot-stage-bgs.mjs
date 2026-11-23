@@ -107,6 +107,16 @@ for (const dg of dungeons) {
         m.muted = true;
       }),
     );
+    await page
+      .waitForFunction(
+        () => {
+          const f = document.querySelector('.du-foe');
+          return Boolean(f) && f.getAnimations().length === 0 && !f.closest('[hidden]');
+        },
+        null,
+        { timeout: 8000, polling: 50 },
+      )
+      .catch(() => undefined);
     const ko = await page.evaluate(() => Boolean(document.querySelector('.du-ko:not([hidden])')));
     console.log(dg, w, h, 'whole team out:', ko);
     await shot(`${out}/${dg}-${w}x${h}.png`);

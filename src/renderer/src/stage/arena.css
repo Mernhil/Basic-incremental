@@ -468,7 +468,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
+  padding-bottom: 14px;
   box-sizing: border-box;
 }
 /* the picture keeps its own size and centre: a card narrower than the picture never squeezes it */

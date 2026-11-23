@@ -365,7 +365,9 @@ export function createArena(ctx: ArenaContext): Arena {
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
     fitScene();
     // the enemy card stands a quarter taller than a hand card (same 132 x 186 shape) (user, 2026-11-23: it looked far too small)
-    el.style.setProperty('--du-foe-want', `${Math.round((n / screenDpr()) * HAND.cardH * 1.25)}px`);
+    const stageS = Number(el.style.getPropertyValue('--ar-s')) || 2;
+    const foeWant = Math.min((n / screenDpr()) * HAND.cardH * 1.25, 116 * stageS);
+    el.style.setProperty('--du-foe-want', `${Math.round(foeWant)}px`);
     el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
   fitHand();
@@ -407,11 +409,11 @@ export function createArena(ctx: ArenaContext): Arena {
     const box = foeBody.getBoundingClientRect();
     if (box.width < 1 || box.height < 1) return;
     const dpr = screenDpr();
-    // the picture's own pixels fill about 78% of its width and 80% of its height; the empty margin may
+    // the picture's own pixels fill about 72% of its width and 77% of its height; the empty margin may
     // overflow the box, so an enemy can stand a whole scale larger (user, 2026-11-23: sprites too small)
     const device = Math.max(
       1,
-      Math.floor(Math.min(box.width / (FOE_W * 0.78), box.height / (FOE_H * 0.8)) * dpr),
+      Math.floor(Math.min(box.width / (FOE_W * 0.72), box.height / (FOE_H * 0.77)) * dpr),
     );
     const key = `${foeSprite}:${device}:${dpr}`;
     if (foeBody.dataset['foe'] === key) return;
