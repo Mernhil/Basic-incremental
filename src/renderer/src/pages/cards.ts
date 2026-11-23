@@ -145,7 +145,7 @@ export function createCardsPage(
       e.preventDefault();
       const next = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length]!;
       switchTab(next);
-      tabs[next].focus();
+      tabs[next].focus({ preventScroll: true });
     });
     tabBar.append(b);
   });
@@ -254,7 +254,7 @@ export function createCardsPage(
       const target =
         panel.querySelector<HTMLElement>(`[data-key="${focusKey}"]`) ??
         (focusKey.startsWith('wp-') ? panel.querySelector<HTMLElement>('.wp-stars') : null);
-      target?.focus();
+      target?.focus({ preventScroll: true });
     }
   }
 
@@ -1135,7 +1135,9 @@ export function createCardsPage(
             selected = e.id;
             pick = null;
             switchTab('collection');
-            panel.querySelector<HTMLElement>(`[data-key="tile-${e.id}"]`)?.focus();
+            panel
+              .querySelector<HTMLElement>(`[data-key="tile-${e.id}"]`)
+              ?.focus({ preventScroll: true });
           });
           const rm = h('button', 'button button--ghost cp-slot__remove', COPY.cards.remove);
           rm.type = 'button';

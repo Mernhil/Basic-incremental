@@ -223,7 +223,7 @@ export function createShell(opts: {
   const setGoalsOpen = (open: boolean, focusBack = false): void => {
     goals.hidden = !open;
     goalsBtn.setAttribute('aria-expanded', String(open));
-    if (!open && focusBack) goalsBtn.focus();
+    if (!open && focusBack) goalsBtn.focus({ preventScroll: true });
   };
   goalsBtn.addEventListener('click', () => setGoalsOpen(goals.hidden === true));
   goals.addEventListener('keydown', (e) => {

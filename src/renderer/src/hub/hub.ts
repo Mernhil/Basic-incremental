@@ -200,7 +200,7 @@ export function createHub(
       menu.hidden = false;
       menu.style.left = `${Math.max(8, Math.min(r.left - host.left, host.width - 280))}px`;
       menu.style.top = `${Math.max(8, r.top - host.top + Math.min(r.height, 40))}px`;
-      (menu.querySelector('button') as HTMLElement | null)?.focus();
+      (menu.querySelector('button') as HTMLElement | null)?.focus({ preventScroll: true });
     }
   }
 

@@ -230,7 +230,7 @@ export function showReveal(opts: RevealOptions): void {
       again.hidden = false;
       again.disabled = !opts.again.can();
     }
-    done.focus();
+    done.focus({ preventScroll: true });
   };
 
   const fly = (i: number, delay: number): void => {
@@ -380,7 +380,7 @@ export function showReveal(opts: RevealOptions): void {
       e.preventDefault();
       const order = [skip, again, done].filter((b) => !b.hidden && !b.disabled);
       const at = order.indexOf(document.activeElement as HTMLButtonElement);
-      order[(at + 1) % Math.max(1, order.length)]?.focus();
+      order[(at + 1) % Math.max(1, order.length)]?.focus({ preventScroll: true });
     }
   }
   document.addEventListener('keydown', onKey, true);
@@ -394,5 +394,5 @@ export function showReveal(opts: RevealOptions): void {
     close();
     opts.again.run();
   });
-  queueMicrotask(() => (over ? done : skip).focus());
+  queueMicrotask(() => (over ? done : skip).focus({ preventScroll: true }));
 }

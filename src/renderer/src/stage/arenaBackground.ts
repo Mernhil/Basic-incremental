@@ -53,14 +53,9 @@ export function backgroundFor(
   return Object.prototype.hasOwnProperty.call(table, id) ? table[id]! : DEFAULT_BACKGROUND;
 }
 
-/** A duel a few pixels short of a whole scale (a frame, a scrollbar) still counts as covered. */
-export const STAGE_FILL_SLACK = 8;
-
-/** The whole scale that covers the duel: the smallest one, give or take the slack; at least 1. */
+/** The scale that covers the duel exactly: 3 at the 1920 x 1080 design size, a little more in a taller window (the UI is zoomed to the window, so these are design px); at least 1. */
 export function stageScale(width: number, height: number): number {
-  const byWidth = Math.ceil((width - STAGE_FILL_SLACK) / STAGE_W);
-  const byHeight = Math.ceil((height - STAGE_FILL_SLACK) / STAGE_H);
-  return Math.max(1, byWidth, byHeight);
+  return Math.max(1, width / STAGE_W, height / STAGE_H);
 }
 
 /** The picture's box in the duel: centred, so the overflow is cut evenly (negative offsets). */

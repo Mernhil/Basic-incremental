@@ -196,7 +196,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
-        shardUis.get(id)?.price.focus();
+        shardUis.get(id)?.price.focus({ preventScroll: true });
       },
     });
   }

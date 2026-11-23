@@ -104,7 +104,7 @@ export const dungeonViews: ViewPackage = {
           if (!next) {
             sheet.hidden = true;
             stopMotion(sheet);
-            if (was) buttons.get(was)?.focus();
+            if (was) buttons.get(was)?.focus({ preventScroll: true });
             return;
           }
           panels ??= createDungeonPanels({
@@ -138,7 +138,7 @@ export const dungeonViews: ViewPackage = {
               { duration: t.dur, easing: t.ease },
             );
           }
-          back.focus();
+          back.focus({ preventScroll: true });
         }
         back.addEventListener('click', () => show(null));
         // Esc closes the panel first (the hub button comes after)

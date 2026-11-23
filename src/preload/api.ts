@@ -30,6 +30,10 @@ export interface AppApi {
   /** Dev builds only: reloads the window (a plain `location.reload()` is blocked by the app's
    *  navigation guard). No-op in a public release. */
   devReloadView(): void;
+  /** Desktop shell only: the page zoom now (1 = none). Absent in the browser build. */
+  getUiZoom?(): number;
+  /** Desktop shell only: sets the page zoom, so the whole UI scales to the window. */
+  setUiZoom?(factor: number): void;
   /** The last `lines` lines of main's logs (main.log + updater.log by time), oldest first. */
   readLogTail(lines: number): Promise<string[]>;
   /** OS, OS release, CPU architecture and the Electron / Chrome versions (for issue reports). */

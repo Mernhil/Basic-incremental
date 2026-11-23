@@ -5,16 +5,19 @@
    tokens, so a table cosmetic re-skins the whole shell. The frame and button recipe is shared
    (theme/frames.css). */
 
+/* the app frame can never scroll (a focused button near the edge must not push the header up) */
 html,
-body {
+body,
+#app {
   height: 100%;
+  overflow: clip;
 }
 
 .shell {
   --header-h: 64px;
   position: relative;
   height: 100vh;
-  overflow: hidden;
+  overflow: clip;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: var(--header-h) minmax(0, 1fr);

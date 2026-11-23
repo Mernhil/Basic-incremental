@@ -8,17 +8,12 @@
 export const SCENE_W = 640;
 export const SCENE_H = 360;
 
-/** A window a few pixels short of a whole scale (a frame, a scrollbar) still counts as covered (as the hub). */
-export const SCENE_FILL_SLACK = 8;
-
 /**
- * The whole scale at which the picture covers the space under the header: the smallest that does
- * (give or take `SCENE_FILL_SLACK`), at least 1. The overflow is cut evenly off the edges.
+ * The scale at which the picture covers the space under the header exactly (3 at the 1920 x 1080
+ * design size), at least 1. The overflow is cut evenly off the edges.
  */
 export function sceneUnit(width: number, height: number): number {
-  const byWidth = Math.ceil((width - SCENE_FILL_SLACK) / SCENE_W);
-  const byHeight = Math.ceil((height - SCENE_FILL_SLACK) / SCENE_H);
-  return Math.max(1, byWidth, byHeight);
+  return Math.max(1, width / SCENE_W, height / SCENE_H);
 }
 
 /**

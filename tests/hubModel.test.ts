@@ -7,7 +7,6 @@ import {
   HUB_BUILDINGS,
   HUB_MAP_H,
   HUB_MAP_W,
-  HUB_FILL_SLACK,
   hubOffset,
   hubScale,
   scaled,
@@ -20,16 +19,13 @@ describe('hub map', () => {
     const png = readFileSync(resolve(__dirname, '../src/renderer/src/hub/hub-wide-640x360.png'));
     expect(png.readUInt32BE(16)).toBe(HUB_MAP_W);
     expect(png.readUInt32BE(20)).toBe(HUB_MAP_H);
-    // the area under the header: 1280 x 656 and 1920 x 1016 in a 1280 x 720 and a 1920 x 1080 window
-    expect(hubScale(1280, 656)).toBe(2);
+    // the area under the header at the 1920 x 1080 design size is 1920 x 1016 (the zoom scales it to any window)
     expect(hubScale(1920, 1016)).toBe(3);
-    expect(hubScale(1274, 723)).toBe(2); // the window of the 0.8.0 report: a few pixels short is fine
-    expect(hubScale(1000, 600)).toBe(2);
     expect(hubScale(300, 200)).toBe(1);
-    expect(hubScale(2560, 1300)).toBe(4);
+    expect(hubScale(2400, 1016)).toBeCloseTo(3.75, 6); // a wider window than 16:9 grows the map to cover it
   });
 
-  it('fills the area: the smallest whole scale that covers it, give or take a few pixels', () => {
+  it('fills the area: the smallest scale that covers it exactly', () => {
     for (const [w, h] of [
       [800, 500],
       [1274, 723],
@@ -40,14 +36,11 @@ describe('hub map', () => {
       [2560, 1300],
     ] as const) {
       const s = hubScale(w, h);
-      expect(Number.isInteger(s)).toBe(true);
-      expect(HUB_MAP_W * s).toBeGreaterThanOrEqual(w - HUB_FILL_SLACK);
-      expect(HUB_MAP_H * s).toBeGreaterThanOrEqual(h - HUB_FILL_SLACK);
+      expect(HUB_MAP_W * s).toBeGreaterThanOrEqual(w - 1e-6);
+      expect(HUB_MAP_H * s).toBeGreaterThanOrEqual(h - 1e-6);
       if (s > 1) {
-        // one scale smaller would leave a visible gap
-        expect(
-          HUB_MAP_W * (s - 1) < w - HUB_FILL_SLACK || HUB_MAP_H * (s - 1) < h - HUB_FILL_SLACK,
-        ).toBe(true);
+        // a hair smaller would leave a gap
+        expect(HUB_MAP_W * s - w < 1e-6 || HUB_MAP_H * s - h < 1e-6).toBe(true);
       }
     }
   });

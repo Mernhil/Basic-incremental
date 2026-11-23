@@ -87,7 +87,7 @@ function motionToggle(): { control: HTMLElement; hint: HTMLElement; sync(): void
   toggle.addEventListener('click', () => setPrefs({ motion: effective() ? 'full' : 'reduced' }));
   follow.addEventListener('click', () => {
     setPrefs({ motion: 'system' });
-    toggle.focus();
+    toggle.focus({ preventScroll: true });
   });
   control.append(follow, toggle);
   const sync = (): void => {
@@ -271,7 +271,7 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
     confirm.hidden = false;
     keepBtn.addEventListener('click', () => {
       closeConfirm();
-      importBtn.focus();
+      importBtn.focus({ preventScroll: true });
     });
     replaceBtn.addEventListener('click', () => {
       if (!pending) return;
@@ -280,7 +280,7 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
       text.value = '';
       say(COPY.save.imported);
     });
-    keepBtn.focus();
+    keepBtn.focus({ preventScroll: true });
   };
   importBtn.addEventListener('click', () => check(text.value));
   loadBtn.addEventListener('click', () => picker.click());

@@ -112,10 +112,10 @@ export function showWelcomeBack(
       doCollect();
     } else if (e.key === 'Tab') {
       e.preventDefault(); // one control: keep focus on Collect
-      collect.focus();
+      collect.focus({ preventScroll: true });
     }
   };
   document.addEventListener('keydown', onKey, true);
   collect.addEventListener('click', doCollect);
-  queueMicrotask(() => collect.focus());
+  queueMicrotask(() => collect.focus({ preventScroll: true }));
 }
