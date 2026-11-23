@@ -205,7 +205,7 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "element": "fire",
+      "element": "water",
       "hp": "4510000",
       "hpBars": 12,
       "attack": {
