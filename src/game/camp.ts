@@ -10,7 +10,6 @@ import {
   isProducerUnlocked,
   pay,
   producersOf,
-  unlockedProducers,
   type Price,
   type Producer,
 } from './production';
@@ -19,7 +18,9 @@ import { cloneState, isOnTrip, type CampSlot, type GameState, type OwnedCard } f
 /**
  * The base camp (DESIGN.md section 2 Base camp): one camp level, paid in woods and ores, opens
  * farming slots in the forest (woods, axe cards) and the cave (ores, pickaxe cards) and lifts what
- * every slot brings. A slot farms one chosen material with one card on it; the stock fills by
+ * every slot brings. A slot belongs to one material (a tree or a vein): when a level opens it the
+ * player places it on the node they choose, and a card on it farms that node's material. Until it
+ * is placed, an open slot waits and farms nothing. The stock fills by
  * itself through the tick, offline too. A card is in one slot at a time, never also in the
  * fighting loadout (a farming card is a logging or mining card, and the loadout holds fighting
  * cards), and never also at the forge or away on an expedition.
@@ -42,6 +43,10 @@ export type CampFailure =
   | 'slot-locked'
   /** The material is not open yet (its dungeon is not cleared). */
   | 'material-locked'
+  /** The slot has no material yet: it waits to be placed on a node. */
+  | 'slot-unplaced'
+  /** No open slot is waiting to be placed. */
+  | 'nothing-to-place'
   | 'not-owned'
   /** A mining card in the forest or a logging card in the cave, or a fighting card. */
   | 'wrong-job'
@@ -83,7 +88,7 @@ export function slotAt(state: GameState, place: CampPlace, index: number): CampS
   return state.camp[place][index] ?? { material: null, card: null };
 }
 
-/** The material a slot farms: its chosen one when open, else the first open one of the place. */
+/** The material a slot farms: its node's when placed and open, else none (a waiting slot farms nothing). */
 export function slotMaterial(
   state: GameState,
   content: Content,
@@ -95,7 +100,17 @@ export function slotMaterial(
   if (chosen && isProducerUnlocked(state, content, job, chosen)) {
     return producersOf(content, job).find((p) => p.id === chosen) ?? null;
   }
-  return unlockedProducers(state, content, job)[0] ?? null;
+  return null;
+}
+
+/** The open slots of a place that no node holds yet, in slot order (they wait for a "place here"). */
+export function waitingSlots(state: GameState, content: Content, place: CampPlace): number[] {
+  const out: number[] = [];
+  const open = openSlots(state, content, place);
+  for (let index = 0; index < open; index += 1) {
+    if (slotAt(state, place, index).material === null) out.push(index);
+  }
+  return out;
 }
 
 /** A card working a slot that counts: owned, of the place's job, not away, once, in an open slot. */
@@ -188,6 +203,7 @@ export function assignSlotCard(
 ): CampResult {
   if (!Number.isInteger(index) || index < 0) return fail('unknown');
   if (index >= openSlots(state, content, place)) return fail('slot-locked');
+  if (slotAt(state, place, index).material === null) return fail('slot-unplaced');
   const next = cloneState(state);
   if (cardId === null) {
     setSlot(next, place, index, { card: null });
@@ -205,7 +221,30 @@ export function assignSlotCard(
   return { ok: true, state: next };
 }
 
-/** Chooses what a slot farms. The material must be of the place and open. */
+/**
+ * Places the next waiting slot of a place on a node (a tree or a vein of the place, already open).
+ * Slots are placed in the order they opened; a placed slot stays on its node.
+ */
+export function placeSlot(
+  state: GameState,
+  content: Content,
+  place: CampPlace,
+  materialId: string,
+): CampResult {
+  const job = placeJob(place);
+  if (!producersOf(content, job).some((p) => p.id === materialId)) return fail('unknown');
+  if (!isProducerUnlocked(state, content, job, materialId)) return fail('material-locked');
+  const index = waitingSlots(state, content, place)[0];
+  if (index === undefined) return fail('nothing-to-place');
+  const next = cloneState(state);
+  setSlot(next, place, index, { material: materialId });
+  return { ok: true, state: next };
+}
+
+/**
+ * Puts an open slot on a node directly, placed or not. The screens never call it (a slot is placed
+ * once, in order, with `placeSlot`); the balance sim uses it to lay out a whole camp at once.
+ */
 export function setSlotMaterial(
   state: GameState,
   content: Content,
@@ -221,6 +260,21 @@ export function setSlotMaterial(
   const next = cloneState(state);
   setSlot(next, place, index, { material: materialId });
   return { ok: true, state: next };
+}
+
+/** The open slots on a node (their indexes in the place), in slot order. */
+export function nodeSlots(
+  state: GameState,
+  content: Content,
+  place: CampPlace,
+  materialId: string,
+): number[] {
+  const out: number[] = [];
+  const open = openSlots(state, content, place);
+  for (let index = 0; index < open; index += 1) {
+    if (slotAt(state, place, index).material === materialId) out.push(index);
+  }
+  return out;
 }
 
 // ---- the camp level ----------------------------------------------------------------------------

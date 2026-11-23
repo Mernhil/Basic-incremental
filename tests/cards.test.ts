@@ -89,8 +89,8 @@ describe('a new game (DESIGN.md §5)', () => {
       slots: ['ember_squire', null, null, null],
     });
     // the logging and mining start cards are workers on the first tree and mine (DESIGN.md §4)
-    expect(state.camp.forest).toEqual([{ material: null, card: 'apprentice_feller' }]);
-    expect(state.camp.cave).toEqual([{ material: null, card: 'cave_digger' }]);
+    expect(state.camp.forest).toEqual([{ material: 'oak', card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: 'copper_quarry', card: 'cave_digger' }]);
     expect(state.cards.shards).toBe(0);
   });
 });
