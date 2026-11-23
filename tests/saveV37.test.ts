@@ -77,7 +77,8 @@ describe('v37 -> v38 (the skill web)', () => {
       mods: { stat: string; kind: string; value: { toNumber(): number } }[],
     ): number =>
       mods
-        .filter((m) => ['percent', 'flat'].includes(m.kind))
+        // the stage-damage nodes moved to crit damage (2026-11-23, retuned by the full sim)
+        .filter((m) => ['percent', 'flat'].includes(m.kind) && m.stat !== 'combat.critDamage')
         .reduce((a, m) => a + Math.abs(m.value.toNumber()) * (SKILL_WEIGHT[m.stat] ?? 0), 0);
     expect(weighted(newMods)).toBeCloseTo(weighted(oldMods), 0);
   });

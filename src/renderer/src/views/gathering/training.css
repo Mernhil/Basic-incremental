@@ -79,7 +79,6 @@
 .trb-duel [data-key='arena-challenge'],
 .trb-duel [data-key='arena-auto'],
 .trb-duel .du-read--fpm,
-.trb-duel .du-read--stars,
 .trb-duel .ar__fall,
 .trb-duel .du-timer {
   display: none;

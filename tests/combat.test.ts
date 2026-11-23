@@ -157,13 +157,13 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(report.unlockedDungeons).toEqual([ember.id]);
     expect(report.unlockedMines).toEqual(['iron_deeps']);
     expect(state.clearedDungeons).toEqual([mossy.id]);
-    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 1 });
+    expect(state.combat.stageKills).toEqual({});
     expect(isProducerUnlocked(state, content, 'mining', 'iron_deeps')).toBe(true);
 
-    // Farming afterwards counts kills but clears nothing again.
+    // Farming afterwards clears nothing again.
     const again = advance(state, content, 1000, rng);
     expect(again.report.cleared).toEqual([]);
-    expect(again.state.combat.stageKills['mossy_cellar:normal:1']).toBe(2);
+    expect(again.report.bossKills).toBeGreaterThan(0);
     expect(again.state.clearedDungeons).toEqual([mossy.id]);
   });
 

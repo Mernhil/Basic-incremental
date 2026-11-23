@@ -25,11 +25,13 @@
         "sprite": "bramble_beast"
       }
     ],
-    "miniBoss": {
-      "id": "plague_lantern_keeper",
-      "name": "Plague Lantern Keeper",
-      "sprite": "plague_lantern_keeper"
-    },
+    "miniBosses": [
+      {
+        "id": "plague_lantern_keeper",
+        "name": "Plague Lantern Keeper",
+        "sprite": "plague_lantern_keeper"
+      }
+    ],
     "background": "mossy_cellar",
     "boss": {
       "id": "root_warden",
@@ -106,11 +108,13 @@
         "sprite": "bloodroot_ember"
       }
     ],
-    "miniBoss": {
-      "id": "blood_duchess",
-      "name": "Blood Duchess",
-      "sprite": "blood_duchess"
-    },
+    "miniBosses": [
+      {
+        "id": "blood_duchess",
+        "name": "Blood Duchess",
+        "sprite": "blood_duchess"
+      }
+    ],
     "background": "ember_crypt",
     "boss": {
       "id": "cinder_lich",
@@ -195,17 +199,24 @@
         "sprite": "obsidian_crab_blue"
       }
     ],
-    "miniBoss": {
-      "id": "glacierbreaker_knight",
-      "name": "Glacierbreaker Knight",
-      "sprite": "glacierbreaker_knight"
-    },
+    "miniBosses": [
+      {
+        "id": "glacierbreaker_knight",
+        "name": "Glacierbreaker Knight",
+        "sprite": "glacierbreaker_knight"
+      },
+      {
+        "id": "ivory_direwolf",
+        "name": "Ivory Direwolf",
+        "sprite": "ivory_direwolf"
+      }
+    ],
     "background": "frostspire_vault",
     "boss": {
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "element": "fire",
+      "element": "water",
       "hp": "4510000",
       "hpBars": 12,
       "attack": {
@@ -278,11 +289,23 @@
         "sprite": "obsidian_crab_green"
       }
     ],
-    "miniBoss": {
-      "id": "drowned_leviathanbeard_high_admiral",
-      "name": "Drowned Leviathanbeard High Admiral",
-      "sprite": "drowned_leviathanbeard_high_admiral"
-    },
+    "miniBosses": [
+      {
+        "id": "abyssal_sharkfang_raider",
+        "name": "Abyssal Sharkfang Raider",
+        "sprite": "abyssal_sharkfang_raider"
+      },
+      {
+        "id": "drowned_leviathanbeard_high_admiral",
+        "name": "Drowned Leviathanbeard High Admiral",
+        "sprite": "drowned_leviathanbeard_high_admiral"
+      },
+      {
+        "id": "storm_siren",
+        "name": "Storm Siren",
+        "sprite": "storm_siren"
+      }
+    ],
     "background": "thunderpeak_aerie",
     "boss": {
       "id": "storm_roc",
@@ -361,11 +384,28 @@
         "sprite": "cathedral_reliquary"
       }
     ],
-    "miniBoss": {
-      "id": "holy_judiciar",
-      "name": "Holy Judiciar",
-      "sprite": "holy_judiciar"
-    },
+    "miniBosses": [
+      {
+        "id": "ivory_sun_priestess",
+        "name": "Ivory Sun Priestess",
+        "sprite": "ivory_sun_priestess"
+      },
+      {
+        "id": "holy_judiciar",
+        "name": "Holy Judiciar",
+        "sprite": "holy_judiciar"
+      },
+      {
+        "id": "marble_guardian",
+        "name": "Marble Guardian",
+        "sprite": "marble_guardian"
+      },
+      {
+        "id": "plague_doctor",
+        "name": "Plague Doctor",
+        "sprite": "plague_doctor"
+      }
+    ],
     "background": "sunken_sanctum",
     "boss": {
       "id": "dawn_hierophant",
@@ -444,11 +484,33 @@
         "sprite": "rift_maw"
       }
     ],
-    "miniBoss": {
-      "id": "gothic_bloodhunter",
-      "name": "Gothic Bloodhunter",
-      "sprite": "gothic_bloodhunter"
-    },
+    "miniBosses": [
+      {
+        "id": "gothic_bloodhunter",
+        "name": "Gothic Bloodhunter",
+        "sprite": "gothic_bloodhunter"
+      },
+      {
+        "id": "plague_lantern_keeper",
+        "name": "Plague Lantern Keeper",
+        "sprite": "plague_lantern_keeper"
+      },
+      {
+        "id": "void_witch",
+        "name": "Void Witch",
+        "sprite": "void_witch"
+      },
+      {
+        "id": "hollow_armour",
+        "name": "Hollow Armour",
+        "sprite": "hollow_armour"
+      },
+      {
+        "id": "rift_maw",
+        "name": "Rift Maw",
+        "sprite": "rift_maw"
+      }
+    ],
     "background": "void_hollow",
     "boss": {
       "id": "unmade_king",

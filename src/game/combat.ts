@@ -73,8 +73,7 @@ import type { Rng } from './rng';
 import {
   overflowActive,
   payStageChests,
-  stageDamageFactor,
-  stageLootFactor,
+  difficultyLootFactor,
   stageStars,
   type StageStarInfo,
 } from './stageStars';
@@ -854,9 +853,7 @@ export function secondsPerKill(
   const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
   const team = buildTeam(state, content, modifiers, dungeonId);
-  const avg = teamAverageDps(team).mul(
-    stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor, modifiers),
-  );
+  const avg = teamAverageDps(team);
   if (avg.lte(0)) return null;
   if (overflowActive(state, content, stage.dungeon, stage.difficulty, stage.floor)) {
     return stage.hp.div(avg).toNumber();
@@ -937,18 +934,15 @@ export function stageReadout(
   const id = state.activeDungeonId;
   const dungeon = id ? content.dungeonById.get(id) : undefined;
   const here = dungeon ? fightStage(state, content, dungeon.id, modifiers) : null;
-  // The stage's star levels add their damage there (DESIGN.md §6 Stage stars).
-  const factor = here
-    ? stageDamageFactor(state, content, here.dungeon, here.difficulty, here.floor, modifiers)
-    : 1;
-  const avg = averageDps(state, content, id, modifiers).mul(factor);
+  const avg = averageDps(state, content, id, modifiers);
   const spk = dungeon ? secondsPerKill(state, content, dungeon.id, modifiers) : null;
   const stage = spk !== null ? here : null;
   const survival = dungeon ? survivalSeconds(state, content, dungeon.id, modifiers) : null;
   return {
-    dps: buildTeam(state, content, modifiers, id)
-      .reduce((a, c) => a.add(c.hit.div(c.interval)), new Decimal(0))
-      .mul(factor),
+    dps: buildTeam(state, content, modifiers, id).reduce(
+      (a, c) => a.add(c.hit.div(c.interval)),
+      new Decimal(0),
+    ),
     averageDps: avg,
     killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
     secondsPerKill: spk,
@@ -1635,16 +1629,9 @@ function fightDungeon(
         ? next.combat.challengeWaitSeconds
         : Infinity;
     const horizon = Math.min(left, timerLeft, waitLeft);
-    // The stage's star levels add their damage there; overflow decides whether a kill's leftover
-    // damage carries on (DESIGN.md §6 Stage stars, Overflow).
-    const factor = stageDamageFactor(
-      next,
-      content,
-      dungeon,
-      stage.difficulty,
-      stage.floor,
-      modifiers,
-    );
+    // Overflow decides whether a kill's leftover damage carries on (DESIGN.md §6 Overflow).
+    // Stage stars add no damage any more (DESIGN.md §2 Dungeons): the damage factor is 1.
+    const factor = 1;
     const overflow = overflowActive(next, content, dungeon, stage.difficulty, stage.floor);
     // Who fights and who is hit (DESIGN.md §6 card duel): the standing cards hit; the enemy hits
     // its target, weakened by the standing debuffers.
@@ -2078,7 +2065,7 @@ function killEnemies(
   const bossId = dungeon.boss.id;
   drops = stageLoot(
     difficultyDrops(drops, stage.scale),
-    stageLootFactor(state, content, dungeon, stage.difficulty, stage.floor, modifiers),
+    difficultyLootFactor(content, stage.difficulty, modifiers),
   );
   let pity = state.pity[bossId] ?? 0;
   const purse = drops.currencies.map(() => 0);
@@ -2142,12 +2129,10 @@ function killEnemies(
   state.stats.bossKills += bossFloorKills;
   report.bossKills += bossFloorKills;
   report.enemyKills += enemyKills;
-  // Stage stars (DESIGN.md §6): a mini-boss or last-floor boss kill counts on its stage, and each
-  // star level reached pays its chest once.
+  // Stage stars are closed (DESIGN.md §2 Dungeons): kills there are no longer counted, so a save's
+  // star levels stay as they were; a chest earned but not yet paid is paid with the next boss kill.
   if (bossFloorKills > 0 && isStageFloor(content, dungeon, stage.difficulty, stage.floor)) {
-    const key = stageKey(dungeon.id, stage.difficulty, stage.floor);
-    state.combat.stageKills[key] = (state.combat.stageKills[key] ?? 0) + bossFloorKills;
-    payStageChests(state, content, key, report);
+    payStageChests(state, content, stageKey(dungeon.id, stage.difficulty, stage.floor), report);
   }
   // A sped-up Challenge pays what a Challenge at the real pace would per real second.
   const slow = 1 / (state.combat.paySlow ?? 1);

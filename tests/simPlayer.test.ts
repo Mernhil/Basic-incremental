@@ -45,7 +45,6 @@ import {
   skillValue,
   spendShards,
   spendStarDust,
-  starFarm,
   workerPicks,
 } from '../scripts/sim/sim';
 import {
@@ -203,23 +202,9 @@ describe('sim player: where to fight', () => {
     expect(fastestFarm(state, withDps(1e4, content), 'moss_core')?.difficulty).toBe('normal');
   });
 
-  it('farms a last-floor boss a few minutes from its next star level', () => {
-    const state = freshState();
-    beaten(state, ['normal']);
-    const d = content.dungeonById.get('mossy_cellar')!;
-    state.combat.stageKills[stageKey('mossy_cellar', 'normal', d.floors)] = 99;
-    expect(starFarm(state, withDps(1e12, content))).toEqual({
-      id: 'mossy_cellar',
-      difficulty: 'normal',
-    });
-  });
-
-  it('turns overflow on when a stage reaches Silver', () => {
+  it('turns overflow on for every stage, none needs a star level', () => {
     const state = freshState();
     const key = stageKey('mossy_cellar', 'normal', content.dungeonById.get('mossy_cellar')!.floors);
-    state.combat.stageKills[key] = 99; // Bronze
-    expect(chooseOverflow(state, content).combat.overflow[key]).toBeUndefined();
-    state.combat.stageKills[key] = 100; // Silver
     expect(chooseOverflow(state, content).combat.overflow[key]).toBe(true);
   });
 });

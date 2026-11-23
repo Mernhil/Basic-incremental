@@ -61,6 +61,10 @@
   padding: 4px 12px;
   font-size: 12.5px;
 }
+.dv-sheet[data-panel='dungeons'] .dv-sheet__body {
+  overflow: hidden;
+  padding: 0;
+}
 .dv-sheet__body {
   min-height: 0;
   overflow-y: auto;

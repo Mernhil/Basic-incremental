@@ -371,8 +371,6 @@ export const STATS = [
   'element.production',
   /** Chest of each stage star level, base 1 (DESIGN.md §6 Stage stars). Scope: dungeon. */
   'stars.chest',
-  /** The damage each star level adds on its stage, base 1 (= the +5% a level). Scope: dungeon. */
-  'stars.damage',
   /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
   'stars.loot',
   /** Expedition slots (DESIGN.md §15 Expeditions): base 1, the account tree and the Starlight shop add. */
@@ -792,10 +790,13 @@ export const dungeonSchema = z.strictObject({
     )
     .min(1),
   /**
-   * The mini-boss of every 10th floor (DESIGN.md section 6, The enemy roster): its own character,
-   * not a copy of a normal enemy. It fights with the mini-boss shares of `combat.json` `floors`.
+   * The mini-bosses of the dungeon's 10th-floor stops, in order: the first holds floor 10, the
+   * second floor 20 and so on (DESIGN.md section 6, The enemy roster). Each is its own character
+   * and fights with the mini-boss shares of `combat.json` `floors`. A dungeon whose last floor is
+   * its first stop (10 floors) shows none in its stages (the boss holds floor 10), but its list
+   * still serves the endless depths, where the list repeats from the start.
    */
-  miniBoss: z.strictObject({ id, name, sprite: id.optional() }),
+  miniBosses: z.array(z.strictObject({ id, name, sprite: id.optional() })),
   /**
    * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
    * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
@@ -1128,8 +1129,6 @@ const stageStarsSchema = z.strictObject({
     .array(z.number().int().min(1))
     .length(STAGE_STAR_LEVELS)
     .refine(increasing, { message: 'kill counts must increase' }),
-  /** Damage on that stage per star level: 0.05 = +5% a level. */
-  damagePerLevel: z.number().min(0),
   /** Loot on that stage per star level (Money purses and material chances): 0.1 = +10%. */
   lootPerLevel: z.number().min(0),
   /** The star level (1-based) from which the stage's overflow switch can be turned on. */
@@ -1262,6 +1261,17 @@ export const combatSchema = z.strictObject({
    * Nightmare is a stage with six star levels earned by kills there.
    */
   stageStars: stageStarsSchema,
+  /**
+   * What each difficulty adds to its loot, in star levels of `stageStars.lootPerLevel` (the loot
+   * the stage stars used to give now belongs to the difficulty, DESIGN.md §2 Dungeons): 3 with a
+   * step of 0.1 is +30% Money purses and material chances on every floor of that difficulty.
+   */
+  difficultyLoot: z.strictObject({
+    normal: z.number().min(0),
+    hard: z.number().min(0),
+    nightmare: z.number().min(0),
+    endless: z.number().min(0),
+  }),
   /**
    * Elements in combat (DESIGN.md §6), as percents added to damage or output: the main card on the
    * boss's weakness, on its resistance (negative), each support on the weakness, and a worker on a

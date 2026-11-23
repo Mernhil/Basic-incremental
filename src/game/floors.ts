@@ -233,7 +233,23 @@ export function floorKind(
   difficulty: Difficulty = 'normal',
 ): FloorKind {
   if (floor >= floorCount(dungeon, difficulty)) return 'boss';
-  return floor % content.combat.floors.miniBossEvery === 0 ? 'miniboss' : 'wave';
+  return miniBossAt(content, dungeon, floor) ? 'miniboss' : 'wave';
+}
+
+/**
+ * The mini-boss that holds `floor`, if it is a 10th-floor stop and the dungeon has any: the stop's
+ * own entry of `dungeon.miniBosses` (floor 10 is the first, 20 the second), repeating from the
+ * start in the endless depths past the last entry.
+ */
+export function miniBossAt(
+  content: Content,
+  dungeon: Dungeon,
+  floor: number,
+): Dungeon['miniBosses'][number] | undefined {
+  const every = content.combat.floors.miniBossEvery;
+  const list = dungeon.miniBosses;
+  if (floor < 1 || floor % every !== 0 || list.length === 0) return undefined;
+  return list[(floor / every - 1) % list.length];
 }
 
 /** A small deterministic mix of two integers, so a floor always holds the same wave. */
@@ -350,7 +366,7 @@ export function floorSpec(
   // Each difficulty has its own waves (Normal keeps the dungeon's own seed).
   const seed = seedOf(dungeon.id) + DIFFICULTIES.indexOf(difficulty) * 7919;
   if (kind === 'miniboss') {
-    const type = dungeon.miniBoss;
+    const type = miniBossAt(content, dungeon, floor)!;
     const share = scale * config.miniBossHpShare;
     const hp = part(bossHp, share, config.miniBossHpShare);
     return {
