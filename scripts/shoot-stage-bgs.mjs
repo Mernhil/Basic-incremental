@@ -26,7 +26,7 @@ await page.evaluate(() =>
 
 const setup = async (dungeon, floor) => {
   await page.evaluate(
-    async ({ data, game, dev, dungeon, floor }) => {
+    async ({ data, game, dev, dungeon, floor, ko, level }) => {
       const d = await import(data);
       const g = await import(game);
       const cheats = await import(dev);
@@ -40,8 +40,9 @@ const setup = async (dungeon, floor) => {
       s.combat.floors[dungeon].autoChallenge = false;
       const team = ['quarry_smasher', 'ember_squire', 'hedge_acolyte', 'hex_warlock'];
       for (const id of team) s.cards.owned[id] ??= g.newOwnedCard();
-      for (const owned of Object.values(s.cards.owned)) owned.level = 18;
+      for (const owned of Object.values(s.cards.owned)) owned.level = level;
       s.cards.loadouts.fighting.slots = [...team];
+      if (ko) s.combat.cardsOut = [...team];
       s = g.checkAchievements(s, content).state;
       await window.api.writeSave(g.createSaveText(s, Date.now()));
     },
@@ -51,6 +52,8 @@ const setup = async (dungeon, floor) => {
       dev: fsUrl('src/game/dev.ts'),
       dungeon,
       floor,
+      ko: Boolean(process.env.KO),
+      level: Number(process.env.LEVEL ?? 18),
     },
   );
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -81,7 +84,7 @@ for (const dg of dungeons) {
     deviceScaleFactor: 1,
     mobile: false,
   });
-  await setup(dg, 4);
+  await setup(dg, Number(process.env.FLOOR ?? 4));
   await page.evaluate(() => document.querySelector('[data-open="hub"]')?.click());
   await page.waitForTimeout(800);
   const opened = await page.evaluate(() => {
@@ -104,6 +107,8 @@ for (const dg of dungeons) {
         m.muted = true;
       }),
     );
+    const ko = await page.evaluate(() => Boolean(document.querySelector('.du-ko:not([hidden])')));
+    console.log(dg, w, h, 'whole team out:', ko);
     await shot(`${out}/${dg}-${w}x${h}.png`);
   }
 }

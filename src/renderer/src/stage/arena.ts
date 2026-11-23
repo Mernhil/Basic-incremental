@@ -407,7 +407,12 @@ export function createArena(ctx: ArenaContext): Arena {
     const box = foeBody.getBoundingClientRect();
     if (box.width < 1 || box.height < 1) return;
     const dpr = screenDpr();
-    const device = Math.max(1, Math.floor(Math.min(box.width / FOE_W, box.height / FOE_H) * dpr));
+    // the picture's own pixels fill about 78% of its width and 80% of its height; the empty margin may
+    // overflow the box, so an enemy can stand a whole scale larger (user, 2026-11-23: sprites too small)
+    const device = Math.max(
+      1,
+      Math.floor(Math.min(box.width / (FOE_W * 0.78), box.height / (FOE_H * 0.8)) * dpr),
+    );
     const key = `${foeSprite}:${device}:${dpr}`;
     if (foeBody.dataset['foe'] === key) return;
     foeBody.dataset['foe'] = key;

@@ -390,6 +390,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   inset: 0;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  /* a picture wider than the card must not widen it */
+  grid-template-columns: minmax(0, 1fr);
   gap: 4px;
   padding: 8px 8px 10px;
   box-sizing: border-box;
@@ -451,13 +453,14 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   position: relative;
   min-height: 0;
   display: grid;
-  place-items: center;
+  /* the enemy stands at the bottom of the card, its feet just above the health bar */
+  place-items: end center;
 }
 .du-foe__body {
   width: 100%;
   height: 100%;
   display: grid;
-  place-items: center;
+  place-items: end center;
   /* a picture wider than the box overflows on both sides, never only to the right */
   justify-content: center;
 }
@@ -1014,7 +1017,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     0 0 0 calc(var(--du-u) * 2) var(--du-c),
     0 0 18px 6px color-mix(in srgb, var(--du-c) 70%, transparent);
 }
-/* knocked out: a grey overlay whose saturation blend greys the card, faded in with opacity */
+/* knocked out: a grey overlay whose saturation blend greys the card and a dark layer takes it to about 45%
+   brightness, faded in with opacity; the card itself stays opaque */
 .du-card__grey {
   position: absolute;
   inset: 0;
@@ -1028,7 +1032,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgb(10 8 14 / 0.45);
+  background: rgb(8 6 12 / 0.55);
   mix-blend-mode: normal;
 }
 /* the card the enemy hits next: a small red marker over it */
@@ -1092,8 +1096,9 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     transform: translateX(-2px);
   }
 }
-.du-hand.is-ko {
-  opacity: 0.6;
+/* a knocked-out team stays opaque: the cards darken (the grey overlay), they never fade into the room */
+.du-hand.is-ko .du-card {
+  filter: brightness(0.9);
 }
 /* a whole-team knockout: the countdown over the hand */
 .du-ko {
