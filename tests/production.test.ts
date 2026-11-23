@@ -14,7 +14,7 @@ import {
   newOwnedCard,
   openSlots,
   resetProduction,
-  setSlotMaterial,
+  placeSlot,
   slotWorkers,
   unlockedProducers,
   upgradeCamp,
@@ -122,6 +122,7 @@ describe('farming slots', () => {
   it('puts a card on an open slot of its own place, and a card is in one slot at a time', () => {
     let state = bareState();
     state.camp.level = 3;
+    state.camp.forest[1] = { material: 'oak', card: null };
     state.cards.owned['apprentice_feller'] = newOwnedCard();
     state.cards.owned['grove_keeper'] = newOwnedCard();
     state = ok2(assignSlotCard(state, content, 'forest', 0, 'apprentice_feller'));
@@ -173,20 +174,15 @@ describe('farming slots', () => {
     });
   });
 
-  it('chooses the material of a slot among the open ones', () => {
+  it("a slot placed on a node farms that node's material", () => {
     let state = withFarmers(bareState());
-    expect(setSlotMaterial(state, content, 'forest', 0, 'ironbark')).toEqual({
-      ok: false,
-      reason: 'material-locked',
-    });
-    expect(setSlotMaterial(state, content, 'forest', 0, 'iron_deeps')).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
+    state.camp.level = 3;
     state = clearDungeon(state, content, 'mossy_cellar').state;
-    state = ok2(setSlotMaterial(state, content, 'forest', 0, 'ironbark'));
-    expect(campPerSecond(state, content)['ironbark_gem']!.toNumber()).toBeCloseTo(0.5);
-    expect(campPerSecond(state, content)['oak_gem']).toBeUndefined();
+    state.cards.owned['grove_keeper'] = newOwnedCard();
+    state = ok2(placeSlot(state, content, 'forest', 'ironbark'));
+    state = ok2(assignSlotCard(state, content, 'forest', 1, 'grove_keeper'));
+    expect(campPerSecond(state, content)['ironbark_gem']!.toNumber()).toBeGreaterThan(0);
+    expect(campPerSecond(state, content)['oak_gem']!.toNumber()).toBeGreaterThan(0);
   });
 
   it('a card is not also in the fighting loadout, at the forge or away: a slot card leaves the forge', () => {
