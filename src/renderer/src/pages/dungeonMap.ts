@@ -414,7 +414,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     const kindOf = (floor: number) => floorKind(content, d, floor, difficulty);
     const stops = pathStops({ floors: pos.floors, best: pos.best, kindOf });
     // markers at 2x, or at 1x in a small pane so the road fits without crowding the room
-    const unit = height < 640 ? 0.5 : 1;
+    // on a big window the road grows with the panels: markers at a whole 3x, pictures at 2x
+    const unit = height < 640 ? 0.5 : zoom >= 1.5 ? 1.5 : 1;
+    road.style.setProperty('--wm-u', String(Math.max(1, unit)));
     road.style.setProperty('--wm-m', `${96 * unit}px`);
     const clear = (k: MapStop['kind']): number => STOP_CLEAR[k] * unit;
     const layout = layoutRoad(stops.length, width, height, unit);
@@ -428,7 +430,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
           pts[i + 1]!,
           clear(stops[i]!.kind),
           clear(stops[i + 1]!.kind),
-          unit === 1 ? STUD_GAP : 20,
+          unit >= 1 ? STUD_GAP * unit : 20,
         ),
       );
     }
@@ -469,15 +471,16 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       } else {
         const pic = portrait(
           spriteOf(d, stop.kind),
-          (stop.kind === 'boss' ? 92 : 64) * (unit === 1 ? 1 : 0.75),
+          (stop.kind === 'boss' ? 92 : 64) * (unit === 0.5 ? 0.75 : unit === 1.5 ? 0.75 : 1),
           'wm-stop__pic',
+          unit === 1.5 ? 2 : 1,
         );
         b.append(
           pic,
           h(
             'span',
             'wm-stop__cap',
-            unit === 1
+            unit >= 1
               ? `${stop.floor} ${stop.kind === 'boss' ? DUEL_COPY.bossKind : DUEL_COPY.miniKind}`
               : `${stop.floor} ${stop.kind === 'boss' ? DUEL_COPY.bossKind : 'Mini'}`,
           ),
