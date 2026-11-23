@@ -127,7 +127,8 @@ html.r-shell-gold
   --o-out: 0;
   --o-fill: fill;
 }
-html.r-shell-gold :is(.du-read, .du-plate, .ar__readout, .hub__plate):not(#_o):not(#_o):not(#_o) {
+html.r-shell-gold
+  :is(.du-read, .du-plate, .ar__readout, .hub__plate, .wp-sec__title):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/gold/pill.png');
   --o-bg: #393939;
   --o-slice: 10;

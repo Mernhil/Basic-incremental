@@ -24,7 +24,24 @@ function flyLayer(): HTMLElement {
     layer.setAttribute('aria-hidden', 'true');
     document.body.append(layer);
   }
+  hideUnderSheet(layer);
   return layer;
+}
+
+/**
+ * The dungeon's open panel (Weapon, Training, Dungeons) is drawn over the fight: the flying drops
+ * go behind it, so they never cross its numbers. The layer is cut with a hole where the sheet is.
+ */
+function hideUnderSheet(el: HTMLElement): void {
+  const sheet = document.querySelector('.dv-sheet');
+  const r =
+    sheet instanceof HTMLElement && sheet.offsetParent ? sheet.getBoundingClientRect() : null;
+  if (!r || r.width === 0) {
+    el.style.clipPath = '';
+    return;
+  }
+  const { left: l, top: t, right: rt, bottom: bt } = r;
+  el.style.clipPath = `polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, ${l}px ${t}px, ${rt}px ${t}px, ${rt}px ${bt}px, ${l}px ${bt}px, ${l}px ${t}px)`;
 }
 
 export interface FlyOptions {
