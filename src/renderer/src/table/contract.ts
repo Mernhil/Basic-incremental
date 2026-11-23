@@ -95,8 +95,9 @@ export interface ViewDef {
 /** A live piece of the table: the dungeon window in the centre or a wing. */
 export interface TablePieceDef {
   slot: 'centre' | 'left' | 'right';
-  /** The view a click on the piece (or its corner open button) opens. */
-  view: ViewId;
+  /** The view a click on the piece (or its corner open button) opens; null for the dungeon window,
+   *  which has no other view (the fight, its panels and its controls are all in the window). */
+  view: ViewId | null;
   /** Accessible name of the piece's open button ("Open Logging"). */
   label: string;
   /** Builds the piece into `host`. `render` runs on every tick while no view covers the table. */

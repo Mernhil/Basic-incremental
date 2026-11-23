@@ -7,6 +7,8 @@ import {
   HUB_BUILDINGS,
   HUB_MAP_H,
   HUB_MAP_W,
+  HUB_FILL_SLACK,
+  hubOffset,
   hubScale,
   scaled,
 } from '../src/renderer/src/hub/hubModel';
@@ -21,19 +23,39 @@ describe('hub map', () => {
     // the area under the header: 1280 x 656 and 1920 x 1016 in a 1280 x 720 and a 1920 x 1080 window
     expect(hubScale(1280, 656)).toBe(2);
     expect(hubScale(1920, 1016)).toBe(3);
-    expect(hubScale(1000, 600)).toBe(1);
+    expect(hubScale(1274, 723)).toBe(2); // the window of the 0.8.0 report: a few pixels short is fine
+    expect(hubScale(1000, 600)).toBe(2);
     expect(hubScale(300, 200)).toBe(1);
     expect(hubScale(2560, 1300)).toBe(4);
+  });
+
+  it('fills the area: the smallest whole scale that covers it, give or take a few pixels', () => {
     for (const [w, h] of [
       [800, 500],
+      [1274, 723],
       [1366, 700],
       [1600, 900],
+      [1920, 1016],
       [2200, 1100],
+      [2560, 1300],
     ] as const) {
       const s = hubScale(w, h);
       expect(Number.isInteger(s)).toBe(true);
-      expect(HUB_MAP_W * s).toBeLessThanOrEqual(Math.max(w, HUB_MAP_W));
+      expect(HUB_MAP_W * s).toBeGreaterThanOrEqual(w - HUB_FILL_SLACK);
+      expect(HUB_MAP_H * s).toBeGreaterThanOrEqual(h - HUB_FILL_SLACK);
+      if (s > 1) {
+        // one scale smaller would leave a visible gap
+        expect(
+          HUB_MAP_W * (s - 1) < w - HUB_FILL_SLACK || HUB_MAP_H * (s - 1) < h - HUB_FILL_SLACK,
+        ).toBe(true);
+      }
     }
+  });
+
+  it('centres the map and cuts the overflow evenly, so no place is cut off at 1280 x 720, 1274 x 723 or 1920 x 1080', () => {
+    expect(hubOffset(1280, 656, 2)).toEqual({ x: 0, y: -32 });
+    expect(hubOffset(1920, 1016, 3)).toEqual({ x: 0, y: -32 });
+    expect(hubOffset(1274, 723, 2)).toEqual({ x: -3, y: 1 });
   });
 
   it('has one exact mask per place: a 640 x 360 picture with transparency, byte for byte the approved one', () => {
@@ -65,9 +87,9 @@ describe('hub map', () => {
       if (b.action.kind === 'view') reachable.add(b.action.view);
       if (b.action.kind === 'menu') b.action.choices.forEach((c) => reachable.add(c.view));
     }
-    // Settings is the gear on the hub, the dungeon is the arch
+    // Settings is the gear on the hub; the dungeon is the arch, a screen of its own, not a view
     for (const id of VIEW_IDS) {
-      if (id === 'dungeon' || id === 'settings') continue;
+      if (id === 'settings') continue;
       expect(reachable.has(id), id).toBe(true);
     }
   });

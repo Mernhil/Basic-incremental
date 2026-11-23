@@ -11,13 +11,13 @@
   min-height: 0;
   min-width: 0;
   display: grid;
-  grid-template-columns: var(--wing-w) minmax(0, 1fr) var(--wing-w);
+  /* the dungeon window fills the whole area under the header: the wings are gone with the dock */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) 0;
   grid-template-areas:
-    'left window right'
-    'dock dock dock';
-  column-gap: var(--tbl-gap);
-  padding: 10px var(--tbl-gap) 0;
+    'window'
+    'dock';
+  padding: 0;
   overflow: hidden;
 }
 
@@ -36,14 +36,12 @@
   height: 100%;
   min-height: 0;
 }
-.tbl-wing--left {
-  grid-area: left;
-}
-.tbl-wing--right {
-  grid-area: right;
+.tbl-wing {
+  display: none;
 }
 .tbl-window {
   grid-area: window;
+  margin-bottom: 0;
   overflow: hidden;
   background: color-mix(in srgb, var(--bi-frame-bg) 70%, #000);
   box-shadow:

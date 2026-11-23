@@ -1,0 +1,105 @@
+/* The Training ground: the setup, and the battle (the real duel stage beside a plain side panel).
+   Two plain blocks, .trb-stage and .trb-side, so the art controller can restyle the screen. */
+.trb-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.trb-setup[hidden],
+.trb-battle[hidden] {
+  display: none;
+}
+.trb-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.trb-start {
+  align-self: flex-start;
+}
+.trg.trg--battle {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+.trb-battle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  height: 100%;
+  min-height: 0;
+}
+.trb-stage {
+  position: relative;
+  min-width: 0;
+  height: 100%;
+}
+.trb-side {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  overflow-y: auto;
+  min-height: 0;
+}
+.trb-side h3,
+.trb-side h4,
+.trb-side p {
+  margin: 0;
+}
+.trb-verdict {
+  font-weight: 700;
+}
+.trb-share {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+.trb-share__bar {
+  display: block;
+  height: 6px;
+  background: rgb(255 255 255 / 12%);
+}
+.trb-share__bar i {
+  display: block;
+  height: 100%;
+  background: var(--px-hi, #ffd66e);
+}
+.trb-effect {
+  font-size: 0.9em;
+}
+.trb-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+/* the dungeon-only parts of the duel are not part of a test: the Challenge and auto buttons, the
+   kill counter, stars and the fall forecast (the speed button stays) */
+.trb-duel [data-key='arena-challenge'],
+.trb-duel [data-key='arena-auto'],
+.trb-duel .du-read--fpm,
+.trb-duel .du-read--stars,
+.trb-duel .ar__fall,
+.trb-duel .du-timer {
+  display: none;
+}
+
+.trb-summary {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: min(420px, 80%);
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  z-index: 5;
+}
+.trb-summary[hidden] {
+  display: none;
+}
+.trb-summary p {
+  margin: 0;
+}
