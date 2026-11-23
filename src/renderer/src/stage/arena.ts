@@ -588,7 +588,7 @@ export function createArena(ctx: ArenaContext): Arena {
           enemy.kind === 'boss'
             ? (dungeon.boss.sprite ?? art)
             : enemy.kind === 'miniboss'
-              ? dungeon.miniBoss.sprite
+              ? dungeon.miniBosses.find((m) => m.id === enemy.id)?.sprite
               : dungeon.enemies.find((e) => e.id === enemy.id)?.sprite;
         // no picture (taken out, or not made yet): foeHtml draws the placeholder
         foeSprite = hasFoeSprite(sprite) ? sprite! : 'placeholder';

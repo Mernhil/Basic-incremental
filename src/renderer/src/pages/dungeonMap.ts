@@ -17,6 +17,7 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   isStageFloor,
+  miniBossAt,
   pickDungeon,
   setDifficulty,
   setOverflow,
@@ -320,8 +321,10 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
   }
 
   // ---- the map in the middle ----
-  function spriteOf(d: Dungeon, kind: MapStop['kind']): string | undefined {
-    return kind === 'boss' ? (d.boss.sprite ?? d.boss.art) : d.miniBoss.sprite;
+  function spriteOf(d: Dungeon, stop: MapStop): string | undefined {
+    return stop.kind === 'boss'
+      ? (d.boss.sprite ?? d.boss.art)
+      : miniBossAt(content, d, stop.floor)?.sprite;
   }
 
   function stopLabel(d: Dungeon, difficulty: Difficulty, stop: MapStop): string {
@@ -470,7 +473,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
         if (stop.state === 'locked') b.append(h('b', 'wm-stop__num', String(stop.floor)));
       } else {
         const pic = portrait(
-          spriteOf(d, stop.kind),
+          spriteOf(d, stop),
           (stop.kind === 'boss' ? 92 : 64) * (unit === 0.5 ? 0.75 : unit === 1.5 ? 0.75 : 1),
           'wm-stop__pic',
           unit === 1.5 ? 2 : 1,
@@ -551,7 +554,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       kind === 'boss'
         ? (dungeon.boss.sprite ?? dungeon.boss.art)
         : kind === 'miniboss'
-          ? dungeon.miniBoss.sprite
+          ? miniBossAt(content, dungeon, floor)?.sprite
           : dungeon.enemies.find((e) => e.id === lead?.id)?.sprite;
     const kindName =
       kind === 'boss'

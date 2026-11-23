@@ -409,6 +409,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   pointer-events: none;
 }
 .du-foe__head {
+  width: 100%;
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -416,14 +417,21 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 .du-foe__name {
   margin: 0;
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   overflow: hidden;
   font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
   text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* the long mini-boss names ("Drowned Leviathanbeard High Admiral") wrap on two lines */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .du-foe__kind {
   font-size: 11px;

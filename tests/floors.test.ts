@@ -169,8 +169,8 @@ describe('what a floor holds', () => {
     expect(spec.enemies).toHaveLength(1);
     const mini = spec.enemies[0]!;
     expect(mini.kind).toBe('miniboss');
-    expect(mini.id).toBe(crypt.miniBoss.id);
-    expect(mini.name).toBe(crypt.miniBoss.name);
+    expect(mini.id).toBe(crypt.miniBosses[0]!.id);
+    expect(mini.name).toBe(crypt.miniBosses[0]!.name);
     expect(crypt.enemies.some((e) => e.id === mini.id)).toBe(false);
     const wave = floorSpec(plain, crypt, 'normal', 9);
     expect(mini.hp.gt(wave.hp)).toBe(true);

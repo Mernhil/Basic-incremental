@@ -790,10 +790,13 @@ export const dungeonSchema = z.strictObject({
     )
     .min(1),
   /**
-   * The mini-boss of every 10th floor (DESIGN.md section 6, The enemy roster): its own character,
-   * not a copy of a normal enemy. It fights with the mini-boss shares of `combat.json` `floors`.
+   * The mini-bosses of the dungeon's 10th-floor stops, in order: the first holds floor 10, the
+   * second floor 20 and so on (DESIGN.md section 6, The enemy roster). Each is its own character
+   * and fights with the mini-boss shares of `combat.json` `floors`. A dungeon whose last floor is
+   * its first stop (10 floors) shows none in its stages (the boss holds floor 10), but its list
+   * still serves the endless depths, where the list repeats from the start.
    */
-  miniBoss: z.strictObject({ id, name, sprite: id.optional() }),
+  miniBosses: z.array(z.strictObject({ id, name, sprite: id.optional() })),
   /**
    * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
    * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
