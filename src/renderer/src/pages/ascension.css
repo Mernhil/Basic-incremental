@@ -1,10 +1,19 @@
-/* The Ascension screen: three panels in the shell's charcoal and gold, filling the view. Panels,
-   tiles and buttons are the shell's (.px-panel, .px-tile, .px-btn); numbers are the pixel numerals
-   (.bi-num); the ring and coin are the kept shop sprites. */
+/* The Ascension screen: three charcoal panels under the header, in the look of the weapon stats
+   panel (ui/weaponStats.css): gold-edged plaques, pixel numerals, green gains. Panels, tiles and
+   buttons are the shell's (.px-panel, .px-tile, .px-btn); the ring and coin are the kept shop
+   sprites. At 1920 x 1080 text and numerals are 1.5 times as big (--wzoom, set in weaponStats.css)
+   and pixel art is drawn at 2x. */
 .shell-page:has(> .asc) {
   max-width: none;
 }
 .asc {
+  --asc-z: var(--wzoom, 1);
+  --asc-plaque: var(--st-plaque, rgba(0, 0, 0, 0.42));
+  --asc-good: var(--wp-good, var(--bi-frame-good, #7fc79a));
+  --asc-bad: var(--wp-bad, var(--bi-frame-bad, #ef8a7a));
+  --asc-gold: var(--px-gold, #ffd66e);
+  --asc-muted: var(--bi-frame-ink-muted, #b8b2a4);
+  --asc-ink: var(--bi-frame-ink, #e8e2d4);
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
@@ -14,6 +23,15 @@
   box-sizing: border-box;
   padding: 4px 8px 0;
 }
+@media (min-width: 1700px) and (min-height: 950px) {
+  .asc {
+    --asc-z: 1.5;
+    gap: 24px;
+  }
+  .asc .shop-ring {
+    --want: 2;
+  }
+}
 @media (max-width: 1100px) {
   .asc {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -22,27 +40,39 @@
     grid-column: 1 / -1;
   }
 }
+.asc .shop-ring {
+  --want: 1;
+}
 .asc-col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: calc(10px * var(--asc-z));
   min-width: 0;
   min-height: 0;
-  padding: 14px;
+  padding: calc(14px * var(--asc-z));
 }
+/* a gold plaque heading */
 .asc-head {
   margin: 0;
-  font-size: 22px;
-  color: var(--px-gold, #ffd66e);
+  padding: calc(5px * var(--asc-z)) calc(10px * var(--asc-z));
+  font-size: calc(20px * var(--asc-z));
+  line-height: 1.1;
+  color: var(--asc-gold);
+  background: var(--asc-plaque);
+  box-shadow: inset 0 0 0 2px var(--asc-gold);
 }
 .asc-body {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: calc(10px * var(--asc-z));
   flex: 1;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding-right: 4px;
+}
+.asc-body > * {
+  min-width: 0;
 }
 .asc p,
 .asc h3,
@@ -50,28 +80,28 @@
   margin: 0;
 }
 .asc-sub {
-  font-size: 15px;
-  color: var(--bi-frame-ink, #e8e2d4);
+  font-size: calc(15px * var(--asc-z));
+  color: var(--asc-ink);
 }
 .asc-note {
-  font-size: 13px;
+  font-size: calc(13px * var(--asc-z));
   line-height: 1.35;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  color: var(--asc-muted);
 }
 .asc-label {
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(13px * var(--asc-z));
+  color: var(--asc-muted);
 }
 .asc-nth {
-  font-size: 16px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(16px * var(--asc-z));
+  color: var(--asc-muted);
 }
 
 /* the big number beside the ring */
 .asc-top {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: calc(14px * var(--asc-z));
 }
 .asc-top .shop-ring {
   flex: none;
@@ -81,53 +111,53 @@
   min-width: 0;
 }
 .asc-gain {
-  font-size: 40px;
+  font-size: calc(40px * var(--asc-z));
   line-height: 1;
-  color: var(--px-gold, #ffd66e);
+  color: var(--asc-gold);
 }
 .asc-unit {
-  font-size: 14px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(14px * var(--asc-z));
+  color: var(--asc-muted);
 }
 .asc-parts {
   list-style: none;
   padding: 0;
   display: grid;
   gap: 2px;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(13px * var(--asc-z));
+  color: var(--asc-muted);
 }
 
-/* the multiplier tile */
+/* the multiplier plaque */
 .asc-mult {
   display: grid;
   gap: 4px;
-  padding: 10px 12px;
+  padding: calc(10px * var(--asc-z)) calc(12px * var(--asc-z));
 }
 .asc-multvalue {
-  font-size: 30px;
+  font-size: calc(30px * var(--asc-z));
   line-height: 1.1;
-  color: var(--px-gold, #ffd66e);
+  color: var(--asc-good);
 }
 .asc-faster {
-  font-size: 14px;
+  font-size: calc(14px * var(--asc-z));
   line-height: 1.35;
-  color: var(--bi-frame-ink, #e8e2d4);
+  color: var(--asc-ink);
 }
 .asc-locked {
-  font-size: 14px;
-  color: var(--px-gold, #ffd66e);
+  font-size: calc(14px * var(--asc-z));
+  color: var(--asc-gold);
 }
 
-/* lists with a gold bullet, and a red one for what starts over */
+/* lists with a gold bullet */
 .asc-list {
   list-style: none;
   padding: 0;
   display: grid;
   gap: 4px;
-  font-size: 14px;
+  font-size: calc(14px * var(--asc-z));
   line-height: 1.25;
-  color: var(--bi-frame-ink, #e8e2d4);
+  color: var(--asc-ink);
 }
 .asc-list:not(.asc-shop) li::before {
   content: '';
@@ -135,10 +165,7 @@
   width: 6px;
   height: 6px;
   margin: 0 8px 1px 0;
-  background: var(--px-gold, #ffd66e);
-}
-.asc-list--reset li::before {
-  background: #d9534f;
+  background: var(--asc-gold);
 }
 .asc-actions {
   display: grid;
@@ -148,37 +175,90 @@
 .asc-actions[hidden] {
   display: none;
 }
-.asc-go {
+
+/* ASCEND: the hero button, raised gold with a dark bottom edge, the gain printed on it */
+html .asc .asc-go:not(#_px) {
   width: 100%;
-  padding: 10px 12px;
-  font-size: 22px;
+  padding: calc(14px * var(--asc-z)) calc(12px * var(--asc-z));
+  font-size: calc(18px * var(--asc-z));
+  line-height: 1.2;
+  text-align: center;
+  white-space: normal;
+  color: #2a1c05;
+  background: linear-gradient(#ffe18a, #f2b93a 55%, #d99a22);
+  box-shadow:
+    inset 0 0 0 2px #fff3c4,
+    0 calc(5px * var(--asc-z)) 0 #6b4709,
+    0 calc(5px * var(--asc-z)) 0 2px #2a1c05;
+  border: 0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+  transform: translateY(calc(-4px * var(--asc-z)));
+  margin-bottom: calc(6px * var(--asc-z));
+}
+html .asc .asc-go:not(#_px):active:not(.is-no) {
+  transform: translateY(0);
+  box-shadow:
+    inset 0 0 0 2px #fff3c4,
+    0 1px 0 #6b4709,
+    0 1px 0 2px #2a1c05;
+}
+html .asc .asc-go.is-no:not(#_px) {
+  color: var(--asc-muted);
+  background: #2a2a30;
+  text-shadow: none;
+  box-shadow:
+    inset 0 0 0 2px #4a4a52,
+    0 calc(5px * var(--asc-z)) 0 #101014;
 }
 
-/* what changes */
+/* what changes: the red plaque, then Kept forever in two columns */
 .asc-lists {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: calc(10px * var(--asc-z));
+}
+.asc-reset {
+  padding: calc(8px * var(--asc-z)) calc(10px * var(--asc-z));
+  font-size: calc(14px * var(--asc-z));
+  color: var(--asc-ink);
+  background: var(--asc-plaque);
+  box-shadow: inset 0 0 0 2px var(--asc-bad);
 }
 .asc-keep {
   display: grid;
-  align-content: start;
   gap: 6px;
-  padding: 8px 10px 10px;
+  padding: calc(8px * var(--asc-z)) calc(10px * var(--asc-z)) calc(10px * var(--asc-z));
+}
+.asc-list--kept {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 12px;
+}
+.asc .shop-challenges {
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: calc(13px * var(--asc-z));
+}
+.asc .shop-challenges p,
+.asc .shop-challenge {
+  overflow-wrap: anywhere;
+  font-size: calc(13px * var(--asc-z));
+}
+.asc .shop-challenge-list {
+  padding: 3px;
 }
 
 /* the shop */
 .asc-have {
-  font-size: 14px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(14px * var(--asc-z));
+  color: var(--asc-muted);
 }
 .asc-have b {
-  font-size: 22px;
-  color: var(--px-gold, #ffd66e);
+  font-size: calc(22px * var(--asc-z));
+  color: var(--asc-gold);
 }
 .asc-shop {
-  gap: 8px;
+  gap: calc(8px * var(--asc-z));
 }
 .asc-it {
   display: grid;
@@ -188,45 +268,46 @@
     'desc desc'
     'effect effect'
     'track price';
-  gap: 4px 10px;
+  gap: 4px calc(10px * var(--asc-z));
   align-items: center;
-  padding: 8px 10px;
-  background: #1c1c20;
-  box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
+  padding: calc(8px * var(--asc-z)) calc(10px * var(--asc-z));
+  background: var(--asc-plaque);
+  box-shadow: inset 0 0 0 2px var(--asc-gold);
 }
 .asc-it__name {
   grid-area: name;
-  font-size: 15px;
+  font-size: calc(15px * var(--asc-z));
+  color: var(--asc-gold);
 }
 .asc-it__level {
   grid-area: level;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(13px * var(--asc-z));
+  color: var(--asc-ink);
 }
 .asc-it__desc {
   grid-area: desc;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: calc(13px * var(--asc-z));
+  color: var(--asc-muted);
 }
 .asc-it__effect {
   grid-area: effect;
-  font-size: 13px;
-  color: var(--px-gold, #ffd66e);
+  font-size: calc(13px * var(--asc-z));
+  color: var(--asc-good);
 }
 .asc-lv {
   grid-area: track;
   display: block;
-  height: 8px;
+  height: calc(8px * var(--asc-z));
   background: #0f0f12;
   box-shadow: 0 0 0 2px var(--px-edge, #6b6b72);
 }
 .asc-lv u {
   display: block;
   height: 100%;
-  background: var(--px-gold, #ffd66e);
+  background: var(--asc-gold);
 }
 .asc-it.is-maxed {
-  opacity: 0.75;
+  opacity: 0.8;
 }
 .asc-price {
   grid-area: price;
@@ -234,11 +315,12 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
+  font-size: calc(14px * var(--asc-z));
 }
 .asc-price__ico {
   display: inline-flex;
-  width: 20px;
-  height: 20px;
+  width: calc(20px * var(--asc-z));
+  height: calc(20px * var(--asc-z));
 }
 .asc-price__ico svg,
 .asc-price__ico img {
@@ -251,6 +333,14 @@
 .asc [aria-disabled='true'] {
   cursor: default;
 }
-.asc.is-walking .shop-ring {
-  animation: none;
+.asc .asc-go {
+  cursor: pointer;
+  font-family: var(--bi-font-display, inherit);
+}
+.asc .asc-go:hover:not(.is-no) {
+  filter: brightness(1.08);
+}
+.asc .asc-go:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
 }

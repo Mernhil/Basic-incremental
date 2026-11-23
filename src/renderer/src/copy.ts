@@ -671,6 +671,9 @@ export const COPY = {
     rewardsLabel: 'Also unlocks',
     reward: (name: string, rarity: string, slot: string) => `${name}, ${rarity} ${slot}`,
     ascend: 'Ascend',
+    ascendHero: (now: string, after: string, gain: string) =>
+      `ASCEND · x${now} → x${after} · +${gain} Starlight`,
+    resetsLine: (what: string) => `Starts over: ${what}`,
     ascendLocked: (min: number) => `Ascend at ${min} Starlight`,
     confirmTitle: 'Walk through the gate?',
     confirmBody: (gain: string) =>

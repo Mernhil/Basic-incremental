@@ -67,7 +67,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const ringSprite = sprite('shop-ring');
   if (ringSprite) {
     ringWrap.classList.add('shop-spr');
-    ringWrap.style.cssText = `--nw:${ringSprite.w};--nh:${ringSprite.h};--want:1`;
+    ringWrap.style.cssText = `--nw:${ringSprite.w};--nh:${ringSprite.h}`;
   }
   const ring = h('span', 'shop-ring__sprite');
   ring.innerHTML = animatedSpriteHtml('shop-ring', 1);
@@ -101,7 +101,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const needs = h('p', 'asc-note');
 
   const ready = h('div', 'asc-actions');
-  const ascendBtn = h('button', 'px-btn asc-go px-display');
+  const ascendBtn = h('button', 'asc-go px-display');
   ascendBtn.type = 'button';
   ascendBtn.addEventListener('click', () => {
     if (ascendBtn.getAttribute('aria-disabled') === 'true') return;
@@ -115,7 +115,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   confirmTitle.id = 'asc-confirm-title';
   confirm.setAttribute('aria-labelledby', confirmTitle.id);
   const confirmBody = h('p', 'asc-note');
-  const goBtn = h('button', 'px-btn asc-go px-display', t.confirm);
+  const goBtn = h('button', 'asc-go px-display', t.confirm);
   goBtn.type = 'button';
   const cancelBtn = h('button', 'px-btn', t.cancel);
   cancelBtn.type = 'button';
@@ -136,7 +136,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const doneLabel = h('p', 'asc-note', t.doneGainLabel);
   const doneRewardsHead = h('h3', 'asc-sub', t.doneRewards);
   const doneRewards = h('ul', 'asc-list');
-  const nextBtn = h('button', 'px-btn asc-go px-display', t.doneNext);
+  const nextBtn = h('button', 'asc-go px-display', t.doneNext);
   nextBtn.type = 'button';
   nextBtn.addEventListener('click', () => setMode('ready', true));
   done.append(doneTitle, doneGain, doneLabel, doneRewardsHead, doneRewards, nextBtn);
@@ -162,16 +162,11 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   // =====================================================================================
   const changes = column('asc-col--changes', t.changesHead);
   const keptList = h('ul', 'asc-list asc-list--kept');
-  const resetList = h('ul', 'asc-list asc-list--reset');
+  const resetLine = h('p', 'asc-reset');
+  const keptTile = h('section', 'asc-keep px-tile');
+  keptTile.append(h('h3', 'asc-sub', t.kept), keptList);
   const lists = h('div', 'asc-lists');
-  for (const [head, list] of [
-    [t.kept, keptList],
-    [t.resets, resetList],
-  ] as const) {
-    const tile = h('section', 'asc-keep px-tile');
-    tile.append(h('h3', 'asc-sub', head), list);
-    lists.append(tile);
-  }
+  lists.append(resetLine, keptTile);
   const upgradesNote = h('p', 'asc-note', t.upgradesNote);
   const challenges = createChallengesPanel(ctx, content, () => {
     mode = 'ready';
@@ -301,7 +296,6 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   // Render
   // =====================================================================================
   let keptKey = '';
-  let resetKey = '';
   let prizeKey = '';
   function render(): void {
     const s = ctx.state();
@@ -336,7 +330,12 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
         lockedEl.hidden = view.lockedText === '';
         set(needs, view.canAscend || view.lockedText ? '' : view.needs);
         needs.hidden = needs.textContent === '';
-        set(ascendBtn, view.button);
+        set(
+          ascendBtn,
+          view.canAscend
+            ? t.ascendHero(view.multiplierNow, view.multiplierAfter, view.gain)
+            : view.button,
+        );
         ascendBtn.setAttribute('aria-disabled', String(!view.canAscend));
         ascendBtn.classList.toggle('is-no', !view.canAscend);
         set(confirmBody, t.confirmBody(view.gain));
@@ -353,17 +352,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
           }),
         );
       }
-      const rk = view.resets.map((r) => r.id).join(',');
-      if (rk !== resetKey) {
-        resetKey = rk;
-        resetList.replaceChildren(
-          ...view.resets.map((r) => {
-            const li = h('li', '', r.label);
-            li.title = r.detail;
-            return li;
-          }),
-        );
-      }
+      set(resetLine, t.resetsLine(view.resets.map((r) => r.label.toLowerCase()).join(', ')));
     }
 
     // ---- the Starlight shop ----
