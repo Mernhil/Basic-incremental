@@ -16,9 +16,9 @@ import {
 } from '../../../../game';
 import { cardItemArt } from '../../pages/loadoutCards';
 import { COPY } from '../../copy';
-import { HUB_MAP_H, HUB_MAP_W } from '../../hub/hubModel';
+import { HUB_MAP_H, HUB_MAP_W, hubOffset, hubScale } from '../../hub/hubModel';
 import { fmt } from '../../settings/numberFormat';
-import { costText } from '../../settings/cost';
+import { costMarkup } from '../../ui/costMarkup';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewHandle } from '../../table/contract';
 import { campScreen, type NodeView } from './campModel';
@@ -179,25 +179,30 @@ export function createCampView(host: HTMLElement, ctx: TableContext, place: Camp
     const key = `${w}x${hh}`;
     if (key === area || w === 0) return;
     area = key;
-    // whole scale by width: the scene fills the width and a tall scene is cut top and bottom
-    scale = Math.max(1, Math.floor(w / HUB_MAP_W + 0.05));
-    scene.style.setProperty('--s', String(scale));
+    // the hub's rule: the smallest whole scale that covers the view, the overflow cut evenly
+    scale = hubScale(w, hh);
+    const at = hubOffset(w, hh, scale);
     scene.style.width = `${HUB_MAP_W * scale}px`;
     scene.style.height = `${HUB_MAP_H * scale}px`;
-    scene.style.left = `${Math.floor((w - HUB_MAP_W * scale) / 2)}px`;
-    scene.style.top = `${Math.floor((hh - HUB_MAP_H * scale) / 2)}px`;
-    const sceneTop = Math.floor((hh - HUB_MAP_H * scale) / 2);
-    const foot = Math.round(sceneTop + HUB_MAP_H * scale - (hh - (bar.offsetHeight + 20)));
-    // panels stand under their node, never over each other, always inside the scene
-    let edge = 6;
+    scene.style.left = `${at.x}px`;
+    scene.style.top = `${at.y}px`;
+    const foot = Math.round(at.y + HUB_MAP_H * scale - (hh - (bar.offsetHeight + 20)));
+    // panels stand under their node, never over each other, always inside the visible view: the
+    // scene is cut at the edges, so a panel is sized and placed in screen pixels (u screen px per
+    // scene pixel, the scale or less when three panels would not fit the width)
+    const gap = 8;
+    const u = Math.min(scale, (w - 2 * gap - (nodes.length - 1) * gap) / (nodes.length * PANEL_W));
+    scene.style.setProperty('--s', String(u));
+    const panel = PANEL_W * u;
+    let edge = gap;
     nodes.forEach((n, i) => {
-      const last = HUB_MAP_W - 6 - PANEL_W - (nodes.length - 1 - i) * (PANEL_W + 4);
-      const left = Math.min(Math.max(n.cx - PANEL_W / 2, edge), last);
-      edge = left + PANEL_W + 4;
+      const last = w - gap - panel - (nodes.length - 1 - i) * (panel + gap);
+      const left = Math.min(Math.max(n.cx * scale + at.x - panel / 2, edge), last);
+      edge = left + panel + gap;
       n.el.style.bottom = `${foot}px`;
-      n.el.style.left = `${left * scale}px`;
-      n.el.style.width = `${PANEL_W * scale}px`;
-      n.lock.style.left = `${(left + PANEL_W / 2) * scale}px`;
+      n.el.style.left = `${left - at.x}px`;
+      n.el.style.width = `${panel}px`;
+      n.lock.style.left = `${left - at.x + panel / 2}px`;
       n.lock.style.top = `${LOCK_Y * scale}px`;
     });
     host.dataset['scale'] = String(scale);
@@ -410,8 +415,12 @@ export function createCampView(host: HTMLElement, ctx: TableContext, place: Camp
     }
     set(levelText, T.campLevel(model.level));
     const prices = campLevelCost(s, content);
-    set(cost, prices.map((p) => costText(content, p.resource, p.amount)).join(' · '));
     const can = canAfford(s, prices);
+    const costHtml = costMarkup(content, s, prices, (p) => !canAfford(s, [p]));
+    if (cost.dataset['sig'] !== costHtml) {
+      cost.dataset['sig'] = costHtml;
+      cost.innerHTML = costHtml;
+    }
     upgrade.textContent = T.raiseCamp;
     upgrade.setAttribute('aria-disabled', String(!can));
     upgrade.classList.toggle('is-no', !can);

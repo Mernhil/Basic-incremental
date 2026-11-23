@@ -10,7 +10,7 @@ export const GATHERING_COPY = {
   placeOn: (node: string) => `Place the new slot on ${node}`,
   toPlace: (n: number, place: string) =>
     `${n === 1 ? '1 new slot' : `${n} new slots`} to place: choose a ${place === 'forest' ? 'tree' : 'vein'}`,
-  placeAll: (rate: string, place: string) => `${place}: +${rate}/s in all`,
+  placeAll: (rate: string, place: string) => `${place}: +${rate}/s`,
   pickFor: (node: string) => `Tool for ${node}`,
   takeOff: 'Take it off',
   worksHere: 'Works here',

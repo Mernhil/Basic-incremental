@@ -90,12 +90,12 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
-  background: rgba(12, 12, 14, 0.82);
+  background: #0e0e10;
   border: calc(var(--s) * 1px) solid #ffd66e;
 }
 .camp__tile--empty {
   border-style: dashed;
-  background: rgba(12, 12, 14, 0.55);
+  background: #1a1a1d;
   text-align: center;
   padding: calc(var(--s) * 3px);
 }
@@ -105,7 +105,7 @@
   text-align: center;
   font-weight: 700;
   color: #ffd66e;
-  background: rgba(70, 52, 8, 0.78);
+  background: #3b2d08;
 }
 .camp__plus {
   font-size: calc(var(--s) * 13px);
@@ -113,7 +113,7 @@
 }
 .camp__tile:hover,
 .camp__tile:focus-visible {
-  background: rgba(60, 46, 10, 0.85);
+  background: #4a380b;
   outline: none;
 }
 .camp__art {
@@ -137,7 +137,7 @@
   justify-content: space-between;
   align-items: center;
   padding: calc(var(--s) * 4px) calc(var(--s) * 5px);
-  background: rgba(14, 14, 16, 0.88);
+  background: #0f0f11;
   border: calc(var(--s) * 1px) solid #8a6d2f;
 }
 .camp__node.is-selected .camp__label,
@@ -161,7 +161,7 @@
   text-align: center;
   white-space: nowrap;
   color: #d8d2c4;
-  background: rgba(20, 20, 24, 0.92);
+  background: #141418;
   box-shadow: 0 0 0 calc(var(--s) * 1px) #8a6d2f;
   pointer-events: none;
 }
@@ -183,6 +183,8 @@
   align-items: center;
   gap: 14px;
   padding: 8px 14px;
+  /* room at the right for the corner button of a dev build */
+  padding-right: 72px;
 }
 .camp__next.is-call {
   color: #ffd66e;
@@ -193,6 +195,11 @@
 }
 .camp__total {
   margin-left: auto;
+  white-space: nowrap;
+}
+.camp__cost {
+  display: inline-flex;
+  align-items: center;
 }
 
 /* the tool picker over the scene */
