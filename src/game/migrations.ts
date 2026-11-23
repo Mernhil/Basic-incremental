@@ -113,6 +113,9 @@ export const MIGRATIONS: MigrationTable = {
   42: v42ToV43,
   /** v43 -> v44: raid bosses (DESIGN.md §2): no tries used, no best scores, no rewards paid. */
   43: v43ToV44,
+  /** v44 -> v45: material nodes (DESIGN.md §2 Base camp): every open slot is on the material it
+   *  farmed, so none waits to be placed. */
+  44: v44ToV45,
 };
 
 /**
@@ -344,6 +347,56 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
+
+/** The camp's slots by level when save format 44 was made (a snapshot of `camp.json`): [level, forest, cave]. */
+const V44_CAMP_SLOTS: readonly (readonly [number, number, number])[] = [
+  [1, 1, 1],
+  [3, 2, 1],
+  [5, 2, 2],
+  [8, 3, 2],
+  [11, 3, 3],
+  [15, 4, 4],
+  [20, 5, 5],
+  [28, 6, 6],
+];
+/** The Starlight item that adds a slot to each place (`prestige.json` `second_hands`, 1 a level). */
+const V44_SLOT_ITEM = 'second_hands';
+
+/**
+ * v44 -> v45 (DESIGN.md §2 Base camp): a slot belongs to a material node, placed when it opens. A
+ * slot that was open at format 44 keeps the material it farmed: its chosen one, else the place's
+ * first (Oak, Copper Quarry), so no existing slot waits to be placed.
+ */
+function v44ToV45(state: Record<string, unknown>): Record<string, unknown> {
+  const camp = isRecord(state['camp']) ? state['camp'] : null;
+  if (!camp) return state;
+  const level = typeof camp['level'] === 'number' ? Math.max(1, Math.floor(camp['level'])) : 1;
+  const prestige = isRecord(state['prestige']) ? state['prestige'] : {};
+  const shop = isRecord(prestige['shop']) ? prestige['shop'] : {};
+  const bought = typeof shop[V44_SLOT_ITEM] === 'number' ? Math.max(0, shop[V44_SLOT_ITEM]) : 0;
+  const first = { forest: 'oak', cave: 'copper_quarry' } as const;
+  const rebuilt: Record<string, unknown> = { ...camp };
+  for (const [place, column] of [
+    ['forest', 1],
+    ['cave', 2],
+  ] as const) {
+    let open = 0;
+    for (const row of V44_CAMP_SLOTS) if (row[0] <= level) open = row[column];
+    open += bought;
+    const saved = Array.isArray(camp[place]) ? (camp[place] as unknown[]) : [];
+    const slots: unknown[] = [];
+    for (let index = 0; index < Math.max(open, saved.length); index += 1) {
+      const entry = saved[index];
+      const slot: Record<string, unknown> = isRecord(entry)
+        ? entry
+        : { material: null, card: null };
+      const material = typeof slot['material'] === 'string' ? slot['material'] : first[place];
+      slots.push({ ...slot, material });
+    }
+    rebuilt[place] = slots;
+  }
+  return { ...state, camp: rebuilt };
+}
 
 /** v43 -> v44 (DESIGN.md §2 Raid bosses): an empty raid record. */
 function v43ToV44(state: Record<string, unknown>): Record<string, unknown> {

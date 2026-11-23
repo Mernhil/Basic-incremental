@@ -113,7 +113,7 @@ export const COPY = {
     titles: {
       dungeon: 'Dungeon',
       logging: 'Forest',
-      mining: 'Cave',
+      mining: 'Mine',
       cards: 'Cards',
       summon: 'Summon',
       wardrobe: 'Wardrobe',

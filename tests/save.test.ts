@@ -445,8 +445,8 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
 
   it('starts a new game with its start cards on the camp slots and every other new field empty', () => {
     const state = freshState();
-    expect(state.camp.forest).toEqual([{ material: null, card: 'apprentice_feller' }]);
-    expect(state.camp.cave).toEqual([{ material: null, card: 'cave_digger' }]);
+    expect(state.camp.forest).toEqual([{ material: 'oak', card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: 'copper_quarry', card: 'cave_digger' }]);
     expect(state.camp.level).toBe(1);
     expect(state.production.forge.recipe).toBeNull();
     expect(state.production.forge.worker).toBeNull();

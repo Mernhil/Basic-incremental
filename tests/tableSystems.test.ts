@@ -83,6 +83,7 @@ describe('bonds', () => {
   it('pairs workers of one job at any of their slots', () => {
     let s = own(bareState(), 'apprentice_feller', 'elder_treant');
     s.camp.level = 3;
+    s.camp.forest[1] = { material: 'oak', card: null };
     s = assignSlotCardOk(s, 0, 'apprentice_feller');
     s = assignSlotCardOk(s, 1, 'elder_treant');
     expect(activeBonds(s, content).map((b) => b.id)).toEqual(['old_growth']);

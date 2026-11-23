@@ -269,8 +269,9 @@ export function newGame(): GameState {
 export function bareState(): GameState {
   const state = freshState();
   state.cards.loadouts.fighting = emptyCardLoadout();
-  state.camp.forest = [];
-  state.camp.cave = [];
+  // the first slot of each place is placed on its first node, with no card on it
+  state.camp.forest = [{ material: 'oak', card: null }];
+  state.camp.cave = [{ material: 'copper_quarry', card: null }];
   return state;
 }
 
