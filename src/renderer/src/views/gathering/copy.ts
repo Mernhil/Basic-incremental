@@ -80,6 +80,9 @@ export const GATHERING_COPY = {
   sendAway: 'Send away',
   noWorkerCards: 'No production cards yet.',
   inStock: 'In stock',
+  outTray: 'Out tray',
+  trayMade: (n: number) => `${n} made since you opened the forge`,
+  trayEmpty: 'Finished items hop in here',
   moreRecipes: 'More recipes',
   moreRecipesNote: 'Placeholder for the other recipes.',
 };
