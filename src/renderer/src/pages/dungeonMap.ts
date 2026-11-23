@@ -182,9 +182,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     zoom = w >= 1800 && hgt >= 1000 ? 1.5 : w >= 1500 && hgt >= 840 ? 1.25 : 1;
     art2 = zoom >= 1.5 ? 2 : 1;
     el.style.setProperty('--wm-z', String(zoom));
-    el.style.setProperty('--wm-s', String(art2 / zoom));
+    el.style.setProperty('--wm-s', String(art2));
   }
-  const sidePx = (): number => art2 / zoom;
+  const sidePx = (): number => art2;
 
   let picked: string | null = null;
   let selected: number | null = null;
