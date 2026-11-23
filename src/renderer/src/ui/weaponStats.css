@@ -397,3 +397,29 @@
 .wst-row.is-active .wst-fx__chip--state {
   color: #7fe08a;
 }
+
+/* three plaques per row in the dungeon, two in the Cards detail; the gains sit under the value */
+.wp--drawer .wst-plaques {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.wp--card .wst-plaques {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.wp--drawer .wst-plaque,
+.wp--card .wst-plaque {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+.wp--drawer .wst-gains,
+.wp--card .wst-gains {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 4px;
+}
+/* skill names in the pixel display font */
+.wst-row__name {
+  font-family: var(--bi-font-display, inherit);
+  font-size: 18px;
+  font-weight: 400;
+}
