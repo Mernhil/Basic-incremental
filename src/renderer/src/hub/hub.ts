@@ -292,7 +292,7 @@ export function createHub(
     const key = `${w}x${hh}`;
     if (key === area) return;
     area = key;
-    scale = hubScale(w, hh);
+    scale = hubScale(w);
     // the stage is bigger than the window: it starts centred (the overflow cut evenly) and the player
     // can pan it along the cut axis, clamped to the map's edges
     areaSize = { w, h: hh };

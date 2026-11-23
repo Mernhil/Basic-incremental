@@ -9,6 +9,7 @@ import {
   HUB_MAP_W,
   hubOffset,
   hubPanned,
+  coverScale,
   hubScale,
   scaled,
 } from '../src/renderer/src/hub/hubModel';
@@ -21,29 +22,25 @@ describe('hub map', () => {
     expect(png.readUInt32BE(16)).toBe(HUB_MAP_W);
     expect(png.readUInt32BE(20)).toBe(HUB_MAP_H);
     // the area under the header at the 1920 x 1080 design size is 1920 x 1016 (the zoom scales it to any window)
-    expect(hubScale(1920, 1016)).toBe(3);
-    expect(hubScale(300, 200)).toBe(1);
-    expect(hubScale(2400, 1016)).toBeCloseTo(3.75, 6); // a wider window than 16:9 grows the map to cover it
+    expect(hubScale(1920)).toBe(3);
+    expect(hubScale(300)).toBe(1);
+    expect(hubScale(2400)).toBeCloseTo(3.75, 6);
   });
 
-  it('fills the area: the smallest scale that covers it exactly', () => {
+  it('fits the width exactly, so no place is cut left or right; the cover scale fills the area', () => {
     for (const [w, h] of [
-      [800, 500],
-      [1274, 723],
-      [1366, 700],
-      [1600, 900],
+      [1920, 1228],
       [1920, 1016],
-      [2200, 1100],
-      [2560, 1300],
+      [2056, 1016],
+      [2580, 1016],
     ] as const) {
-      const s = hubScale(w, h);
-      expect(HUB_MAP_W * s).toBeGreaterThanOrEqual(w - 1e-6);
-      expect(HUB_MAP_H * s).toBeGreaterThanOrEqual(h - 1e-6);
-      if (s > 1) {
-        // a hair smaller would leave a gap
-        expect(HUB_MAP_W * s - w < 1e-6 || HUB_MAP_H * s - h < 1e-6).toBe(true);
-      }
+      const s = hubScale(w);
+      expect(HUB_MAP_W * s).toBeCloseTo(w, 6);
+      const c = coverScale(w, h);
+      expect(HUB_MAP_W * c).toBeGreaterThanOrEqual(w - 1e-6);
+      expect(HUB_MAP_H * c).toBeGreaterThanOrEqual(h - 1e-6);
     }
+    expect(coverScale(1920, 1016)).toBe(3);
   });
 
   it('centres the map and cuts the overflow evenly, so no place is cut off at 1280 x 720, 1274 x 723 or 1920 x 1080', () => {
@@ -99,36 +96,24 @@ describe('hub map', () => {
 });
 
 describe('hub pan', () => {
-  it('starts centred and stays inside the map when dragged', () => {
-    // 1500 x 1000 window: the design area is 1920 x 1216 under the header, the map is 3.8x
-    const w = 1920;
-    const h = 1216;
-    const s = hubScale(w, h);
+  it('a wider window: the map is taller than the area, starts centred and scrolls inside its edges', () => {
+    const w = 2580;
+    const h = 1016;
+    const s = hubScale(w);
     const c = hubPanned(w, h, s, { x: 0, y: 0 });
     expect(c).toEqual(hubOffset(w, h, s));
-    const left = hubPanned(w, h, s, { x: 1e6, y: 0 });
-    expect(left.x).toBe(0);
-    const right = hubPanned(w, h, s, { x: -1e6, y: 0 });
-    expect(right.x).toBeCloseTo(w - HUB_MAP_W * s, 6);
-    // the axis the map does not overflow stays put
-    expect(hubPanned(w, h, s, { x: 0, y: 500 }).y).toBe(c.y);
+    expect(hubPanned(w, h, s, { x: 0, y: 1e6 }).y).toBe(0);
+    expect(hubPanned(w, h, s, { x: 0, y: -1e6 }).y).toBeCloseTo(h - HUB_MAP_H * s, 6);
+    // the width fits, so the map never moves sideways
+    expect(hubPanned(w, h, s, { x: 500, y: 0 }).x).toBe(0);
   });
 
-  it('always covers the area', () => {
-    for (const [w, h] of [
-      [1920, 1228],
-      [2580, 1080],
-      [2056, 1080],
-      [1920, 1016],
-    ] as const) {
-      const s = hubScale(w, h);
-      for (const p of [-1e5, -50, 0, 50, 1e5]) {
-        const o = hubPanned(w, h, s, { x: p, y: p });
-        expect(o.x).toBeLessThanOrEqual(0);
-        expect(o.y).toBeLessThanOrEqual(0);
-        expect(o.x + HUB_MAP_W * s).toBeGreaterThanOrEqual(w - 1e-6);
-        expect(o.y + HUB_MAP_H * s).toBeGreaterThanOrEqual(h - 1e-6);
-      }
-    }
+  it('a taller window: the map is shorter than the area and stands centred', () => {
+    const w = 1920;
+    const h = 1216;
+    const s = hubScale(w);
+    const c = hubPanned(w, h, s, { x: 0, y: 0 });
+    expect(c.y).toBeGreaterThan(0);
+    expect(hubPanned(w, h, s, { x: 0, y: 500 }).y).toBe(c.y);
   });
 });

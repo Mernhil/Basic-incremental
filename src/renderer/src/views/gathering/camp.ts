@@ -16,7 +16,7 @@ import {
 } from '../../../../game';
 import { cardItemArt } from '../../pages/loadoutCards';
 import { COPY } from '../../copy';
-import { HUB_MAP_H, HUB_MAP_W, hubOffset, hubScale } from '../../hub/hubModel';
+import { HUB_MAP_H, HUB_MAP_W, coverScale, hubOffset } from '../../hub/hubModel';
 import { fmt } from '../../settings/numberFormat';
 import { costMarkup } from '../../ui/costMarkup';
 import { h } from '../../shell/shell';
@@ -180,7 +180,7 @@ export function createCampView(host: HTMLElement, ctx: TableContext, place: Camp
     if (key === area || w === 0) return;
     area = key;
     // the hub's rule: the smallest whole scale that covers the view, the overflow cut evenly
-    scale = hubScale(w, hh);
+    scale = coverScale(w, hh);
     const at = hubOffset(w, hh, scale);
     scene.style.width = `${HUB_MAP_W * scale}px`;
     scene.style.height = `${HUB_MAP_H * scale}px`;
