@@ -9,57 +9,38 @@ function spriteIds(): string[] {
   const ids: string[] = [];
   for (const d of content.allDungeons) {
     for (const e of d.enemies) if (e.sprite) ids.push(e.sprite);
-    if (d.miniBoss.sprite) ids.push(d.miniBoss.sprite);
+    for (const m of d.miniBosses) if (m.sprite) ids.push(m.sprite);
     if (d.boss.sprite) ids.push(d.boss.sprite);
   }
   return ids;
 }
 
 describe('the enemy roster art (ASSET_RULES §5)', () => {
-  it('gives every sprite id a still and an idle strip on the boss canvas', () => {
-    // the approved newer pictures are stills (no idle strip); the pack enemies have a strip
-    const STILLS = [
-      'moss_slime',
-      'bramble_beast',
-      'frost_imp',
-      'ice_wisp',
-      'storm_harpy',
-      'drowned_deckhand',
-      'lantern_moth',
-      'gilded_acolyte',
-      'shade_mote',
-      'rift_maw',
-    ];
+  it('gives every sprite id a still on the boss canvas and no idle strip', () => {
+    // every enemy picture is a still drawn by us now; no asset-pack idle strip is left
     for (const id of spriteIds()) {
-      const still = MANIFEST[`foe-${id}`];
-      expect(still, id).toMatchObject({ w: 160, h: 172 });
-      if (STILLS.includes(id)) {
-        expect(MANIFEST[`foe-${id}-anim`], id).toBeUndefined();
-        continue;
-      }
-      const strip = MANIFEST[`foe-${id}-anim`];
-      expect(strip, id).toBeDefined();
-      expect(strip!.w % 160, id).toBe(0);
-      expect(still!.animated?.frames, id).toBe(strip!.w / 160);
+      expect(MANIFEST[`foe-${id}`], id).toMatchObject({ w: 160, h: 172 });
+      expect(MANIFEST[`foe-${id}-anim`], id).toBeUndefined();
+      expect(MANIFEST[`foe-${id}`]!.animated, id).toBeUndefined();
     }
+    expect(
+      Object.keys(MANIFEST).filter((k) => k.startsWith('foe-') && k.endsWith('-anim')),
+    ).toEqual([]);
   });
 
   it('covers every enemy, mini-boss and boss', () => {
     const without: string[] = [];
     for (const d of content.allDungeons) {
       for (const e of d.enemies) if (!e.sprite) without.push(e.id);
-      if (!d.miniBoss.sprite) without.push(d.miniBoss.id);
+      for (const m of d.miniBosses) if (!m.sprite) without.push(m.id);
       if (!d.boss.sprite && !d.boss.art) without.push(d.boss.id);
     }
     expect(without).toEqual([]);
   });
 
-  it('keeps a mini-boss out of the normal enemies and gives each dungeon its own', () => {
-    const minis = content.allDungeons.map((d) => d.miniBoss.id);
-    expect(new Set(minis).size).toBe(minis.length);
-    for (const d of content.allDungeons) {
-      expect(d.enemies.some((e) => e.id === d.miniBoss.id)).toBe(false);
-    }
+  it('keeps the removed pack pictures out', () => {
+    expect(MANIFEST['foe-bloodroot_black']).toBeUndefined();
+    expect(MANIFEST['foe-woodland_stalker_wolf']).toBeUndefined();
   });
 });
 
@@ -93,14 +74,10 @@ describe('the Money coins, crystals and achievement badges', () => {
 });
 
 describe('the credits', () => {
-  it('lists the packs, required credits first, with a licence each', () => {
+  it('lists the packs still used, with a licence each', () => {
     const list = content.credits;
-    const firstOptional = list.findIndex((c) => !c.creditRequired);
-    expect(firstOptional).toBeGreaterThan(0);
-    expect(list.slice(firstOptional).every((c) => !c.creditRequired)).toBe(true);
-    expect(list.filter((c) => c.creditRequired).every((c) => c.author === 'elie automata')).toBe(
-      true,
-    );
+    // the asset pack with a required credit is out of the game; the rest ask for none
+    expect(list.filter((c) => c.creditRequired)).toEqual([]);
     expect(new Set(list.map((c) => c.id)).size).toBe(list.length);
   });
 });

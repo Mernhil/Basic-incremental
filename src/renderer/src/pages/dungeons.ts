@@ -18,6 +18,7 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   loadoutCards,
+  miniBossAt,
   pickDungeon,
   setDifficulty,
   setOverflow,
@@ -319,7 +320,11 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       label.setAttribute('role', 'rowheader');
       label.append(
         h('b', '', DUEL_COPY.stageFloor(stage.floor)),
-        h('span', '', stage.kind === 'boss' ? d.boss.name : d.miniBoss.name),
+        h(
+          'span',
+          '',
+          stage.kind === 'boss' ? d.boss.name : (miniBossAt(content, d, stage.floor)?.name ?? ''),
+        ),
       );
       row.append(label);
       for (const tier of STAR_DIFFICULTIES) row.append(cell(d, tier, stage.floor));
