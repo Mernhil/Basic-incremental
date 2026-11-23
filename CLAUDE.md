@@ -86,7 +86,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 3. **`break_eternity.js` for all game numbers.**
 4. **A save format change** needs a version bump, a migration and a migration test.
 5. **Verify before saying done:** lint, tests, build, and a run or screenshot for UI.
-6. **Dev cheats never ship**, and layouts holding pixel art use whole pixel scales.
+6. **Dev cheats never ship**, and the whole game UI scales smoothly with the window from one 1920x1080 design size; art pixels may come out uneven at in-between sizes.
 
 ## 10. Tools and art
 
