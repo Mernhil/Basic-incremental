@@ -30,6 +30,7 @@ export * from './production';
 export * from './workers';
 export * from './camp';
 export * from './dummy';
+export * from './trainingBattle';
 export * from './hpBars';
 export * from './cards';
 export * from './milestones';

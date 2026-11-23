@@ -4,6 +4,7 @@
  */
 
 import { DUEL_SPEEDS } from '../../../game';
+import { ELEMENTS } from '../../../data';
 
 /** `system` follows the Windows animation setting; `reduced` and `full` override it. */
 export type MotionPref = 'system' | 'reduced' | 'full';
@@ -14,6 +15,8 @@ export interface UiPrefs {
   autosaveSeconds: number;
   /** The duel speed the player chose (DESIGN.md §2 Speed button); one of DUEL_SPEEDS. */
   duelSpeed: number;
+  /** The Training ground dummy's element, or 'none'. */
+  trainingElement: string;
 }
 
 export const MOTION_PREFS: readonly MotionPref[] = ['system', 'reduced', 'full'];
@@ -23,6 +26,7 @@ export const DEFAULT_PREFS: UiPrefs = {
   motion: 'system',
   autosaveSeconds: 30,
   duelSpeed: 1,
+  trainingElement: 'none',
 };
 
 export const PREFS_STORE_KEY = 'bi.ui';
@@ -44,6 +48,11 @@ export function parsePrefs(raw: string | null): UiPrefs {
     motion: pick(data['motion'], MOTION_PREFS, DEFAULT_PREFS.motion),
     autosaveSeconds: pick(data['autosaveSeconds'], AUTOSAVE_CHOICES, DEFAULT_PREFS.autosaveSeconds),
     duelSpeed: pick(data['duelSpeed'], DUEL_SPEEDS, DEFAULT_PREFS.duelSpeed),
+    trainingElement: pick(
+      data['trainingElement'],
+      ['none', ...ELEMENTS] as readonly string[],
+      DEFAULT_PREFS.trainingElement,
+    ),
   };
 }
 

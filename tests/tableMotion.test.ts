@@ -26,8 +26,8 @@ describe('motion E stagger', () => {
 });
 
 describe('table views', () => {
-  it('has one id per view of the table, the dungeon first', () => {
+  it('has one id per view of the table; the dungeon is a screen, not a view', () => {
     expect(new Set(VIEW_IDS).size).toBe(VIEW_IDS.length);
-    expect(VIEW_IDS[0]).toBe('dungeon');
+    expect(VIEW_IDS as readonly string[]).not.toContain('dungeon');
   });
 });
