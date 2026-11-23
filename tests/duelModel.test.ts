@@ -46,9 +46,9 @@ describe('the hand', () => {
     expect(handSize(0)).toEqual({ w: 188, h: 235 });
   });
 
-  it('wants a card from the duel height, never more than 55% of it', () => {
+  it('wants a card from the duel height, never more than 42% of it', () => {
     const { want, max } = handCardWant(1000);
-    expect(want).toBeCloseTo((1000 * 0.42 * 132) / 186);
+    expect(want).toBeCloseTo((1000 * 0.34 * 132) / 186);
     expect(max).toBeGreaterThan(want);
   });
 

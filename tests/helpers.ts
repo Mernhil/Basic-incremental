@@ -52,11 +52,11 @@ function pinStarBar(bundled: Content): Content {
 export function neutralStars(base: Content): Content {
   const stageStars = {
     ...base.combat.stageStars,
-    damagePerLevel: 0,
     lootPerLevel: 0,
     chests: { ...base.combat.stageStars.chests, rewards: [] },
   };
-  return { ...base, combat: { ...base.combat, stageStars } };
+  const difficultyLoot = { normal: 0, hard: 0, nightmare: 0, endless: 0 };
+  return { ...base, combat: { ...base.combat, stageStars, difficultyLoot } };
 }
 
 /**
@@ -65,12 +65,10 @@ export function neutralStars(base: Content): Content {
  * returns `state`. Use it with `neutralStars` content so the stars add nothing else.
  */
 export function withOverflow(state: GameState, base: Content): GameState {
-  const kills = base.combat.stageStars.kills[base.combat.stageStars.overflowFromLevel - 1]!;
   for (const dungeon of base.dungeons) {
     for (const difficulty of STAR_DIFFICULTIES) {
       for (const floor of stageFloors(base, dungeon)) {
         const key = stageKey(dungeon.id, difficulty, floor);
-        state.combat.stageKills[key] = Math.max(kills, state.combat.stageKills[key] ?? 0);
         state.combat.overflow[key] = true;
       }
     }
@@ -270,8 +268,9 @@ export function newGame(): GameState {
 export function bareState(): GameState {
   const state = freshState();
   state.cards.loadouts.fighting = emptyCardLoadout();
-  state.camp.forest = [];
-  state.camp.cave = [];
+  // the first slot of each place is placed on its first node, with no card on it
+  state.camp.forest = [{ material: 'oak', card: null }];
+  state.camp.cave = [{ material: 'copper_quarry', card: null }];
   return state;
 }
 

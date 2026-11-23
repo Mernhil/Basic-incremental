@@ -35,6 +35,7 @@ function busyState() {
     prestigeCount: 3,
     resources: { ...state.resources, oak_gem: new Decimal('1.5e500') },
   };
+  state.combat.stageKills = { 'mossy_cellar:normal:1': 2 };
   state.combat.trialBest = { glimmer_trial: 0.5 };
   state.combat.trialAttempt = { elapsedSeconds: 12.5, dealt: new Decimal('3e400') };
   state.pity = { root_warden: 17 };
@@ -444,8 +445,8 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
 
   it('starts a new game with its start cards on the camp slots and every other new field empty', () => {
     const state = freshState();
-    expect(state.camp.forest).toEqual([{ material: null, card: 'apprentice_feller' }]);
-    expect(state.camp.cave).toEqual([{ material: null, card: 'cave_digger' }]);
+    expect(state.camp.forest).toEqual([{ material: 'oak', card: 'apprentice_feller' }]);
+    expect(state.camp.cave).toEqual([{ material: 'copper_quarry', card: 'cave_digger' }]);
     expect(state.camp.level).toBe(1);
     expect(state.production.forge.recipe).toBeNull();
     expect(state.production.forge.worker).toBeNull();

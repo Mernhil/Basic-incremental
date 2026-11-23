@@ -76,6 +76,8 @@ export function trainingContent(content: Content, settings: TrainingSettings): C
     enabled: true,
     unlockedBy: null,
     floors: 1,
+    // the training ground fights in the Mossy Cellar's room (the dummy wears the cellar boss's picture)
+    background: 'mossy_cellar',
     enemies: [{ id: 'training_dummy_foe', name: 'Training dummy', hpWeight: 1 }],
     miniBosses: [],
     boss: {

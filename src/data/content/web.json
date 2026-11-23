@@ -1262,13 +1262,13 @@
       "maxLevel": 21,
       "perLevel": [
         {
-          "stat": "stars.damage",
+          "stat": "combat.critDamage",
           "kind": "percent",
           "value": "3.75"
         }
       ],
       "gate": 2,
-      "description": "Each star on a dungeon makes your team hit harder.",
+      "description": "Your team’s crits hit harder.",
       "cost": {
         "resource": "skill_points",
         "base": "1",
@@ -1338,7 +1338,7 @@
       "maxLevel": 1,
       "perLevel": [
         {
-          "stat": "stars.damage",
+          "stat": "combat.critDamage",
           "kind": "percent",
           "value": "100"
         },
@@ -1355,7 +1355,7 @@
       ],
       "keystone": true,
       "gate": 3,
-      "description": "Stars on a dungeon count double for damage, and bring half as much more loot and chests.",
+      "description": "Crits hit twice as hard, and stars on a dungeon bring half as much more loot and chests.",
       "cost": {
         "resource": "skill_points",
         "base": "8",
