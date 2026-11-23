@@ -174,7 +174,7 @@ export function movesView(
   });
 
   let unlock: SkillUnlockView | null = null;
-  const cost = skillUnlockCost(content, cardId);
+  const cost = skillUnlockCost(content, cardId, collectModifiers(state, content));
   if (owned && moves.skill && !moves.skill.open && cost) {
     const have = state.resources[cost.resource] ?? new Decimal(0);
     unlock = {

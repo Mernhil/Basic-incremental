@@ -39,6 +39,7 @@ import {
   withDps,
   withAutoChallenge,
   withOverflow,
+  openAscension,
 } from './helpers';
 
 /**
@@ -144,6 +145,7 @@ describe('kills and star levels', () => {
     state.combat.stageChests[BOSS] = 3;
     state.combat.overflow[BOSS] = true;
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
+    openAscension(state);
     const result = ascend(state, real);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.combat.stageKills).toEqual({ [BOSS]: 120 });

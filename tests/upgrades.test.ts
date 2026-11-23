@@ -17,7 +17,7 @@ import {
   waitingPicks,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState, withDps } from './helpers';
+import { bareState, constantRng, content, freshState, withDps, openAscension } from './helpers';
 
 const NOW = 1_700_000_000_000;
 const ms = (id: string) => content.perkMilestoneById.get(id)!;
@@ -96,6 +96,7 @@ describe('ascension', () => {
     state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
     state.upgrades.picks['sharpen_5'] = 'sharpen_5_cry';
     state.upgrades.moneyEarned = new Decimal(123456);
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     const next = result.state;

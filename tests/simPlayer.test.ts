@@ -127,12 +127,12 @@ describe('sim player: workers and the forge', () => {
     expect(forest).toHaveLength(Math.min(2, openSlots(state, content, 'forest')));
   });
 
-  it('fills a slot the Starlight item opened', () => {
+  it('fills the open slots of the camp level, and Wider Grounds opens none', () => {
     const state = freshState();
-    state.prestige.shop['second_hands'] = 1; // one more slot in each place
+    state.prestige.shop['second_hands'] = 1;
     own(state, 'moss_forager');
     const after = placeBestWorkers(state, content);
-    expect(slotWorkers(after, content).filter((w) => w.place === 'forest')).toHaveLength(2);
+    expect(slotWorkers(after, content).filter((w) => w.place === 'forest')).toHaveLength(1);
   });
 
   it('runs the forge only for a card that needs stars and with spare gems', () => {
@@ -302,7 +302,9 @@ describe('sim player: floor Challenges and the team of four', () => {
     const cellar = real.dungeonById.get('mossy_cellar')!;
     // Wins: auto-challenge on, nothing pressed.
     const easy = withBossAttack(real, 'mossy_cellar', 21, 2);
-    const on = chooseAutoChallenge(withAutoChallenge(atBossWall(), false), easy, 0, null);
+    const owner = withAutoChallenge(atBossWall(), false);
+    owner.prestige.shop['auto_push'] = 1; // the switch is a Starlight unlock
+    const on = chooseAutoChallenge(owner, easy, 0, null);
     expect(floorPosition(on.state, cellar).autoChallenge).toBe(true);
     expect(on.tried).toBe(false);
     // Close: auto-challenge off, the Challenge button pressed, and not again within the wait.
@@ -335,6 +337,7 @@ describe('sim player: a lost Challenge', () => {
       tiers: { normal: { floor: 9, best: 9 } },
     };
     state.activeDungeonId = 'mossy_cellar';
+    state.prestige.shop['auto_push'] = 1;
     const easy = withBossAttack(withDps(1e6, real), 'mossy_cellar', 0, 2);
     const margin = challengeMargin(state, easy, 'mossy_cellar', collectModifiers(state, easy))!;
     expect(margin).toBeGreaterThan(CHALLENGE_WIN);

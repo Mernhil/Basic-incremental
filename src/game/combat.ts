@@ -1,4 +1,5 @@
 import { isUiLookSlot, type BurstJob, type Content, type Dungeon, type Trial } from '../data';
+import { autoPushOwned } from './prestige';
 import { payFloorFirstWin } from './summon';
 import { payHeirloomScrollsForClear } from './heirlooms';
 import { cardBaseDamage, fightingXpPerKill, fightingXpPerSecond, grantLoadoutXp } from './cards';
@@ -250,6 +251,8 @@ export function setAutoChallenge(
   if (!dungeon) return fail('unknown');
   if (!isDungeonUnlocked(state, content, dungeonId)) return fail('locked');
   if (floorPosition(state, dungeon).autoChallenge === on) return { ok: true, state };
+  // Auto-push is a Starlight unlock (DESIGN.md Ascension): without it the switch stays off.
+  if (on && !autoPushOwned(state, content)) return fail('locked');
   const next = cloneState(state);
   ensureProgress(next, dungeonId).autoChallenge = on;
   return { ok: true, state: next };

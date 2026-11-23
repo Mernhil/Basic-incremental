@@ -122,7 +122,7 @@ describe('v41 -> v42: the base camp', () => {
     const { state } = readSave(JSON.stringify(base), content);
     expect(state.camp.level).toBe(8);
     expect(state.resources['oak_gem']!.toNumber()).toBe(5000);
-    expect(state.prestige.shop).toEqual({ second_hands: 1 });
+    expect(state.prestige.shop).toEqual({ second_hands: 1, auto_push: 1 });
     expect(slotWorkers(state, content).map((w) => [w.place, w.card, w.material.id])).toEqual([
       ['forest', 'apprentice_feller', 'oak'],
       ['forest', 'grove_keeper', 'ironbark'],

@@ -4,43 +4,42 @@
     "tierWeights": ["1", "5", "25"],
     "divisor": "2.8e7",
     "exponent": 0.45,
-    "minimum": 6
+    "minimum": 1,
+    "progress": {
+      "perFloor": "0.08",
+      "dungeonStep": 0.5,
+      "bossFloors": 4,
+      "difficultyWeights": {
+        "normal": "1",
+        "hard": "2",
+        "nightmare": "4",
+        "endless": "6"
+      }
+    }
   },
   "shop": [
     {
-      "id": "starlit_groves",
-      "name": "Starlit Groves",
-      "description": "+10% logging output per level",
-      "maxLevel": 25,
+      "id": "second_hands",
+      "name": "More Yield per Slot",
+      "description": "+20% yield on every forest and cave slot per level",
+      "maxLevel": 8,
       "cost": {
-        "base": "2",
-        "growth": "1.5"
+        "base": "12",
+        "growth": "1.6"
       },
       "perLevel": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "10",
+          "value": "20",
           "scope": {
             "job": "logging"
           }
-        }
-      ]
-    },
-    {
-      "id": "starlit_veins",
-      "name": "Starlit Veins",
-      "description": "+10% mining output per level",
-      "maxLevel": 25,
-      "cost": {
-        "base": "2",
-        "growth": "1.5"
-      },
-      "perLevel": [
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "10",
+          "value": "20",
           "scope": {
             "job": "mining"
           }
@@ -48,72 +47,75 @@
       ]
     },
     {
-      "id": "starforged_edge",
-      "name": "Starforged Edge",
-      "description": "+15% damage per level",
-      "maxLevel": 25,
+      "id": "auto_push",
+      "name": "Auto-push",
+      "description": "Challenges start by themselves when you are ready",
+      "maxLevel": 1,
       "cost": {
-        "base": "3",
+        "base": "6",
+        "growth": "1"
+      },
+      "perLevel": [],
+      "grants": "auto_push"
+    },
+    {
+      "id": "third_raid_try",
+      "name": "Third Raid Try",
+      "description": "One more raid try a day on every boss",
+      "maxLevel": 1,
+      "cost": {
+        "base": "15",
+        "growth": "1"
+      },
+      "perLevel": [
+        {
+          "stat": "raids.tries",
+          "kind": "flat",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "keep_training",
+      "name": "Lasting Training",
+      "description": "Training levels are kept through Ascension",
+      "maxLevel": 1,
+      "cost": {
+        "base": "30",
+        "growth": "1"
+      },
+      "perLevel": [],
+      "grants": "keep_training"
+    },
+    {
+      "id": "faster_skills",
+      "name": "Faster Skill Unlocks",
+      "description": "Opening a card's skill costs 4% fewer Cores per level",
+      "maxLevel": 5,
+      "cost": {
+        "base": "15",
         "growth": "1.6"
       },
       "perLevel": [
         {
-          "stat": "combat.damage",
+          "stat": "moves.unlockCost",
           "kind": "percent",
-          "value": "15"
+          "value": "-4"
         }
       ]
     },
     {
-      "id": "celestial_ward",
-      "name": "Celestial Ward",
-      "description": "+20% card health per level",
-      "maxLevel": 10,
-      "cost": {
-        "base": "3",
-        "growth": "1.7"
-      },
-      "perLevel": [
-        {
-          "stat": "combat.health",
-          "kind": "percent",
-          "value": "20"
-        }
-      ]
-    },
-    {
-      "id": "constellation_crystals",
-      "name": "Constellation Crystals",
-      "description": "+4% crystals from bosses per level",
-      "maxLevel": 10,
-      "cost": {
-        "base": "5",
-        "growth": "1.8"
-      },
-      "perLevel": [
-        {
-          "stat": "drops.crystalMultiplier",
-          "kind": "percent",
-          "value": "4"
-        }
-      ]
-    },
-    {
-      "id": "wide_skies",
-      "name": "Wide Skies",
-      "description": "Tree and mine level prices grow 1% slower per level",
+      "id": "head_start",
+      "name": "Head Start",
+      "description": "Each run starts 4% deeper into your best floors",
       "maxLevel": 5,
       "cost": {
-        "base": "8",
-        "growth": "2"
+        "base": "10",
+        "growth": "1.8"
       },
-      "perLevel": [
-        {
-          "stat": "cost.growth",
-          "kind": "percent",
-          "value": "-1"
-        }
-      ]
+      "perLevel": [],
+      "grants": "head_start",
+      "percent": 4
     },
     {
       "id": "long_night",
@@ -131,18 +133,6 @@
           "value": "1"
         }
       ]
-    },
-    {
-      "id": "second_hands",
-      "name": "Wider Grounds",
-      "description": "One more farming slot in the forest and in the cave",
-      "maxLevel": 6,
-      "cost": {
-        "base": "12",
-        "growth": "1.6"
-      },
-      "perLevel": [],
-      "grants": "camp_slots"
     },
     {
       "id": "travel_pack",
@@ -178,5 +168,38 @@
       "ascension": 6,
       "cosmetics": ["starlight_c"]
     }
-  ]
+  ],
+  "multiplier": {
+    "step": "0.2",
+    "growth": "0.03"
+  },
+  "firstAscension": {
+    "dungeon": "frostspire_vault"
+  },
+  "prizes": {
+    "summonScrolls": "3",
+    "cores": "2",
+    "pulls": [
+      {
+        "ascension": 4,
+        "tier": "mythic"
+      },
+      {
+        "ascension": 8,
+        "tier": "heirloom"
+      },
+      {
+        "ascension": 12,
+        "tier": "mythic"
+      },
+      {
+        "ascension": 16,
+        "tier": "heirloom"
+      },
+      {
+        "ascension": 20,
+        "tier": "mythic"
+      }
+    ]
+  }
 }

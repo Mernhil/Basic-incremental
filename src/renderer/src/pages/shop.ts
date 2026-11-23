@@ -1,14 +1,4 @@
-import {
-  ascend,
-  ascensionPreview,
-  buyShardItem,
-  buyStarlightItem,
-  collectModifiers,
-  shardShop,
-  starlightShop,
-  type GameState,
-} from '../../../game';
-import { fmt } from '../settings/numberFormat';
+import { buyShardItem, shardShop, type GameState } from '../../../game';
 import { COPY } from '../copy';
 import { svg } from '../art/gems';
 import { keptIconMarkup } from '../ui/resourceIcons';
@@ -16,14 +6,10 @@ import { ITEM_VIEWBOX } from '../art/items';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { h } from '../shell/shell';
 import { icon, type IconName } from '../shell/icons';
-import { skinStyle, starlightSvg } from '../ui/skins';
 import { hide as hideTip } from '../shell/tooltip';
-import { reducedMotion } from '../stage/motion';
 import { showReveal } from '../stage/reveal';
 import { toast } from '../stage/toast';
-import { gateView, rewardView, starlightViews, type RewardView } from './ascensionModel';
 import { shardGainView, shardOfferViews, shardsText, type OfferArt } from './achievementsModel';
-import { createChallengesPanel } from './challengesPanel';
 import { cardFaceProps, cardItemArt } from './loadoutCards';
 import type { PageContext } from './production';
 import './shop.css';
@@ -40,8 +26,6 @@ export interface ShopContext extends PageContext {
   sound?: (id: string) => void;
 }
 
-type Mode = 'ready' | 'confirm' | 'walking' | 'done';
-
 const RESOURCE_ICON: Record<string, IconName> = {
   tree_gem: 'wood',
   mine_gem: 'ore',
@@ -50,14 +34,9 @@ const RESOURCE_ICON: Record<string, IconName> = {
   prestige: 'starlight',
 };
 
-/** How long the BOUGHT stamp stays on a Starlight line. */
-const STAMP_MS = 1400;
-
 export function createShopPage(page: HTMLElement, ctx: ShopContext): { render(): void } {
   const { content } = ctx;
-  const t = COPY.ascension;
   const ts = COPY.shop;
-  let mode: Mode = 'ready';
 
   const table = h('div', 'shop-table');
   page.append(table);
@@ -121,60 +100,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   };
 
   // =====================================================================================
-  // Counter 1: Starlight shop
-  // =====================================================================================
-  const star = stall('shop-stall--starlight', t.shop, ts.boards.starlight);
-  const offers = h('ul', 'shop-list');
-  star.body.append(offers);
-
-  type OfferUi = {
-    li: HTMLElement;
-    level: HTMLElement;
-    fill: HTMLElement;
-    price: HTMLButtonElement;
-    effect: HTMLElement;
-    stamp: HTMLElement;
-    timer: number;
-  };
-  const offerUis = new Map<string, OfferUi>();
-  for (const item of content.prestige.shop) {
-    const li = h('li', 'shop-it shop-it--star');
-    li.dataset.item = item.id;
-    const level = h('span', 'shop-it__level bi-num');
-    const effect = h('span', 'shop-it__sub');
-    const track = h('i', 'shop-lv');
-    track.setAttribute('aria-hidden', 'true');
-    const fill = h('u');
-    track.append(fill);
-    const price = priceBtn(() => buyStarlight(item.id), 'star');
-    const stamp = h('span', 'shop-stamp');
-    stamp.setAttribute('aria-hidden', 'true');
-    stamp.hidden = true;
-    stamp.innerHTML = spriteBox('shop-stamp');
-    li.append(h('b', 'shop-it__name', item.name), level, effect, track, price, stamp);
-    offers.append(li);
-    offerUis.set(item.id, { li, level, fill, price, effect, stamp, timer: 0 });
-  }
-
-  function buyStarlight(id: string): void {
-    const result = buyStarlightItem(ctx.state(), content, id);
-    if (!result.ok) return;
-    ctx.apply(result.state);
-    ctx.sound?.('buy');
-    const ui = offerUis.get(id);
-    if (!ui) return;
-    ui.stamp.hidden = false;
-    ui.stamp.classList.remove('is-slam');
-    if (!reducedMotion()) {
-      void ui.stamp.offsetWidth;
-      ui.stamp.classList.add('is-slam');
-    }
-    window.clearTimeout(ui.timer);
-    ui.timer = window.setTimeout(() => (ui.stamp.hidden = true), STAMP_MS);
-  }
-
-  // =====================================================================================
-  // Counter 2: Shard shop
+  // The Shard shop
   // =====================================================================================
   const shard = stall('shop-stall--shards', COPY.achievements.shop, ts.boards.shards);
   const coinEl = h('span', 'shop-coin');
@@ -276,237 +202,11 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   }
 
   // =====================================================================================
-  // Counter 3: Ascension
-  // =====================================================================================
-  const asc = stall('shop-stall--ascension', t.gate, ts.boards.ascension);
-  const nth = h('em', 'shop-sign__count shop-sign__nth');
-  asc.sign.append(nth);
-  asc.count.remove();
-  const gate = h('div', 'shop-gate');
-  asc.body.append(gate);
-
-  // the ring at 2x around the Starlight coin
-  const ringWrap = h('div', 'shop-ring');
-  ringWrap.setAttribute('aria-hidden', 'true');
-  const ringSprite = sprite('shop-ring');
-  if (ringSprite) {
-    ringWrap.classList.add('shop-spr');
-    ringWrap.style.cssText = `--nw:${ringSprite.w};--nh:${ringSprite.h};--want:2`;
-  }
-  const ring = h('span', 'shop-ring__sprite');
-  ring.innerHTML = animatedSpriteHtml('shop-ring', 1);
-  const ringCoin = h('span', 'shop-ring__coin');
-  // the coin follows the Starlight style worn in the Wardrobe (redrawn when it changes, in `render`)
-  let coinStyle = skinStyle('starlight');
-  ringCoin.innerHTML = starlightSvg();
-  ringWrap.append(ring, ringCoin);
-
-  const ready = h('div', 'shop-panel');
-  const gainValue = h('p', 'shop-gain px-display bi-num');
-  const needs = h('p', 'shop-needs');
-  const rewardsNote = h('p', 'shop-needs');
-  const ascendBtn = h('button', 'shop-ascend px-display');
-  ascendBtn.type = 'button';
-  ascendBtn.addEventListener('click', () => {
-    if (ascendBtn.getAttribute('aria-disabled') === 'true') return;
-    setMode('confirm');
-  });
-  ready.append(gainValue, needs, rewardsNote, ascendBtn);
-
-  const confirm = h('div', 'shop-panel');
-  confirm.setAttribute('role', 'group');
-  const confirmTitle = h('h3', 'shop-head', t.confirmTitle);
-  confirmTitle.id = 'shop-confirm-title';
-  confirm.setAttribute('aria-labelledby', confirmTitle.id);
-  const confirmBody = h('p', 'shop-needs shop-needs--left');
-  const goBtn = h('button', 'shop-ascend', t.confirm);
-  goBtn.type = 'button';
-  const cancelBtn = h('button', 'shop-cancel', t.cancel);
-  cancelBtn.type = 'button';
-  confirm.append(confirmTitle, confirmBody, goBtn, cancelBtn);
-  goBtn.addEventListener('click', walkThrough);
-  cancelBtn.addEventListener('click', () => setMode('ready', true));
-  confirm.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      setMode('ready', true);
-    }
-  });
-
-  const done = h('div', 'shop-panel');
-  done.setAttribute('aria-live', 'polite');
-  const doneTitle = h('h3', 'shop-head');
-  const doneGain = h('p', 'shop-gain px-display bi-num');
-  const doneLabel = h('p', 'shop-needs', t.doneGainLabel);
-  const doneRewardsHead = h('h3', 'shop-head', t.doneRewards);
-  const doneRewards = h('ul', 'shop-bullets');
-  const nextBtn = h('button', 'shop-ascend', t.doneNext);
-  nextBtn.type = 'button';
-  nextBtn.addEventListener('click', () => setMode('ready', true));
-  done.append(doneTitle, doneGain, doneLabel, doneRewardsHead, doneRewards, nextBtn);
-
-  // Kept and Reset: two tiles side by side
-  const keptList = h('ul', 'shop-bullets shop-bullets--kept');
-  const resetList = h('ul', 'shop-bullets shop-bullets--reset');
-  const lists = h('div', 'shop-lists');
-  for (const [head, list] of [
-    [ts.kept, keptList],
-    [ts.reset, resetList],
-  ] as const) {
-    const tile = h('section', 'shop-keep px-tile');
-    tile.append(h('h3', 'shop-head', head), list);
-    lists.append(tile);
-  }
-  const challenges = createChallengesPanel(ctx, content, () => {
-    mode = 'ready';
-    render();
-  });
-  gate.append(ringWrap, ready, confirm, done, lists, challenges.el);
-
-  function setMode(next: Mode, focus = false): void {
-    mode = next;
-    table.dataset.mode = next;
-    ready.hidden = next !== 'ready' && next !== 'walking';
-    confirm.hidden = next !== 'confirm';
-    done.hidden = next !== 'done';
-    render();
-    if (next === 'confirm') goBtn.focus();
-    else if (focus && next === 'ready') ascendBtn.focus();
-    else if (focus && next === 'done') nextBtn.focus();
-  }
-
-  const rewardLi = (r: RewardView): HTMLElement => {
-    const li = h('li', '', r.text);
-    li.dataset.rarity = String(r.rarity);
-    return li;
-  };
-
-  function walkThrough(): void {
-    if (mode !== 'confirm') return;
-    const result = ascend(ctx.state(), content);
-    if (!result.ok) {
-      setMode('ready', true);
-      return;
-    }
-    hideTip();
-    mode = reducedMotion() ? 'done' : 'walking';
-    ctx.apply(result.state);
-    const gainText = fmt(result.gained);
-    const rewards = result.cosmetics.map((id) => rewardView(content, id));
-    doneTitle.textContent = t.doneTitle(result.state.prestigeCount);
-    doneGain.textContent = t.doneGain(gainText);
-    doneRewards.replaceChildren(...rewards.map(rewardLi));
-    doneRewardsHead.hidden = rewards.length === 0;
-    doneRewards.hidden = rewards.length === 0;
-    ctx.sound?.('ascend');
-    toast(
-      t.toast,
-      t.toastDetail(
-        gainText,
-        rewards.map((r) => r.name),
-      ),
-      'milestone',
-      'prismatic',
-    );
-    if (reducedMotion()) {
-      setMode('done', true);
-      return;
-    }
-    setMode('walking');
-    table.classList.add('is-walking');
-    window.setTimeout(() => {
-      sweep();
-      window.setTimeout(() => {
-        table.classList.remove('is-walking');
-        setMode('done', true);
-      }, 700);
-    }, 650);
-  }
-
-  // =====================================================================================
   // Render
   // =====================================================================================
-  let keptKey = '';
-  let resetKey = '';
   let artKey = '';
   function render(): void {
     const s = ctx.state();
-    const mods = collectModifiers(s, content);
-    const worn = skinStyle('starlight');
-    if (worn !== coinStyle) {
-      coinStyle = worn;
-      ringCoin.innerHTML = starlightSvg();
-    }
-
-    challenges.render();
-
-    // ---- ascension ----
-    if (mode !== 'walking') {
-      const view = gateView(ascensionPreview(s, content, mods), s, content);
-      table.dataset.ready = String(view.canAscend);
-      set(nth, ts.no(view.ascension));
-      if (mode === 'ready' || mode === 'confirm') {
-        set(gainValue, ts.gain(view.gain));
-        // the line under the gain: what is still needed, or what the gain grows with
-        set(needs, view.canAscend ? t.gainHint : view.needs);
-        const extra = view.rewards.map((r) => r.text).join('; ');
-        set(rewardsNote, extra ? `${t.rewardsLabel}: ${extra}` : '');
-        rewardsNote.hidden = extra === '';
-        set(ascendBtn, view.button);
-        ascendBtn.setAttribute('aria-disabled', String(!view.canAscend));
-        ascendBtn.classList.toggle('is-no', !view.canAscend);
-        set(confirmBody, t.confirmBody(view.gain));
-        if (mode === 'confirm' && !view.canAscend) setMode('ready');
-      }
-      const kk = view.kept.map((k) => k.id).join(',');
-      if (kk !== keptKey) {
-        keptKey = kk;
-        keptList.replaceChildren(
-          ...view.kept.map((k) => {
-            const li = h('li', '', k.label);
-            li.title = k.detail;
-            return li;
-          }),
-        );
-      }
-      const rk = view.resets.map((r) => r.id).join(',');
-      if (rk !== resetKey) {
-        resetKey = rk;
-        resetList.replaceChildren(
-          ...view.resets.map((r) => {
-            const li = h('li', '', r.label);
-            li.title = r.detail;
-            return li;
-          }),
-        );
-      }
-    }
-
-    // ---- Starlight shop ----
-    const have = s.resources[content.prestige.currency];
-    set(star.count, have ? fmt(have) : '0');
-    for (const v of starlightViews(starlightShop(s, content, mods), s, content)) {
-      const ui = offerUis.get(v.id);
-      if (!ui) continue;
-      set(ui.effect, v.buy.preview);
-      set(ui.level, v.levelText);
-      ui.li.style.setProperty('--max', String(Math.max(1, v.maxLevel)));
-      ui.fill.style.width = `${((v.level / Math.max(1, v.maxLevel)) * 100).toFixed(1)}%`;
-      ui.li.classList.toggle('is-maxed', v.maxed);
-      if (v.maxed) {
-        setPrice(ui.price, ts.max, false, `${v.name}: ${t.maxed}`, false);
-        ui.price.classList.add('is-max');
-      } else {
-        ui.price.classList.remove('is-max');
-        setPrice(
-          ui.price,
-          fmt(v.buy.offer.price.amount),
-          v.buy.offer.affordable,
-          `${v.name}: ${v.buy.label}, ${v.buy.price}. ${v.buy.preview}`,
-        );
-      }
-    }
-
     // ---- Shard shop ----
     if (shardUis.size === 0) buildShards(s);
     set(shard.count, shardsText(s));
@@ -537,16 +237,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     }
   }
 
-  setMode('ready');
+  render();
   return { render };
-}
-
-/** The prismatic sweep across the window when walking through the gate. */
-function sweep(): void {
-  const el = h('div', 'shop-sweep');
-  el.setAttribute('aria-hidden', 'true');
-  document.body.append(el);
-  window.setTimeout(() => el.remove(), 1300);
 }
 
 function set(node: HTMLElement, text: string): void {

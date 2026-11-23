@@ -42,6 +42,7 @@ import {
   freshState,
   levelPointsOnly,
   withDps,
+  openAscension,
 } from './helpers';
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
@@ -94,6 +95,7 @@ describe('balance sim: greedy buyer', () => {
   it('ascends once the gain is worth it, then spends the Starlight', () => {
     const state = freshState();
     state.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    openAscension(state);
     expect(shouldAscend(state, content)).toBe(true);
     expect(shouldAscend(freshState(), content)).toBe(false);
     const rich = freshState();
@@ -626,6 +628,7 @@ describe('balance sim: floors', () => {
         autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
+      state.prestige.shop['auto_push'] = 1;
       return state;
     };
     // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.

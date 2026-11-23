@@ -8,6 +8,7 @@ export const VIEW_IDS = [
   'skills',
   'achievements',
   'shop',
+  'ascension',
   'forge',
   'training',
   'expeditions',

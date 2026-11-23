@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { openAscension } from './helpers';
 import { CARD_GRADES, RANK_TIERS, cardGrade, loadContent } from '../src/data';
 import {
   addCard,
@@ -144,6 +145,7 @@ describe('star dust (DESIGN.md §5)', () => {
     const state = fresh();
     state.resources['star_dust'] = new Decimal(42);
     state.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.resources['star_dust']!.toNumber()).toBe(42);

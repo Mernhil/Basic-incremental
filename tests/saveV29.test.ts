@@ -89,7 +89,7 @@ describe('v28 -> v29 (readable numbers)', () => {
     }
     const before = Math.floor(Math.pow(points / old.divisor, old.exponent));
     const { state } = readSave(fixture('v28-late-game.save.txt'), content);
-    const after = ascensionPreview(state, content).gain.toNumber();
+    const after = ascensionPreview(state, content).breakdown.materials.floor().toNumber();
     expect(before).toBeGreaterThan(0);
     expect(Math.abs(after - before)).toBeLessThanOrEqual(1);
   });

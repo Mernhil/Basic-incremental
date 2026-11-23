@@ -63,14 +63,6 @@ export function campLevel(state: GameState): number {
 
 // ---- slots -----------------------------------------------------------------------------------
 
-/** Slots the Starlight item granting `camp_slots` has added to each place. */
-export function starlightSlots(state: GameState, content: Content): number {
-  const item = content.prestige.shop.find((i) => i.grants === 'camp_slots');
-  if (!item) return 0;
-  const level = Math.min(Math.max(0, state.prestige.shop[item.id] ?? 0), item.maxLevel);
-  return level * content.camp.starlightSlotsPerLevel;
-}
-
 /** Slots the camp level alone opens in a place (the last table row at or below the level). */
 export function levelSlots(content: Content, place: CampPlace, level: number): number {
   let open = 0;
@@ -78,9 +70,9 @@ export function levelSlots(content: Content, place: CampPlace, level: number): n
   return open;
 }
 
-/** How many slots of a place are open: the camp level's, plus the Starlight item's. */
+/** How many slots of a place are open: the camp level's alone (Wider Grounds raises yield, not slots). */
 export function openSlots(state: GameState, content: Content, place: CampPlace): number {
-  return levelSlots(content, place, campLevel(state)) + starlightSlots(state, content);
+  return levelSlots(content, place, campLevel(state));
 }
 
 /** The slot at `index` (an empty slot when it was never filled). */

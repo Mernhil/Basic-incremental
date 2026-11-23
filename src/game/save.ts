@@ -34,7 +34,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 45;
+export const CURRENT_SAVE_VERSION = 46;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -253,6 +253,8 @@ export const serializedStateSchema = z.object({
     runStart: z.record(z.string(), decimalText),
     shop: counts,
     starlightEarned: decimalText,
+    /** v46: the floor each tier's run started on (Starlight from progress). */
+    runFloors: z.record(z.string(), z.number().int().min(0)).default({}),
   }),
 });
 export type SerializedState = z.infer<typeof serializedStateSchema>;
@@ -368,6 +370,7 @@ export function serializeState(state: GameState): SerializedState {
       ),
       shop: { ...state.prestige.shop },
       starlightEarned: decimalToString(state.prestige.starlightEarned),
+      runFloors: { ...state.prestige.runFloors },
     },
     cosmetics: {
       loadout: {
@@ -513,6 +516,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       }),
     ),
     starlightEarned: new Decimal(saved.prestige.starlightEarned),
+    runFloors: { ...saved.prestige.runFloors },
   };
   // Unknown ids (removed from the game) are dropped; starters are always owned.
   const owned: GameState['cosmetics']['owned'] = { ...base.cosmetics.owned };

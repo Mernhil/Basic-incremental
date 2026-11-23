@@ -26,7 +26,7 @@ import {
   weaponCircles,
   type GameState,
 } from '../src/game';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content, freshState, openAscension } from './helpers';
 
 const gate = content.heirlooms.gate;
 const scrolls = (state: GameState, n: number): GameState => {
@@ -174,6 +174,7 @@ describe('the Heirloom Gate (DESIGN.md §7)', () => {
       trees: { solaris: ['root'] },
     };
     state.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.heirlooms).toEqual(state.heirlooms);

@@ -127,6 +127,7 @@ import {
   pull,
   pullPrice,
   ascend,
+  autoPushOwned,
   ascensionPreview,
   buyStarlightItem,
   starlightShop,
@@ -664,7 +665,7 @@ export function chooseRespec(state: GameState, content: Content): GameState {
 }
 
 /** Starlight shop items the buyer buys (cheapest level first); the offline cap is useless here. */
-const STARLIGHT_SKIP = new Set(['long_night']);
+const STARLIGHT_SKIP = new Set(['long_night', 'third_raid_try', 'travel_pack']);
 
 /** How much the buyer values an enhancement option, by the stat of its first modifier. */
 const ENHANCEMENT_WEIGHT: Record<string, number> = {
@@ -2248,10 +2249,14 @@ export function chooseAutoChallenge(
     lost.key === nextChallengeKey(state, content) &&
     margin < lost.margin * CHALLENGE_REGROWTH;
   const on = margin >= CHALLENGE_WIN && !beaten;
-  const set = setAutoChallenge(state, content, dungeon.id, on);
+  // Auto-push is a Starlight unlock: before it, the player presses the Challenge button
+  // whenever the floor looks won, and after it the switch does that.
+  const auto = autoPushOwned(state, content);
+  const set = setAutoChallenge(state, content, dungeon.id, on && auto);
   const next = set.ok ? set.state : state;
-  if (on || margin < CHALLENGE_TRY_MARGIN) return { state: next, tried: false };
-  if (lastTry !== null && now - lastTry < CHALLENGE_RETRY_SECONDS) {
+  if (on && auto) return { state: next, tried: false };
+  if (!on && margin < CHALLENGE_TRY_MARGIN) return { state: next, tried: false };
+  if (!on && lastTry !== null && now - lastTry < CHALLENGE_RETRY_SECONDS) {
     return { state: next, tried: false };
   }
   const tried = startFloorChallenge(next, content);

@@ -8,7 +8,7 @@ import {
   ringOpen,
   type GameState,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, freshState, openAscension } from './helpers';
 
 /**
  * What an Ascension keeps and what it resets (DESIGN.md §9), as one list so a later change cannot
@@ -30,7 +30,7 @@ function richRun(): GameState {
   s.cards.wishlist = ['ember_squire'];
   s.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 3, tier: 'bronze' };
   s.account.skills = { ...s.account.skills };
-  return s;
+  return openAscension(s);
 }
 
 describe('what an Ascension keeps and resets', () => {
@@ -44,6 +44,7 @@ describe('what an Ascension keeps and resets', () => {
 
   it('keeps the collection and the long-term systems, the camp included', () => {
     const before = richRun();
+    openAscension(before);
     const r = ascend(before, content);
     if (!r.ok) throw new Error(r.reason);
     const s = r.state;
@@ -63,6 +64,7 @@ describe('what an Ascension keeps and resets', () => {
     let s = richRun();
     expect(ringOpen(s, 0)).toBe(true);
     expect(ringOpen(s, 1)).toBe(false);
+    openAscension(s);
     const r = ascend(s, content);
     if (!r.ok) throw new Error(r.reason);
     s = r.state;

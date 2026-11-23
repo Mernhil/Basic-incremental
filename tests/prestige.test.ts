@@ -16,7 +16,7 @@ import {
   starlightShop,
   type GameState,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, freshState, openAscension } from './helpers';
 
 const STAR = content.prestige.currency;
 
@@ -41,7 +41,7 @@ function progressedRun(): GameState {
   state.resources['summon_scroll'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
   state.camp.level = 12;
-  state.clearedDungeons = ['mossy_cellar'];
+  state.clearedDungeons = ['mossy_cellar', 'frostspire_vault'];
   state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
   state.combat.cardDamage = { ember_squire: new Decimal(50) };
   state.bursts.fighting = { gauge: 12, timer: 0.5 };
@@ -118,11 +118,21 @@ describe('ascension preview', () => {
 
 describe('ascend', () => {
   it('refuses while the gain is below the minimum', () => {
-    expect(ascend(runWith(10), content)).toEqual({ ok: false, reason: 'too-early' });
+    expect(ascend(openAscension(runWith(10)), content)).toEqual({ ok: false, reason: 'too-early' });
+  });
+
+  it('waits for the Frostspire Vault clear on Normal, the first time only', () => {
+    const early = runWith(1e13);
+    expect(ascend(early, content)).toEqual({ ok: false, reason: 'locked' });
+    expect(ascensionPreview(early, content).locked).toBe(true);
+    const later = runWith(1e13);
+    later.prestigeCount = 1;
+    expect(ascend(later, content).ok).toBe(true);
   });
 
   it('resets resources and the fight, and keeps the camp', () => {
     const before = progressedRun();
+    openAscension(before);
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
@@ -131,9 +141,10 @@ describe('ascend', () => {
       const kind = content.resourceById.get(id)!.kind;
       if (kind === 'prestige' || kind === 'scroll' || content.resourceById.get(id)!.keptOnAscend)
         continue;
-      // Gems, Money and Cores start over (Money from its starting amount).
+      // Gems and Money start over (Money from its starting amount); Cores start with the prize.
       const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
-      expect(amount.toNumber(), id).toBe(start);
+      const prize = id.endsWith('_core') ? content.prestige.prizes.cores.toNumber() : 0;
+      expect(amount.toNumber(), id).toBe(start + prize);
     }
     expect(s.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
     expect(s.bossHp).toBeNull();
@@ -145,13 +156,16 @@ describe('ascend', () => {
     const before = progressedRun();
     before.resources['money'] = new Decimal('4e9');
     before.resources['glamour_scroll'] = new Decimal(75);
+    openAscension(before);
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.resources['summon_scroll']!.toNumber()).toBe(40);
+    expect(s.resources['summon_scroll']!.toNumber()).toBe(
+      40 + content.prestige.prizes.summonScrolls.toNumber(),
+    ); // 40 kept + the prize
     expect(s.resources['glamour_scroll']!.toNumber()).toBe(75);
     expect(s.resources['money']!.eq(content.resourceById.get('money')!.startAmount!)).toBe(true);
-    expect(s.resources['moss_core']!.toNumber()).toBe(0);
+    expect(s.resources['moss_core']!.toNumber()).toBe(content.prestige.prizes.cores.toNumber()); // the prize, not the 7 farmed
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
@@ -163,6 +177,7 @@ describe('ascend', () => {
     before.combat.stageChests = { 'mossy_cellar:normal:10': 3 };
     before.combat.overflow = { 'mossy_cellar:normal:10': true };
     before.cards.wishlist = ['ember_squire'];
+    openAscension(before);
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
@@ -175,7 +190,7 @@ describe('ascend', () => {
   });
 
   it('keeps the owned legacy weapon skins and the one worn', () => {
-    const result = ascend(progressedRun(), content);
+    const result = ascend(openAscension(progressedRun()), content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.legacySkins).toEqual(['legacy-sword-01']);
     expect(result.state.cardSkins).toEqual({ ember_squire: 'legacy-sword-01' });
@@ -183,6 +198,7 @@ describe('ascend', () => {
 
   it('keeps cards, cosmetics, unlocks, mastery, medals and pity', () => {
     const before = progressedRun();
+    openAscension(before);
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
@@ -191,7 +207,7 @@ describe('ascend', () => {
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);
     expect(s.cosmetics.owned['holo_hex']).toBeDefined();
     expect(s.camp.level).toBe(12);
-    expect(s.clearedDungeons).toEqual(['mossy_cellar']);
+    expect(s.clearedDungeons).toEqual(['mossy_cellar', 'frostspire_vault']);
     expect(s.mastery).toEqual(before.mastery);
     expect(s.portals).toEqual(before.portals);
   });
@@ -199,6 +215,7 @@ describe('ascend', () => {
   it('pays the Starlight, starts a new run and adds up over ascensions', () => {
     const before = progressedRun();
     const gain = ascensionPreview(before, content).gain;
+    openAscension(before);
     const first = ascend(before, content);
     if (!first.ok) throw new Error(first.reason);
     expect(first.gained.eq(gain)).toBe(true);
@@ -209,6 +226,7 @@ describe('ascend', () => {
 
     const second = first.state;
     second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e13);
+    openAscension(second);
     const again = ascend(second, content);
     if (!again.ok) throw new Error(again.reason);
     expect(again.state.prestigeCount).toBe(2);
@@ -217,6 +235,7 @@ describe('ascend', () => {
 
   it('grants the prestige cosmetics of that ascension; a duplicate becomes a copy', () => {
     const before = progressedRun();
+    openAscension(before);
     const first = ascend(before, content);
     if (!first.ok) throw new Error(first.reason);
     expect(first.cosmetics).toEqual(['gilded_plate']);
@@ -224,6 +243,7 @@ describe('ascend', () => {
 
     const owning = progressedRun();
     owning.cosmetics.owned['gilded_plate'] = { level: 1, copies: 0 };
+    openAscension(owning);
     const dupe = ascend(owning, content);
     if (!dupe.ok) throw new Error(dupe.reason);
     expect(dupe.state.cosmetics.owned['gilded_plate']).toEqual({ level: 1, copies: 1 });
@@ -247,7 +267,7 @@ describe('Starlight shop', () => {
   });
 
   it('buys a level for Starlight; its bonus is a prestige modifier that grows per level', () => {
-    const item = content.prestige.shop.find((i) => i.id === 'starforged_edge')!;
+    const item = content.prestige.shop.find((i) => i.id === 'second_hands')!;
     const result = buyStarlightItem(rich(1000), content, item.id);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.prestige.shop[item.id]).toBe(1);
@@ -256,8 +276,8 @@ describe('Starlight shop', () => {
     const twice = buyStarlightItem(result.state, content, item.id);
     if (!twice.ok) throw new Error(twice.reason);
     const mods = collectModifiers(twice.state, content).filter((m) => m.source.kind === 'prestige');
-    expect(mods).toHaveLength(1);
-    expect(mods[0]!.source.id).toBe(item.id);
+    expect(mods).toHaveLength(item.perLevel.length);
+    expect(mods.every((m) => m.source.id === item.id)).toBe(true);
     expect(mods[0]!.value.toNumber()).toBe(item.perLevel[0]!.value.toNumber() * 2);
   });
 
@@ -277,10 +297,11 @@ describe('Starlight shop', () => {
 
   it('keeps shop levels through ascension', () => {
     const state = progressedRun();
-    state.prestige.shop['starlit_groves'] = 3;
+    state.prestige.shop['second_hands'] = 3;
+    openAscension(state);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
-    expect(result.state.prestige.shop['starlit_groves']).toBe(3);
+    expect(result.state.prestige.shop['second_hands']).toBe(3);
   });
 });
 
@@ -305,11 +326,11 @@ describe('enemies do not grow with Ascension (DESIGN.md §6)', () => {
 describe('saving prestige (save format v10)', () => {
   it('round-trips the run start, shop levels and Starlight earned', () => {
     const state = progressedRun();
-    state.prestige.shop['starlit_veins'] = 2;
+    state.prestige.shop['second_hands'] = 2;
     state.prestige.runStart['oak_gem'] = new Decimal(500);
     state.prestige.starlightEarned = new Decimal(77);
     const loaded = readSave(createSaveText(state, 1), content).state;
-    expect(loaded.prestige.shop).toEqual({ starlit_veins: 2 });
+    expect(loaded.prestige.shop).toEqual({ second_hands: 2 });
     expect(loaded.prestige.runStart['oak_gem']!.toNumber()).toBe(500);
     expect(loaded.prestige.starlightEarned.toNumber()).toBe(77);
   });

@@ -361,3 +361,11 @@ export function toV29(resource: string, amount: number): number {
     return V29_SCALE.gemAnchor * Math.pow(amount / V29_SCALE.gemAnchor, V29_SCALE.gem);
   return amount;
 }
+
+/** Opens the first Ascension: Frostspire Vault is cleared (DESIGN.md Ascension). */
+export function openAscension<T extends GameState>(state: T): T {
+  if (!state.clearedDungeons.includes('frostspire_vault')) {
+    state.clearedDungeons.push('frostspire_vault');
+  }
+  return state;
+}

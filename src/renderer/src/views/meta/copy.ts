@@ -11,7 +11,12 @@ export const META_COPY = {
     subtitle: (done: number, total: number) => `${done} of ${total} · each gives a skill point`,
   },
   shop: {
-    subtitle: (starlight: string, shards: string) => `${starlight} Starlight · ${shards} Shards`,
+    subtitle: (shards: string) => `${shards} Shards`,
+  },
+  ascension: {
+    ready: 'Ready to ascend',
+    subtitle: (count: number, starlight: string) =>
+      `${count === 1 ? '1 Ascension' : `${count} Ascensions`} · ${starlight} Starlight`,
   },
   settings: {
     subtitle: (version: string) => `version ${version}`,

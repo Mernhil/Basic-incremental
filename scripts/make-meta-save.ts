@@ -20,11 +20,9 @@ const cur = content.prestige.currency;
 state.resources[cur] = new Decimal(64);
 state.prestige.starlightEarned = new Decimal(140);
 state.prestige.shop = {
-  starlit_groves: 3,
-  starlit_veins: 2,
-  starforged_edge: 1,
-  second_hands: 1,
-  timber_steward: 1,
+  second_hands: 2,
+  auto_push: 1,
+  head_start: 1,
 };
 state.account.level = 14;
 const now = Date.now();
