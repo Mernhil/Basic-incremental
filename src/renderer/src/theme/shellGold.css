@@ -579,7 +579,7 @@ html.r-shell-gold .ur__after:not(#_o):not(#_o) {
 /* inside a gold selected tile, the small lines and stars read dark */
 html.r-shell-gold
   :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true'])
-  :is(.dp-row__meta, .dp-row__stars):not(#_o):not(#_o) {
+  :is(.wm-plate__sub, .wm-plate__hint):not(#_o):not(#_o) {
   color: var(--gold-action-ink);
 }
 

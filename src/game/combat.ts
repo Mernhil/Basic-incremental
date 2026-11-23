@@ -936,8 +936,10 @@ export function stageReadout(
   const stage = spk !== null ? here : null;
   const survival = dungeon ? survivalSeconds(state, content, dungeon.id, modifiers) : null;
   return {
-    dps: buildTeam(state, content, modifiers, id)
-      .reduce((a, c) => a.add(c.hit.div(c.interval)), new Decimal(0)),
+    dps: buildTeam(state, content, modifiers, id).reduce(
+      (a, c) => a.add(c.hit.div(c.interval)),
+      new Decimal(0),
+    ),
     averageDps: avg,
     killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
     secondsPerKill: spk,

@@ -498,7 +498,7 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 
 - The last of a dungeon's `floors` holds its `boss`, every `combat.json` `floors.miniBossEvery`-th floor its `miniBoss`, the rest a wave of its `enemies` (`floorKind`). A floor always holds the same wave (`floorSpec`).
 - A floor's HP and attack are a share of the boss's, shrinking per floor above the last by the dungeon's `floorGrowth`, else `combat.json` `floors.hpGrowth` (`floorScale`).
-- Four difficulties (`DIFFICULTIES` in `src/game/state.ts`): Normal, Hard, Nightmare, endless depths, each with its own progress. Hard and Nightmare multiply enemies and pay (`combat.json` `difficulties`). Each opens when the last-floor boss of the one before is beaten (`isDifficultyUnlocked`); the player switches with `setDifficulty`.
+- Four difficulties (`DIFFICULTIES` in `src/game/state.ts`): Normal, Hard, Nightmare, endless depths, each with its own progress. Hard and Nightmare multiply enemies and pay (`combat.json` `difficulties`). Each opens when the last-floor boss of the one before is beaten (`isDifficultyUnlocked`); the player switches with `setDifficulty`. Each also pays more loot (`difficultyLootFactor`, see Stage stars, closed).
 - The endless depths have no last floor and no boss; each depth is one growth step stronger. In the endless depths every `miniBossEvery`-th depth holds the mini-boss (never a boss).
 
 ### Farming and pushing
@@ -510,12 +510,11 @@ A dungeon is a stack of floors the fighting loadout fights by itself. Content fi
 - A team knocked out while farming drops one floor and sits out `knockoutSeconds`.
 - An Ascension keeps best floors, restarts farming at half of each (`ascensionStartFloor`) and turns auto-challenge back on.
 
-### Stage stars (`src/game/stageStars.ts`)
+### Stage stars, closed (`src/game/stageStars.ts`)
 
-- A stage is a mini-boss or last-floor boss floor on Normal, Hard or Nightmare (`isStageFloor`).
-- Kills on a stage are counted for ever; the star level follows from `combat.json` `stageStars.kills`. Levels: Wood, Bronze, Silver, Gold, Prismatic, Mythic (`STAGE_STAR_NAMES`).
-- Each level pays a one-time chest (`stageStars.chests`), adds damage and loot on that stage (`damagePerLevel`, `lootPerLevel`) and counts towards skill points (see Skill web).
-- From level `stageStars.overflowFromLevel` a stage has an overflow switch (`setOverflow`): when on, damage left over from a kill carries into the next enemy. Other floors follow a stage's switch (`overflowStage`).
+- The stage stars are closed (DESIGN.md §2 Dungeons): a boss or mini-boss kill is no longer counted on its stage, so the kills a save already holds keep their star levels (`stageStarLevel`, `totalStageStarLevels`: the skill points from them stay, the achievements on them stay). A chest earned and never opened is still paid with the next boss kill on that stage (`payStageChests`).
+- A stage no longer adds damage. The loot the levels gave belongs to the difficulty now: `difficultyLootFactor` (`combat.json` `difficultyLoot`, in step-sized levels: Normal 2, Hard 3, Nightmare 4, endless 4, each worth `stageStars.lootPerLevel`, the skill web's `stars.loot` widens the step) multiplies Money purses and material chances on every floor of the difficulty (`killEnemies`). The skill web's `stars.damage` nodes do nothing now.
+- The overflow switch (`setOverflow`) is open on every stage; when on, damage left over from a kill carries into the next enemy. Other floors follow a stage's switch (`overflowStage`).
 
 ### Pay
 
@@ -916,7 +915,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `training.ts`: the Training panel (waiting pick, toggle, rows). Used by `pages/dungeons.ts`.
 - `perkPick.ts`: a waiting milestone pick as two cards. Used by `training.ts`, `upgradesView.ts`.
 - `hpStack.ts`: stacked enemy HP bars with "×N" left. Used by `stage/arena.ts`.
-- `stars.ts`: stage-star pips and text with "★" drawn as sprites. Used by Cards, `pages/dungeons.ts`, arena, `weaponPanel.ts`.
+- `stars.ts`: star pips and text with "★" drawn as sprites. Used by Cards, `weaponPanel.ts`.
 - `pixelScale.ts` (maths), `pixelFit.ts` (DOM): keep pixel art at whole device pixels; `fitCard` sizes card hosts; `watchFit` keeps a list of cards at a whole scale as it resizes (Cards page, Forge worker picker). Used wherever cards show.
 - `pixelNumbers.ts`: draws `.bi-num` numbers in the equipped Number cosmetic's pixel font (`art/pixelFont.ts`). Installed by `app.ts`.
 - `resourceIcons.ts`: a resource's icon. Every resource but Money has a kept 32 x 32 icon, `hand/res-<resource id>.png` (user, 2026-11-22), listed in `KEPT_ICONS`; `keptIconMarkup(id)` draws it, `resourceIconMarkup(resource)` is the one call (kept icon, else Money's coin), and Money keeps its coin ladder (`moneyCoinArt`). Used by `app.ts` (header and Details chips), Details, Summon, arena, `resourceArt.ts`, `forge.ts`, the shop (supply lines, Starlight prices) and the Dungeons drop rows. The Achievements tooltip draws a resource reward with it. Icons show at 1x (32 CSS px, a negative margin keeps text lines as tall as before), never shrunk. Gems no longer show their mastery coin (`gemCoin` is only the Skill tree and mastery art now); the Starlight skin of the Wardrobe still shows on the shop's Ascension ring only. Still in words: reward and welcome-back lines, toasts, quest and trip rewards, challenge rewards. Old `res-summon*`, `res-glamour*` and `shop-sup1` to `5` sprites have no caller.
@@ -1001,12 +1000,13 @@ Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view dat
 - Each achievement is a sticker in the equipped sticker style; its tooltip gives progress and rewards. Nothing is bought or claimed here; see Goals, quests and achievements.
 - The model also gives `unlockToast` (`app.ts`) and the shard counter of the Shop screen (`shardOfferViews`, `shardGainView`, `shardsText`).
 
-### Dungeon panels (`dungeons.ts`, `dungeonsModel.ts`)
+### Dungeon panels (`dungeons.ts`, `dungeonMap.ts`, `dungeonMapModel.ts`, `dungeonsModel.ts`)
 
 - `createDungeonPanels` builds three panels that the dungeon window (`views/dungeon/index.ts`) opens as a sheet over the running fight, from its Dungeons, Weapon and Training buttons.
-- **Dungeons.** Left: dungeons and trials with stars and medals (`bossMastery`). Right, for the picked one: difficulty tiers (`setDifficulty`), Fight here (`pickDungeon`), the stage map, a row per stage and a column per tier (`stageMap`), with Overflow switches (`setOverflow`), a line naming the boss's weakness and resistance with their percents and that Wood to Prismatic cards do base damage (`bossElements` in `dungeonsModel.ts`, tested in `tests/dungeonsModel.test.ts`), trial rewards (`trialRewards`), and the drops of the dungeon being fought (`effectiveDrops`, `bossStatus`). See Dungeons, floors and stages.
+- **Dungeons: the winding map** (`createDungeonMap` in `pages/dungeonMap.ts`, styles in `dungeonMap.css`; DESIGN.md §2 Dungeons). Left: one plate per dungeon (a window cut from its boss picture at 1x, the stage count, "Stage 8 of 20", a Finished or Locked tag) and the trials. Middle: the picked dungeon's scene (`art/dungeon-map/map-<name>.png`, drawn at the whole scale that covers the pane, `sceneScale`) with the road of stage stops over it, scrolling when long (it opens on the stage to beat): beaten stops are gold with a tick, the stop to beat is red with the team's banner and "Your team", the rest are grey and carry their number, the mini-boss and boss are framed pictures with a caption. The four difficulty badges sit at the top right (`setDifficulty`), the active one outlined, each with its loot in its tooltip. Right: the selected stage, its enemy, Fight (`pickDungeon`, then `startFloorChallenge` on the stage to beat), the boss's elements (`bossElements`), the drops of that stage on that difficulty with the loot of the difficulty (`effectiveDrops`, `difficultyDrops`, `stageLoot`) and the rare item's pity on the boss's stage, and the overflow switch of a boss or mini-boss stage. A trial shows its rewards instead. The stage counts are the dungeon's floors; a stop is beaten when its floor is at or below the best floor (`floorPosition`).
+- `dungeonMapModel.ts` is the pure side, tested in `tests/dungeonMapModel.test.ts`: which stages are shown (`shownRange`, a window of 30 in the endless depths), their states (`pathStops`), a plate's progress (`plateProgress`), the road's layout in rows of five (`layoutRoad`), the studs that stop short of each stop (`studsBetween`), the scene scale and which scenes are light (a dark plate under the title).
 - **Weapon.** The weapon panel (`ui/weaponPanel.ts`) of a card in the fighting loadout, switched by tabs. **Training.** `createTrainingPanel` (`ui/training.ts`).
-- `dungeonsModel.ts` also feeds the duel (`stage/arena.ts`): `barsGone`, `healthPercent`, `challengeButton`, `challengeVerdict`. Its `overflowSwitch` is unused. `bossElements` gives the panel's element line: the boss's element, what it is weak to and what it resists.
+- `dungeonsModel.ts` feeds the duel (`stage/arena.ts`): `barsGone`, `healthPercent`, `challengeButton`, `challengeVerdict`. `bossElements` gives the panel's element line: the boss's element, what it is weak to and what it resists.
 
 ### Settings (`settings.ts`, `settingsModel.ts`)
 

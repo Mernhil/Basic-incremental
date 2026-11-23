@@ -19,12 +19,8 @@ import {
   speedLocks,
   usableSpeed,
   Decimal,
-  overflowStage,
   recordDuel,
-  stageKey,
   stageReadout,
-  stageStars,
-  STAGE_STAR_NAMES,
   teamView,
   trialStatus,
   type BarLook,
@@ -82,7 +78,6 @@ import { createSpecialAttack, hasSpecial, type Box } from './specialAttack';
 import { queueSpecial, stampSpot } from './specialQueue';
 import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
-import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
 import { paced } from './duelPace';
 
@@ -201,15 +196,6 @@ export function createArena(ctx: ArenaContext): Arena {
   const fpmEl = readout('du-read--fpm', COPY.arena.kpmTip);
   const dpsEl = readout('du-read--dps', COPY.arena.dpsTip);
   const teamEl = readout('du-read--team');
-  // the stars of the stage being fought (DESIGN.md §6 Stage stars): six pips and the kills to the next
-  const starsEl = readout('du-read--stars', COPY.dungeons.stageTip);
-  const starPips = span('du-stars');
-  starPips.setAttribute('role', 'img');
-  const starPipEls = stagePips();
-  starPips.append(...starPipEls);
-  const starText = span('du-stars__text');
-  starsEl.append(starPips, starText);
-  starsEl.hidden = true;
   let teamTip = '';
   teamEl.tabIndex = 0;
   attachTooltip(teamEl, () => teamTip);
@@ -982,25 +968,6 @@ export function createArena(ctx: ArenaContext): Arena {
     setText(dpsEl, DUEL_COPY.dps(fmt(r.averageDps)));
     setText(teamEl, DUEL_COPY.team(fmt(lh.current), fmt(lh.max)));
     teamTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
-    const stageRef =
-      dungeon && status ? overflowStage(content, dungeon, status.difficulty, status.floor) : null;
-    const stars = stageRef
-      ? stageStars(s, content, stageKey(stageRef.dungeonId, stageRef.difficulty, stageRef.floor))
-      : null;
-    starsEl.hidden = !stars;
-    if (stars) {
-      lightStagePips(starPipEls, stars.level);
-      starPips.setAttribute(
-        'aria-label',
-        COPY.dungeons.starLevel(stars.level, STAGE_STAR_NAMES[stars.level] ?? ''),
-      );
-      setText(
-        starText,
-        stars.nextKills === null
-          ? DUEL_COPY.starsDone
-          : DUEL_COPY.starsNext(stars.kills, stars.nextKills),
-      );
-    }
     const banner = dungeon ? fallBanner(r) : null;
     fall.hidden = !banner;
     if (banner) {
