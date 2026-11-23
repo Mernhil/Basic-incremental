@@ -364,8 +364,8 @@ export function createArena(ctx: ArenaContext): Arena {
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
     fitScene();
-    // the enemy card stands a good deal taller than a hand card (same 132 x 186 shape) (user, 2026-11-23: it looked far too small)
-    el.style.setProperty('--du-foe-want', `${Math.round((n / screenDpr()) * HAND.cardH * 1.45)}px`);
+    // the enemy card stands a quarter taller than a hand card (same 132 x 186 shape) (user, 2026-11-23: it looked far too small)
+    el.style.setProperty('--du-foe-want', `${Math.round((n / screenDpr()) * HAND.cardH * 1.25)}px`);
     el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
   fitHand();

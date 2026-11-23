@@ -454,6 +454,9 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   position: relative;
   min-height: 0;
   display: grid;
+  /* the picture is centred on the card whatever its width */
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   /* the enemy stands at the bottom of the card, its feet just above the health bar */
   place-items: end center;
 }
@@ -467,6 +470,10 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   justify-content: center;
   padding-bottom: 6px;
   box-sizing: border-box;
+}
+/* the picture keeps its own size and centre: a card narrower than the picture never squeezes it */
+.du-foe__body > * {
+  flex: none;
 }
 .du-foe__body svg {
   width: 100%;
@@ -580,12 +587,12 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 
 /* the hit feed: the latest hits, under the tag, newest on top */
-/* the tag over the feed in one column: the tag overlaps the
-   card's top left corner and neither its coming nor its width moves the feed */
+/* the tag over the feed in one column, beside the card's top left corner; neither its coming nor its width moves the feed */
 .du-damage {
   position: absolute;
   top: -12px;
-  right: calc(100% - 26px);
+  /* beside the card, never over its name */
+  right: calc(100% + 6px);
   z-index: 4;
   display: flex;
   flex-direction: column-reverse;
@@ -597,8 +604,8 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   display: grid;
   justify-items: end;
   gap: 4px;
-  /* the lines stop short of the enemy card (the tag overlaps its corner by 26 px) */
-  margin: 0 30px 0 0;
+  /* the lines stand beside the enemy card */
+  margin: 0;
   padding: 0;
   list-style: none;
 }
