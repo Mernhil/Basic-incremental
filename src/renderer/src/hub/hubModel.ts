@@ -171,6 +171,27 @@ export function hubOffset(width: number, height: number, scale: number): { x: nu
   };
 }
 
+/**
+ * Where the map's top left corner sits after the player panned it by `pan` from the centred spot:
+ * clamped so the map always covers the area (an axis the map does not overflow stays centred).
+ */
+export function hubPanned(
+  width: number,
+  height: number,
+  scale: number,
+  pan: { x: number; y: number },
+): { x: number; y: number } {
+  const at = hubOffset(width, height, scale);
+  const clamp = (v: number, size: number, box: number): number => {
+    const min = Math.min(0, box - size);
+    return Math.min(0, Math.max(min, v));
+  };
+  return {
+    x: clamp(at.x + pan.x, HUB_MAP_W * scale, width),
+    y: clamp(at.y + pan.y, HUB_MAP_H * scale, height),
+  };
+}
+
 /** A box of the picture in screen pixels at a whole scale (so every edge lands on a pixel). */
 export function scaled(rect: Rect, scale: number): Rect {
   return { x: rect.x * scale, y: rect.y * scale, w: rect.w * scale, h: rect.h * scale };

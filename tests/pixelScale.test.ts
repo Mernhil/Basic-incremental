@@ -18,6 +18,8 @@ import {
 
 const DPRS = [1, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
+// The window scale is the page zoom now (ui/designScale.ts): the layout runs at dpr 1 in the 1920 x 1080
+// design space, and this is the whole-scale choice inside it.
 describe('Clean pixels: the scale choice (DESIGN.md §12)', () => {
   it('detects whole and fractional scales', () => {
     expect(isWhole(2)).toBe(true);
@@ -140,12 +142,12 @@ describe('Clean pixels: the scale choice (DESIGN.md §12)', () => {
     expect(cardsPerRow(100, 2, 2, 14)).toBe(1);
   });
 
-  it('the Cards collection is the full card four across: 1x on a 1280 window, 2x on 1080p', () => {
+  it('the Cards collection is the full card four across: 1x in a narrow area, 2x in the 1920 x 1080 design area', () => {
     // the grid asks for 2x (264 CSS px) four across with 10 px gaps (pages/cards.ts)
     const fourAcross = (free: number, dpr: number): number => pickRowScale(4, 264, free, 10, dpr);
-    // 1280 x 820: about 569 px free in the grid frame
+    // a narrow area: about 569 px free in the grid frame
     expect(fourAcross(569, 1)).toBe(1);
-    // 1920 x 1080: the page is wide enough for four at 2x (4 x 264 + 3 x 10 = 1086)
+    // the 1920 x 1080 design area: the page is wide enough for four at 2x (4 x 264 + 3 x 10 = 1086)
     expect(fourAcross(1224, 1)).toBe(2);
     expect(fourAcross(1085, 1)).toBe(1);
     // a 150% screen: 1x there is 88 CSS px, and still four across

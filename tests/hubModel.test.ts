@@ -8,6 +8,7 @@ import {
   HUB_MAP_H,
   HUB_MAP_W,
   hubOffset,
+  hubPanned,
   hubScale,
   scaled,
 } from '../src/renderer/src/hub/hubModel';
@@ -94,5 +95,40 @@ describe('hub map', () => {
     expect(by('arena').action.kind).toBe('locked');
     expect(by('dungeon_arch').action).toEqual({ kind: 'dungeon' });
     expect(by('armoury').action.kind).toBe('menu');
+  });
+});
+
+describe('hub pan', () => {
+  it('starts centred and stays inside the map when dragged', () => {
+    // 1500 x 1000 window: the design area is 1920 x 1216 under the header, the map is 3.8x
+    const w = 1920;
+    const h = 1216;
+    const s = hubScale(w, h);
+    const c = hubPanned(w, h, s, { x: 0, y: 0 });
+    expect(c).toEqual(hubOffset(w, h, s));
+    const left = hubPanned(w, h, s, { x: 1e6, y: 0 });
+    expect(left.x).toBe(0);
+    const right = hubPanned(w, h, s, { x: -1e6, y: 0 });
+    expect(right.x).toBeCloseTo(w - HUB_MAP_W * s, 6);
+    // the axis the map does not overflow stays put
+    expect(hubPanned(w, h, s, { x: 0, y: 500 }).y).toBe(c.y);
+  });
+
+  it('always covers the area', () => {
+    for (const [w, h] of [
+      [1920, 1228],
+      [2580, 1080],
+      [2056, 1080],
+      [1920, 1016],
+    ] as const) {
+      const s = hubScale(w, h);
+      for (const p of [-1e5, -50, 0, 50, 1e5]) {
+        const o = hubPanned(w, h, s, { x: p, y: p });
+        expect(o.x).toBeLessThanOrEqual(0);
+        expect(o.y).toBeLessThanOrEqual(0);
+        expect(o.x + HUB_MAP_W * s).toBeGreaterThanOrEqual(w - 1e-6);
+        expect(o.y + HUB_MAP_H * s).toBeGreaterThanOrEqual(h - 1e-6);
+      }
+    }
   });
 });
