@@ -312,10 +312,10 @@
       "name": "Abyssal Anchor Leviathan",
       "sprite": "abyssal_anchor_leviathan",
       "element": "water",
-      "hp": "17000000",
+      "hp": "34000000",
       "hpBars": 12,
       "attack": {
-        "damage": "94400",
+        "damage": "188800",
         "intervalSeconds": 2
       }
     },
@@ -412,10 +412,10 @@
       "name": "Sanctuary Archangel",
       "sprite": "sanctuary_archangel",
       "element": "light",
-      "hp": "68900000",
+      "hp": "100000000",
       "hpBars": 12,
       "attack": {
-        "damage": "378000",
+        "damage": "756000",
         "intervalSeconds": 2
       }
     },
@@ -517,7 +517,7 @@
       "name": "Faceless Void Reaper",
       "sprite": "faceless_void_reaper",
       "element": "dark",
-      "hp": "195000000",
+      "hp": "275000000",
       "hpBars": 12,
       "attack": {
         "damage": "1270000",
