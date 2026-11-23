@@ -46,7 +46,7 @@
     inset 0 0 0 2px #14120e;
 }
 .wst-power__label {
-  font-size: 11px;
+  font-size: calc(11px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.12em;
   color: var(--bi-frame-ink-muted);
@@ -70,10 +70,10 @@
   border-bottom: 6px solid currentColor;
 }
 .wst-power__up small {
-  font-size: 11px;
+  font-size: calc(11px * var(--wzoom, 1));
 }
 .wst-power__sub {
-  font-size: 10px;
+  font-size: calc(10px * var(--wzoom, 1));
   letter-spacing: 0.06em;
   text-align: center;
   color: var(--bi-frame-ink-muted);
@@ -148,7 +148,7 @@
 }
 .wst-chip {
   padding: 2px 7px;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--bi-frame-ink-muted);
@@ -207,7 +207,7 @@
   min-width: 0;
 }
 .wst-plaque__label {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.2;
@@ -251,7 +251,7 @@
   box-shadow: 0 0 0 2px #3f8a4c;
 }
 .wst-gain small {
-  font-size: 10px;
+  font-size: calc(10px * var(--wzoom, 1));
   font-weight: 700;
   color: #b9e8c0;
 }
@@ -268,7 +268,7 @@
     inset 0 0 0 2px #14120e;
 }
 .wst-next__label {
-  font-size: 11px;
+  font-size: calc(11px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -298,7 +298,7 @@
   color: var(--bi-frame-ink-muted);
 }
 .wst-next__power small {
-  font-size: 10px;
+  font-size: calc(10px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -318,7 +318,7 @@
   gap: 4px;
   min-width: 0;
   padding: 7px 10px;
-  font-size: 13px;
+  font-size: calc(13px * var(--wzoom, 1));
   background: var(--st-plaque);
   box-shadow:
     0 0 0 2px var(--st-edge),
@@ -350,19 +350,19 @@
   margin: 0;
 }
 .wst-row__kind {
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--wzoom, 1));
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--bi-frame-ink-muted);
 }
 .wst-row__name {
-  font-size: 15px;
+  font-size: calc(15px * var(--wzoom, 1));
   font-weight: 700;
   color: var(--rc);
 }
 .wst-row__state {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: calc(10.5px * var(--wzoom, 1));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -376,7 +376,7 @@
   color: var(--bi-frame-ink);
 }
 .wst-row__note {
-  font-size: 12px;
+  font-size: calc(12px * var(--wzoom, 1));
   color: var(--bi-frame-ink-muted);
 }
 .wst-fx {
@@ -386,7 +386,7 @@
 }
 .wst-fx__chip {
   padding: 1px 7px;
-  font-size: 11.5px;
+  font-size: calc(11.5px * var(--wzoom, 1));
   color: var(--bi-frame-ink);
   background: rgba(0, 0, 0, 0.3);
   box-shadow: 0 0 0 2px var(--rc);
@@ -420,7 +420,7 @@
 /* skill names in the pixel display font */
 .wst-row__name {
   font-family: var(--bi-font-display, inherit);
-  font-size: 18px;
+  font-size: calc(18px * var(--wzoom, 1));
   font-weight: 400;
 }
 
@@ -428,19 +428,15 @@
 :root {
   --wzoom: 1;
 }
-/* on a 1920 x 1080 screen the dungeon's Weapon panel is drawn 1.5 times the size and its sheet is
-   1.5 times as wide, so it takes the same share of the screen as at 1280; the sprite and the
-   icons are then two device pixels per art pixel */
+/* on a 1920 x 1080 screen the dungeon's Weapon sheet is 1.5 times as wide and the stat side's text,
+   numerals and ring are 1.5 times the size (--wzoom is a multiplier, not a CSS zoom), so the panel
+   takes the same share of the screen as at 1280; the stat icons are drawn at 2x (64 px) */
 @media (min-width: 1700px) and (min-height: 950px) {
   :root {
     --wzoom: 1.5;
   }
   html .dv-sheet[data-panel='weapon']:not(#_w) {
     width: min(840px, calc(100% - 32px));
-  }
-  .dv-sheet[data-panel='weapon'] .dv-sheet__head,
-  .dv-sheet[data-panel='weapon'] .dv-sheet__body {
-    zoom: var(--wzoom);
   }
 }
 .wp--drawer .wp-hero {
@@ -479,7 +475,7 @@
 }
 @media (min-width: 1700px) and (min-height: 950px) {
   .wst-icon {
-    width: calc(64px / var(--dpr, 1) / var(--wzoom));
-    height: calc(64px / var(--dpr, 1) / var(--wzoom));
+    width: calc(64px / var(--dpr, 1));
+    height: calc(64px / var(--dpr, 1));
   }
 }

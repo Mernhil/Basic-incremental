@@ -12,11 +12,11 @@ import { screenDpr } from './pixelFit';
 export function pixelValue(text: string, art: number, cls = ''): HTMLElement {
   const spoken = text.replace(/\s*\/\s*s$/, '').replace(/×/g, 'x');
   const cols = mask(spoken, false);
-  // the panel can sit under a CSS zoom (--wzoom, weaponStats.css): whole device pixels after it
+  // big screens draw the stat side larger (--wzoom, weaponStats.css), still in whole device pixels
   const zoom =
     parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--wzoom')) || 1;
-  const dpr = screenDpr() * zoom;
-  const scale = Math.max(1, Math.round(art * dpr)) / dpr;
+  const dpr = screenDpr();
+  const scale = Math.max(1, Math.round(art * zoom * dpr)) / dpr;
   const rects: string[] = [];
   cols.forEach((col, x) => {
     let y = 0;
