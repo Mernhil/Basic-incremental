@@ -154,20 +154,11 @@ export function sealWhy(def: HubBuilding, state: GameState, content: Content): s
 }
 
 /**
- * The scale the hub map is shown at: its width fits the area exactly, so no place is ever cut left or
- * right (user, 2026-11-23: "scroll instead"). 3 at the 1920 x 1080 design size. A window that is
- * wider than 16:9 makes the map taller than the area (the player scrolls up and down, see
- * `hubPanned`); a taller window leaves the map shorter than the area (it stands centred).
+ * The scale the map is shown at: the smallest that covers the area under the header exactly, so the
+ * map always fills it; the overflow is cut evenly off the edges (see `hubOffset`). The UI is laid
+ * out at 1920 x 1080 and zoomed to the window (ui/designScale.ts), so this is 3 at any 16:9 window.
  */
-export function hubScale(width: number): number {
-  return Math.max(1, width / HUB_MAP_W);
-}
-
-/**
- * The scale that covers the area exactly (the forest and the mine show their scene this way): the
- * overflow is cut evenly off the edges (see `hubOffset`). 3 at the 1920 x 1080 design size.
- */
-export function coverScale(width: number, height: number): number {
+export function hubScale(width: number, height: number): number {
   return Math.max(1, width / HUB_MAP_W, height / HUB_MAP_H);
 }
 
@@ -182,7 +173,7 @@ export function hubOffset(width: number, height: number, scale: number): { x: nu
 
 /**
  * Where the map's top left corner sits after the player panned it by `pan` from the centred spot:
- * clamped to the map's edges (an axis the map does not overflow stays centred).
+ * clamped so the map always covers the area (an axis the map does not overflow stays centred).
  */
 export function hubPanned(
   width: number,
@@ -192,8 +183,8 @@ export function hubPanned(
 ): { x: number; y: number } {
   const at = hubOffset(width, height, scale);
   const clamp = (v: number, size: number, box: number): number => {
-    if (size <= box) return Math.floor((box - size) / 2);
-    return Math.min(0, Math.max(box - size, v));
+    const min = Math.min(0, box - size);
+    return Math.min(0, Math.max(min, v));
   };
   return {
     x: clamp(at.x + pan.x, HUB_MAP_W * scale, width),
