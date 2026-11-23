@@ -56,6 +56,9 @@ jobs:
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -67,7 +70,7 @@ jobs:
         env:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
       - name: Test
-        run: npm test
+        run: npx vitest run --shard=${{ matrix.shard }}/3
 
   build:
     needs: changes
@@ -85,3 +88,16 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
       - name: Build
         run: npm run build
+
+  # One check for branch protection: green when every job passed or was skipped for a docs-only PR.
+  ok:
+    if: always()
+    needs: [changes, lint, test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: All checks passed
+        shell: bash
+        run: |
+          for r in "${{ needs.changes.result }}" "${{ needs.lint.result }}" "${{ needs.test.result }}" "${{ needs.build.result }}"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then echo "a job ended as $r"; exit 1; fi
+          done
