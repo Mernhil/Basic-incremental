@@ -47,10 +47,12 @@ export function pickSpriteScale(
   native: number,
   dpr: number,
   maxCssSize = Infinity,
+  /** Granularity of the scale: 1 (whole, the default) or 0.5 under the design-size zoom, where the window zoom already makes in-between sizes (docs/UI_RULES.md §1). */
+  step = 1,
 ): number {
   const d = cleanDpr(dpr);
-  let n = Math.max(1, Math.round((wantCssSize * d) / native));
-  while (n > 1 && (native * n) / d > maxCssSize + 1e-6) n--;
+  let n = Math.max(1, Math.round((wantCssSize * d) / native / step) * step);
+  while (n > 1 && (native * n) / d > maxCssSize + 1e-6) n = Math.max(1, n - step);
   return n;
 }
 
@@ -60,8 +62,13 @@ export function spriteCssSize(native: number, n: number, dpr: number): number {
 }
 
 /** The whole scale for a card about `wantCssWidth` CSS px wide (see `pickSpriteScale`). */
-export function pickCardScale(wantCssWidth: number, dpr: number, maxCssWidth = Infinity): number {
-  return pickSpriteScale(wantCssWidth, CARD_ART_W, dpr, maxCssWidth);
+export function pickCardScale(
+  wantCssWidth: number,
+  dpr: number,
+  maxCssWidth = Infinity,
+  step = 1,
+): number {
+  return pickSpriteScale(wantCssWidth, CARD_ART_W, dpr, maxCssWidth, step);
 }
 
 /** CSS width and height of a card at scale `n`. */

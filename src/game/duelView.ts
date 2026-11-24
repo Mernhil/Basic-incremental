@@ -182,6 +182,8 @@ export interface DuelLog {
   best: Decimal;
   /** Damage each team card dealt this fight. */
   perCard: Record<string, Decimal>;
+  /** Health each team card's heals restored this fight. */
+  perHeal: Record<string, Decimal>;
   /** The latest hits, newest first (at most DUEL_FEED_SIZE). */
   feed: DuelFeedEntry[];
   /** The latest skill activations, newest first, for the banners (at most DUEL_FEED_SIZE). */
@@ -206,6 +208,7 @@ export function emptyDuelLog(key = '', previous: DuelSheet | null = null): DuelL
     total: new Decimal(0),
     best: new Decimal(0),
     perCard: {},
+    perHeal: {},
     feed: [],
     skills: [],
     previous,
@@ -240,7 +243,13 @@ export function recordDuel(
     report.knockouts > 0;
   const next: DuelLog = ended
     ? emptyDuelLog(key, log.seconds > 0 || log.total.gt(0) ? duelSheet(log) : log.previous)
-    : { ...log, perCard: { ...log.perCard }, feed: [...log.feed], skills: [...log.skills] };
+    : {
+        ...log,
+        perCard: { ...log.perCard },
+        perHeal: { ...log.perHeal },
+        feed: [...log.feed],
+        skills: [...log.skills],
+      };
   next.seconds += Math.max(0, seconds);
   for (const hit of report.playerHits) {
     if (hit.hits <= 0) continue;
@@ -249,6 +258,9 @@ export function recordDuel(
     next.perCard[hit.cardId] = (next.perCard[hit.cardId] ?? new Decimal(0)).add(dealt);
     if (hit.damage.gt(next.best)) next.best = hit.damage;
     next.feed.unshift({ ...hit });
+  }
+  for (const [id, n] of Object.entries(report.healed)) {
+    next.perHeal[id] = (next.perHeal[id] ?? new Decimal(0)).add(n);
   }
   for (const skill of report.skills) next.skills.unshift({ ...skill });
   next.feed.length = Math.min(next.feed.length, DUEL_FEED_SIZE);

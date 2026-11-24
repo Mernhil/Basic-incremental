@@ -863,97 +863,203 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   box-shadow: inset 0 0 0 var(--fs-sm) color-mix(in srgb, var(--px-hi) 30%, transparent);
 }
 
-/* ---- the stat sheet ---- */
-/* every size in the sheet is in em, and the font follows the duel (width and height), so it
-   shrinks with the window: 20px in a 1920 px duel, 11px in the table's window */
+/* ---- the fight readout (the right tab) ---- */
+/* design px: the whole UI scales with the window (docs/UI_RULES.md §1). Flat plain bars, bright labels */
 .du-sheet {
+  --du-hp-good: #3fc765;
+  --du-hp-mid: #f0a22c;
+  --du-hp-low: #e0504e;
+  --du-dmg: #f0a22c;
+  --du-heal: #4bd36f;
   position: absolute;
   top: var(--du-top);
   right: 16px;
   z-index: 3;
-  width: 21em;
-  max-width: 44cqw;
-  padding: 0.7em 0.9em 0.8em;
+  width: 400px;
+  padding: 14px 18px 14px;
   box-sizing: border-box;
-  font-size: clamp(11px, min(1.05cqw, 2.2cqh), 20px);
+  font-size: 15px;
+  color: #f1e8d2;
+}
+.du-sheet__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 8px;
 }
 .du-sheet__title {
-  margin: 0 0 0.45em;
+  margin: 0;
   font-family: var(--bi-font-display);
-  font-size: 1.3em;
+  font-size: 26px;
+  line-height: 1;
   color: var(--bi-frame-accent, var(--du-gold));
 }
-.du-sheet__rows {
-  display: grid;
-  gap: 0.8em;
-  margin: 0 0 0.7em;
-  padding: 0;
-  list-style: none;
-}
-/* a round health gauge per card, then its name, damage and share bar */
-.du-sheet__row {
-  display: grid;
-  grid-template-columns: 2.7em 1fr auto;
-  align-items: center;
-  gap: 0.15em 0.6em;
-}
-.du-sheet__row::before {
-  content: attr(data-hp);
-  grid-column: 1;
-  grid-row: 1 / 3;
-  display: grid;
-  place-items: center;
-  width: 2.7em;
-  height: 2.7em;
-  border-radius: 50%;
-  font-size: 0.65em;
+.du-sheet__sorted {
+  font-size: 12px;
   font-weight: 800;
-  background:
-    radial-gradient(circle, var(--px-lo) 0 57%, transparent 58%),
-    conic-gradient(var(--du-c) calc(var(--hp, 100) * 1%), rgb(255 255 255 / 0.14) 0);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6cd;
 }
-.du-sheet__row.is-out::before {
-  filter: grayscale(1);
-  opacity: 0.6;
+.du-sheet__lab {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #efe6cd;
 }
-.du-sheet__row > .du-sheet__name {
-  grid-column: 2;
-  grid-row: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.du-sheet__team {
+  margin: 0 0 8px;
 }
-.du-sheet__row > .du-sheet__num {
-  grid-column: 3;
-  grid-row: 1;
-  font-size: 1.1em;
+.du-sheet__teamhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.du-sheet__teampct {
+  font-size: 13px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+  color: #efe6cd;
 }
-.du-sheet__row > i {
-  grid-column: 2 / -1;
-  grid-row: 2;
+/* one flat bar: a dark track and a fill that only scales (transform) */
+.du-bar {
+  height: 10px;
+  overflow: hidden;
+  background: #120f0b;
+  box-shadow: inset 0 0 0 2px #060504;
+}
+.du-bar > i {
   display: block;
-  height: max(4px, 0.3em);
-  background: var(--du-c);
+  width: 100%;
+  height: 100%;
   transform-origin: left;
   transform: scaleX(0);
   transition: transform 0.3s ease-out;
+  background: var(--du-hp-good);
 }
-.du-sheet__foot {
+.du-bar--team {
+  height: 14px;
+}
+.du-bar--team[data-tone='mid'] > i,
+.du-row[data-tone='mid'] .du-bar--hp > i {
+  background: var(--du-hp-mid);
+}
+.du-bar--team[data-tone='low'] > i,
+.du-row[data-tone='low'] .du-bar--hp > i {
+  background: var(--du-hp-low);
+}
+.du-bar--hp {
+  height: 8px;
+}
+.du-bar--dmg > i {
+  background: var(--du-dmg);
+}
+.du-bar--heal > i {
+  background: var(--du-heal);
+}
+.du-sheet__rows {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.4em 0.6em;
   margin: 0;
-  padding-top: 0.6em;
-  border-top: var(--fs-sm) solid var(--px-lo);
-  color: var(--px-muted);
+  padding: 0;
+  list-style: none;
 }
-.du-sheet__foot dd {
-  margin: 0;
+.du-row {
+  display: grid;
+  grid-template-columns: 64px 44px 1fr 92px;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 4px;
+  padding: 9px 0;
+  border-top: 2px solid rgb(255 255 255 / 0.1);
+}
+.du-row.is-out {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.du-row__icon {
+  grid-column: 1;
+  grid-row: 1 / 5;
+  position: relative;
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.du-row__icon > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.du-row__name {
+  grid-column: 2 / 4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff6de;
+}
+.du-row__hp {
+  grid-column: 4;
+  text-align: right;
+  font-size: 16px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--px-ink);
+  color: var(--du-hp-good);
+}
+.du-row[data-tone='mid'] .du-row__hp {
+  color: var(--du-hp-mid);
+}
+.du-row[data-tone='low'] .du-row__hp {
+  color: var(--du-hp-low);
+}
+.du-row .du-bar--hp {
+  grid-column: 2 / 5;
+}
+.du-row__lab {
+  grid-column: 2;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.du-row__lab--dmg,
+.du-row__num--dmg {
+  color: var(--du-dmg);
+}
+.du-row__lab--heal,
+.du-row__num--heal {
+  color: var(--du-heal);
+}
+.du-row__num {
+  grid-column: 4;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 18px;
+}
+/* the pixel numerals are white pictures: tinted gold and green with a filter (drawn once, never animated) */
+.du-row__num--dmg > img,
+.du-sheet__totalnum > img {
+  filter: sepia(1) saturate(7) brightness(1.05);
+}
+.du-row__num--heal > img {
+  filter: sepia(1) saturate(5) hue-rotate(65deg) brightness(1.05);
+}
+.du-sheet__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 9px;
+  border-top: 2px solid rgb(255 255 255 / 0.1);
+}
+.du-sheet__totalnum {
+  font-size: 17px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--du-dmg);
 }
 
 /* ---- the hand: four cards along the bottom, close, whole inside the window ---- */
@@ -1088,21 +1194,6 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   display: block;
   min-height: 1.2em;
 }
-/* a hit from the enemy: the card shakes (transform only) */
-.du-card__body.is-hurt {
-  animation: du-hurt calc(0.4s / var(--pace, 1)) linear;
-}
-@keyframes du-hurt {
-  20% {
-    transform: translateX(-5px);
-  }
-  40% {
-    transform: translateX(4px);
-  }
-  60% {
-    transform: translateX(-2px);
-  }
-}
 /* a knocked-out team stays opaque: the cards darken (the grey overlay), they never fade into the room */
 .du-hand.is-ko .du-card {
   filter: brightness(0.9);
@@ -1157,12 +1248,11 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .ar--calm .ar__torch-glow,
 .ar--calm .ar__torch-flame,
 .ar--calm .ar__slam-flash.is-hit,
-.ar--calm .du-card__body.is-hurt,
 .ar--calm .bi-hpstack__count.is-ticking,
 .ar--calm .ar-chunk {
   animation: none;
 }
-.ar--calm .du-sheet__row > i {
+.ar--calm .du-bar > i {
   transition: none;
 }
 

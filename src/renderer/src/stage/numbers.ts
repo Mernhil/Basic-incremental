@@ -69,7 +69,7 @@ const TTL: Record<PopKind, number> = {
   hit: 900,
   crit: 1100,
   signature: 1500,
-  hurt: 950,
+  hurt: 900,
   gain: 1000,
   total: 1600,
 };

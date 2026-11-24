@@ -15,6 +15,8 @@ export interface Fit {
   want: number | (() => number);
   /** Most CSS px the card may take; the scale drops to the largest whole one that fits. */
   max?: () => number;
+  /** Scale granularity under the design-size zoom (the duel's hand: 0.5); whole scales otherwise. */
+  step?: number;
   /** Cards sharing one row (their gaps count toward `max`). */
   row?: { count: number; gap: number };
 }
@@ -27,7 +29,7 @@ function apply(host: HTMLElement, f: Fit): void {
   const max = f.max?.() ?? Infinity;
   const n = f.row
     ? pickRowScale(f.row.count, want, Number.isFinite(max) ? max : 1e6, f.row.gap, d)
-    : pickCardScale(want, d, max);
+    : pickCardScale(want, d, max, isDesignScaled() ? (f.step ?? 1) : 1);
   host.style.setProperty('--card-n', String(n));
   const k = cardBoxScale(n, d);
   host.style.setProperty('--card-k', k.toFixed(6));

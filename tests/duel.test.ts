@@ -372,4 +372,13 @@ describe('what the duel shows (selectors for the UI)', () => {
     expect(next.total.toNumber()).toBe(0);
     expect(next.previous?.total.toNumber()).toBeCloseTo(dealt.toNumber(), 6);
   });
+
+  it('logs the health each card healed, per fight', () => {
+    const key = 'k';
+    const report = { ...emptyReport(), healed: { a: new Decimal(40) } };
+    const log = recordDuel(recordDuel(emptyDuelLog(key), report, 1, key), report, 1, key);
+    expect(log.perHeal['a']!.toNumber()).toBe(80);
+    const cleared = recordDuel(log, { ...emptyReport(), floorsCleared: 1 }, 1, key);
+    expect(cleared.perHeal).toEqual({});
+  });
 });

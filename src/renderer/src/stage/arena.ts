@@ -8,7 +8,6 @@ import {
   duelEnemy,
   enemyEffects,
   duelFightKey,
-  duelSheet,
   emptyDuelLog,
   floorChallengeView,
   formatDuration,
@@ -32,15 +31,17 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, hasBossSprite, sentinelLevel } from '../art/bosses';
 import { FOE_H, FOE_W, foeHtml, hasFoeSprite } from '../art/foes';
+import { FULL_ART_VIEWBOX } from '../art/items';
 import { pixelNumberMarkup } from '../art/cosmetics';
 import { barsGone, challengeButton, challengeVerdict, healthPercent } from '../pages/dungeonsModel';
-import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
+import { cardItemArt, loadoutKey, loadoutProps } from '../pages/loadoutCards';
 import { formatRate } from '../pages/buyModel';
 import { attachTooltip } from '../shell/tooltip';
 import { dealTokens, reducedMotion as calm } from '../table/motion';
 import { createCard } from '../ui/card';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import { fitCard, screenDpr } from '../ui/pixelFit';
+import { pickCardScale } from '../ui/pixelScale';
 import { isCrystal } from '../ui/resourceIcons';
 import { DUEL_COPY } from '../views/dungeon/copy';
 import {
@@ -56,13 +57,16 @@ import {
   foeRoom,
   HAND_MARGIN,
   handCardWant,
+  FOE_HAND_SHARE,
   handSize,
   handSlot,
   hopMs,
   numberStyle,
   pipKind,
   queuePlates,
-  sheetRows,
+  readoutRows,
+  healthTone,
+  bigHit,
   showPlates,
   slotColour,
   type Plate,
@@ -126,6 +130,9 @@ interface HandSlot {
   el: HTMLElement;
   body: HTMLElement;
   glow: HTMLElement;
+  maxHealth: Decimal;
+  /** The running animations of the last hit on this card (a new hit cancels them). */
+  hurtAnims: Animation[];
   grey: HTMLElement;
   out: boolean;
   fraction: number;
@@ -134,6 +141,9 @@ interface HandSlot {
   tip: string;
   hopMs: number;
 }
+
+/** The part of the 200 x 240 item box a readout row's weapon icon shows: the weapon, without the empty margin. */
+const ICON_VIEWBOX = '10 36 180 180';
 
 const div = (cls: string): HTMLElement => {
   const d = document.createElement('div');
@@ -286,28 +296,41 @@ export function createArena(ctx: ArenaContext): Arena {
   damage.append(feed, foeTag);
   foeZone.append(foe, damage, deck);
 
-  // ---- right: the stat sheet ----
+  // ---- right: the fight readout (team health, then a row per card: health, damage, heal) ----
   const sheet = document.createElement('section');
   sheet.className = 'du-sheet px-panel';
   const sheetTitle = document.createElement('h3');
   sheetTitle.className = 'du-sheet__title';
   sheetTitle.textContent = DUEL_COPY.sheet;
+  const sheetHead = div('du-sheet__head');
+  sheetHead.append(sheetTitle, span('du-sheet__sorted', DUEL_COPY.sheetSorted));
+  const teamBlock = div('du-sheet__team');
+  const teamFill = document.createElement('i');
+  const teamBar = div('du-bar du-bar--team');
+  teamBar.append(teamFill);
+  const teamPct = span('du-sheet__teampct');
+  const teamHead = div('du-sheet__teamhead');
+  teamHead.append(span('du-sheet__lab', DUEL_COPY.teamHealth), teamPct);
+  teamBlock.append(teamHead, teamBar);
   const sheetRowsEl = document.createElement('ul');
   sheetRowsEl.className = 'du-sheet__rows';
-  const sheetFoot = document.createElement('dl');
-  sheetFoot.className = 'du-sheet__foot';
-  const footRow = (label: string): HTMLElement => {
-    const dt = document.createElement('dt');
-    dt.textContent = label;
-    const dd = document.createElement('dd');
-    dd.className = 'du-sheet__num';
-    sheetFoot.append(dt, dd);
-    return dd;
-  };
-  const totalEl = footRow(DUEL_COPY.sheetTotal);
-  const perSecEl = footRow(DUEL_COPY.sheetPerSecond);
-  const bestEl = footRow(DUEL_COPY.sheetBest);
-  sheet.append(sheetTitle, sheetRowsEl, sheetFoot);
+  const sheetFoot = div('du-sheet__foot');
+  const footTotal = span('du-sheet__totalnum');
+  sheetFoot.append(span('du-sheet__lab', DUEL_COPY.total), footTotal);
+  sheet.append(sheetHead, teamBlock, sheetRowsEl, sheetFoot);
+  /** One readout row per team card, built with the hand. */
+  interface ReadoutEls {
+    li: HTMLElement;
+    hp: HTMLElement;
+    hpFill: HTMLElement;
+    dmgFill: HTMLElement;
+    dmgNum: HTMLElement;
+    healFill: HTMLElement;
+    healNum: HTMLElement;
+    name: HTMLElement;
+  }
+  const readoutRowEls = new Map<string, ReadoutEls>();
+  let teamNow = { cur: '0', max: '0', fraction: 1 };
 
   // ---- the hand ----
   const hand = div('du-hand');
@@ -346,13 +369,16 @@ export function createArena(ctx: ArenaContext): Arena {
     const { want, max } = handCardWant(h, margin);
     // the scale also leaves the four-card hand its width inside the duel
     const wide = ((el.clientWidth || 99999) - 24) * (HAND.cardW / handSize(4).w);
-    const n = fitCard(hand, { want, max: () => Math.min(max, wide) });
+    const n = fitCard(hand, { want, max: () => Math.min(max, wide), step: 0.5 });
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
     fitScene();
     // the enemy card stands a quarter taller than a hand card (same 132 x 186 shape) (user, 2026-11-23: it looked far too small)
     const stageS = Number(el.style.getPropertyValue('--ar-s')) || 2;
-    const foeWant = Math.min((n / screenDpr()) * HAND.cardH * 1.25, 116 * stageS);
+    // (the enemy card keeps the size it had with the old hand)
+    const old = handCardWant(h, margin, FOE_HAND_SHARE);
+    const foeN = pickCardScale(old.want, screenDpr(), Math.min(old.max, wide));
+    const foeWant = Math.min((foeN / screenDpr()) * HAND.cardH * 1.25, 116 * stageS);
     el.style.setProperty('--du-foe-want', `${Math.round(foeWant)}px`);
     el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
@@ -452,6 +478,53 @@ export function createArena(ctx: ArenaContext): Arena {
     );
     hand.style.setProperty('--hand-w', String(size.w));
     hand.style.setProperty('--hand-h', String(size.h));
+    readoutRowEls.clear();
+    sheetRowsEl.replaceChildren();
+    delete sheetRowsEl.dataset['order'];
+    for (const c of team) {
+      const li = document.createElement('li');
+      li.className = 'du-row';
+      const icon = span('du-row__icon');
+      icon.setAttribute('aria-hidden', 'true');
+      const art = cardItemArt(content, c.cardId, s.cards.owned[c.cardId], s);
+      icon.innerHTML = `<svg viewBox="${art.includes('bi-item--full') ? FULL_ART_VIEWBOX : ICON_VIEWBOX}" aria-hidden="true" focusable="false">${art}</svg>`;
+      const name = span('du-row__name');
+      const hp = span('du-row__hp');
+      const bar = (cls: string): { bar: HTMLElement; fill: HTMLElement } => {
+        const fill = document.createElement('i');
+        const b = div(`du-bar ${cls}`);
+        b.append(fill);
+        return { bar: b, fill };
+      };
+      const hpBar = bar('du-bar--hp');
+      const dmgBar = bar('du-bar--dmg');
+      const healBar = bar('du-bar--heal');
+      const dmgNum = span('du-row__num du-row__num--dmg');
+      const healNum = span('du-row__num du-row__num--heal');
+      li.append(
+        icon,
+        name,
+        hp,
+        hpBar.bar,
+        span('du-row__lab du-row__lab--dmg', DUEL_COPY.dmg),
+        dmgBar.bar,
+        dmgNum,
+        span('du-row__lab du-row__lab--heal', DUEL_COPY.healLabel),
+        healBar.bar,
+        healNum,
+      );
+      sheetRowsEl.append(li);
+      readoutRowEls.set(c.cardId, {
+        li,
+        hp,
+        hpFill: hpBar.fill,
+        dmgFill: dmgBar.fill,
+        dmgNum,
+        healFill: healBar.fill,
+        healNum,
+        name,
+      });
+    }
     slots = team.map((c, i) => {
       const at = handSlot(i, count, c.row === 'back');
       const wrap = div('du-card');
@@ -477,6 +550,8 @@ export function createArena(ctx: ArenaContext): Arena {
         el: wrap,
         body,
         glow,
+        maxHealth: c.maxHealth,
+        hurtAnims: [],
         grey,
         out: c.knockedOut,
         fraction: c.fraction,
@@ -498,6 +573,7 @@ export function createArena(ctx: ArenaContext): Arena {
       const name = cardNameById(content, c.cardId) ?? c.cardId;
       // its own health shows as the round gauge in the stat sheet
       slot.fraction = c.fraction;
+      slot.maxHealth = c.maxHealth;
       slot.crit = c.critChance;
       slot.hopMs = hopMs(c.hitSeconds);
       slot.el.classList.toggle('is-targeted', c.targeted);
@@ -826,35 +902,49 @@ export function createArena(ctx: ArenaContext): Arena {
         }),
       );
     }
-    const rows = sheetRows(log.perCard, order);
-    if (sheetRowsEl.childElementCount !== rows.length) {
-      sheetRowsEl.replaceChildren(
-        ...rows.map((r) => {
-          const li = document.createElement('li');
-          li.className = 'du-sheet__row';
-          li.dataset['colour'] = slotColour(r.slot);
-          const bar = document.createElement('i');
-          li.append(span('du-sheet__name'), span('du-sheet__num'), bar);
-          return li;
-        }),
-      );
-    }
-    rows.forEach((r, i) => {
-      const li = sheetRowsEl.children[i] as HTMLElement;
-      li.dataset['colour'] = slotColour(r.slot);
+    const rows = readoutRows(log.perCard, log.perHeal, order);
+    // rows re-sort smoothly: each slides from where it stood (transform only)
+    const before = new Map<string, number>();
+    const sorted = rows.map((r) => r.cardId).join(',');
+    const changed = sheetRowsEl.dataset['order'] !== sorted;
+    const reorder = changed && sheetRowsEl.dataset['order'] !== undefined;
+    if (reorder) for (const [id, e] of readoutRowEls) before.set(id, e.li.offsetTop);
+    for (const r of rows) {
+      const e = readoutRowEls.get(r.cardId);
+      if (!e) continue;
+      if (changed) sheetRowsEl.append(e.li);
       const own = slots.find((x) => x.cardId === r.cardId);
       const pct = Math.round((own?.fraction ?? 1) * 100);
-      li.style.setProperty('--hp', String(pct));
-      li.dataset['hp'] = `${pct}%`;
-      li.classList.toggle('is-out', own?.out === true);
-      setText(li.children[0] as HTMLElement, cardNameById(content, r.cardId) ?? r.cardId);
-      setText(li.children[1] as HTMLElement, fmt(r.damage));
-      (li.children[2] as HTMLElement).style.transform = `scaleX(${r.bar.toFixed(3)})`;
-    });
-    const sheetNow = duelSheet(log);
-    setText(totalEl, fmt(sheetNow.total));
-    setText(perSecEl, fmt(sheetNow.perSecond));
-    setText(bestEl, fmt(sheetNow.best));
+      e.li.dataset['colour'] = slotColour(r.slot);
+      e.li.dataset['tone'] = healthTone(pct);
+      e.li.classList.toggle('is-out', own?.out === true);
+      setText(e.name, cardNameById(content, r.cardId) ?? r.cardId);
+      setText(e.hp, `♥ ${pct}%`);
+      e.hpFill.style.transform = `scaleX(${(pct / 100).toFixed(3)})`;
+      e.dmgFill.style.transform = `scaleX(${r.dmgBar.toFixed(3)})`;
+      e.healFill.style.transform = `scaleX(${r.healBar.toFixed(3)})`;
+      pxNum(e.dmgNum, fmt(r.damage), 2);
+      pxNum(e.healNum, fmt(r.heal), 2);
+    }
+    if (changed) {
+      if (reorder && !calm()) {
+        for (const [id, e] of readoutRowEls) {
+          const dy = (before.get(id) ?? e.li.offsetTop) - e.li.offsetTop;
+          if (dy !== 0)
+            e.li.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], {
+              duration: 320,
+              easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)',
+            });
+        }
+      }
+      sheetRowsEl.dataset['order'] = sorted;
+    }
+    teamFill.style.transform = `scaleX(${teamNow.fraction.toFixed(3)})`;
+    const teamPercent = Math.round(teamNow.fraction * 100);
+    teamBar.dataset['tone'] = healthTone(teamPercent);
+    setText(teamPct, `${teamNow.cur} / ${teamNow.max}`);
+    const totalHeal = Object.values(log.perHeal).reduce((a, b) => a.add(b), new Decimal(0));
+    setText(footTotal, DUEL_COPY.totalLine(fmt(log.total), fmt(totalHeal)));
   }
 
   function updatePlates(now: number): void {
@@ -986,6 +1076,11 @@ export function createArena(ctx: ArenaContext): Arena {
     setText(dpsEl, DUEL_COPY.dps(fmt(r.averageDps)));
     setText(teamEl, DUEL_COPY.team(fmt(lh.current), fmt(lh.max)));
     teamTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
+    teamNow = {
+      cur: fmt(lh.current),
+      max: fmt(lh.max),
+      fraction: lh.max.gt(0) ? Math.max(0, Math.min(1, lh.current.div(lh.max).toNumber())) : 1,
+    };
     const banner = dungeon ? fallBanner(r) : null;
     fall.hidden = !banner;
     if (banner) {
@@ -1266,6 +1361,51 @@ export function createArena(ctx: ArenaContext): Arena {
     });
   };
 
+  /**
+   * A hit on one of our cards: the "soft rim" (user, 2026-11-24). A warm rim follows the card's own
+   * frame shape (a drop-shadow on the card body, so it traces the kit's alpha, never a rectangle),
+   * peaking at 12% of 800 ms and easing out; the card dips 8 px and back over 450 ms. No shake.
+   * A new hit restarts it, never stacks. `big` (a crit, or over a tenth of the card's max health:
+   * `bigHit`) is the same, a little brighter. Reduced motion: no dip, the rim is held for 300 ms.
+   * Only filter and transform animate.
+   */
+  const hurtCard = (slot: HandSlot, big: boolean): void => {
+    for (const a of slot.hurtAnims) a.cancel();
+    const none = 'drop-shadow(0 0 0 rgb(255 138 90 / 0)) drop-shadow(0 0 0 rgb(255 138 90 / 0))';
+    const rim = big
+      ? 'drop-shadow(0 0 4px rgb(255 185 140 / 1)) drop-shadow(0 0 12px rgb(255 120 80 / 0.85))'
+      : 'drop-shadow(0 0 4px rgb(255 170 120 / 0.95)) drop-shadow(0 0 10px rgb(255 110 70 / 0.7))';
+    if (calm()) {
+      slot.hurtAnims = [
+        slot.body.animate(
+          [
+            { filter: none },
+            { filter: rim, offset: 0.1 },
+            { filter: rim, offset: 0.8 },
+            { filter: none },
+          ],
+          { duration: paced(300), easing: 'linear' },
+        ),
+      ];
+      return;
+    }
+    slot.hurtAnims = [
+      slot.body.animate([{ filter: none }, { filter: rim, offset: 0.12 }, { filter: none }], {
+        duration: paced(800),
+        easing: 'ease-out',
+      }),
+      slot.el.animate(
+        [
+          { transform: 'translateY(0)' },
+          { transform: 'translateY(8px)', offset: 0.15 },
+          { transform: 'translateY(0)', offset: 0.45 },
+          { transform: 'translateY(0)' },
+        ],
+        { duration: paced(450), easing: 'ease-out' },
+      ),
+    ];
+  };
+
   ctx.director.on('duel', (e) => {
     const key = duelFightKey(e.after, content);
     log = recordDuel(log, e.report, e.seconds, key);
@@ -1335,19 +1475,20 @@ export function createArena(ctx: ArenaContext): Arena {
     window.setTimeout(
       () => {
         const hurt = e.slam ? slots : slot ? [slot] : [];
-        if (!calm()) for (const x of hurt) replay(x.body, 'is-hurt', 400);
+        for (const x of hurt) hurtCard(x, bigHit(e.damage, x.maxHealth));
         play('bossHit');
         if (!slot) return;
         const a = el.getBoundingClientRect();
         const b = slot.el.getBoundingClientRect();
         if (a.width === 0) return;
-        popNumber(el, {
+        const num = popNumber(el, {
           kind: 'hurt',
           text: e.ability ? `${e.ability} -${popText(e.damage)}` : `-${popText(e.damage)}`,
           x: (b.left + b.width / 2 - a.left) / a.width,
           y: (b.top - a.top) / a.height,
           scale: e.slam ? 1.6 : 1,
         });
+        if (num && bigHit(e.damage, slot.maxHealth)) num.classList.add('is-big');
       },
       paced(e.slam ? 200 : 140),
     );

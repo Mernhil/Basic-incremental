@@ -51,6 +51,10 @@ describe('Clean pixels: the scale choice (DESIGN.md §12)', () => {
     expect(pickSpriteScale(176, 132, 1.5)).toBe(2); // exactly 176 CSS px
     expect(pickSpriteScale(176, 132, 2)).toBe(3); // 198 CSS px, nearer than 132
     expect(pickSpriteScale(176, 132, 1)).toBe(1);
+    // half steps (the duel's hand under the design-size zoom)
+    expect(pickSpriteScale(209, 132, 1, Infinity, 0.5)).toBe(1.5);
+    expect(pickSpriteScale(209, 132, 1, 190, 0.5)).toBe(1);
+    expect(pickSpriteScale(50, 132, 1, Infinity, 0.5)).toBe(1);
     expect(pickSpriteScale(105.6, 132, 1.25)).toBe(1); // 0.6 of the card, the old collection size
     expect(pickSpriteScale(24, 48, 2)).toBe(1); // a 24 CSS px coin is its own size on a 2x screen
   });

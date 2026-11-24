@@ -54,7 +54,13 @@
   z-index: 3;
 }
 .st-num--hurt {
-  --ink: var(--bi-tick-hurt, var(--bi-hp-0, #e0606d));
+  /* a hit on our card (the soft rim): a soft red, 56 px at the design size, a black outline */
+  --ink: #ff7a5a;
+  --outline: #000;
+  font-size: calc(56px * var(--s, 1));
+}
+.st-num--hurt.is-big {
+  --ink: #ff9a7a;
 }
 .st-num--gain {
   --ink: var(--bi-tick-gain, var(--bi-hp-3, #5fc2a0));
@@ -118,9 +124,13 @@
 .st-num--total[data-motion='bounce'] {
   --ttl: 1.6s;
 }
-.st-num--gain[data-motion='bounce'],
-.st-num--hurt[data-motion='bounce'] {
+.st-num--gain[data-motion='bounce'] {
   animation-name: st-hop;
+}
+/* rises 50 px and fades over 900 ms */
+.st-num--hurt[data-motion='bounce'] {
+  --ttl: 0.9s;
+  animation: st-hurt calc(0.9s / var(--pace, 1)) ease-out both;
 }
 .st-num[data-motion='fade'] {
   animation: st-fade calc(1s / var(--pace, 1)) ease-out both;
@@ -174,6 +184,20 @@
   100% {
     opacity: 0;
     transform: translateY(-30px) scale(0.95);
+  }
+}
+@keyframes st-hurt {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  12% {
+    opacity: 0.95;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50px);
   }
 }
 @keyframes st-fade {

@@ -1,5 +1,5 @@
 import type { BurstJob, Metal, ProductionJob } from '../data';
-import type { Decimal } from './num';
+import { Decimal } from './num';
 import type { Difficulty } from './state';
 
 /**
@@ -251,6 +251,8 @@ export interface TickReport {
   bossAttacks: BossAttackEvent[];
   /** Our hits on the boss or trial target, in order (merged when there are many). */
   playerHits: PlayerHitEvent[];
+  /** Health each team card's heals actually restored (healer card id -> amount). */
+  healed: Record<string, Decimal>;
   /** Team cards' skills that fired, in order (DESIGN.md §6 card duel; merged when many). */
   skills: SkillEvent[];
   /** Team cards knocked out one by one (their health ran out), in order; a whole-team knockout
@@ -286,6 +288,7 @@ export function emptyReport(): TickReport {
     challenges: [],
     bossAttacks: [],
     playerHits: [],
+    healed: {},
     skills: [],
     cardKnockouts: [],
     tierUps: [],
@@ -317,6 +320,9 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.cardDrops.push(...add.cardDrops);
   for (const event of add.bossAttacks) pushBossAttack(into.bossAttacks, { ...event });
   for (const event of add.playerHits) pushPlayerHit(into.playerHits, { ...event });
+  for (const [id, n] of Object.entries(add.healed)) {
+    into.healed[id] = (into.healed[id] ?? new Decimal(0)).add(n);
+  }
   for (const event of add.skills) pushSkill(into.skills, { ...event });
   into.cardKnockouts.push(...add.cardKnockouts);
   into.tierUps.push(...add.tierUps);

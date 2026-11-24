@@ -72,20 +72,29 @@ export function foeRoom(height: number, handPx: number, margin = HAND_MARGIN): n
 /** CSS px the duel keeps free under the hand, so the whole hand stands inside the window. */
 export const HAND_MARGIN = 8;
 
+/** The hand card's share of the duel's height: about 29%, never more than 31% (user, 2026-11-24). */
+export const HAND_SHARE = { want: 0.29, max: 0.31 } as const;
+/** The share the hand had until 2026-11-24, which the enemy card's size still follows (it stays as it was). */
+export const FOE_HAND_SHARE = { want: 0.34, max: 0.42 } as const;
+
 /**
  * CSS px wide a hand card wants to be in a duel `height` CSS px tall, and the most it may take:
- * the hand stands about 34% of the height and never more than 42% (the enemy card is as tall as a hand card, so the two read as the same size; user, 2026-11-23), and never taller than the room
+ * the hand stands about 29% of the height and never more than 31% (user, 2026-11-24: \"this is pretty perfect\" on the 1280 x 720 picture, where a hand card is 13% of the width and 29% of the height), and never taller than the room
  * under the enemy card at its smallest, so the whole hand shows (user, 2026-11-12). The screen
  * scale then rounds it to a whole scale (`fitCard`) and the enemy card gives way (`foeRoom`);
  * only a duel too short for the smallest scale cuts the hand.
  */
-export function handCardWant(height: number, margin = HAND_MARGIN): { want: number; max: number } {
+export function handCardWant(
+  height: number,
+  margin = HAND_MARGIN,
+  share: { want: number; max: number } = HAND_SHARE,
+): { want: number; max: number } {
   const ratio = HAND.cardW / HAND.cardH;
   const room = Math.max(0, foeRoom(height, 0, margin) - DUEL_FOE_MIN);
   const cardRoom = (room * HAND.cardH) / (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
   return {
-    want: Math.min(height * 0.34, cardRoom) * ratio,
-    max: Math.min(height * 0.42, cardRoom) * ratio,
+    want: Math.min(height * share.want, cardRoom) * ratio,
+    max: Math.min(height * share.max, cardRoom) * ratio,
   };
 }
 
@@ -204,6 +213,56 @@ export function sheetRows(
     damage: damages[slot]!,
     bar: top.gt(0) ? Math.min(1, damages[slot]!.div(top).toNumber()) : 0,
   }));
+}
+
+export interface ReadoutRow {
+  cardId: string;
+  slot: number;
+  damage: Decimal;
+  heal: Decimal;
+  /** Bars, 0..1: damage against the card that dealt most, heal against the card that healed most. */
+  dmgBar: number;
+  healBar: number;
+}
+
+/**
+ * The right tab's rows (the fight readout): one per team card, sorted by damage dealt, highest
+ * first; ties keep hand order.
+ */
+export function readoutRows(
+  perCard: Readonly<Record<string, Decimal>>,
+  perHeal: Readonly<Record<string, Decimal>>,
+  order: readonly string[],
+): ReadoutRow[] {
+  const zero = new Decimal(0);
+  const dmg = order.map((id) => perCard[id] ?? zero);
+  const heal = order.map((id) => perHeal[id] ?? zero);
+  const topD = dmg.reduce((a, b) => Decimal.max(a, b), zero);
+  const topH = heal.reduce((a, b) => Decimal.max(a, b), zero);
+  const share = (x: Decimal, top: Decimal): number =>
+    top.gt(0) ? Math.min(1, x.div(top).toNumber()) : 0;
+  return order
+    .map((cardId, slot) => ({
+      cardId,
+      slot,
+      damage: dmg[slot]!,
+      heal: heal[slot]!,
+      dmgBar: share(dmg[slot]!, topD),
+      healBar: share(heal[slot]!, topH),
+    }))
+    .sort((a, b) => b.damage.cmp(a.damage) || a.slot - b.slot);
+}
+
+export type HealthTone = 'good' | 'mid' | 'low';
+
+/** The colour of a health percentage: green from 60%, amber from 25%, red under. */
+export function healthTone(percent: number): HealthTone {
+  return percent >= 60 ? 'good' : percent >= 25 ? 'mid' : 'low';
+}
+
+/** A hit on one of our cards is big when it crit or took more than a tenth of its max health. */
+export function bigHit(damage: Decimal, maxHealth: Decimal, crit = false): boolean {
+  return crit || (maxHealth.gt(0) && damage.div(maxHealth).gt(0.1));
 }
 
 // ---- skill plates -------------------------------------------------------------------------------
