@@ -930,11 +930,17 @@ export function createArena(ctx: ArenaContext): Arena {
       if (reorder && !calm()) {
         for (const [id, e] of readoutRowEls) {
           const dy = (before.get(id) ?? e.li.offsetTop) - e.li.offsetTop;
+          // two rows swapping cross each other: the one moving down starts faint, so their texts
+          // are never both readable on top of each other
           if (dy !== 0)
-            e.li.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], {
-              duration: 320,
-              easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)',
-            });
+            e.li.animate(
+              [
+                { transform: `translateY(${dy}px)`, opacity: dy < 0 ? 0.15 : 1 },
+                { opacity: dy < 0 ? 0.15 : 1, offset: 0.96 },
+                { transform: 'none', opacity: 1 },
+              ],
+              { duration: 360, easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)' },
+            );
         }
       }
       sheetRowsEl.dataset['order'] = sorted;
@@ -1381,7 +1387,7 @@ export function createArena(ctx: ArenaContext): Arena {
           [
             { filter: none },
             { filter: rim, offset: 0.1 },
-            { filter: rim, offset: 0.8 },
+            { filter: rim, offset: 0.96 },
             { filter: none },
           ],
           { duration: paced(300), easing: 'linear' },
