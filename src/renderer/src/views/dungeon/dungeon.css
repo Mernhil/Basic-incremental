@@ -11,14 +11,14 @@
 .dv-buttons {
   position: absolute;
   top: 12px;
-  left: 84px;
+  left: 130px;
   z-index: 5;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 .dv-button {
-  padding: 5px 12px;
-  font-size: 12.5px;
+  padding: 8px 16px;
+  font-size: 18px;
 }
 .dv-button:focus-visible,
 .dv-sheet__back:focus-visible {

@@ -226,3 +226,8 @@
   left: var(--tbl-gap);
   top: 12px;
 }
+/* on the fight the Hub button matches the panel buttons beside it */
+.tbl[data-screen='dungeon'] .tbl-hubback {
+  padding: 8px 16px;
+  font-size: 18px;
+}
