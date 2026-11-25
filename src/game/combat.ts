@@ -1446,7 +1446,10 @@ function fightDungeon(
   const applyHeals = (cards: readonly TeamCard[], from: number, to: number): void => {
     for (const card of cards) {
       if (card.heals.length === 0 || !isStanding(next, card)) continue;
-      healFromMoves(next, team, card, cardRun(card, from, to).bursts);
+      const healed = healFromMoves(next, team, card, cardRun(card, from, to).bursts);
+      if (healed.gt(0)) {
+        report.healed[card.id] = (report.healed[card.id] ?? new Decimal(0)).add(healed);
+      }
     }
   };
   /** An attack's damage lands on a card's health. */

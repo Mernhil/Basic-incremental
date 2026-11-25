@@ -563,16 +563,23 @@ export function healTeam(
   team: readonly TeamCard[],
   share: number,
   times: number,
-): void {
-  if (share <= 0 || times <= 0) return;
+): Decimal {
+  let healed = new Decimal(0);
+  if (share <= 0 || times <= 0) return healed;
   for (const c of team) {
     if (c.maxHealth.lte(0) || !isStanding(next, c)) continue;
     const taken = damageTaken(next, c.id);
     if (taken.lte(0)) continue;
     const left = taken.sub(c.maxHealth.mul(share * times));
-    if (left.lte(0)) delete next.combat.cardDamage[c.id];
-    else next.combat.cardDamage[c.id] = left;
+    if (left.lte(0)) {
+      delete next.combat.cardDamage[c.id];
+      healed = healed.add(taken);
+    } else {
+      next.combat.cardDamage[c.id] = left;
+      healed = healed.add(taken.sub(left));
+    }
   }
+  return healed;
 }
 
 /**
@@ -585,8 +592,9 @@ export function healFromMoves(
   team: readonly TeamCard[],
   source: TeamCard,
   times: number,
-): void {
-  if (times <= 0) return;
+): Decimal {
+  let healed = new Decimal(0);
+  if (times <= 0) return healed;
   const standing = team.filter((c) => c.maxHealth.gt(0) && isStanding(next, c));
   for (const h of source.heals) {
     let targets: TeamCard[];
@@ -610,8 +618,9 @@ export function healFromMoves(
       default:
         targets = standing;
     }
-    healTeam(next, targets, h.share, times);
+    healed = healed.add(healTeam(next, targets, h.share, times));
   }
+  return healed;
 }
 
 /** What each card and the enemy are under at `t` seconds of play time, from the skills and

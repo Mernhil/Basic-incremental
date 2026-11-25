@@ -12,6 +12,10 @@ import {
   feedLines,
   floorPips,
   handCardWant,
+  FOE_HAND_SHARE,
+  readoutRows,
+  healthTone,
+  bigHit,
   foeRoom,
   DUEL_FOE_MIN,
   handSize,
@@ -46,10 +50,13 @@ describe('the hand', () => {
     expect(handSize(0)).toEqual({ w: 188, h: 235 });
   });
 
-  it('wants a card from the duel height, never more than 42% of it', () => {
+  it('wants a card from the duel height, never more than 31% of it (the enemy keeps the old 34% / 42%)', () => {
     const { want, max } = handCardWant(1000);
-    expect(want).toBeCloseTo((1000 * 0.34 * 132) / 186);
-    expect(max).toBeGreaterThan(want);
+    expect(want).toBeCloseTo((1000 * 0.29 * 132) / 186);
+    expect(max).toBeCloseTo((1000 * 0.31 * 132) / 186);
+    const old = handCardWant(1000, undefined, FOE_HAND_SHARE);
+    expect(old.want).toBeCloseTo((1000 * 0.34 * 132) / 186);
+    expect(old.max).toBeCloseTo((1000 * 0.42 * 132) / 186);
   });
 
   it('never wants a hand taller than the room under the enemy card', () => {
@@ -137,6 +144,37 @@ describe('the feed and the sheet', () => {
       ['c', 2, 100, 1],
     ]);
     expect(sheetRows({}, ['a'])[0]!.bar).toBe(0);
+  });
+
+  it('sorts the readout rows by damage, with damage and heal bars against the top card', () => {
+    const rows = readoutRows({ a: d(50), c: d(100) }, { a: d(30), b: d(60) }, ['a', 'b', 'c']);
+    expect(rows.map((r) => r.cardId)).toEqual(['c', 'a', 'b']);
+    expect(rows.map((r) => r.dmgBar)).toEqual([1, 0.5, 0]);
+    expect(rows.map((r) => r.healBar)).toEqual([0, 0.5, 1]);
+    // ties keep the hand order, and an empty fight has empty bars
+    expect(readoutRows({}, {}, ['x', 'y']).map((r) => [r.cardId, r.dmgBar, r.healBar])).toEqual([
+      ['x', 0, 0],
+      ['y', 0, 0],
+    ]);
+  });
+
+  it('colours a health percentage green, amber or red', () => {
+    expect([100, 60, 59, 31, 25, 24, 0].map(healthTone)).toEqual([
+      'good',
+      'good',
+      'mid',
+      'mid',
+      'mid',
+      'low',
+      'low',
+    ]);
+  });
+
+  it('calls a hit big when it crit or took over a tenth of the card health', () => {
+    expect(bigHit(d(11), d(100))).toBe(true);
+    expect(bigHit(d(10), d(100))).toBe(false);
+    expect(bigHit(d(1), d(100), true)).toBe(true);
+    expect(bigHit(d(5), d(0))).toBe(false);
   });
 });
 
