@@ -21,7 +21,8 @@
     "dist": "npm run build && electron-builder --win --publish never",
     "release": "npm run build && electron-builder --win --publish always",
     "design:build": "node design/explorations/build.mjs",
-    "design:shoot": "node design/explorations/shoot.mjs"
+    "design:shoot": "node design/explorations/shoot.mjs",
+    "ai:local": "node scripts/ask-local.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

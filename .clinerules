@@ -1,0 +1,36 @@
+# Basic Incremental: rules for the local model
+
+## The game
+An idle/incremental game with gacha card collecting, inspired by Brave Frontier and AFK Arena. You pull weapon cards (tiers Wood to Prismatic, then T6 and Heirlooms), level them, fight dungeon stages in an auto-duel, gather materials at a base camp and Ascend for permanent boosts. A Windows desktop app: Electron + TypeScript + Vite (electron-vite), big numbers with `break_eternity.js`.
+
+## Source of truth
+- `docs/DESIGN.md` is the game design. Each rule has a tag: `[Built]` in the game; `[Differs]` decided, the game differs (the rule says how); `[To build]` decided, not in the game; `[Default]` / `[Default · in game]` a chat's guess the user never confirmed; `[Proposed]` an idea, not decided.
+- Implement only `[Built]`, `[Differs]` and `[To build]` rules. Never edit DESIGN.md or any rule file (`CLAUDE.md`, `docs/UI_RULES.md`, `docs/ASSET_RULES.md`).
+- `docs/PROJECT_OVERVIEW.md` says which file does what. It is large: search it for your topic, never open it whole. Same for DESIGN.md.
+
+## Where things are
+- `src/data/content/*.json`: all content and tunable numbers (cards, items, dungeons, raids, enemies, moves, cosmetics, achievements, quests, prices). `src/data/schemas.ts` checks them; `src/data/index.ts` loads them.
+- `src/game/`: game rules, pure TypeScript, no DOM or Electron. One file per system: `combat.ts`, `duel.ts`, `cards.ts`, `summon.ts`, `floors.ts`, `drops.ts`, `camp.ts`, `forge.ts`, `prestige.ts` (Ascension), `upgrades.ts`, `modifiers.ts` (every tunable number goes through it), `save.ts` + `migrations.ts` (saves), `state.ts`, `tick.ts` / `loop.ts` / `offline.ts`. The UI imports only from `src/game/index.ts`.
+- `src/renderer/src/`: the UI. `pages/` (Cards, Summon, Shop, Ascension, Dungeon map...), `views/` (dungeon, gathering, raids), `stage/` (the fight: `arena.ts`, `arena.css`, `director.ts`), `hub/`, `shell/` (header, frame), `ui/` (shared widgets), `theme/`, `copy.ts` (all on-screen text). No game rules in the UI.
+- `src/main/` (Electron main: saves on disk, updater), `src/preload/` (bridge).
+- `tests/*.test.ts`: Vitest, one file per system.
+
+## Models (Local Chat service, 64K context each)
+`qwen-coder` is the default. `qwen-q8-quality` for tricky logic (slower, fewest mistakes). `qwen-fast` only for quick simple jobs. Keep one model per session: a switch reloads (10-25 s).
+
+## Commands (run from the repo root)
+- `npm run typecheck`
+- `npm test` (or `npx vitest run tests/<file>.test.ts` for one file)
+- `npm run lint`
+After every change run typecheck and the tests that cover what you touched, then the full `npm test`. Fix what you broke before you stop. Game logic is written test first.
+
+## Hard rules
+1. One small, scoped change per task: only what the task card asks.
+2. No git commands at all (no commit, branch, stash, checkout, push). Claude Code does all git, PRs and releases.
+3. No new dependencies; do not edit `package.json` or `package-lock.json`.
+4. Do not touch art assets (images, sprites, `src/renderer/src/art/`), `electron-builder.yml`, release scripts, `.github/` or CI.
+5. Do not rename or move files unless the task says so.
+6. Game numbers use `break_eternity.js` (`src/game/num.ts`), never plain JS numbers for currencies or damage.
+7. A save format change is not yours: stop and say so.
+8. If the design is unclear or the task needs files outside its card, stop and ask; never guess.
+9. When done, list the files you changed and the checks you ran.
