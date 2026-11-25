@@ -1,0 +1,52 @@
+# What Cline (the local model) never loads. Its context is 32K-64K tokens, so it sees only source, docs and data.
+
+# dependencies, builds, releases, caches
+node_modules/
+out/
+out-dev/
+out-web/
+dist/
+release/
+release-dev/
+local-dev/
+coverage/
+graphify-out/
+*.tsbuildinfo
+*.log
+package-lock.json
+
+# Claude Code's own files and working copies
+.claude/
+
+# local-only art, screenshots and picker pages (thousands of files)
+tracing pics/
+design/
+
+# generated art indexes (huge, machine-written)
+src/renderer/src/art/pixel/manifest.ts
+src/renderer/src/art/pixel/hand/outlines.json
+
+# images, audio, video, archives, fonts, binaries
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.ico
+*.icns
+*.svg
+*.aseprite
+*.psd
+*.wav
+*.ogg
+*.mp3
+*.webm
+*.mp4
+*.zip
+*.7z
+*.ttf
+*.otf
+*.woff
+*.woff2
+*.exe
+*.blockmap

@@ -20,6 +20,13 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 - Bare `python` is not on PATH; use `py`.
 - The `gh` CLI does everything on GitHub; the user does not push, merge or manage PRs by hand.
 
+## Local AI
+
+- A local model (Qwen on llama.cpp) runs at `http://127.0.0.1:8080/v1`, model `qwen-coder`, used through Cline in VS Code (`.clinerules`, `.clineignore`). `docs/LOCAL-AI.md` defines what it does and what Claude Code does.
+- Small jobs can go to it as task cards in `docs/local-tasks/` (from `TEMPLATE.md`); Claude Code may suggest writing a card instead of doing the job itself.
+- Review loop: the local model leaves an uncommitted diff; Claude Code reviews `git diff` against DESIGN.md and the tests, fixes or flags problems, then branches and opens the PR the usual way.
+- `npm run ai:local -- --ping` checks the server is up.
+
 ## 2. Showing work and picking
 
 1. **Picker page.** Every time there is a choice to make between pictures, it is shown on the picker page. What the user picks is what gets built.

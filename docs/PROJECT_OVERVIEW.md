@@ -71,6 +71,7 @@ Run by hand, with Playwright against a running dev app (its `--remote-debugging-
 - The other `check-*.mjs`: click through or measure the app and report one kind of fault.
 - `a11y-audit.mjs`, `a11y-cards.mjs` and `a11y-shell.mjs`: contrast and keyboard audits; `a11y-measure.mjs` is their shared contrast helper.
 - `scripts/probe-app.mjs "<expression>" [port]` evaluates an expression in the running dev app over its `--remote-debugging-port`.
+- `scripts/ask-local.mjs` (`npm run ai:local -- --ping | "prompt" [files]`): dev-only helper that asks the local model (llama.cpp at `http://127.0.0.1:8080/v1`, model `qwen-coder`); see `docs/LOCAL-AI.md`. Not packaged.
 - `oak-*.mjs`, `contrast-sweep.mjs` (sharing `scripts/lib/contrast.mjs`): screenshot views, popups and dialogs under a table cosmetic and sweep their contrast.
 - `scripts/art/`, `scripts/shell-art/`: art tools. See Art code.
 
