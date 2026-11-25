@@ -432,6 +432,14 @@ html.r-shell-gold
   filter: none;
   translate: none;
 }
+/* the fight readout wears the table's window frame (the ornate gold one), not the thin sheet */
+html.r-shell-gold .px-panel.du-sheet:not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/gold/window.png');
+  --o-slice: 18;
+  --o-bg: #2f2f2f;
+  border-image-repeat: stretch;
+  padding: calc(18 * var(--oa) - 4px) calc(18 * var(--oa) + 2px);
+}
 /* the Summon table is a stage, not a frame; wells are flat and inset */
 html.r-shell-gold .sm-table:not(#_o):not(#_o):not(#_o) {
   background: transparent;

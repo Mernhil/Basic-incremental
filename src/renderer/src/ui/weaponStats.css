@@ -420,6 +420,7 @@
 /* skill names in the pixel display font */
 .wst-row__name {
   font-family: var(--bi-font-display, inherit);
+  font-variant-ligatures: none;
   font-size: calc(18px * var(--wzoom, 1));
   font-weight: 400;
 }

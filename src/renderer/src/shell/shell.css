@@ -623,6 +623,7 @@ body,
   align-items: baseline;
   justify-content: space-between;
   font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
   font-size: 15px;
   font-weight: 600;
   color: var(--bi-chrome-accent);

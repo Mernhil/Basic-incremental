@@ -336,6 +336,7 @@ html .asc .asc-go.is-no:not(#_px) {
 .asc .asc-go {
   cursor: pointer;
   font-family: var(--bi-font-display, inherit);
+  font-variant-ligatures: none;
 }
 .asc .asc-go:hover:not(.is-no) {
   filter: brightness(1.08);

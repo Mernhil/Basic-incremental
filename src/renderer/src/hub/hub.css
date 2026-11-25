@@ -96,6 +96,7 @@
   display: grid;
   place-items: center;
   font: 700 16px/1 var(--bi-font-display, monospace);
+  font-variant-ligatures: none;
   color: #1c1c20;
   background: var(--hub-gold, #f2c14e);
   box-shadow: 0 0 0 2px #1c1c20;
