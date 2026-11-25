@@ -758,6 +758,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 }
 .du-skill b {
   font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
   font-size: 2.2em;
   font-style: italic;
   font-weight: 900;
@@ -785,6 +786,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   z-index: 6;
   pointer-events: none;
   font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
   font-style: italic;
   font-weight: 900;
   letter-spacing: 2px;
@@ -891,6 +893,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-sheet__title {
   margin: 0;
   font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
   font-size: 26px;
   line-height: 1;
   color: var(--bi-frame-accent, var(--du-gold));
