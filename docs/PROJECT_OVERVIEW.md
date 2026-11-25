@@ -934,7 +934,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `art/goldIcons.ts`: the gold icons (`art/icons-gold/`, 64 px): the nine dock plaques (`DOCK_ICON` in `table/table.ts`), Goals, Details and the sound button; the header's Money and scroll chips use the resource icons.
 - `skins.ts`: the worn UI-skin style; Starlight coin and shard icons. Used by `app.ts`, Achievements, Shop, Wardrobe.
 - `cosmeticSwatch.ts`: a small sample of one cosmetic. Used by Wardrobe, Summon, `shell/rewardTrack.ts`.
-- `keepScroll.ts`: keeps scroll and focus across a rebuild. Used by Cards and Wardrobe.
+- `keepScroll.ts`: keeps scroll and focus across a rebuild. Used by Cards and Wardrobe. `keepAncestorScroll` does the same for a panel that sits inside a scroller it does not own (the weapon panel in the dungeon sheet); `check-scroll-keep.mjs` also covers the dungeon's Weapon, Training and Dungeons sheets.
 
 ## Screens
 

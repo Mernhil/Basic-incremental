@@ -153,6 +153,12 @@ const SCENARIOS = [
     pre: '.sm-gate[data-gate="heirloom"] .sm-gate__row',
   },
   { id: 'table', label: 'quests', quests: true },
+  // the dungeon fight's framed sheet (Weapon, Training, Dungeons buttons), opened from the hub arch
+  ...['weapon', 'training', 'dungeons'].map((p) => ({
+    id: 'dungeon',
+    label: `fight/${p}`,
+    sheet: p,
+  })),
 ];
 
 const only = process.argv.find((a) => a.startsWith('--only='))?.slice(7);
@@ -163,7 +169,21 @@ for (const sc of SCENARIOS) {
   await page.evaluate(() => {
     window.__sc.rootSel = '.vh-view:not([hidden])';
   });
-  if (sc.quests) {
+  if (sc.sheet) {
+    await page.evaluate(() => document.querySelector('.tbl-hubback')?.click());
+    await page.waitForTimeout(300);
+    await page.evaluate(() => document.querySelector('[data-building="dungeon_arch"]')?.click());
+    await page.waitForTimeout(600);
+    await page.evaluate((p) => {
+      window.__sc.rootSel = '.dv-sheet__body';
+      document.querySelector(`[data-key="panel-${p}"]`)?.click();
+    }, sc.sheet);
+    await page.waitForTimeout(600);
+    if (!(await page.evaluate(() => document.querySelector('.dv-sheet:not([hidden])') !== null))) {
+      console.log(`skip ${label} (sheet did not open)`);
+      continue;
+    }
+  } else if (sc.quests) {
     await page.evaluate(() => document.querySelector('.vh-back')?.click());
     await page.waitForTimeout(300);
     await page.evaluate(() => {
@@ -193,6 +213,7 @@ for (const sc of SCENARIOS) {
   for (let i = 0; i < Math.min(count, 40); i++) {
     if (
       !sc.quests &&
+      !sc.sheet &&
       !(await page.evaluate(
         (v) => document.querySelector(`.vh-view[data-view="${v}"]:not([hidden])`) !== null,
         id,
@@ -217,7 +238,7 @@ for (const sc of SCENARIOS) {
     const now = await page.evaluate(() =>
       document.querySelector('.vh-view:not([hidden])')?.getAttribute('data-view'),
     );
-    if (!sc.quests && now !== id) {
+    if (!sc.quests && !sc.sheet && now !== id) {
       await openView(id);
       await page.evaluate(() => window.__sc.scrollAll());
       await markTargets();
