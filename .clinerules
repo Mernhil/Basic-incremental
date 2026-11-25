@@ -15,6 +15,9 @@ An idle/incremental game with gacha card collecting, inspired by Brave Frontier 
 - `src/main/` (Electron main: saves on disk, updater), `src/preload/` (bridge).
 - `tests/*.test.ts`: Vitest, one file per system.
 
+## Models (Local Chat service, 64K context each)
+`qwen-coder` is the default. `qwen-q8-quality` for tricky logic (slower, fewest mistakes). `qwen-fast` only for quick simple jobs. Keep one model per session: a switch reloads (10-25 s).
+
 ## Commands (run from the repo root)
 - `npm run typecheck`
 - `npm test` (or `npx vitest run tests/<file>.test.ts` for one file)

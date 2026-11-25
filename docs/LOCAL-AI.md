@@ -2,10 +2,21 @@
 
 A local coding model runs on the user's PC next to Claude Code:
 
-- llama.cpp server, started with `C:\LocalAI\start-solo.bat` (or `start-with-comfyui.bat` while ComfyUI is open).
-- OpenAI-compatible endpoint `http://127.0.0.1:8080/v1`, model id `qwen-coder`, any API key.
-- Qwen3.6-35B-A3B (Q4), about 59 tokens/s out; context 64K tokens in solo mode, 32K in ComfyUI mode.
+- The **Local Chat** background service (starts with Windows) serves the OpenAI-compatible endpoint `http://127.0.0.1:8080/v1`, any API key. It loads the requested model on the first request: after a model switch or 30 minutes idle that request waits 10-25 s, then answers are instant.
+- Context is 64K tokens for every model.
 - Used from VS Code through Cline. Cline reads `.clinerules` (its rules) and `.clineignore` (what it never loads).
+
+## Models
+
+The model id picks the model. Only one is loaded at a time and a switch reloads (10-25 s), so keep one model per session.
+
+| Model id                       | Model              | Speed        | Use it for                                 |
+| ------------------------------ | ------------------ | ------------ | ------------------------------------------ |
+| `qwen-coder` (alias `qwen-q4`) | Qwen3.6-35B-A3B Q4 | ~55-59 tok/s | everyday work; Cline's default             |
+| `qwen-q8-quality`              | the same model, Q8 | ~37 tok/s    | tricky logic, where mistakes cost the most |
+| `qwen-fast`                    | Qwen3.5-9B         | fastest      | quick simple jobs; weaker                  |
+
+Thinking is on by default. Adding `"chat_template_kwargs": {"enable_thinking": false}` to a request turns it off, which is much faster for simple, bulk or repetitive drafting (`--no-think` in the terminal helper).
 
 ## Who does what
 
@@ -37,4 +48,6 @@ A task for the local model is written as a card in `docs/local-tasks/`, from `TE
 
 ## Asking the local model from the terminal
 
-`npm run ai:local -- --ping` says whether the server is running. `npm run ai:local -- "question" path/to/file.ts` sends the question with the files' contents and prints the answer (`scripts/ask-local.mjs`, dev only, never packaged). Claude Code may use it for cheap bulk jobs, such as summarising a large file or drafting repetitive data entries, and always checks the output before using it.
+`npm run ai:local -- --ping` says whether Local Chat is up (the model itself loads on first use). `npm run ai:local -- [--model <id>] [--no-think] "question" path/to/file.ts` sends the question with the files' contents and prints the answer; the default model is `qwen-coder` and a request waits up to 5 minutes, since the first one may wait for the model to load (`scripts/ask-local.mjs`, dev only, never packaged).
+
+Claude Code may use it for cheap bulk jobs, such as summarising a large file or drafting repetitive data entries. It passes `--no-think` unless the job needs reasoning, keeps one model id for the whole session to avoid reloads, and always checks the output before using it.

@@ -22,10 +22,10 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 
 ## Local AI
 
-- A local model (Qwen on llama.cpp) runs at `http://127.0.0.1:8080/v1`, model `qwen-coder`, used through Cline in VS Code (`.clinerules`, `.clineignore`). `docs/LOCAL-AI.md` defines what it does and what Claude Code does.
+- A local model runs in the "Local Chat" background service at `http://127.0.0.1:8080/v1` (it loads the model on first use, 10-25 s), used through Cline in VS Code (`.clinerules`, `.clineignore`). Model ids: `qwen-coder` (default), `qwen-q8-quality` (hard logic), `qwen-fast` (quick simple jobs); one model per session, since a switch reloads. `docs/LOCAL-AI.md` defines what it does and what Claude Code does.
 - Small jobs can go to it as task cards in `docs/local-tasks/` (from `TEMPLATE.md`); Claude Code may suggest writing a card instead of doing the job itself.
 - Review loop: the local model leaves an uncommitted diff; Claude Code reviews `git diff` against DESIGN.md and the tests, fixes or flags problems, then branches and opens the PR the usual way.
-- `npm run ai:local -- --ping` checks the server is up.
+- `npm run ai:local -- --ping` checks the service is up. Claude Code uses `npm run ai:local -- --no-think "prompt" [files]` for cheap bulk jobs (thinking only when the job needs reasoning, one model id per session) and checks the output before using it.
 
 ## 2. Showing work and picking
 
