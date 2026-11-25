@@ -15,7 +15,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 
 ## Setup notes (facts, not rules)
 
-- A new worktree: `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main folder, and never delete the user's untracked files there.
+- A new worktree: `git worktree add ".claude/worktrees/<task>" -b <branch> origin/main`, inside the project folder (the folder is git-excluded; user, 2026-11-25: "isnt it better if we put those file in thebasic inceremental folder?"). Never switch branches in the main folder, and never delete the user's untracked files there.
 - In a new worktree `npm ci` skips Electron's install script on this PC: run `node node_modules/electron/install.js` once before starting the dev app.
 - Bare `python` is not on PATH; use `py`.
 - The `gh` CLI does everything on GitHub; the user does not push, merge or manage PRs by hand.
