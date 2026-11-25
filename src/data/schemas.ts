@@ -1727,10 +1727,9 @@ export const prestigeSchema = z.strictObject({
       /** Starlight price of level n + 1 (0-based n): base x growth^n. */
       cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
       perLevel: z.array(modifierSchema).default([]),
-      /** A rule a level opens instead of a modifier: `auto_push` (Challenges start by themselves),
-       *  `keep_training` (training levels survive an Ascension), `head_start` (a run starts on
+      /** A rule a level opens instead of a modifier: `keep_training` (training levels survive an Ascension), `head_start` (a run starts on
        *  `percent` per level more of the best floor), `expedition_slot` (one more expedition slot). */
-      grants: z.enum(['auto_push', 'keep_training', 'head_start', 'expedition_slot']).optional(),
+      grants: z.enum(['keep_training', 'head_start', 'expedition_slot']).optional(),
       /** The number a `head_start` level adds, in percent of the best floor. */
       percent: z.number().min(0).max(100).optional(),
     }),

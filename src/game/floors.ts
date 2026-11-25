@@ -108,9 +108,9 @@ export function parseStageKey(key: string): StageRef | null {
   return { dungeonId, difficulty: difficulty as Difficulty, floor };
 }
 
-/** A dungeon's progress as a new game has it: Normal, auto-challenge off (Auto-push is bought), floor 1, nothing beaten. */
+/** A dungeon's progress as a new game has it: Normal, auto-challenge on (a default feature), floor 1, nothing beaten. */
 export function initialProgress(): DungeonProgress {
-  return { difficulty: 'normal', autoChallenge: false, tiers: {} };
+  return { difficulty: 'normal', autoChallenge: true, tiers: {} };
 }
 
 /** How many floors a dungeon has on a difficulty; the endless depths have no last floor. */

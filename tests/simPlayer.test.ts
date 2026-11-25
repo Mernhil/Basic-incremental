@@ -303,7 +303,6 @@ describe('sim player: floor Challenges and the team of four', () => {
     // Wins: auto-challenge on, nothing pressed.
     const easy = withBossAttack(real, 'mossy_cellar', 21, 2);
     const owner = withAutoChallenge(atBossWall(), false);
-    owner.prestige.shop['auto_push'] = 1; // the switch is a Starlight unlock
     const on = chooseAutoChallenge(owner, easy, 0, null);
     expect(floorPosition(on.state, cellar).autoChallenge).toBe(true);
     expect(on.tried).toBe(false);
@@ -337,7 +336,6 @@ describe('sim player: a lost Challenge', () => {
       tiers: { normal: { floor: 9, best: 9 } },
     };
     state.activeDungeonId = 'mossy_cellar';
-    state.prestige.shop['auto_push'] = 1;
     const easy = withBossAttack(withDps(1e6, real), 'mossy_cellar', 0, 2);
     const margin = challengeMargin(state, easy, 'mossy_cellar', collectModifiers(state, easy))!;
     expect(margin).toBeGreaterThan(CHALLENGE_WIN);

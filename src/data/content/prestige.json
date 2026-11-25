@@ -47,18 +47,6 @@
       ]
     },
     {
-      "id": "auto_push",
-      "name": "Auto-push",
-      "description": "Challenges start by themselves when you are ready",
-      "maxLevel": 1,
-      "cost": {
-        "base": "6",
-        "growth": "1"
-      },
-      "perLevel": [],
-      "grants": "auto_push"
-    },
-    {
       "id": "third_raid_try",
       "name": "Third Raid Try",
       "description": "One more raid try a day on every boss",
