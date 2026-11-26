@@ -207,7 +207,7 @@ describe('v26 -> v27 (the table update)', () => {
     // 1,044.5 crystals, and the save owned Gilded Numerals and Hex Lattice, which format 28 refunds at 0.2 each
     expect(state.resources['glamour_scroll']!.toString()).toBe('3.4');
     expect(state.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
-    expect(state.combat.floors['ember_crypt']!.autoChallenge).toBe(false);
+    expect(state.combat.floors['ember_crypt']!.autoChallenge).toBe(true); // format 47 turns it on everywhere
     expect(state.combat.enemyIndex).toBe(0);
     expect(state.combat.challenge).toBeNull();
     expect(state.summon.focusKind).toBeNull();
@@ -308,9 +308,10 @@ describe('v26 -> v27 (the table update)', () => {
       ...camped,
       raids: { day: null, used: {}, best: {}, paid: {}, level: {} },
     };
-    // format 46: Auto-push is given, and the run's start floors are empty
+    // format 46: the run's start floors are empty
     const prestige = raided['prestige'] as { shop: Record<string, number> };
-    raided['prestige'] = { ...prestige, shop: { ...prestige.shop, auto_push: 1 }, runFloors: {} };
+    raided['prestige'] = { ...prestige, runFloors: {} };
+    // format 47 only sets autoChallenge, which this comparison leaves out
     expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

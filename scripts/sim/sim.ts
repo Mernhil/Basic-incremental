@@ -127,7 +127,6 @@ import {
   pull,
   pullPrice,
   ascend,
-  autoPushOwned,
   ascensionPreview,
   buyStarlightItem,
   starlightShop,
@@ -2249,12 +2248,10 @@ export function chooseAutoChallenge(
     lost.key === nextChallengeKey(state, content) &&
     margin < lost.margin * CHALLENGE_REGROWTH;
   const on = margin >= CHALLENGE_WIN && !beaten;
-  // Auto-push is a Starlight unlock: before it, the player presses the Challenge button
-  // whenever the floor looks won, and after it the switch does that.
-  const auto = autoPushOwned(state, content);
-  const set = setAutoChallenge(state, content, dungeon.id, on && auto);
+  // Auto-challenge is a default feature: the switch follows whether the floor looks won.
+  const set = setAutoChallenge(state, content, dungeon.id, on);
   const next = set.ok ? set.state : state;
-  if (on && auto) return { state: next, tried: false };
+  if (on) return { state: next, tried: false };
   if (!on && margin < CHALLENGE_TRY_MARGIN) return { state: next, tried: false };
   if (!on && lastTry !== null && now - lastTry < CHALLENGE_RETRY_SECONDS) {
     return { state: next, tried: false };

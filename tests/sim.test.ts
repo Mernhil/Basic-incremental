@@ -628,7 +628,6 @@ describe('balance sim: floors', () => {
         autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
-      state.prestige.shop['auto_push'] = 1;
       return state;
     };
     // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.
