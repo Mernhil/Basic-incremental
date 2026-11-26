@@ -359,7 +359,6 @@ function effectText(mods: readonly Modifier[], fallback: Modifier | undefined): 
 function grantText(o: StarlightOffer): string | null {
   const t = COPY.ascension;
   switch (o.item.grants) {
-    case 'auto_push':
     case 'keep_training':
     case 'expedition_slot':
       return o.level > 0 ? t.unlocked : t.notUnlocked;

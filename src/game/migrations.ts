@@ -118,9 +118,11 @@ export const MIGRATIONS: MigrationTable = {
   44: v44ToV45,
   /** v45 -> v46: Ascension reworked (DESIGN.md Ascension): the stat items leave the Starlight shop
    *  and their Starlight comes back, Wider Grounds raises yield instead of slots (the extra slots
-   *  are gone, the levels stay), Auto-push is given to every save, and a run's start floors are
-   *  recorded. */
+   *  are gone, the levels stay), and a run's start floors are recorded. */
   45: v45ToV46,
+  /** v46 -> v47: auto-challenge is a default feature (DESIGN.md §6 Challenge): it is on for every
+   *  dungeon once, and the Auto-push item leaves the Starlight shop with its price paid back. */
+  46: v46ToV47,
 };
 
 /**
@@ -380,7 +382,7 @@ const V46_REMOVED_ITEMS: readonly (readonly [string, number, number])[] = [
 /**
  * v45 -> v46: the Starlight spent on the removed stat items is paid back (the sum of their level
  * prices) and the items go; Wider Grounds keeps its levels (now +20% yield each) and the camp
- * keeps only the slots its level opens; Auto-push is owned by every existing save; the run's start
+ * keeps only the slots its level opens; the run's start
  * floors are empty (the whole run so far counts as the climb).
  */
 function v45ToV46(state: Record<string, unknown>): Record<string, unknown> {
@@ -392,7 +394,6 @@ function v45ToV46(state: Record<string, unknown>): Record<string, unknown> {
     for (let i = 0; i < level; i += 1) refund += Math.ceil(base * growth ** i);
     delete shop[id];
   }
-  shop['auto_push'] = 1;
   prestige['shop'] = shop;
   prestige['runFloors'] = {};
   const resources: Record<string, unknown> = isRecord(state['resources'])
@@ -415,6 +416,44 @@ function v45ToV46(state: Record<string, unknown>): Record<string, unknown> {
     }
   }
   return { ...state, prestige, resources, ...(camp ? { camp } : {}) };
+}
+
+/** What Auto-push cost at format 46 (one level, 6 Starlight), paid back to an owner. */
+const V47_AUTO_PUSH_PRICE = 6;
+
+/**
+ * v46 -> v47 (DESIGN.md §6 Challenge): auto-challenge is a default feature. It is switched on for
+ * every dungeon once (the player may turn it off after), and Auto-push leaves the Starlight shop:
+ * an owner gets its price back.
+ */
+function v46ToV47(state: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...state };
+  const combat = isRecord(state['combat']) ? { ...state['combat'] } : null;
+  if (combat && isRecord(combat['floors'])) {
+    const floors: Record<string, unknown> = {};
+    for (const [id, p] of Object.entries(combat['floors'])) {
+      floors[id] = isRecord(p) ? { ...p, autoChallenge: true } : p;
+    }
+    combat['floors'] = floors;
+    out['combat'] = combat;
+  }
+  const prestige = isRecord(state['prestige']) ? { ...state['prestige'] } : null;
+  if (prestige && isRecord(prestige['shop']) && 'auto_push' in prestige['shop']) {
+    const shop: Record<string, unknown> = { ...prestige['shop'] };
+    const owned = typeof shop['auto_push'] === 'number' && shop['auto_push'] > 0;
+    delete shop['auto_push'];
+    prestige['shop'] = shop;
+    out['prestige'] = prestige;
+    if (owned) {
+      const resources: Record<string, unknown> = isRecord(state['resources'])
+        ? { ...state['resources'] }
+        : {};
+      const held = typeof resources['starlight'] === 'string' ? Number(resources['starlight']) : 0;
+      resources['starlight'] = String((Number.isFinite(held) ? held : 0) + V47_AUTO_PUSH_PRICE);
+      out['resources'] = resources;
+    }
+  }
+  return out;
 }
 
 /**

@@ -323,7 +323,7 @@ export function ascend(
   const headStart = headStartPercent(state, content);
   const runFloors: Record<string, number> = {};
   for (const [dungeonId, progress] of Object.entries(next.combat.floors)) {
-    progress.autoChallenge = autoPushOwned(state, content);
+    progress.autoChallenge = true;
     for (const [difficulty, tier] of Object.entries(progress.tiers)) {
       tier.floor = ascensionStartFloor(tier.best, headStart);
       runFloors[`${dungeonId}:${difficulty}`] = tier.best > 0 ? tier.floor : 0;
@@ -422,10 +422,6 @@ export function grantLevel(
   const item = content.prestige.shop.find((i) => i.grants === rule);
   return item ? Math.min(starlightLevel(state, item.id), item.maxLevel) : 0;
 }
-
-/** Auto-push is bought: Challenges may start by themselves. */
-export const autoPushOwned = (state: GameState, content: Content): boolean =>
-  grantLevel(state, content, 'auto_push') > 0;
 
 /** Lasting Training is bought: an Ascension keeps the training levels. */
 export const keepsTraining = (state: GameState, content: Content): boolean =>

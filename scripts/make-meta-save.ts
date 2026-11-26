@@ -21,7 +21,6 @@ state.resources[cur] = new Decimal(64);
 state.prestige.starlightEarned = new Decimal(140);
 state.prestige.shop = {
   second_hands: 2,
-  auto_push: 1,
   head_start: 1,
 };
 state.account.level = 14;

@@ -57,3 +57,22 @@ export function keepScroll<T>(
   }
   return result;
 }
+
+/**
+ * Like `keepScroll`, for a part that sits INSIDE a scrolling container it does not own (a panel in
+ * the dungeon sheet): the scroll positions of `el`'s scrolling ancestors are read first and put
+ * back after `rebuild`, so emptying and refilling `el` cannot clamp the scroll of the sheet.
+ */
+export function keepAncestorScroll<T>(el: HTMLElement, rebuild: () => T): T {
+  const saved: Array<{ el: HTMLElement; top: number; left: number }> = [];
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    if (p.scrollTop === 0 && p.scrollLeft === 0) continue;
+    saved.push({ el: p, top: p.scrollTop, left: p.scrollLeft });
+  }
+  const result = rebuild();
+  for (const s of saved) {
+    if (s.el.scrollTop !== s.top) s.el.scrollTop = s.top;
+    if (s.el.scrollLeft !== s.left) s.el.scrollLeft = s.left;
+  }
+  return result;
+}

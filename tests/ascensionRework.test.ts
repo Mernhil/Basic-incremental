@@ -183,9 +183,7 @@ describe('the Starlight shop of unlocks', () => {
 
   it('sells unlocks, and Wider Grounds is the one yield item', () => {
     const ids = content.prestige.shop.map((i) => i.id);
-    expect(ids).toEqual(
-      expect.arrayContaining(['second_hands', 'auto_push', 'keep_training', 'head_start']),
-    );
+    expect(ids).toEqual(expect.arrayContaining(['second_hands', 'keep_training', 'head_start']));
     for (const gone of ['starlit_groves', 'starforged_edge', 'celestial_ward']) {
       expect(ids).not.toContain(gone);
     }
@@ -233,15 +231,13 @@ describe('the Starlight shop of unlocks', () => {
     expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(17);
   });
 
-  it('Auto-push gates the auto-challenge switch and an Ascension keeps it on only when owned', () => {
+  it('an Ascension turns auto-challenge on for every dungeon, and nothing in the shop gates it', () => {
+    expect(content.prestige.shop.map((i) => i.id)).not.toContain('auto_push');
     const state = openAscension(climbed(25));
-    const without = ascend(state, content);
-    if (!without.ok) throw new Error(without.reason);
-    expect(without.state.combat.floors['mossy_cellar']!.autoChallenge).toBe(false);
-    state.prestige.shop['auto_push'] = 1;
-    const withIt = ascend(state, content);
-    if (!withIt.ok) throw new Error(withIt.reason);
-    expect(withIt.state.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
+    state.combat.floors['mossy_cellar']!.autoChallenge = false;
+    const r = ascend(state, content);
+    if (!r.ok) throw new Error(r.reason);
+    expect(r.state.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
   });
 
   it('Faster Skill Unlocks lowers the Core price of opening a skill, 4% a level', () => {
@@ -288,14 +284,58 @@ describe('save format 46', () => {
     }) as Raw;
     // groves: 2 + 3 + 5 (ceil 2 x 1.5^i) = 10; edge: 3
     expect(out.resources.starlight).toBe('23');
-    expect(out.prestige.shop).toEqual({ second_hands: 2, long_night: 1, auto_push: 1 });
+    expect(out.prestige.shop).toEqual({ second_hands: 2, long_night: 1 });
     expect(out.prestige.runFloors).toEqual({});
     expect(out.camp.forest).toHaveLength(2); // camp level 3 opens two forest slots
   });
 
   it('loads at the current version with the new fields', () => {
     const text = createSaveText(freshState(), 1);
-    expect(JSON.parse(text).version).toBe(46);
+    expect(JSON.parse(text).version).toBe(47);
     expect(readSave(text, content).state.prestige.runFloors).toEqual({});
+  });
+});
+
+describe('save format 47: auto-challenge is a default', () => {
+  type Raw = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  const old = (shop: Record<string, number>): Record<string, unknown> => ({
+    resources: { starlight: '4' },
+    combat: {
+      floors: {
+        mossy_cellar: { difficulty: 'normal', autoChallenge: false, tiers: {} },
+        ember_crypt: { difficulty: 'hard', autoChallenge: true, tiers: {} },
+      },
+    },
+    prestige: { shop, runFloors: {} },
+  });
+
+  it('turns auto-challenge on for every dungeon and pays an Auto-push owner 6 Starlight', () => {
+    const out = MIGRATIONS[46]!(old({ second_hands: 1, auto_push: 1 })) as Raw;
+    expect(out.combat.floors.mossy_cellar.autoChallenge).toBe(true);
+    expect(out.combat.floors.ember_crypt.autoChallenge).toBe(true);
+    expect(out.prestige.shop).toEqual({ second_hands: 1 });
+    expect(out.resources.starlight).toBe('10');
+  });
+
+  it('pays nothing to a save that never owned Auto-push, and does not mutate its input', () => {
+    const input = old({ second_hands: 1 });
+    const before = structuredClone(input);
+    const out = MIGRATIONS[46]!(input) as Raw;
+    expect(out.resources.starlight).toBe('4');
+    expect(out.prestige.shop).toEqual({ second_hands: 1 });
+    expect(input).toEqual(before);
+  });
+
+  it('a v46 save reads at the current version with auto-challenge on and no Auto-push', () => {
+    const state = freshState();
+    state.combat.floors['mossy_cellar'] = { difficulty: 'normal', autoChallenge: false, tiers: {} };
+    state.prestige.shop['auto_push'] = 1;
+    const text = JSON.parse(createSaveText(state, 1));
+    text.version = 46;
+    const back = readSave(JSON.stringify(text), content).state;
+    expect(back.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
+    expect(back.prestige.shop['auto_push']).toBeUndefined();
+    expect(back.resources['starlight']!.toString()).toBe('6');
   });
 });
