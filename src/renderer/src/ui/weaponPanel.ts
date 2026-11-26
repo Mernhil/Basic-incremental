@@ -3,6 +3,7 @@ import type { GameState } from '../../../game';
 import { COPY } from '../copy';
 import type { CardEntry, StatChange, WeaponDetail, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
+import { keepAncestorScroll } from './keepScroll';
 import { setStarText } from './stars';
 import { costMarkup } from './costMarkup';
 import { movesView, type MovesView } from '../pages/movesModel';
@@ -501,16 +502,20 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       root.hidden = !w;
       if (overlay) overlay.hidden = !w;
       if (!w) return;
-      root.dataset.tier = w.tier;
-      badgeNum.textContent = String(w.level);
-      badgeSub.textContent = w.atCap ? COPY.weapon.max : COPY.weapon.level;
-      drawStage(entry, w);
-      if (variant === 'card') drawTiles(w);
-      drawSide(w);
-      detailData = entry.detail;
-      weaponData = w;
-      readMoves(entry.id);
-      renderDetail();
+      // The panel can sit inside a scrolling sheet (the dungeon's): rebuilding its parts must not
+      // clamp that sheet's scroll (UI_RULES §1 "Scroll and focus are kept").
+      keepAncestorScroll(root, () => {
+        root.dataset.tier = w.tier;
+        badgeNum.textContent = String(w.level);
+        badgeSub.textContent = w.atCap ? COPY.weapon.max : COPY.weapon.level;
+        drawStage(entry, w);
+        if (variant === 'card') drawTiles(w);
+        drawSide(w);
+        detailData = entry.detail;
+        weaponData = w;
+        readMoves(entry.id);
+        renderDetail();
+      });
     },
   };
 }
