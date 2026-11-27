@@ -404,12 +404,20 @@ html .wd-stage:not(#_px) {
   color: var(--px-muted);
 }
 .wd-tile__name {
+  box-sizing: border-box;
   max-width: 100%;
+  padding: 0 3px;
   overflow: hidden;
   font-size: 13px;
   font-weight: 700;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: anywhere;
+  /* two lines, so a long name is read, not cut at the tile edge */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  min-height: 2.3em;
 }
 .wd-tile__meta {
   font-size: 12px;

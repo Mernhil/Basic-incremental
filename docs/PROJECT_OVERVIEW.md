@@ -701,7 +701,7 @@ Cosmetics are kept through an ascension (`ASCENSION_PERSISTS` in `src/game/prest
 - Tokens become CSS variables `--bi-<key>` (`cssVars`); recipes become classes `r-<id>`.
 - `applyGlobalTheme` in `theme/apply.ts` puts the global slots on `<html>` (called from `src/renderer/src/app.ts`). `applyCardTheme` puts a card's variables and classes on its element and marks `data-lv-<slot>` and `data-max-<slot>`.
 - `theme/registry.ts` lists every recipe and effect the page implements, with the generated ids of `art/cosmeticIds.ts`. `assertVisualsImplemented` stops the game at start if the data names a missing one.
-- CSS: `theme/base.css` (card and table from tokens), `recipes.css` (recipe classes), `frames.css` (panel and button frames from table tokens), `effects.css` with `effects.ts` (floating numbers).
+- CSS: `theme/base.css` (card and table from tokens), `recipes.css` (recipe classes), `frames.css` (panel and button frames from table tokens; `.px-btn`, `.button`, `.shop-cancel` and `.cp-select` are at least 24 design px high), `effects.css` with `effects.ts` (floating numbers).
 - The UI look vault: `src/data/vault.ts` `UI_LOOKS_VAULTED` (on) holds back the `table`, `starlight`, `sticker`, `nodes` and `wardrobe` slots, like `BACKDROP_MOTION` for backdrops. `validateContent` (`loadContent({ uiLooksVaulted })` in tests) marks those items `hidden` and cuts them from portal pools, the shard shop and the prestige, achievement and reward-track rewards; `resolveGlobal` shows the slot's starter whatever is worn (the table slot shows the hidden `gold_table`); a vaulted dungeon rare drop stays in the inventory and grants no cosmetic (`combat.ts`); the Wardrobe lists no sets and no Interface chip. Saves are untouched, so owned items keep their `ownedModifiers`; no set can be completed. `tests/uiLookVault.test.ts`.
 - The table item also themes the shell (see Shell and table). The shell look is Charcoal and Gold: the `shell-gold` recipe, drawn by `theme/shellGold.css` from `art/shell/gold/` (`pieces.json` gives each piece's size and corner; `extra/` holds kit pieces, only the tooltip is used). `shell-oak` (`theme/shellOak.css`) stays in the code, unused by default. `shell-stone` is drawn by `theme/shellPictures.css` from `shellArt.json` (`applyShellArt` sets `--sh-<piece>-*`); no item in `cosmetics.json` uses it.
 - UI-skin recipes set `--bi-skin-<slot>` to a style letter; `skinStyle` in `ui/skins.ts` reads it (`ui/skillArt.ts` reads the `nodes` recipe from the loadout instead) and pages draw that style with `art/cosmetics.ts`.
@@ -878,7 +878,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 ### `views/meta`
 
 - `index.ts`: the `skills`, `achievements`, `shop`, `upgrades` and `settings` piles. All but Upgrades mount a page from `pages/`.
-- `upgradesView.ts`: one panel (Training) listing every line's milestones. A waiting pick shows two cards and a click picks one (`pickPerk`); a made pick shows its badge; one ahead shows both perks. A foot bar shows lifetime Money. Built by `upgradesModel.ts` `milestoneBoard`.
+- `upgradesView.ts`: one panel per group of `milestoneBoard` (only Training; one column) listing every line's milestones. A waiting pick shows two cards and a click picks one (`pickPerk`); a made pick shows its badge; one ahead shows both perks. A foot bar shows lifetime Money. Built by `upgradesModel.ts` `milestoneBoard`.
 
 ### The card face (`ui/card.ts`, `ui/cardFace.ts`, `pages/cardFaceModel.ts`)
 

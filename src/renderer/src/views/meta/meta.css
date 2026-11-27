@@ -21,7 +21,7 @@
   margin-bottom: -28px;
   height: var(--mv-h);
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   gap: calc(var(--fs, 4px) * 5);
   padding: var(--fs, 4px);

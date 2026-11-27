@@ -6,6 +6,11 @@
 
 .shell-page:has(> .set-grid) {
   max-width: none;
+  grid-template-rows: minmax(0, 1fr);
+}
+/* the view body gives the page its whole height, so the panels fill it */
+.vh-body:has(> .set-page) {
+  grid-template-rows: minmax(0, 1fr);
 }
 .set-grid {
   display: grid;
@@ -13,6 +18,10 @@
   /* the frames bleed one step outside their box: keep a gap wider than that */
   gap: 20px;
   align-items: stretch;
+  /* two rows share the view height, so the panels fill it */
+  grid-template-rows: repeat(2, minmax(min-content, 1fr));
+  min-height: 100%;
+  box-sizing: border-box;
   padding: var(--fs);
 }
 .set-grid > * {
