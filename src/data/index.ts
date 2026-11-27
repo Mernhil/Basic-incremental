@@ -61,6 +61,7 @@ import type {
   SkillsConfig,
   MovesConfig,
   RaidsConfig,
+  ArenaConfig,
   RaidBoss,
 } from './schemas';
 import resourcesJson from './content/resources.json';
@@ -99,6 +100,7 @@ import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
 import movesJson from './content/moves.json';
 import raidsJson from './content/raids.json';
+import arenaJson from './content/arena.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
 import startersJson from './content/starters.json';
@@ -127,6 +129,8 @@ export interface Content {
   trials: Trial[];
   /** Raid bosses and their ladder (DESIGN.md §2 Raid bosses). */
   raids: RaidsConfig;
+  /** The arena, the season clock and the shop Heirlooms (DESIGN.md Arena and raids). */
+  arena: ArenaConfig;
   combat: CombatConfig;
   cosmetics: Cosmetic[];
   portals: Portal[];
@@ -264,6 +268,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     dungeons,
     trials,
     raids,
+    arena,
     combat,
     cosmetics,
     portals,
@@ -329,6 +334,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkSkills({ cards, skills }, issues);
   checkMoves({ cards, moves, resources }, issues);
   checkRaids({ cards, raids, resources, dungeons, trials }, issues);
+  checkArena({ cards, raids, resources, arena }, issues);
   checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
   checkStarters({ cards, resources, starters }, issues);
   checkWeaponSkins(weaponSkins, issues);
@@ -420,6 +426,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     allDungeons: dungeons,
     trials,
     raids,
+    arena,
     combat,
     cosmetics: vaultedCosmetics,
     uiLooksVaulted: vaulted,
@@ -1182,6 +1189,17 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       claim(card.name, `${where} › name`);
       return;
     }
+    if (card.shop) {
+      // a shop Heirloom (DESIGN.md Arena and raids): its own name, a picture per set and type
+      if (!card.heirloom) issues.push(`${where} › shop: only an Heirloom card is sold`);
+      if (card.heirloomArt || card.heirloomName || card.batch)
+        issues.push(`${where}: a shop Heirloom has no heirloomArt, heirloomName or batch`);
+      claim(card.name, `${where} › name`);
+      const picture = `${card.item.kind}/${card.shop.set}`;
+      if (pictures.has(picture)) issues.push(`${where} › shop: "${picture}" is used twice`);
+      pictures.add(picture);
+      return;
+    }
     if (!card.heirloomArt && !card.heirloomName && !card.batch) return;
     if (card.batch) {
       // a later art batch (DESIGN.md §5 Art batches): its own weapon name, the batch's pictures
@@ -1272,10 +1290,10 @@ function checkHeirlooms(
   },
   issues: string[],
 ): void {
-  const heirloomCards = c.cards.filter((x) => x.heirloom);
+  const heirloomCards = c.cards.filter((x) => x.heirloom && !x.shop);
   // the base Heirloom of each type is named in items.json; a later batch's Heirloom names itself
   for (const t of c.items.types) {
-    const found = heirloomCards.filter((x) => x.item.kind === t.kind && !x.batch);
+    const found = heirloomCards.filter((x) => x.item.kind === t.kind && !x.batch && !x.shop);
     if (found.length !== 1) {
       issues.push(`cards.json: ${found.length} base Heirloom cards for ${t.kind}, needs 1`);
     } else if (found[0]!.name !== t.heirloom) {
@@ -1610,6 +1628,7 @@ export function bundledRawContent(): RawContent {
     dungeons: dungeonsJson,
     trials: trialsJson,
     raids: raidsJson,
+    arena: arenaJson,
     combat: combatJson,
     cosmetics: cosmeticsJson,
     portals: portalsJson,
@@ -1655,6 +1674,98 @@ export interface ContentOptions {
 /** Loads and validates the bundled game data. Call once at startup. */
 export function loadContent(options: ContentOptions = {}): Content {
   return validateContent(bundledRawContent(), options);
+}
+
+/**
+ * arena.json (DESIGN.md Arena and raids): archetype cards are fighting cards, every band's
+ * archetypes exist, the bands cover rank 1, the ranks run from Contender up, every shop item is a
+ * shop Heirloom of its kind (arena items in the arena, a raid boss's four in that boss's raid) and
+ * each shop Heirloom is sold once, a raid boss has a shop, and an arena perk's `vs` tag is carried by
+ * some archetype.
+ */
+function checkArena(
+  c: Pick<Content, 'cards' | 'raids' | 'resources' | 'arena'>,
+  issues: string[],
+): void {
+  const a = c.arena;
+  const cards = new Map(c.cards.map((x) => [x.id, x]));
+  const archetypes = new Map(a.archetypes.map((x) => [x.id, x]));
+  if (archetypes.size !== a.archetypes.length) issues.push('arena.json › archetypes: duplicate id');
+  a.archetypes.forEach((t, i) =>
+    t.cards.forEach((id) => {
+      if (cards.get(id)?.job !== 'fighting')
+        issues.push(`arena.json › archetypes › [${i}] › cards: "${id}" is not a fighting card`);
+    }),
+  );
+  a.bands.forEach((b, i) =>
+    b.archetypes.forEach((id) => {
+      if (!archetypes.has(id))
+        issues.push(`arena.json › bands › [${i}] › archetypes: unknown archetype "${id}"`);
+    }),
+  );
+  if (!a.bands.some((b) => b.fromRank === 1))
+    issues.push('arena.json › bands: no band starts at rank 1');
+  const tops = a.ranks.map((r) => r.top);
+  if (tops[0] !== null || tops.slice(1).some((t, i) => t === null || (i > 0 && t >= tops[i]!)))
+    issues.push('arena.json › ranks: Contender first (top null), then ever better ranks');
+  if (a.ranks[a.ranks.length - 1]!.top !== 1) issues.push('arena.json › ranks: the last is rank 1');
+  for (const r of a.ranks)
+    for (const cost of r.chest.rewards)
+      if (!c.resources.some((x) => x.id === cost.resource))
+        issues.push(`arena.json › ranks › ${r.id}: unknown resource "${cost.resource}"`);
+  const sold = new Set<string>();
+  const sell = (id: string, kind: 'arena' | 'raid', set: string | null, where: string): void => {
+    const card = cards.get(id);
+    if (!card?.shop) issues.push(`${where}: "${id}" is not a shop Heirloom`);
+    else {
+      if (card.shop.kind !== kind) issues.push(`${where}: "${id}" is not an ${kind} Heirloom`);
+      if (set !== null && card.shop.set !== set)
+        issues.push(`${where}: "${id}" is of the set "${card.shop.set}", not "${set}"`);
+    }
+    if (sold.has(id)) issues.push(`${where}: "${id}" is sold twice`);
+    sold.add(id);
+  };
+  const tags = new Set(a.archetypes.flatMap((t) => t.tags));
+  a.shop.seasons.forEach((s, i) => {
+    if (s.season !== i + 1)
+      issues.push(`arena.json › shop › seasons › [${i}]: seasons run 1, 2, 3 ...`);
+    s.items.forEach((item, j) => {
+      sell(
+        item.card,
+        'arena',
+        `arena_s${s.season}`,
+        `arena.json › shop › seasons › [${i}] › [${j}]`,
+      );
+      if (item.perk?.vs && !tags.has(item.perk.vs))
+        issues.push(
+          `arena.json › shop › seasons › [${i}] › [${j}] › perk › vs: no archetype has the tag "${item.perk.vs}"`,
+        );
+    });
+  });
+  for (const boss of c.raids.bosses) {
+    const shop = a.raid.shops[boss.id];
+    if (!shop) {
+      issues.push(`arena.json › raid › shops: no shop for "${boss.id}"`);
+      continue;
+    }
+    const set = shop.set;
+    shop.items.forEach((item, j) => {
+      sell(item.card, 'raid', set, `arena.json › raid › shops › ${boss.id} › [${j}]`);
+      if (item.perk?.vs)
+        issues.push(`arena.json › raid › shops › ${boss.id} › [${j}]: a raid perk has no vs`);
+      const card = cards.get(item.card);
+      if (card && card.element !== boss.element)
+        issues.push(
+          `arena.json › raid › shops › ${boss.id} › [${j}]: "${item.card}" is not ${boss.element}`,
+        );
+    });
+  }
+  for (const id of Object.keys(a.raid.shops))
+    if (!c.raids.bosses.some((b) => b.id === id))
+      issues.push(`arena.json › raid › shops: unknown boss "${id}"`);
+  for (const card of c.cards)
+    if (card.shop && !sold.has(card.id))
+      issues.push(`cards.json › ${card.id}: a shop Heirloom nobody sells`);
 }
 
 /** raids.json (DESIGN.md §2 Raid bosses): ids are unique and not a dungeon's, ladder cards are real

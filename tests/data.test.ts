@@ -97,8 +97,8 @@ describe('bundled content', () => {
     // plus the 45 cards of the Heirloom candidates (DESIGN.md §5, tests/heirloomCards.test.ts),
     // plus the 22 Leviathan T6 cards (batch 2), plus the 22 Heirloom cards (11 Dragon, 11 Leviathan;
     // DESIGN.md §5 Heirlooms, tests/heirloomGate.test.ts).
-    expect(content.cards).toHaveLength(205);
-    expect(content.cards.filter((c) => c.heirloom)).toHaveLength(34);
+    expect(content.cards).toHaveLength(229);
+    expect(content.cards.filter((c) => c.heirloom && !c.shop)).toHaveLength(34);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],

@@ -538,6 +538,14 @@ const cardBase = {
    * Heirloom Gate (heirlooms.json), never from a portal, the shard shop or a tier-up.
    */
   heirloom: z.boolean().optional(),
+  /**
+   * A shop Heirloom (DESIGN.md Arena and raids): sold for arena or raid coins, never in the Heirloom
+   * Gate. Its picture is `item-<type>-<set>-heirloom`; `set` is the season's or the boss's id. It is
+   * an `heirloom` card with no batch and no tree.
+   */
+  shop: z
+    .strictObject({ kind: z.enum(['arena', 'raid']), set: z.string().regex(/^[a-z0-9_]+$/) })
+    .optional(),
 };
 
 export const CARD_ROLES = ['tank', 'dps', 'support'] as const;
@@ -990,6 +998,149 @@ export const raidsSchema = z
 export type RaidsConfig = z.output<typeof raidsSchema>;
 export type RaidBoss = RaidsConfig['bosses'][number];
 export type RaidLadderTeam = RaidsConfig['ladder']['teams'][number];
+
+// ---- The arena and the raid shops (DESIGN.md Arena and raids) -------------------------------------
+
+/** A shop Heirloom's perk: its modifiers count only in the arena (scope `dungeon: arena`) or against
+ *  the raid bosses, and for an arena perk only against rival teams that carry the tag `vs`. */
+const shopPerkSchema = z.strictObject({
+  line: z.string().min(1),
+  /** An archetype tag the rival team must carry (arena perks); absent: every fight. */
+  vs: id.optional(),
+  modifiers: z.array(modifierSchema.omit({ scope: true })).min(1),
+});
+const shopItemSchema = z.strictObject({
+  card: id,
+  /** Price in the shop's coin. */
+  price: z.number().int().min(1),
+  /** None for a worker Heirloom (a pickaxe or an axe never fights). */
+  perk: shopPerkSchema.optional(),
+});
+
+export const arenaSchema = z.strictObject({
+  /** Season 1 starts at 00:00 UTC on this date; a season lasts `days`. One clock for arena and raids. */
+  season: z.strictObject({
+    startsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    days: z.number().int().min(1),
+  }),
+  fights: z.strictObject({
+    perDay: z.number().int().min(1),
+    /** A fight ends at this time; the team with more health left wins (a tie: the rival). */
+    maxSeconds: z.number().positive(),
+    /** A mirror match between equal teams lasts about this long (damage is scaled to it). */
+    targetSeconds: z.number().positive(),
+  }),
+  points: z.strictObject({
+    win: z.number().positive(),
+    /** Extra share of `win` when the rival is ranked above you. */
+    higherBonus: z.number().min(0),
+    loss: z.number().min(0),
+  }),
+  coins: z.strictObject({
+    win: z.number().int().min(0),
+    higherBonus: z.number().int().min(0),
+    loss: z.number().int().min(0),
+  }),
+  ladder: z.strictObject({
+    /** Rows besides the player: AI teams. */
+    size: z.number().int().min(100),
+    /** Final points of the best AI row, and how fast they fall with rank (points = top x (1 - i / size)^curve). */
+    topPoints: z.number().positive(),
+    curve: z.number().positive(),
+    /** Each row's final points vary by up to this share, seeded by the season. */
+    jitter: z.number().min(0).max(0.5),
+    /** The share of its final points an AI row has at the first moment of a season. */
+    startShare: z.number().min(0).max(1),
+    /** Rivals offered: this many rows above and below the player's rank. */
+    rivalsAbove: z.number().int().min(1),
+    rivalsBelow: z.number().int().min(0),
+    first: z.array(z.string().min(1)).min(4),
+    second: z.array(z.string().min(1)).min(4),
+  }),
+  /** The five ranks, which are the season chest bands, lowest first: `top` is the rank number the
+   *  band reaches (null: everyone else). */
+  ranks: z
+    .array(
+      z.strictObject({
+        id,
+        name,
+        top: z.number().int().min(1).nullable(),
+        /** A frame is given for this rank (Top 100 and better). */
+        frame: z.boolean(),
+        /** The season chest: resources, and arena coins (arena) or coins of every boss (raid). */
+        chest: z.strictObject({
+          rewards: z.array(costSchema),
+          arenaCoins: z.number().int().min(0),
+          raidCoins: z.number().int().min(0),
+        }),
+      }),
+    )
+    .length(5),
+  /** How rivals follow the player: a rival's power is its band's `ratio` times `anchorPower` to the
+   *  power `adapt` of the player's own (`adapt` 0: fixed; 1: always a fixed multiple of the player). */
+  strength: z.strictObject({ adapt: z.number().min(0).max(1), anchorPower: z.number().positive() }),
+  /** Rival strength by the rank of the row, best band last in rank order (fromRank: the band starts
+   *  at this rank number and goes up to the next band's). */
+  bands: z
+    .array(
+      z.strictObject({
+        id,
+        name,
+        fromRank: z.number().int().min(1),
+        level: z.number().int().min(1),
+        stars: z.number().int().min(1).max(6),
+        /** The band's power as a multiple of `strength.anchorPower` (see `strength`). */
+        ratio: z.number().positive(),
+        /** Strength of the rival cards through the modifier pipeline (combat.damage and combat.health, x). */
+        damage: z.number().positive(),
+        health: z.number().positive(),
+        archetypes: z.array(id).min(1),
+      }),
+    )
+    .min(1),
+  archetypes: z.array(
+    z.strictObject({
+      id,
+      name,
+      /** What the search found about the team; arena perks name these (`vs`). */
+      tags: z.array(id),
+      /** Four fighting cards, left to right. */
+      cards: z.array(id).length(4),
+    }),
+  ),
+  shop: z.strictObject({
+    /** Seasons whose Heirlooms are on sale: the latest this many. */
+    visibleSeasons: z.number().int().min(1),
+    seasons: z.array(
+      z.strictObject({ season: z.number().int().min(1), items: z.array(shopItemSchema).min(1) }),
+    ),
+  }),
+  raid: z.strictObject({
+    /** Raid coins a try pays: `perShare` for every 1.0 of score share (a kill is 1 and more), and
+     *  `perKill` extra for a kill. */
+    coins: z.strictObject({ perShare: z.number().min(0), perKill: z.number().int().min(0) }),
+    /** The season ladder: the sum of the player's best score shares on the five bosses against AI rows
+     *  (same shape as the arena's). */
+    ladder: z.strictObject({
+      size: z.number().int().min(100),
+      topScore: z.number().positive(),
+      curve: z.number().positive(),
+      jitter: z.number().min(0).max(0.5),
+      startShare: z.number().min(0).max(1),
+    }),
+    /** Per boss id: its coin's name, the id of its Heirloom set (the cards' `shop.set`) and its four Heirlooms. */
+    shops: z.record(
+      id,
+      z.strictObject({ coin: name, set: id, items: z.array(shopItemSchema).length(4) }),
+    ),
+  }),
+});
+export type ArenaConfig = z.output<typeof arenaSchema>;
+export type ShopItem = z.output<typeof shopItemSchema>;
+export type ShopPerk = z.output<typeof shopPerkSchema>;
+export type ArenaBand = ArenaConfig['bands'][number];
+export type ArenaArchetype = ArenaConfig['archetypes'][number];
+export type ArenaRank = ArenaConfig['ranks'][number];
 
 // ---- Progression (DESIGN.md §4, §6, §10, §12) ----------------------------------------------------------------
 
@@ -2866,6 +3017,7 @@ export const contentSchemas = {
   dungeons: z.array(dungeonSchema),
   trials: z.array(trialSchema),
   raids: raidsSchema,
+  arena: arenaSchema,
   combat: combatSchema,
   cosmetics: z.array(cosmeticSchema),
   portals: z.array(portalSchema),

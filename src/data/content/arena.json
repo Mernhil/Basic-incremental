@@ -1,0 +1,716 @@
+{
+  "season": {
+    "startsOn": "2026-11-23",
+    "days": 28
+  },
+  "fights": {
+    "perDay": 10,
+    "maxSeconds": 60,
+    "targetSeconds": 25
+  },
+  "points": {
+    "win": 30,
+    "higherBonus": 0.5,
+    "loss": 12
+  },
+  "coins": {
+    "win": 12,
+    "higherBonus": 6,
+    "loss": 3
+  },
+  "ladder": {
+    "size": 300,
+    "topPoints": 6000,
+    "curve": 1.6,
+    "jitter": 0.06,
+    "startShare": 0.25,
+    "rivalsAbove": 6,
+    "rivalsBelow": 2,
+    "first": [
+      "Iron",
+      "Ember",
+      "Grey",
+      "Salt",
+      "Thorn",
+      "Dusk",
+      "Gilded",
+      "Ash",
+      "Stone",
+      "Crimson",
+      "Silent",
+      "Wild",
+      "Hollow",
+      "Bright",
+      "Black",
+      "Storm"
+    ],
+    "second": [
+      "Wardens",
+      "Pact",
+      "Lantern",
+      "Crew",
+      "Veil",
+      "March",
+      "Company",
+      "Guild",
+      "Order",
+      "Blades",
+      "Watch",
+      "Vanguard",
+      "Wolves",
+      "Choir",
+      "Circle",
+      "Banner"
+    ]
+  },
+  "strength": {
+    "adapt": 0.8,
+    "anchorPower": 69000
+  },
+  "ranks": [
+    {
+      "id": "contender",
+      "name": "Contender",
+      "top": null,
+      "frame": false,
+      "chest": {
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "5"
+          }
+        ],
+        "arenaCoins": 60,
+        "raidCoins": 20
+      }
+    },
+    {
+      "id": "top100",
+      "name": "Top 100",
+      "top": 100,
+      "frame": true,
+      "chest": {
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "15"
+          },
+          {
+            "resource": "glamour_scroll",
+            "amount": "5"
+          }
+        ],
+        "arenaCoins": 150,
+        "raidCoins": 50
+      }
+    },
+    {
+      "id": "top50",
+      "name": "Top 50",
+      "top": 50,
+      "frame": true,
+      "chest": {
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "25"
+          },
+          {
+            "resource": "glamour_scroll",
+            "amount": "10"
+          }
+        ],
+        "arenaCoins": 250,
+        "raidCoins": 80
+      }
+    },
+    {
+      "id": "top10",
+      "name": "Top 10",
+      "top": 10,
+      "frame": true,
+      "chest": {
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "40"
+          },
+          {
+            "resource": "heirloom_scroll",
+            "amount": "2"
+          }
+        ],
+        "arenaCoins": 450,
+        "raidCoins": 140
+      }
+    },
+    {
+      "id": "champion",
+      "name": "Champion #1",
+      "top": 1,
+      "frame": true,
+      "chest": {
+        "rewards": [
+          {
+            "resource": "summon_scroll",
+            "amount": "60"
+          },
+          {
+            "resource": "heirloom_scroll",
+            "amount": "4"
+          }
+        ],
+        "arenaCoins": 800,
+        "raidCoins": 250
+      }
+    }
+  ],
+  "bands": [
+    {
+      "id": "b_contender",
+      "name": "Contender",
+      "fromRank": 101,
+      "level": 60,
+      "stars": 3,
+      "damage": 1,
+      "health": 1,
+      "archetypes": ["contender_0", "contender_1", "contender_2", "contender_3"],
+      "ratio": 0.5
+    },
+    {
+      "id": "b_top100",
+      "name": "Top 100",
+      "fromRank": 51,
+      "level": 80,
+      "stars": 4,
+      "damage": 1,
+      "health": 1,
+      "archetypes": ["top100_0", "top100_1", "top100_2", "top100_3"],
+      "ratio": 1.1
+    },
+    {
+      "id": "b_top50",
+      "name": "Top 50",
+      "fromRank": 11,
+      "level": 100,
+      "stars": 5,
+      "damage": 1,
+      "health": 1,
+      "archetypes": ["top50_0", "top50_1", "top50_2", "top50_3"],
+      "ratio": 2.2
+    },
+    {
+      "id": "b_top10",
+      "name": "Top 10",
+      "fromRank": 2,
+      "level": 110,
+      "stars": 6,
+      "damage": 1,
+      "health": 1,
+      "archetypes": ["top10_0", "top10_1", "top10_2", "top10_3"],
+      "ratio": 5
+    },
+    {
+      "id": "b_champion",
+      "name": "Champion",
+      "fromRank": 1,
+      "level": 120,
+      "stars": 6,
+      "damage": 1,
+      "health": 1,
+      "archetypes": ["champion_0", "champion_1", "champion_2", "champion_3"],
+      "ratio": 12
+    }
+  ],
+  "archetypes": [
+    {
+      "id": "contender_0",
+      "name": "Plain Sustain",
+      "tags": ["healer"],
+      "cards": ["golden_anvilmaster", "prism_paladin", "kaleido_weaver", "storm_duelist"]
+    },
+    {
+      "id": "contender_1",
+      "name": "Plain Sustain 2",
+      "tags": ["healer"],
+      "cards": ["golden_anvilmaster", "halfmoon_reaper", "shard_strider", "golden_sage"]
+    },
+    {
+      "id": "contender_2",
+      "name": "Plain Rush",
+      "tags": ["rush"],
+      "cards": ["golden_tilter", "shard_strider", "whisper_assassin", "storm_duelist"]
+    },
+    {
+      "id": "contender_3",
+      "name": "Plain Rush 2",
+      "tags": ["rush"],
+      "cards": ["gilded_knight", "rainbow_sniper", "golden_hoplite", "shard_strider"]
+    },
+    {
+      "id": "top100_0",
+      "name": "Plain Rush 3",
+      "tags": ["healer", "rush"],
+      "cards": ["kaleido_weaver", "shard_strider", "prism_paladin", "rainbow_sniper"]
+    },
+    {
+      "id": "top100_1",
+      "name": "Plain Rush 4",
+      "tags": ["healer", "rush"],
+      "cards": ["whisper_assassin", "prism_paladin", "kaleido_weaver", "rainbow_sniper"]
+    },
+    {
+      "id": "top100_2",
+      "name": "Plain Rush 5",
+      "tags": ["healer", "rush"],
+      "cards": ["rainbow_sniper", "kaleido_weaver", "shard_strider", "whisper_assassin"]
+    },
+    {
+      "id": "top100_3",
+      "name": "Plain Rush 6",
+      "tags": ["rush"],
+      "cards": ["whisper_assassin", "halfmoon_reaper", "shard_strider", "prism_paladin"]
+    },
+    {
+      "id": "top50_0",
+      "name": "Prism Rush",
+      "tags": ["rush", "mixed"],
+      "cards": ["rose_sentinel", "lavahorn", "silver_minnow", "kraken_impaler"]
+    },
+    {
+      "id": "top50_1",
+      "name": "Ember Wall",
+      "tags": ["wall", "healer", "mono_fire"],
+      "cards": ["gloom_maw", "grave_hammerer", "emberbrand", "hex_warlock"]
+    },
+    {
+      "id": "top50_2",
+      "name": "Prism Rush 2",
+      "tags": ["rush", "mixed"],
+      "cards": ["blood_serpent", "voidthorn", "ruin_tyrant", "jade_stalker"]
+    },
+    {
+      "id": "top50_3",
+      "name": "Stonebound Rush",
+      "tags": ["rush", "mono_earth"],
+      "cards": ["jade_stalker", "mossreaper", "valor_pikeman", "jade_vanguard"]
+    },
+    {
+      "id": "top10_0",
+      "name": "Prism Wall",
+      "tags": ["wall", "mixed"],
+      "cards": ["lavahorn", "stonegrove", "frost_reaper", "dawn_champion"]
+    },
+    {
+      "id": "top10_1",
+      "name": "Prism Wall 2",
+      "tags": ["wall", "mixed"],
+      "cards": ["runeboulder", "pearl_duelist", "plague_rider", "venom_stalker"]
+    },
+    {
+      "id": "top10_2",
+      "name": "Prism Rush 3",
+      "tags": ["rush", "mixed"],
+      "cards": ["geodefall", "reef_assassin", "azure_gleaner", "frost_reaper"]
+    },
+    {
+      "id": "top10_3",
+      "name": "Prism Rush 4",
+      "tags": ["rush", "mixed"],
+      "cards": ["brine_corsair", "sky_gleamer", "barnacle_crusher", "rose_phantom"]
+    },
+    {
+      "id": "champion_0",
+      "name": "Prism Rush 5",
+      "tags": ["healer", "rush", "heirloom", "mixed"],
+      "cards": ["spiralhorn", "mantaglide", "bluestrike", "flarepike"]
+    },
+    {
+      "id": "champion_1",
+      "name": "Stonebound Rush 2",
+      "tags": ["rush", "heirloom", "mono_earth"],
+      "cards": ["rootstring", "foxtail", "owlwing", "emberthorn"]
+    },
+    {
+      "id": "champion_2",
+      "name": "Stonebound Sustain",
+      "tags": ["healer", "heirloom", "mono_earth"],
+      "cards": ["orchid_oracle", "sky_gleamer", "owlwing", "pearlrider"]
+    },
+    {
+      "id": "champion_3",
+      "name": "Prism Rush 6",
+      "tags": ["healer", "rush", "heirloom", "mixed"],
+      "cards": ["spiralhorn", "mantaglide", "auroratusk", "rose_sentinel"]
+    }
+  ],
+  "shop": {
+    "visibleSeasons": 2,
+    "seasons": [
+      {
+        "season": 1,
+        "items": [
+          {
+            "card": "victors_longbow",
+            "price": 6000,
+            "perk": {
+              "line": "Opens every arena fight with a volley: its gauge fills 60% faster",
+              "modifiers": [
+                {
+                  "stat": "burst.fill",
+                  "kind": "percent",
+                  "value": "60"
+                }
+              ]
+            }
+          },
+          {
+            "card": "pit_piercer",
+            "price": 6500,
+            "perk": {
+              "line": "Pierces Wall teams: +35% damage against rivals with two tanks",
+              "vs": "wall",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "35"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "season": 2,
+        "items": [
+          {
+            "card": "laurel_staff",
+            "price": 6000,
+            "perk": {
+              "line": "Steadies the team against Rush teams: +12% defence",
+              "vs": "rush",
+              "modifiers": [
+                {
+                  "stat": "combat.defence",
+                  "kind": "flat",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          {
+            "card": "champion_greatsword",
+            "price": 7500,
+            "perk": {
+              "line": "Hits harder against any rival with an Heirloom: +30% damage",
+              "vs": "heirloom",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "30"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "raid": {
+    "coins": {
+      "perShare": 40,
+      "perKill": 20
+    },
+    "ladder": {
+      "size": 300,
+      "topScore": 6,
+      "curve": 1.6,
+      "jitter": 0.06,
+      "startShare": 0.25
+    },
+    "shops": {
+      "rootstone_titan": {
+        "coin": "Rootstone Coin",
+        "set": "raid_rootstone",
+        "items": [
+          {
+            "card": "titans_rootblade",
+            "price": 4500,
+            "perk": {
+              "line": "+20% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          {
+            "card": "stonehewer",
+            "price": 4500,
+            "perk": {
+              "line": "+25% health against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.health",
+                  "kind": "percent",
+                  "value": "25"
+                }
+              ]
+            }
+          },
+          {
+            "card": "mossbreaker",
+            "price": 4000,
+            "perk": {
+              "line": "+10% defence against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.defence",
+                  "kind": "flat",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          {
+            "card": "rootstone_pick",
+            "price": 4000
+          }
+        ]
+      },
+      "ember_tyrant": {
+        "coin": "Ember Coin",
+        "set": "raid_ember",
+        "items": [
+          {
+            "card": "emberhew",
+            "price": 4000
+          },
+          {
+            "card": "tyrants_cinder",
+            "price": 4500,
+            "perk": {
+              "line": "+18% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "18"
+                }
+              ]
+            }
+          },
+          {
+            "card": "pyre_reaper",
+            "price": 4500,
+            "perk": {
+              "line": "+10% crit chance against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.critChance",
+                  "kind": "flat",
+                  "value": "0.1"
+                }
+              ]
+            }
+          },
+          {
+            "card": "pyre_scepter",
+            "price": 4000,
+            "perk": {
+              "line": "+10% defence against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.defence",
+                  "kind": "flat",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "tide_queen": {
+        "coin": "Tide Coin",
+        "set": "raid_tide",
+        "items": [
+          {
+            "card": "queens_tidebow",
+            "price": 4500,
+            "perk": {
+              "line": "Opens every raid fight with a burst: gauge fills 40% faster",
+              "modifiers": [
+                {
+                  "stat": "burst.fill",
+                  "kind": "percent",
+                  "value": "40"
+                }
+              ]
+            }
+          },
+          {
+            "card": "queens_trident",
+            "price": 4500,
+            "perk": {
+              "line": "+18% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "18"
+                }
+              ]
+            }
+          },
+          {
+            "card": "brineblade",
+            "price": 4000,
+            "perk": {
+              "line": "+10% crit chance against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.critChance",
+                  "kind": "flat",
+                  "value": "0.1"
+                }
+              ]
+            }
+          },
+          {
+            "card": "drowners_maul",
+            "price": 4500,
+            "perk": {
+              "line": "+20% health against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.health",
+                  "kind": "percent",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "dread_dragon_lich": {
+        "coin": "Lich Coin",
+        "set": "raid_lich",
+        "items": [
+          {
+            "card": "lichfang",
+            "price": 4500,
+            "perk": {
+              "line": "+15% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "15"
+                }
+              ]
+            }
+          },
+          {
+            "card": "dread_cleaver",
+            "price": 4500,
+            "perk": {
+              "line": "+20% health against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.health",
+                  "kind": "percent",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          {
+            "card": "grave_harvest",
+            "price": 4000,
+            "perk": {
+              "line": "+12% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          {
+            "card": "dragonbone_staff",
+            "price": 4000,
+            "perk": {
+              "line": "+10% defence against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.defence",
+                  "kind": "flat",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "dawn_seraph": {
+        "coin": "Dawn Coin",
+        "set": "raid_seraph",
+        "items": [
+          {
+            "card": "dawnspear",
+            "price": 4000,
+            "perk": {
+              "line": "+10% defence against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.defence",
+                  "kind": "flat",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          {
+            "card": "seraphs_edge",
+            "price": 4500,
+            "perk": {
+              "line": "+18% damage against raid bosses",
+              "modifiers": [
+                {
+                  "stat": "combat.damage",
+                  "kind": "percent",
+                  "value": "18"
+                }
+              ]
+            }
+          },
+          {
+            "card": "sunfeather_bow",
+            "price": 4500,
+            "perk": {
+              "line": "Opens every raid fight with a burst: gauge fills 40% faster",
+              "modifiers": [
+                {
+                  "stat": "burst.fill",
+                  "kind": "percent",
+                  "value": "40"
+                }
+              ]
+            }
+          },
+          {
+            "card": "halo_hewer",
+            "price": 4000
+          }
+        ]
+      }
+    }
+  }
+}

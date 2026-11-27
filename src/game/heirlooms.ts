@@ -26,7 +26,7 @@ import type { PullCount } from './portals';
 export function heirloomCards(content: Content): Card[] {
   const out: Card[] = [];
   for (const t of content.items.types) {
-    out.push(...content.cards.filter((c) => c.heirloom && c.item.kind === t.kind));
+    out.push(...content.cards.filter((c) => c.heirloom && !c.shop && c.item.kind === t.kind));
   }
   return out;
 }

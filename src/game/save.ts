@@ -11,6 +11,7 @@ import {
   cloneCards,
   cloneFloors,
   cloneHeirlooms,
+  cloneArena,
   cloneRaids,
   DIFFICULTIES,
   emptyCardLoadout,
@@ -34,7 +35,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 47;
+export const CURRENT_SAVE_VERSION = 48;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -203,6 +204,59 @@ export const serializedStateSchema = z.object({
       level: z.record(z.string(), z.number().int().min(0)).default({}),
     })
     .default({ day: null, used: {}, best: {}, paid: {}, level: {} }),
+  /** v48: the arena, the season clock and the shop coins (DESIGN.md Arena and raids). */
+  arena: z
+    .object({
+      season: z.number().int().min(0),
+      checkedAt: z.number().min(0),
+      paidThrough: z.number().int().min(0),
+      points: z.number().min(0),
+      wins: z.number().int().min(0),
+      losses: z.number().int().min(0),
+      day: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .nullable(),
+      used: z.number().int().min(0),
+      rolls: z.number().int().min(0),
+      coins: z.number().int().min(0),
+      raidCoins: z.record(z.string(), z.number().int().min(0)),
+      raidBest: z.record(z.string(), z.number().min(0).finite()),
+      bought: z.array(z.string()),
+      chests: z.array(
+        z.object({
+          mode: z.enum(['arena', 'raid']),
+          season: z.number().int().min(1),
+          rank: z.string(),
+          place: z.number().int().min(1),
+        }),
+      ),
+      frames: z.array(
+        z.object({
+          mode: z.enum(['arena', 'raid']),
+          season: z.number().int().min(1),
+          rank: z.string(),
+          place: z.number().int().min(1),
+        }),
+      ),
+    })
+    .default({
+      season: 0,
+      checkedAt: 0,
+      paidThrough: 0,
+      points: 0,
+      wins: 0,
+      losses: 0,
+      day: null,
+      used: 0,
+      rolls: 0,
+      coins: 0,
+      raidCoins: {},
+      raidBest: {},
+      bought: [],
+      chests: [],
+      frames: [],
+    }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
   }),
@@ -319,6 +373,7 @@ export function serializeState(state: GameState): SerializedState {
     summon: { ...state.summon },
     starter: { ...state.starter },
     raids: cloneRaids(state.raids),
+    arena: cloneArena(state.arena),
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -819,6 +874,15 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
     best: { ...saved.raids.best },
     paid: { ...saved.raids.paid },
     level: { ...saved.raids.level },
+  };
+  const ownedShop = (id: string): boolean => content.cardById.get(id)?.shop !== undefined;
+  state.arena = {
+    ...saved.arena,
+    raidCoins: { ...saved.arena.raidCoins },
+    raidBest: { ...saved.arena.raidBest },
+    bought: [...new Set(saved.arena.bought.filter(ownedShop))],
+    chests: saved.arena.chests.map((c) => ({ ...c })),
+    frames: saved.arena.frames.map((f) => ({ ...f })),
   };
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,

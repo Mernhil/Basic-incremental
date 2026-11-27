@@ -1373,6 +1373,295 @@
       "skill": "Barbed Pin",
       "ult": "Umbral Lunge",
       "lean": "power"
+    },
+    "victors_longbow": {
+      "skill": "Volley Opener",
+      "ult": "Victor's Salvo",
+      "extra": {
+        "skill": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 10
+          }
+        ]
+      }
+    },
+    "pit_piercer": {
+      "skill": "Pit Thrust",
+      "ult": "Arena Impale",
+      "extra": {
+        "ult": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.2,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "laurel_staff": {
+      "skill": "Laurel Ward",
+      "ult": "Crown of Laurels",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      }
+    },
+    "champion_greatsword": {
+      "skill": "Champion's Swing",
+      "ult": "Gladiator's Verdict",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.075
+          }
+        ]
+      }
+    },
+    "titans_rootblade": {
+      "skill": "Root Cleave",
+      "ult": "Titan's Fall",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.075
+          }
+        ]
+      }
+    },
+    "stonehewer": {
+      "skill": "Stone Hew",
+      "ult": "Quarry Quake",
+      "extra": {
+        "ult": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.1,
+            "seconds": 3
+          }
+        ]
+      }
+    },
+    "mossbreaker": {
+      "skill": "Moss Charge",
+      "ult": "Bark Rush",
+      "extra": {
+        "ult": [
+          {
+            "kind": "regen",
+            "on": "team",
+            "value": 0.01,
+            "seconds": 5
+          }
+        ]
+      }
+    },
+    "tyrants_cinder": {
+      "skill": "Cinder Flick",
+      "ult": "Tyrant's Ash",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "pyre_reaper": {
+      "skill": "Ash Reap",
+      "ult": "Pyre Harvest",
+      "extra": {
+        "ult": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 0.2,
+            "below": 0.4
+          }
+        ]
+      }
+    },
+    "pyre_scepter": {
+      "skill": "Pyre Ward",
+      "ult": "Tyrant's Blaze",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      }
+    },
+    "queens_tidebow": {
+      "skill": "Tide Shot",
+      "ult": "Queen's Flood",
+      "extra": {
+        "skill": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 10
+          }
+        ]
+      }
+    },
+    "queens_trident": {
+      "skill": "Trident Jab",
+      "ult": "Tidal Spear",
+      "extra": {
+        "ult": [
+          {
+            "kind": "wound",
+            "on": "enemy",
+            "value": 0.2,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "brineblade": {
+      "skill": "Brine Rend",
+      "ult": "Riptide Cut",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "front",
+            "value": 0.06
+          }
+        ]
+      }
+    },
+    "drowners_maul": {
+      "skill": "Drown Smash",
+      "ult": "Sunken Toll",
+      "extra": {
+        "ult": [
+          {
+            "kind": "weaken",
+            "on": "enemy",
+            "value": 0.1,
+            "seconds": 3
+          }
+        ]
+      }
+    },
+    "lichfang": {
+      "skill": "Lich Prick",
+      "ult": "Soul Bite",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 6
+          }
+        ]
+      }
+    },
+    "dread_cleaver": {
+      "skill": "Dread Chop",
+      "ult": "Lich's Verdict",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "self",
+            "value": 0.075
+          }
+        ]
+      }
+    },
+    "grave_harvest": {
+      "skill": "Grave Reap",
+      "ult": "Soul Harvest",
+      "extra": {
+        "ult": [
+          {
+            "kind": "execute",
+            "on": "enemy",
+            "value": 0.2,
+            "below": 0.4
+          }
+        ]
+      }
+    },
+    "dragonbone_staff": {
+      "skill": "Bone Mend",
+      "ult": "Lich Dirge",
+      "extra": {
+        "ult": [
+          {
+            "kind": "rally",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 5
+          }
+        ]
+      }
+    },
+    "dawnspear": {
+      "skill": "Dawnlight Thrust",
+      "ult": "Halo Charge",
+      "extra": {
+        "ult": [
+          {
+            "kind": "regen",
+            "on": "team",
+            "value": 0.01,
+            "seconds": 5
+          }
+        ]
+      }
+    },
+    "seraphs_edge": {
+      "skill": "Seraph Slash",
+      "ult": "Sunrise Cut",
+      "extra": {
+        "skill": [
+          {
+            "kind": "shield",
+            "on": "front",
+            "value": 0.06
+          }
+        ]
+      }
+    },
+    "sunfeather_bow": {
+      "skill": "Feather Shot",
+      "ult": "Dawn Volley",
+      "extra": {
+        "skill": [
+          {
+            "kind": "focus",
+            "on": "team",
+            "value": 0.1,
+            "seconds": 10
+          }
+        ]
+      }
     }
   }
 }
