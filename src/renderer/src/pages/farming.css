@@ -1,0 +1,339 @@
+/* The Farming tab of the dungeon window (DESIGN.md §2 A team farms a finished dungeon): every
+   dungeon's post is a card on one page, the dungeon's scene on the left. Design pixels of the
+   1920 x 1080 layout, zoomed to the window with everything else. */
+
+.fm {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+.fm__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 18px;
+}
+.fm__title {
+  margin: 0;
+  font-size: 26px;
+  color: var(--bi-frame-accent, var(--px-gold));
+}
+.fm__totals {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.fm__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+
+/* ---- one post ---- */
+.fm-post {
+  display: grid;
+  grid-template-columns: minmax(96px, 30%) minmax(0, 1fr);
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.fm-post__scene {
+  background-size: auto 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  min-height: 0;
+}
+.fm-post.is-closed .fm-post__scene {
+  filter: grayscale(1) brightness(0.55);
+}
+.fm-post.is-closed {
+  opacity: 0.8;
+}
+.fm-post__body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 10px;
+}
+.fm-post__name {
+  margin: 0;
+  font-size: 20px;
+  color: var(--bi-frame-accent, var(--px-gold));
+}
+.fm-post__closed {
+  margin: auto 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--px-muted);
+}
+.fm-post__team {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+.fm-slot {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+}
+.fm-slot svg,
+.fm-pick svg,
+.fm-card__art svg {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.fm-slot.is-empty,
+.fm-pick.is-empty {
+  opacity: 0.4;
+}
+.fm-post__level {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fm-post__lv {
+  font-size: 20px;
+  white-space: nowrap;
+}
+.fm-bar {
+  flex: 1;
+  height: 12px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 2px var(--px-edge);
+}
+.fm-bar__fill {
+  height: 100%;
+  width: 0;
+  background: var(--px-gold);
+}
+.fm-post__trait {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--px-muted);
+}
+.fm-post__trait.is-ready {
+  color: var(--px-gold);
+}
+.fm-lines {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  min-width: 0;
+}
+.fm-line.is-zero {
+  opacity: 0.5;
+}
+.fm-line__icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin: -4px 0;
+}
+.fm-line__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.fm-line__label {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fm-line__tag {
+  flex: none;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--px-gold);
+}
+.fm-line__value {
+  margin-left: auto;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.fm-lines__note {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.fm-post__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: auto;
+}
+.fm-btn {
+  padding: 6px 10px;
+  font-size: 14px;
+}
+
+/* ---- dialogs ---- */
+.fm__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.55);
+}
+.fm__overlay[hidden] {
+  display: none;
+}
+.fm-dialog {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  width: min(760px, 94%);
+  max-height: 96%;
+  overflow-y: auto;
+  padding: 12px 14px;
+  box-sizing: border-box;
+}
+.fm-dialog__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fm-dialog__head h3 {
+  margin: 0;
+  font-size: 22px;
+  color: var(--bi-frame-accent, var(--px-gold));
+}
+.fm-close {
+  padding: 4px 12px;
+  font-size: 13px;
+}
+.fm-note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.fm-h {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bi-frame-accent, var(--px-gold));
+}
+.fm-dialog__slots {
+  display: grid;
+  grid-template-columns: repeat(4, 64px);
+  gap: 8px;
+}
+.fm-pick {
+  aspect-ratio: 1;
+  padding: 3px;
+  cursor: pointer;
+}
+.fm-dialog__cost {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.fm-dialog__cost.is-over {
+  color: #ff8a8a;
+}
+.fm-dialog__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.fm-card {
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 12.5px;
+}
+.fm-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.fm-card.is-in {
+  outline: 2px solid var(--px-gold);
+}
+.fm-card__art {
+  width: 56px;
+  height: 56px;
+}
+.fm-card__name {
+  font-weight: 700;
+  text-align: center;
+}
+.fm-card__why {
+  font-size: 11px;
+  color: var(--px-muted);
+  text-align: center;
+}
+.fm-dialog__sec {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.fm-offer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+.fm-trait {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  text-align: left;
+  cursor: pointer;
+}
+.fm-trait__name {
+  font-size: 18px;
+  color: var(--px-gold);
+}
+.fm-trait__text {
+  font-size: 14px;
+}
+.fm-trait__pick {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--px-muted);
+}
+.fm-picked {
+  margin: 0;
+  font-size: 14px;
+}
+.fm-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+}
+.fm-cost svg {
+  width: 24px;
+  height: 24px;
+  margin: -6px 0;
+}

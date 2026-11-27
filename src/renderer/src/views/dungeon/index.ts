@@ -146,6 +146,8 @@ export const dungeonViews: ViewPackage = {
           'keydown',
           (e) => {
             if (e.key !== 'Escape' || !open || ctx.current() !== null) return;
+            // a dialog of the Farming tab takes the Esc first
+            if (document.querySelector('.fm__overlay:not([hidden])')) return;
             e.preventDefault();
             show(null);
           },

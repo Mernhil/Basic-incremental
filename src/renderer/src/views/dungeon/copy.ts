@@ -53,6 +53,7 @@ export const DUEL_COPY = {
     dungeons: 'Dungeons',
     weapon: 'Weapon',
     training: 'Training',
+    farming: 'Farming',
   } as Record<string, string>,
   panelsLabel: 'Dungeon panels',
   backToFight: '← Fight',

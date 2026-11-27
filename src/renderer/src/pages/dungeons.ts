@@ -8,6 +8,7 @@ import { cardItemArt } from './loadoutCards';
 import { ITEM_VIEWBOX } from '../art/items';
 import type { CardsModel } from './cardsModel';
 import { createDungeonMap } from './dungeonMap';
+import { createFarmingPanel } from './farming';
 import type { PageContext } from './production';
 import './dungeons.css';
 
@@ -28,6 +29,7 @@ export interface DungeonPanels {
   dungeons: HTMLElement;
   weapon: HTMLElement;
   training: HTMLElement;
+  farming: HTMLElement;
   /** Keeps the panels current (call while the view is open). */
   render(): void;
 }
@@ -141,6 +143,10 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
   });
   training.append(trainingPanel.el);
 
+  // ---- Farming: every dungeon's post on one page (DESIGN.md §2 A team farms a finished dungeon) ----
+  const farmingPanel = createFarmingPanel(ctx);
+  const farming = farmingPanel.el;
+
   function render(): void {
     const s = ctx.state();
     map.render();
@@ -162,12 +168,14 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     if (entry) weaponPanel?.update(entry);
     if (weaponId) sealBlock?.update(weaponId);
     trainingPanel.update();
+    farmingPanel.render();
   }
 
   return {
     dungeons,
     weapon,
     training,
+    farming,
     render,
   };
 }
