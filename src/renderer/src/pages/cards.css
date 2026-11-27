@@ -10,7 +10,7 @@
    gaps, the frame and the detail panel take about 1,700 px */
 .shell-page--cards {
   --cp-detail-w: 476px;
-  max-width: 1700px;
+  max-width: none;
   /* the panels fill the window under the header (and the goal tracker when it shows) and scroll
      inside, like the reference; the shell's own bottom padding is taken back */
   height: calc(100vh - var(--header-h, 64px) - 24px);

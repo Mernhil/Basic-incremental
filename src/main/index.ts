@@ -46,6 +46,7 @@ function createWindow(): void {
     minHeight: 640,
     show: false,
     title: GAME_TITLE,
+    icon: join(app.getAppPath(), 'build', 'icon.png'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
