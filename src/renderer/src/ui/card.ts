@@ -8,7 +8,6 @@ import { FULL_ART_VIEWBOX, ITEM_VIEWBOX } from '../art/items';
 import { attachElementFx, type CardElement } from '../art/fx';
 import { effectStrength } from '../art/fxGeometry';
 import { applyCardTheme } from '../theme/apply';
-import { COPY } from '../copy';
 import type { CardFace } from './cardFace';
 
 /** Placeholder emblems until real card art exists. */
@@ -100,10 +99,10 @@ export function createCard(initial: CardProps): CardView {
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span><span class="bi-stars" role="img"></span></header>
     <div class="bi-card__hp"></div>
     <footer class="bi-card__info">
-      <div class="bi-info__line"><span class="bi-info__speed"></span></div>
-      <div class="bi-info__line bi-info__line--meta"><span class="bi-info__stars"></span><span class="bi-info__level"></span><span class="bi-info__rarity"></span></div>
+      <div class="bi-info__line bi-info__line--meta"><span class="bi-info__stars"></span><span class="bi-info__rarity"></span></div>
       <div class="bi-info__bar" aria-hidden="true"><i></i></div>
-    </footer>`;
+    </footer>
+    <span class="bi-card__lv"><b></b><i></i></span>`;
 
   const q = <T extends Element>(sel: string) => el.querySelector(sel) as T;
   const name = q<HTMLElement>('.bi-card__name');
@@ -112,8 +111,9 @@ export function createCard(initial: CardProps): CardView {
   const itemSvg = q<SVGElement>('.bi-card__item');
   const artBox = q<HTMLElement>('.bi-card__art');
   let itemMarkup: string | undefined;
-  const speed = q<HTMLElement>('.bi-info__speed');
-  const levelText = q<HTMLElement>('.bi-info__level');
+  const lvChip = q<HTMLElement>('.bi-card__lv');
+  const lvNow = q<HTMLElement>('.bi-card__lv b');
+  const lvMax = q<HTMLElement>('.bi-card__lv i');
   const rarityWord = q<HTMLElement>('.bi-info__rarity');
   const stars = q<HTMLElement>('.bi-stars');
   const head = q<HTMLElement>('.bi-card__head');
@@ -177,12 +177,12 @@ export function createCard(initial: CardProps): CardView {
       itemSvg.setAttribute('viewBox', full ? FULL_ART_VIEWBOX : ITEM_VIEWBOX);
     }
     if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
-    // the bottom plate (DESIGN.md §5 full-art layout): hit speed, stars, level and tier, bar; the name is on the top plate only
+    // the bottom plate (DESIGN.md §5 full-art layout): the stars, the tier and the bar; the level is a chip on the corner; the name is on the top plate only
     const face = p.face;
-    speed.textContent = face?.speed ?? '';
-    levelText.textContent = face?.level
-      ? COPY.card.levelShort(face.level.value, face.level.cap)
-      : '';
+    // the level chip on the bottom-right corner: the level big, "/max" small under it; none on a card the player does not own
+    lvChip.hidden = !face?.level || Boolean(p.boss);
+    lvNow.textContent = face?.level ? String(face.level.value) : '';
+    lvMax.textContent = face?.level ? `/${face.level.cap}` : '';
     // the word is the card's tier (DESIGN.md §5 The tier is the rarity); `rarity` is its colour style
     rarityWord.textContent = p.rarity ? gradeLabel(styleGrade(p.rarity)) : '';
     if (p.rarity) el.dataset['rarity'] = p.rarity;

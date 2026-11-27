@@ -165,7 +165,8 @@ export function showReveal(opts: RevealOptions): void {
     const d = screenDpr();
     const cardW = first.getBoundingClientRect().width;
     const free = line.clientWidth - n * cardW;
-    const gap = Math.min(10, Math.max(-cardW * 0.62, free / (n - 1)));
+    // when they fit, the gap leaves the level chip's overhang (0.27 of the card's width) free
+    const gap = Math.min(Math.max(10, cardW * 0.27), Math.max(-cardW * 0.62, free / (n - 1)));
     line.style.setProperty('--rv-gap', `${Math.floor(gap * d) / d}px`);
   };
   const fitLine = (): void => {

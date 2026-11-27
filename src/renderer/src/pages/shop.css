@@ -356,7 +356,9 @@ html .shop-body :is(.shop-it, .shop-tile) .shop-price:focus-visible:not(#_px) {
 /* ---- shard tiles: the card copies, the weapon cropped to a window ----------------------------- */
 .shop-tiles {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* tiles keep their size (230 px); a wider counter holds more of them */
+  grid-template-columns: repeat(auto-fill, 230px);
+  justify-content: center;
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -650,6 +652,6 @@ html .shop-body .shop-ascend.px-display:not(#_px) {
 
 /* the Market sells for shards only now: one counter, centred */
 .shop-table:has(> .shop-stall:only-child) {
-  grid-template-columns: minmax(0, 760px);
+  grid-template-columns: minmax(0, 1fr);
   justify-content: center;
 }

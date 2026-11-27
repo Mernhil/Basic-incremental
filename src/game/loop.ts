@@ -69,7 +69,10 @@ export class GameLoop {
     // A clock that went backwards (or a huge gap, e.g. after sleep) is clamped, never negative;
     // the speed multiplies the clamped real gap, so a sleep never pays out more than 8 hours.
     const delta = Math.min(Math.max(0, nowMs - this.lastMs), MAX_STEP_MS) * this.speedFactor;
-    this.lastMs = Math.max(this.lastMs, nowMs);
+    // A small step back (a clock correction) waits for the clock to catch up, so no time counts
+    // twice. A step back past the step cap (a clock that was set far ahead) restarts from now,
+    // so the game never waits more than that.
+    this.lastMs = this.lastMs - nowMs > MAX_STEP_MS ? nowMs : Math.max(this.lastMs, nowMs);
     // Splitting a span differently gives the same totals (tick.ts), so a long gap is caught up in
     // minute steps instead of thousands of one-second ones, which froze the window for seconds.
     const chunk = delta > CATCH_UP_AFTER_MS ? CATCH_UP_CHUNK_MS : CHUNK_MS;

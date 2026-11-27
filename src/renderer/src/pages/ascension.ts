@@ -361,6 +361,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
       const ui = offerUis.get(v.id);
       if (!ui) continue;
       set(ui.effect, v.buy.preview);
+      ui.effect.classList.toggle('is-off', v.buy.preview === COPY.ascension.notUnlocked);
       set(ui.level, v.levelText);
       ui.fill.style.width = `${((v.level / Math.max(1, v.maxLevel)) * 100).toFixed(1)}%`;
       ui.li.classList.toggle('is-maxed', v.maxed);

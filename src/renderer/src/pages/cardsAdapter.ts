@@ -152,7 +152,7 @@ export function createCardsModel(
       ability: card.job === 'fighting' ? card.ability.description : card.worker.description,
       teamBonus: card.job === 'fighting' ? card.teamBonus.description : '',
       workplace: info.workplace ? placeName(info.workplace) : null,
-      face: cardFaceOf(content, info),
+      face: cardFaceOf(info),
       role: info.slot ? { job: info.slot.job, slot: info.slot.slot } : null,
       next: owned ? step(info.starUp) : null,
       weapon: weaponView(content, info),

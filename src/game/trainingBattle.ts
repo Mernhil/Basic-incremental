@@ -76,15 +76,15 @@ export function trainingContent(content: Content, settings: TrainingSettings): C
     enabled: true,
     unlockedBy: null,
     floors: 1,
-    // the training ground fights in the Mossy Cellar's room (the dummy wears the cellar boss's picture)
+    // the training ground fights in the Mossy Cellar's room
     background: 'mossy_cellar',
     enemies: [{ id: 'training_dummy_foe', name: 'Training dummy', hpWeight: 1 }],
     miniBosses: [],
     boss: {
       id: 'training_dummy_boss',
       name: 'Training dummy',
-      // an existing picture: there is no dummy art, and none is made here
-      art: 'root_warden',
+      // the straw practice dummy (`hand/foe-training_dummy.png`), shown like an enemy picture
+      sprite: 'training_dummy',
       // no element is a plain boss: the circle treats a missing element as neutral
       element: (settings.element ?? undefined) as unknown as CardElement,
       hp: new Decimal(ENDLESS_HP),

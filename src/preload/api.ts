@@ -27,6 +27,10 @@ export interface AppApi {
   /** Dev builds only: copies the current save to a timestamped file in the saves folder and
    *  returns its name (null when there is no save). Rejects in a public release. */
   devBackupSave(): Promise<string | null>;
+  /** Copies the save files that could not be read to `save.unreadable-<timestamp>` files, so the
+   *  first write of a new game never destroys them; their name, or null when there is nothing
+   *  to keep. */
+  keepUnreadableSave(): Promise<string | null>;
   /** Dev builds only: reloads the window (a plain `location.reload()` is blocked by the app's
    *  navigation guard). No-op in a public release. */
   devReloadView(): void;
@@ -62,6 +66,7 @@ export const IPC_CHANNELS = {
   flushRequest: 'save:flush-request',
   flushDone: 'save:flush-done',
   devCheatsEnabled: 'dev:cheats-enabled',
+  keepUnreadableSave: 'save:keep-unreadable',
   devBackupSave: 'dev:backup-save',
   devReloadView: 'dev:reload-view',
   readLogTail: 'app:read-log-tail',

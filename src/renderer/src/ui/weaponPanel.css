@@ -464,20 +464,6 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   font-size: 13px;
 }
 
-/* the large level badge on the card's corner (the shared gold chip) */
-.wp-chip {
-  display: grid;
-  place-items: center;
-  background: var(--px-gold);
-  color: var(--px-gold-ink);
-  box-shadow:
-    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
-    var(--fs-sm) 0 0 0 var(--px-edge),
-    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
-    0 var(--fs-sm) 0 0 var(--px-edge),
-    inset 0 var(--fs-sm) 0 0 var(--px-gold-hi),
-    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-gold-lo);
-}
 /* --card-k is the card host's scale (fitCard) */
 .wp-over {
   position: absolute;

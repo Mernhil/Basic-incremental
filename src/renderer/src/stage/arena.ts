@@ -122,6 +122,8 @@ export interface Arena {
   update(): void;
   /** Re-reads the duel's size (after it moved between the window and the view). */
   refit(): void;
+  /** Clears the fight readout's numbers (a restarted test fight starts from zero). */
+  resetLog(): void;
 }
 
 interface HandSlot {
@@ -469,7 +471,6 @@ export function createArena(ctx: ArenaContext): Arena {
   // ---- the hand ----
   function buildHand(s: GameState, team: TeamCardView[]): void {
     builtTeam = loadoutKey(s) + team.map((c) => c.cardId).join(',');
-    const mods = collectModifiers(s, content);
     hand.replaceChildren();
     const count = team.length;
     const size = handSize(
@@ -535,7 +536,7 @@ export function createArena(ctx: ArenaContext): Arena {
       wrap.setAttribute('role', 'listitem');
       wrap.tabIndex = 0;
       const body = div('du-card__body');
-      const props = loadoutProps(content, s, c.cardId, mods);
+      const props = loadoutProps(content, s, c.cardId);
       if (props) body.append(createCard(props).el);
       const glow = div('du-card__glow');
       const grey = div('du-card__grey');
@@ -1583,6 +1584,10 @@ export function createArena(ctx: ArenaContext): Arena {
   return {
     el,
     update,
+    resetLog: () => {
+      log = emptyDuelLog();
+      update();
+    },
     refit: () => {
       fitHand();
       readStyle();

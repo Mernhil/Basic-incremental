@@ -2,7 +2,6 @@ import { ELEMENTS, type CardElement } from '../../../../data';
 import {
   cardDisplayName,
   copyLoadoutToDummy,
-  Decimal,
   DUMMY_STEPS,
   LOADOUT_SLOTS,
   ROLLING_SECONDS,
@@ -22,6 +21,8 @@ import {
 import { prefs, setPrefs } from '../../settings/prefs';
 import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
+import { FULL_ART_VIEWBOX } from '../../art/items';
+import { cardItemArt } from '../../pages/loadoutCards';
 import { createArena, type Arena } from '../../stage/arena';
 import { createDirector, type Director } from '../../stage/director';
 import { setDuelPace } from '../../stage/duelPace';
@@ -57,6 +58,7 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
   let arena: Arena | null = null;
   let director: Director | null = null;
   let last = 0;
+  let drawn = 0;
 
   const settings = (): TrainingSettings => {
     const s = ctx.state();
@@ -68,116 +70,117 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
     };
   };
 
-  // ---- the setup ----
-  const setup = h('div', 'trb-setup');
-  const head = h('section', 'trg__head px-panel');
-  const upgrades = h('button', 'px-btn', T.trainingUpgrades);
-  upgrades.type = 'button';
-  upgrades.dataset['key'] = 'training-upgrades';
-  upgrades.addEventListener('click', () => ctx.open('upgrades'));
-  head.append(h('h2', 'px-display', T.dummyTitle), h('p', 'trg__note', T.dummyNote), upgrades);
-
-  const team = h('section', 'trg__team px-panel');
-  const slotRow = h('div', 'trg__slots');
-  const copyBtn = h('button', 'px-btn', T.copyLoadout);
+  // ---- the setup strip: team on trial, dummy hits, dummy element, Restart / Stop ----
+  const strip = h('section', 'trs px-panel');
+  const teamBox = h('div', 'trs__box trs__team');
+  const slotRow = h('div', 'trs__slots');
+  const copyBtn = h('button', 'px-btn trs__copy', T.copyLoadout);
   copyBtn.type = 'button';
   copyBtn.dataset['key'] = 'dummy-copy-loadout';
-  copyBtn.addEventListener('click', () => ctx.apply(copyLoadoutToDummy(ctx.state())));
-  team.append(h('h3', 'px-display', T.dummyTeam), slotRow, copyBtn);
+  copyBtn.addEventListener('click', () => {
+    ctx.apply(copyLoadoutToDummy(ctx.state()));
+    begin();
+  });
+  const slotMenu = h('div', 'trs__menu px-panel');
+  slotMenu.hidden = true;
+  const teamHead = h('div', 'trs__head');
+  teamHead.append(h('h3', 'trs__label', T.dummyTeam), copyBtn);
+  teamBox.append(teamHead, slotRow);
 
-  const hit = h('section', 'trg__damage px-panel');
-  const stepRow = h('div', 'trb-steps');
+  const hitBox = h('div', 'trs__box trs__hits');
+  const stepRow = h('div', 'trs__row');
   stepRow.setAttribute('role', 'group');
+  stepRow.setAttribute('aria-label', T.dummyHits);
+  const stepBtns = new Map<string, HTMLButtonElement>();
   for (const step of DUMMY_STEPS) {
-    const b = h('button', 'px-btn', T.dummySteps[step.id]!);
+    const b = h('button', 'px-btn trs__chip', T.dummySteps[step.id]!);
     b.type = 'button';
     b.dataset['key'] = `dummy-step-${step.id}`;
     b.title = T.dummyStepTip;
     b.addEventListener('click', () => {
       const s = ctx.state();
       const r = setDummyDamage(s, content, stepDamage(s, content, s.dummy.team, step.id));
-      if (r.ok) ctx.apply(r.state);
+      if (r.ok) {
+        ctx.apply(r.state);
+        begin();
+      }
     });
+    stepBtns.set(step.id, b);
     stepRow.append(b);
   }
-  const damageIn = h('input', 'trg__damage-in bi-num') as HTMLInputElement;
-  damageIn.type = 'text';
-  damageIn.inputMode = 'decimal';
-  damageIn.setAttribute('aria-label', T.dummyNumber);
-  damageIn.dataset['key'] = 'dummy-damage';
-  damageIn.addEventListener('change', () => {
-    const value = new Decimal(damageIn.value.trim() || '0');
-    const r = setDummyDamage(ctx.state(), content, value);
-    if (r.ok) ctx.apply(r.state);
-    damageIn.value = '';
-  });
-  const elementSel = h('select', 'trg__card') as HTMLSelectElement;
-  elementSel.setAttribute('aria-label', T.dummyElement);
-  elementSel.dataset['key'] = 'dummy-element';
-  for (const id of ['none', ...ELEMENTS]) {
-    const o = h('option', '', id === 'none' ? T.noElement : T.elements[id]!) as HTMLOptionElement;
-    o.value = id;
-    elementSel.append(o);
-  }
-  elementSel.value = prefs().trainingElement;
-  elementSel.addEventListener('change', () => setPrefs({ trainingElement: elementSel.value }));
-  const hitNow = h('p', 'trb-now bi-num');
-  hit.append(
-    h('h3', 'px-display', T.dummyDamage),
-    stepRow,
-    damageIn,
-    hitNow,
-    h('h3', 'px-display', T.dummyElement),
-    elementSel,
-  );
+  const hitNow = h('span', 'trs__value bi-num');
+  const hitHead = h('div', 'trs__head');
+  hitHead.append(h('h3', 'trs__label', T.dummyHits), hitNow);
+  hitBox.append(hitHead, stepRow);
 
-  const startBtn = h('button', 'px-btn px-btn--gold trb-start', T.start);
+  const elBox = h('div', 'trs__box trs__elements');
+  const elRow = h('div', 'trs__row');
+  elRow.setAttribute('role', 'group');
+  elRow.setAttribute('aria-label', T.dummyElement);
+  const elBtns = new Map<string, HTMLButtonElement>();
+  for (const id of ['none', ...ELEMENTS]) {
+    const b = h(
+      'button',
+      'px-btn trs__chip trs__el',
+      id === 'none' ? T.noElement : T.elements[id]!,
+    );
+    b.type = 'button';
+    b.dataset['key'] = `dummy-element-${id}`;
+    b.dataset['element'] = id;
+    b.addEventListener('click', () => {
+      setPrefs({ trainingElement: id });
+      begin();
+    });
+    elBtns.set(id, b);
+    elRow.append(b);
+  }
+  elBox.append(h('h3', 'trs__label', T.dummyElement), elRow);
+
+  const ctrlBox = h('div', 'trs__box trs__ctrl');
+  const startBtn = h('button', 'trs__go', T.restart);
   startBtn.type = 'button';
   startBtn.dataset['key'] = 'training-start';
   startBtn.addEventListener('click', () => begin());
-  setup.append(head, startBtn, team, hit);
+  const stopBtn = h('button', 'px-btn trs__stop', T.stop);
+  stopBtn.type = 'button';
+  stopBtn.dataset['key'] = 'training-stop';
+  stopBtn.addEventListener('click', () => {
+    if (run) stopTraining(run);
+    render();
+  });
+  ctrlBox.append(startBtn, stopBtn);
+  strip.append(teamBox, hitBox, elBox, ctrlBox, slotMenu);
 
   // ---- the battle screen: the stage and a side panel ----
   const battle = h('div', 'trb-battle');
-  battle.hidden = true;
   const stage = h('div', 'trb-stage dv-stage');
   const side = h('aside', 'trb-side px-panel');
   const sideTitle = h('h3', 'px-display', T.panelTitle);
   const verdict = h('p', 'trb-verdict');
-  const totalEl = h('p', 'trb-line bi-num');
-  const rollingEl = h('p', 'trb-line bi-num');
-  const overallEl = h('p', 'trb-line bi-num');
-  const bestEl = h('p', 'trb-line bi-num');
-  const timeEl = h('p', 'trb-line bi-num');
-  const takenEl = h('p', 'trb-line bi-num');
+  // the four big numbers: DPS over the last 10 s, time, best hit, damage the dummy dealt
+  const big = h('div', 'trb-big');
+  const tile = (label: string, cls = ''): HTMLElement => {
+    const t = h('p', 'trb-tile');
+    const v = h('span', `trb-tile__v bi-num ${cls}`);
+    t.append(h('span', 'trb-tile__l', label), v);
+    big.append(t);
+    return v;
+  };
+  const rollingEl = tile(T.panelRolling(ROLLING_SECONDS));
+  const timeEl = tile(T.panelTime);
+  const bestEl = tile(T.panelBest);
+  const takenEl = tile(T.panelTaken, 'trb-tile__v--hurt');
   const fallenEl = h('p', 'trb-line');
   const shares = h('div', 'trb-shares');
   const effects = h('div', 'trb-effects');
-  const controls = h('div', 'trb-controls');
-  const resetBtn = h('button', 'px-btn', T.reset);
-  resetBtn.type = 'button';
-  resetBtn.dataset['key'] = 'training-reset';
-  const stopBtn = h('button', 'px-btn', T.stop);
-  stopBtn.type = 'button';
-  stopBtn.dataset['key'] = 'training-stop';
-  const backBtn = h('button', 'px-btn', T.backToSetup);
-  backBtn.type = 'button';
-  backBtn.dataset['key'] = 'training-back';
-  controls.append(resetBtn, stopBtn, backBtn);
   side.append(
     sideTitle,
-    controls,
     verdict,
-    totalEl,
-    rollingEl,
-    overallEl,
-    bestEl,
-    timeEl,
-    takenEl,
+    big,
     fallenEl,
-    h('h4', 'px-display', T.panelShares),
+    h('h4', 'trb-sub', T.panelShares),
     shares,
-    h('h4', 'px-display', T.panelEffects),
+    h('h4', 'trb-sub', T.panelEffects),
     effects,
   );
   // the result card over the stage once the battle is over (the numbers stay in the side panel)
@@ -185,34 +188,15 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
   summary.hidden = true;
   const summaryTitle = h('h3', 'px-display', T.summaryTitle);
   const summaryText = h('p', 'trb-summary__text');
-  const summaryReset = h('button', 'px-btn px-btn--gold', T.reset);
+  const summaryReset = h('button', 'trs__go', T.restart);
   summaryReset.type = 'button';
   summaryReset.dataset['key'] = 'training-summary-reset';
   summaryReset.addEventListener('click', () => begin());
   summary.append(summaryTitle, summaryText, summaryReset);
   stage.append(summary);
   battle.append(stage, side);
-  host.append(setup, battle);
-
-  resetBtn.addEventListener('click', () => begin());
-  stopBtn.addEventListener('click', () => {
-    if (run) stopTraining(run);
-    render();
-  });
-  backBtn.addEventListener('click', () => {
-    if (run) stopTraining(run);
-    run = null;
-    showBattle(false);
-    render();
-  });
-
-  function showBattle(on: boolean): void {
-    battle.hidden = !on;
-    setup.hidden = on;
-    host.classList.toggle('shell-page--stage', on);
-    host.classList.toggle('trg--battle', on);
-    if (on) arena?.refit();
-  }
+  host.append(strip, battle);
+  host.classList.add('shell-page--stage', 'trg--battle');
 
   function ensureStage(s: TrainingSettings): void {
     if (arena) return;
@@ -240,7 +224,8 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
     run = startTraining(ctx.state(), content, s, tc!);
     last = performance.now();
     sig = '';
-    showBattle(true);
+    closeMenu();
+    arena?.resetLog();
     arena?.refit();
     render();
   }
@@ -255,32 +240,71 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
     setDuelPace(speed);
     const step = stepTraining(run, dt * speed, defaultRng);
     if (step) director?.afterStep(step.report, step.before, step.after);
+    if (now - drawn > 250) {
+      drawn = now;
+      render();
+    }
   }, 50);
 
   // ---- drawing ----
   let setupSig = '';
+  function closeMenu(): void {
+    slotMenu.hidden = true;
+  }
+  const iconOf = (cardId: string): string => {
+    const art = cardItemArt(content, cardId, ctx.state().cards.owned[cardId], ctx.state());
+    const box = art.includes('bi-item--full') ? FULL_ART_VIEWBOX : '10 36 180 180';
+    return `<svg viewBox="${box}" aria-hidden="true" focusable="false">${art}</svg>`;
+  };
+  function openMenu(i: number, anchor: HTMLElement): void {
+    const s = ctx.state();
+    slotMenu.replaceChildren();
+    const choose = (id: string | null, label: string, icon = ''): void => {
+      const b = h('button', 'px-btn trs__opt');
+      b.type = 'button';
+      const ic = h('span', 'trs__icon');
+      ic.innerHTML = icon;
+      b.append(ic, h('span', 'trs__optname', label));
+      b.addEventListener('click', () => {
+        closeMenu();
+        const r = setDummyCard(ctx.state(), content, i, id);
+        if (r.ok) {
+          ctx.apply(r.state);
+          begin();
+        }
+      });
+      slotMenu.append(b);
+    };
+    choose(null, T.noCard);
+    for (const c of content.cards) {
+      if (c.job !== 'fighting' || !s.cards.owned[c.id]) continue;
+      if (s.dummy.team.includes(c.id) && s.dummy.team[i] !== c.id) continue;
+      choose(c.id, cardDisplayName(content, c), iconOf(c.id));
+    }
+    slotMenu.hidden = false;
+    const box = strip.getBoundingClientRect();
+    const at = anchor.getBoundingClientRect();
+    const scale = box.width / strip.offsetWidth || 1;
+    slotMenu.style.left = `${(at.left - box.left) / scale}px`;
+  }
+  document.addEventListener('pointerdown', (e) => {
+    if (!slotMenu.hidden && !strip.contains(e.target as Node)) closeMenu();
+  });
   function buildSetup(): void {
     const s = ctx.state();
     slotRow.replaceChildren();
     for (let i = 0; i < LOADOUT_SLOTS; i += 1) {
-      const sel = h('select', 'trg__card') as HTMLSelectElement;
-      sel.setAttribute('aria-label', T.dummySlot(i + 1));
-      const none = h('option', '', T.noCard) as HTMLOptionElement;
-      none.value = '';
-      sel.append(none);
-      for (const c of content.cards) {
-        if (c.job !== 'fighting' || !s.cards.owned[c.id]) continue;
-        const o = h('option', '', cardDisplayName(content, c)) as HTMLOptionElement;
-        o.value = c.id;
-        sel.append(o);
-      }
-      sel.value = s.dummy.team[i] ?? '';
-      sel.addEventListener('change', () => {
-        const r = setDummyCard(ctx.state(), content, i, sel.value || null);
-        if (r.ok) ctx.apply(r.state);
-        else sel.value = ctx.state().dummy.team[i] ?? '';
-      });
-      slotRow.append(sel);
+      const id = s.dummy.team[i] ?? null;
+      const card = id ? content.cardById.get(id) : undefined;
+      const b = h('button', 'px-btn trs__slot');
+      b.type = 'button';
+      b.setAttribute('aria-label', T.dummySlot(i + 1));
+      b.dataset['key'] = `dummy-slot-${i + 1}`;
+      const ic = h('span', 'trs__icon');
+      if (id) ic.innerHTML = iconOf(id);
+      b.append(ic, h('span', 'trs__slotname', card ? cardDisplayName(content, card) : T.noCard));
+      b.addEventListener('click', () => (slotMenu.hidden ? openMenu(i, b) : closeMenu()));
+      slotRow.append(b);
     }
   }
 
@@ -293,12 +317,11 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
     );
     verdict.hidden = !r.ended;
     set(sideTitle, r.ended ? T.summaryTitle : T.panelTitle);
-    set(totalEl, `${T.panelTotal}: ${fmt(p.total)}`);
-    set(rollingEl, `${T.panelRolling(ROLLING_SECONDS)}: ${fmt(p.rolling)}`);
-    set(overallEl, `${T.panelOverall}: ${fmt(p.overall)}`);
-    set(bestEl, `${T.panelBest}: ${fmt(p.best)}`);
-    set(timeEl, `${T.panelTime}: ${seconds(p.seconds)}`);
-    set(takenEl, `${T.panelTaken}: ${fmt(p.taken)} (${p.attacks})`);
+    set(rollingEl, fmt(p.rolling));
+    set(timeEl, seconds(p.seconds));
+    set(bestEl, fmt(p.best));
+    set(takenEl, fmt(p.taken));
+    takenEl.title = `${p.attacks} ${T.panelAttacks}`;
     const names = p.fallen.map((id) => content.cardById.get(id)?.name ?? id);
     set(fallenEl, names.length > 0 ? `${T.panelFallen}: ${names.join(', ')}` : '');
     fallenEl.hidden = names.length === 0;
@@ -310,17 +333,26 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
         const card = content.cardById.get(c.cardId);
         const row = h('div', 'trb-share');
         row.dataset['card'] = c.cardId;
+        const ic = h('span', 'trs__icon');
+        ic.innerHTML = iconOf(c.cardId);
         const name = h('span', 'trb-share__name', card ? cardDisplayName(content, card) : c.cardId);
         const bar = h('span', 'trb-share__bar');
         bar.append(h('i'));
-        row.append(name, bar, h('span', 'trb-share__num bi-num'));
+        row.append(
+          ic,
+          name,
+          h('span', 'trb-share__dmg bi-num'),
+          bar,
+          h('span', 'trb-share__pct bi-num'),
+        );
         shares.append(row);
       }
     }
     for (const c of p.cards) {
       const row = shares.querySelector<HTMLElement>(`[data-card="${c.cardId}"]`);
       if (!row) continue;
-      set(row.querySelector<HTMLElement>('.trb-share__num')!, `${pct(c.share)} · ${fmt(c.damage)}`);
+      set(row.querySelector<HTMLElement>('.trb-share__dmg')!, fmt(c.damage));
+      set(row.querySelector<HTMLElement>('.trb-share__pct')!, pct(c.share));
       row.querySelector<HTMLElement>('i')!.style.width = `${Math.round(c.share * 100)}%`;
     }
     const lines =
@@ -350,9 +382,20 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
       setupSig = now;
       buildSetup();
     }
-    if (document.activeElement !== damageIn) damageIn.placeholder = fmt(s.dummy.damage);
-    set(hitNow, `${T.dummyDamage}: ${fmt(s.dummy.damage)}`);
-    if (document.activeElement !== elementSel) elementSel.value = prefs().trainingElement;
+    let matched = false;
+    for (const step of DUMMY_STEPS) {
+      // the team's health moves a little with buffs, so a step counts as chosen within 5 %
+      const want = stepDamage(s, content, s.dummy.team, step.id);
+      const on = want.eq(0)
+        ? s.dummy.damage.eq(0)
+        : s.dummy.damage.sub(want).abs().div(want).lt(0.05);
+      if (on) matched = true;
+      stepBtns.get(step.id)?.setAttribute('aria-pressed', String(on));
+    }
+    set(hitNow, `${matched ? '' : `${T.custom} · `}${fmt(s.dummy.damage)} ${T.perAttack}`);
+    hitNow.classList.toggle('is-custom', !matched);
+    const el = prefs().trainingElement;
+    for (const [id, b] of elBtns) b.classList.toggle('is-on', id === el);
     if (run) {
       if (!run.ended) setDuelPace(usableSpeed(run.state, prefs().duelSpeed));
       drawPanel(run);
@@ -362,7 +405,15 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
 
   return {
     render,
-    opened: () => arena?.refit(),
+    opened: () => {
+      if (!run) {
+        // a first visit with nobody on trial starts with the player's own fighting loadout
+        const s = ctx.state();
+        if (s.dummy.team.every((id) => id === null)) ctx.apply(copyLoadoutToDummy(s));
+        begin();
+      }
+      arena?.refit();
+    },
     closed: () => setDuelPace(1),
   };
 }

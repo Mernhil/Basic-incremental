@@ -69,6 +69,11 @@ const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
 /** Cards across the collection grid, and the gap between them (CSS px). */
 const GRID_COLUMNS = 4;
 const GRID_GAP = 10;
+/**
+ * The widest the collection grid is measured at when the card scale is picked (CSS px, just under the
+ * 1086 that four 2x cards need): a wider window adds columns of cards at the same size, never bigger ones.
+ */
+const COLLECTION_FIT_MAX = 1080;
 /** The weapon tiles beside the detail card: the narrowest they may get, and the gap to the card. */
 const DETAIL_SIDE_MIN = 118;
 const DETAIL_GAP = 22;
@@ -338,7 +343,7 @@ export function createCardsPage(
     const grid = h('ul', 'cp-grid');
     watchFit(grid, {
       want: CARD_WANT.tile,
-      max: () => innerWidth(grid),
+      max: () => Math.min(innerWidth(grid), COLLECTION_FIT_MAX),
       row: { count: GRID_COLUMNS, gap: GRID_GAP },
     });
     grid.setAttribute('aria-label', COPY.cards.collectionTab);
@@ -387,11 +392,6 @@ export function createCardsPage(
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
       b.append(cardEl(e, state));
-      if (e.owned) {
-        const lv = h('span', 'cp-lv wp-chip bi-num', String(e.level));
-        lv.setAttribute('aria-hidden', 'true');
-        b.append(lv);
-      }
       if (isReady(e)) {
         const ready = h('span', 'cp-ready', '▲');
         ready.setAttribute('aria-hidden', 'true');

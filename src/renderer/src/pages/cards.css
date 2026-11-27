@@ -10,7 +10,7 @@
    gaps, the frame and the detail panel take about 1,700 px */
 .shell-page--cards {
   --cp-detail-w: 476px;
-  max-width: 1700px;
+  max-width: none;
   /* the panels fill the window under the header (and the goal tracker when it shows) and scroll
      inside, like the reference; the shell's own bottom padding is taken back */
   height: calc(100vh - var(--header-h, 64px) - 24px);
@@ -239,24 +239,11 @@ html .cp-sort .cp-select:not(#_px) {
   letter-spacing: 0.06em;
 }
 
-/* the level badge (top-left) and the "upgrade ready" marker (bottom-right) of a grid card */
-.cp-lv,
+/* the "upgrade ready" marker (bottom-right) of a grid card */
 .cp-ready {
   position: absolute;
   z-index: 2;
   pointer-events: none;
-}
-/* on the art window's top-left corner, just under the name plate (window x 5.33, y 30.67 in card units) */
-.cp-lv {
-  left: calc(var(--card-k) * 9px);
-  top: calc(var(--card-k) * 35px);
-  min-width: calc(var(--fs-sm) * 9);
-  height: calc(var(--fs-sm) * 9);
-  padding: 0 calc(var(--fs-sm) * 2);
-  box-sizing: border-box;
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1;
 }
 .cp-ready {
   right: calc(var(--fs-sm) * -2);

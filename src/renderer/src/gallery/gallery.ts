@@ -24,7 +24,6 @@ import {
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from '../theme/apply';
 import { createCard, type CardView } from '../ui/card';
 import { itemArt } from '../art/items';
-import { COPY } from '../copy';
 import { installArtDefs } from '../art/defs';
 import { showTick } from '../theme/effects';
 import './gallery.css';
@@ -336,7 +335,6 @@ function cardProps(
     rank,
     rarity,
     face: {
-      speed: COPY.card.hitsEvery('1s'),
       level: { value: 12, cap: 20 },
       progress: 0.6,
     },

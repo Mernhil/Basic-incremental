@@ -18,6 +18,8 @@ const api: AppApi = {
   writeSave: (text) => ipcRenderer.invoke(IPC_CHANNELS.writeSave, text) as Promise<void>,
   onFlushRequest: (callback) => subscribe(IPC_CHANNELS.flushRequest, callback),
   flushDone: () => ipcRenderer.send(IPC_CHANNELS.flushDone),
+  keepUnreadableSave: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.keepUnreadableSave) as Promise<string | null>,
   devCheatsEnabled: () => ipcRenderer.invoke(IPC_CHANNELS.devCheatsEnabled) as Promise<boolean>,
   devBackupSave: () => ipcRenderer.invoke(IPC_CHANNELS.devBackupSave) as Promise<string | null>,
   devReloadView: () => ipcRenderer.send(IPC_CHANNELS.devReloadView),

@@ -143,7 +143,7 @@ export function createWeaponSkinsTab(
     viewEl.classList.add('ws-preview');
     const host = h('div', 'ws-stage');
     fitCard(host, { want: 218 });
-    const props = loadoutProps(content, state, cardId, []);
+    const props = loadoutProps(content, state, cardId);
     if (props) {
       const fit = h('div', 'ws-card');
       fit.append(

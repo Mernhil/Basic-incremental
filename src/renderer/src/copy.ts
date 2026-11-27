@@ -26,7 +26,7 @@ export const COPY = {
   load: {
     usedBackup: "Your latest save couldn't be read, so the previous backup was loaded.",
     startedFresh:
-      "Your save couldn't be read, so a new game started. The damaged save is kept in the saves folder.",
+      "Your save couldn't be read, so a new game started. A copy of the unreadable save is kept in the saves folder (save.unreadable-…).",
     badData: "The game data is invalid, so the game can't start.",
     failed: "The game couldn't start.",
   },
@@ -86,9 +86,7 @@ export const COPY = {
   },
   /** The full-art card face (DESIGN.md §5). */
   card: {
-    hitsEvery: (seconds: string) => `hits every ${seconds}`,
     level: (level: number, cap: number) => `Level ${level}/${cap}`,
-    levelShort: (level: number, cap: number) => `Lv ${level}/${cap}`,
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */

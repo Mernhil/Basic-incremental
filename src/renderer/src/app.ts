@@ -104,7 +104,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   // ---- load ----
   const files = await window.api.readSave();
-  const best = loadBestSave(files.primary, files.backup, content);
+  let best: ReturnType<typeof loadBestSave>;
+  try {
+    best = loadBestSave(files.primary, files.backup, content);
+    // A file that exists but could not be read is copied aside before anything is written, so
+    // the new game's first save never destroys it (and if it cannot be kept, nothing is written).
+    if (best.errors.length > 0) await window.api.keepUnreadableSave();
+  } catch (error) {
+    showFatal(root, error);
+    return;
+  }
   const startedAt = Date.now();
   let state = best.save?.state ?? createInitialState(content);
   let summary: OfflineSummary | null = null;
@@ -218,8 +227,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     playTierUps(list, {
       content,
       sound: playSound,
-      cardProps: (id) =>
-        loadoutProps(content, loop.state, id, collectModifiers(loop.state, content)),
+      cardProps: (id) => loadoutProps(content, loop.state, id),
     });
 
   // the goal list under the header's Goals button (DESIGN.md §10); a goal opens its view.

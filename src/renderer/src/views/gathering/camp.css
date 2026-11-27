@@ -114,7 +114,10 @@
 .camp__tile:hover,
 .camp__tile:focus-visible {
   background: #4a380b;
-  outline: none;
+}
+.camp__tile:focus-visible {
+  outline: 2px solid var(--px-gold, #ffd66e);
+  outline-offset: 2px;
 }
 .camp__art {
   display: block;

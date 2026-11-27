@@ -170,7 +170,8 @@
   min-width: 0;
   margin: 0;
   list-style: none;
-  padding: var(--kit-top, 35px) 0 var(--kit-bottom, 25px);
+  /* the right side leaves the last card's level chip (it hangs 47 card units past the edge) */
+  padding: var(--kit-top, 35px) calc(47px * var(--card-k, 0.5)) var(--kit-bottom, 25px) 0;
   box-sizing: border-box;
   min-height: calc(248px * var(--card-k, 0.5));
 }

@@ -6,7 +6,6 @@ import {
   resolveCardSkin,
   resolveCard,
   type GameState,
-  type Modifier,
   type OwnedCard,
 } from '../../../game';
 import { evolutionArt } from '../art/evolutions';
@@ -50,12 +49,7 @@ export function cardItemArt(
 
 /** A fighting loadout card's props (the four cards are equal: no slot label). Null when the card
  *  is unknown or not owned. */
-export function loadoutProps(
-  content: Content,
-  state: GameState,
-  cardId: string,
-  mods: Modifier[],
-): CardProps | null {
+export function loadoutProps(content: Content, state: GameState, cardId: string): CardProps | null {
   const info = cardInfo(state, content, cardId);
   if (!info?.owned || !info.rank) return null;
   const { card, rank } = info;
@@ -68,7 +62,7 @@ export function loadoutProps(
     element: card.element,
     rank,
     rarity: cardStyle(card),
-    face: cardFaceOf(content, info, mods),
+    face: cardFaceOf(info),
     theme: resolveCard(content, state.cosmetics.loadout, {
       id: card.id,
       rank,
@@ -83,7 +77,7 @@ export function cardFaceProps(
   state: GameState,
   cardId: string,
 ): CardProps | null {
-  const props = loadoutProps(content, state, cardId, []);
+  const props = loadoutProps(content, state, cardId);
   const card = content.cardById.get(cardId);
   if (!props || !card) return null;
   return { ...props, label: card.job.charAt(0).toUpperCase() + card.job.slice(1) };

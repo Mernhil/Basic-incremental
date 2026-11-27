@@ -396,3 +396,9 @@ html
   font-weight: 600;
   letter-spacing: 0.01em;
 }
+
+/* the smallest button is 24 design px high (a 1280 window zooms it to 16); only buttons that were lower grow */
+html :where(.px-btn, .button, .shop-cancel, .cp-select) {
+  box-sizing: border-box;
+  min-height: 24px;
+}
