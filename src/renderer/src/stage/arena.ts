@@ -122,6 +122,8 @@ export interface Arena {
   update(): void;
   /** Re-reads the duel's size (after it moved between the window and the view). */
   refit(): void;
+  /** Clears the fight readout's numbers (a restarted test fight starts from zero). */
+  resetLog(): void;
 }
 
 interface HandSlot {
@@ -1583,6 +1585,10 @@ export function createArena(ctx: ArenaContext): Arena {
   return {
     el,
     update,
+    resetLog: () => {
+      log = emptyDuelLog();
+      update();
+    },
     refit: () => {
       fitHand();
       readStyle();

@@ -555,6 +555,7 @@ export const MANIFEST: Record<
   'foe-shade_mote': { w: 160, h: 172 },
   'foe-storm_harpy': { w: 160, h: 172 },
   'foe-storm_siren': { w: 160, h: 172 },
+  'foe-training_dummy': { w: 160, h: 172 },
   'foe-void_witch': { w: 160, h: 172 },
   'item-bow-epic-0-red-anim': { w: 800, h: 120 },
   'item-bow-epic-0-red': { w: 100, h: 120, animated: { frames: 8 } },
