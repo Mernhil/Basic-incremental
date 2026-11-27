@@ -13,6 +13,7 @@ export function setupSaveIpc(options: { devTools?: boolean } = {}): void {
   const log = createFileLogger(join(app.getPath('userData'), 'logs', 'saves.log'));
 
   ipcMain.handle(IPC_CHANNELS.readSave, () => store.read());
+  ipcMain.handle(IPC_CHANNELS.keepUnreadableSave, () => store.keepUnreadable(new Date()));
   // Only where the dev cheats exist (a public release has no such handler at all).
   if (options.devTools) {
     ipcMain.handle(IPC_CHANNELS.devBackupSave, () => store.backupBeforeReset(new Date()));

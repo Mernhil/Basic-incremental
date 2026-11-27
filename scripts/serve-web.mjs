@@ -36,7 +36,13 @@ const TYPES = {
 };
 
 const server = createServer((req, res) => {
-  const path = decodeURIComponent((req.url ?? '/').split('?')[0]);
+  let path;
+  try {
+    path = decodeURIComponent((req.url ?? '/').split('?')[0]);
+  } catch {
+    res.writeHead(400).end('Bad request');
+    return;
+  }
   let file = normalize(join(root, path === '/' ? 'index.html' : path));
   if (file !== root && !file.startsWith(root + sep)) {
     res.writeHead(403).end();

@@ -76,3 +76,29 @@ describe('createWebSaveStore', () => {
     await expect(api.devCheatsEnabled()).resolves.toBe(false);
   });
 });
+
+describe('web keepUnreadableSave', () => {
+  it('copies both saves aside and reports nothing to keep on an empty store', async () => {
+    const data = new Map<string, string>();
+    const storage = {
+      getItem: (k: string) => data.get(k) ?? null,
+      setItem: (k: string, v: string) => void data.set(k, v),
+    };
+    const make = () =>
+      createBrowserApi({
+        storage,
+        version: '1',
+        pageEvents: { onHide: () => undefined },
+        logTail: () => [],
+        system: { os: 'web', osRelease: '', arch: 'web', electron: '', chrome: '' },
+        now: () => new Date('2026-11-27T12:00:00.000Z'),
+      });
+    await expect(make().keepUnreadableSave()).resolves.toBeNull();
+    data.set(WEB_SAVE_KEYS.primary, '{"version":999}');
+    data.set(WEB_SAVE_KEYS.backup, '{"version":998}');
+    const stamp = await make().keepUnreadableSave();
+    expect(stamp).toBe('2026-11-27T12-00-00-000Z');
+    expect(data.get(`bi:save.unreadable-${stamp}`)).toBe('{"version":999}');
+    expect(data.get(`bi:save.unreadable-${stamp}.bak`)).toBe('{"version":998}');
+  });
+});
