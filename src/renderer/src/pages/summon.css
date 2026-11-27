@@ -689,7 +689,8 @@
 .sm-hand__list {
   display: flex;
   margin: 0;
-  padding: 0 var(--fs) 0 0;
+  /* the last card's level chip hangs 25 card units past its right edge */
+  padding: 0 calc(33 * var(--u)) 0 0;
   list-style: none;
 }
 .sm-hand__list[hidden],

@@ -633,15 +633,17 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
   justify-content: center;
 }
-/* the level chip: dark fill, gold edge, the level big in white over a small "/max"; it sits on the bottom-right corner of the
-   card's own box (never past it, never over the stars: they end at x 129, the chip starts at x 130) */
+/* the level chip: dark fill, gold edge, the level big in white over a small "/max". It is EXTERNAL: it hangs off the card's
+   bottom-right corner as in the approved picture (card-pair.png: left edge at 85% of the card's width, right edge at 114%, top at
+   82% and bottom at 95% of its height), over the frame's right edge and the banner's scroll end, well clear of the stars. The
+   rows and grids that hold cards leave the 25 px overhang free. */
 .bi-card__lv {
   position: absolute;
   z-index: 6;
-  right: 2px;
-  bottom: 2px;
+  right: -25px;
+  bottom: 12px;
   box-sizing: border-box;
-  width: 44px;
+  width: 50px;
   height: 30px;
   padding-top: 2px;
   display: flex;

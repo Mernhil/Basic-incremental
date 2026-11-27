@@ -387,11 +387,6 @@ export function createCardsPage(
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
       b.append(cardEl(e, state));
-      if (e.owned) {
-        const lv = h('span', 'cp-lv wp-chip bi-num', String(e.level));
-        lv.setAttribute('aria-hidden', 'true');
-        b.append(lv);
-      }
       if (isReady(e)) {
         const ready = h('span', 'cp-ready', '▲');
         ready.setAttribute('aria-hidden', 'true');

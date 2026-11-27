@@ -335,9 +335,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   if (variant === 'card') {
     overlay = h('div', 'wp-over');
     overlay.setAttribute('aria-hidden', 'true');
-    badge.classList.add('wp-chip');
-    badgeNum.classList.add('px-display');
-    overlay.append(badge);
+    // the level is the chip on the card itself (ui/card.ts); the overlay holds nothing
   }
 
   // ---- drawing ----
