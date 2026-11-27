@@ -10,6 +10,9 @@ export interface WebSaveStore {
   read(): SaveFiles;
   /** Throws when the browser refuses the write (full or blocked storage). */
   write(text: string): void;
+  /** Copies the saves that could not be loaded to `bi:save.unreadable-<stamp>` keys; true when
+   *  something was kept. */
+  keepUnreadable(stamp: string): boolean;
 }
 
 export const WEB_SAVE_KEYS = {
@@ -49,6 +52,19 @@ export function createWebSaveStore(storage: KeyValueStorage): WebSaveStore {
         primary: readOrNull(storage, WEB_SAVE_KEYS.primary),
         backup: readOrNull(storage, WEB_SAVE_KEYS.backup),
       };
+    },
+    keepUnreadable(stamp) {
+      let kept = false;
+      for (const [key, suffix] of [
+        [WEB_SAVE_KEYS.primary, ''],
+        [WEB_SAVE_KEYS.backup, '.bak'],
+      ] as const) {
+        const text = readOrNull(storage, key);
+        if (text === null) continue;
+        storage.setItem(`bi:save.unreadable-${stamp}${suffix}`, text);
+        kept = true;
+      }
+      return kept;
     },
     write(text) {
       const previous = readOrNull(storage, WEB_SAVE_KEYS.primary);

@@ -5,7 +5,7 @@ export const GATHERING_COPY = {
   raiseCamp: 'Raise the camp',
   slotsOpen: (n: number) => (n === 1 ? '1 farming slot open' : `${n} farming slots open`),
   slotCard: (n: number) => `Slot ${n}: tool`,
-  emptySlot: 'empty slot + pick a tool',
+  emptySlot: 'Empty slot: pick a tool',
   placeHere: 'Place here',
   placeOn: (node: string) => `Place the new slot on ${node}`,
   toPlace: (n: number, place: string) =>

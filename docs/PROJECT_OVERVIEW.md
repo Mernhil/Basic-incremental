@@ -129,7 +129,7 @@ Level-ups and unlocks are settled only on a whole-second play-time boundary (`CA
 
 ### Loop and offline
 
-- `src/game/loop.ts` `GameLoop.step(now)` advances by the real time since the last step, never negative and at most `MAX_STEP_MS` (8 hours). A gap over 5 seconds is caught up in one-minute steps, otherwise one-second steps. `setSpeed` multiplies elapsed time (see Sim and dev tools).
+- `src/game/loop.ts` `GameLoop.step(now)` advances by the real time since the last step, never negative and at most `MAX_STEP_MS` (8 hours). A gap over 5 seconds is caught up in one-minute steps, otherwise one-second steps. `setSpeed` multiplies elapsed time (see Sim and dev tools). A clock that was set back by more than `MAX_STEP_MS` (set far ahead, then corrected) restarts from the new time instead of waiting for the old one; a smaller step back still waits, so no time counts twice.
 - `src/game/speed.ts` holds the duel speed rule: `DUEL_SPEEDS` (1, 2, 4), `isSpeedUnlocked` (×2 after the first dungeon clear, ×4 after the first Ascension), `usableSpeed`, `speedLocks` and `fightClock`. `GameLoop.setDuelSpeed` sets the chosen speed; `effectiveDuelSpeed` is what runs, and a gap over 5 seconds always runs at ×1.
 - `src/game/offline.ts` `simulateOffline` runs the time since the last save through the same tick in one-minute steps. Under 10 seconds (`MIN_OFFLINE_MS`) nothing happens. The cap is 8 hours in code (`OFFLINE_CAP_MS`), changed by modifiers on the stat `offline.capHours` (`offlineCapMs`). Expedition trips also advance through the time beyond the cap. It returns an `OfflineSummary` of what was gained.
 
@@ -701,7 +701,7 @@ Cosmetics are kept through an ascension (`ASCENSION_PERSISTS` in `src/game/prest
 - Tokens become CSS variables `--bi-<key>` (`cssVars`); recipes become classes `r-<id>`.
 - `applyGlobalTheme` in `theme/apply.ts` puts the global slots on `<html>` (called from `src/renderer/src/app.ts`). `applyCardTheme` puts a card's variables and classes on its element and marks `data-lv-<slot>` and `data-max-<slot>`.
 - `theme/registry.ts` lists every recipe and effect the page implements, with the generated ids of `art/cosmeticIds.ts`. `assertVisualsImplemented` stops the game at start if the data names a missing one.
-- CSS: `theme/base.css` (card and table from tokens), `recipes.css` (recipe classes), `frames.css` (panel and button frames from table tokens), `effects.css` with `effects.ts` (floating numbers).
+- CSS: `theme/base.css` (card and table from tokens), `recipes.css` (recipe classes), `frames.css` (panel and button frames from table tokens; `.px-btn`, `.button`, `.shop-cancel` and `.cp-select` are at least 24 design px high), `effects.css` with `effects.ts` (floating numbers).
 - The UI look vault: `src/data/vault.ts` `UI_LOOKS_VAULTED` (on) holds back the `table`, `starlight`, `sticker`, `nodes` and `wardrobe` slots, like `BACKDROP_MOTION` for backdrops. `validateContent` (`loadContent({ uiLooksVaulted })` in tests) marks those items `hidden` and cuts them from portal pools, the shard shop and the prestige, achievement and reward-track rewards; `resolveGlobal` shows the slot's starter whatever is worn (the table slot shows the hidden `gold_table`); a vaulted dungeon rare drop stays in the inventory and grants no cosmetic (`combat.ts`); the Wardrobe lists no sets and no Interface chip. Saves are untouched, so owned items keep their `ownedModifiers`; no set can be completed. `tests/uiLookVault.test.ts`.
 - The table item also themes the shell (see Shell and table). The shell look is Charcoal and Gold: the `shell-gold` recipe, drawn by `theme/shellGold.css` from `art/shell/gold/` (`pieces.json` gives each piece's size and corner; `extra/` holds kit pieces, only the tooltip is used). `shell-oak` (`theme/shellOak.css`) stays in the code, unused by default. `shell-stone` is drawn by `theme/shellPictures.css` from `shellArt.json` (`applyShellArt` sets `--sh-<piece>-*`); no item in `cosmetics.json` uses it.
 - UI-skin recipes set `--bi-skin-<slot>` to a style letter; `skinStyle` in `ui/skins.ts` reads it (`ui/skillArt.ts` reads the `nodes` recipe from the loadout instead) and pages draw that style with `art/cosmetics.ts`.
@@ -739,8 +739,8 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ### Loading
 
-- `loadBestSave` (`src/game/save.ts`) tries the main save, then the backup. A missing file is not an error. Only a `SaveError` makes it fall back to the backup; any other error is thrown on.
-- A warning is shown only when a save file existed but could not be read: one text when the backup was loaded instead, another when a new game was started (`src/renderer/src/app.ts`). A missing main save with a good backup loads the backup silently.
+- `loadBestSave` (`src/game/save.ts`) tries the main save, then the backup. A missing file is not an error. Only a `SaveError` makes it fall back to the backup; any other error is thrown on. Any other error thrown while loading ends in the fatal box (`app.ts` `showFatal`) and nothing is written.
+- A warning is shown only when a save file existed but could not be read: one text when the backup was loaded instead, another when a new game was started (`src/renderer/src/app.ts`). A missing main save with a good backup loads the backup silently. Whenever a file could not be read, `startGame` first calls `window.api.keepUnreadableSave` (`saveStore.ts` `keepUnreadable`, the web store the same under `bi:save.unreadable-<stamp>` keys), which copies the main and backup files to `save.unreadable-<timestamp>.json` / `.bak.json`; if that fails nothing is written. A new game therefore never destroys an unreadable save.
 - `readSave` in order: parse the JSON, check the envelope, run the migrations, check the result against `serializedStateSchema`, rebuild the state with `deserializeState`.
 - Every failure the loader detects is a `SaveError` with a code and a message safe to show the player (`src/game/saveError.ts`). A save from a newer format than this build knows is refused with `future-version` (`src/game/migrations.ts` `migrateState`).
 - `deserializeState` starts from a new game and copies the saved values over it. Most ids the game does not have are dropped; `pity`, `inventory` and `combat.trialBest` are copied as saved.
@@ -878,7 +878,7 @@ A view is one full screen the player opens from the table (see Shell and table).
 ### `views/meta`
 
 - `index.ts`: the `skills`, `achievements`, `shop`, `upgrades` and `settings` piles. All but Upgrades mount a page from `pages/`.
-- `upgradesView.ts`: one panel (Training) listing every line's milestones. A waiting pick shows two cards and a click picks one (`pickPerk`); a made pick shows its badge; one ahead shows both perks. A foot bar shows lifetime Money. Built by `upgradesModel.ts` `milestoneBoard`.
+- `upgradesView.ts`: one panel per group of `milestoneBoard` (only Training; one column) listing every line's milestones. A waiting pick shows two cards and a click picks one (`pickPerk`); a made pick shows its badge; one ahead shows both perks. A foot bar shows lifetime Money. Built by `upgradesModel.ts` `milestoneBoard`.
 
 ### The card face (`ui/card.ts`, `ui/cardFace.ts`, `pages/cardFaceModel.ts`)
 
