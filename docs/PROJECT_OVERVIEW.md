@@ -943,6 +943,7 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 ### Cards (`cards.ts`)
 
 - Mounted by the `cards` view (`views/collection/index.ts`). It reads the game only through `CardsModel` (`cardsModel.ts`, filled by `cardsAdapter.ts`).
+- Page width: `.shell-page--cards` (`cards.css`) has no `max-width`, so it fills the window beside the detail panel. The collection grid is `auto-fill` columns at a fixed card size: `COLLECTION_FIT_MAX` (`cards.ts`) caps the width the card scale is picked at, so a wider window adds columns of the same size, never bigger cards.
 - Four tabs: Collection, Heirlooms, Loadouts, Bonds. Bonds mounts `createBondsPanel` (`tablePanels.ts`). The Expeditions tab moved to the Expedition board.
 - **Collection.** Filter chips by job, by role (Tank, DPS, Support) and "Ready n" (a star can be taken). Sort: Tier, Stars, Level, Name. The grid lists every card that is not an Heirloom: "Your cards (n)" first, then the cards not found, grouped by weapon type with a collected count.
 - **Detail panel.** Heading: the name, then "tier · job" (plus the slot name when the card is in the loadout). An owned card shows the weapon panel (`ui/weaponPanel.ts`, see Views and shared widgets), the skin picker (`cardSkinsModel.ts`, `setCardSkin`), stat tiles (`statsModel.ts`) and fact tiles. Buttons on an owned card: Enhancements (when the card has a chart: `cardEnhancements`, `chooseEnhancement`, `resetEnhancements`), Add to loadout (fighting cards not in the loadout) or Remove from loadout (cards in it) (`setLoadoutSlot`); Logging and Mining cards show a hint that they work from the Production page. See Cards.
@@ -984,7 +985,7 @@ Mounted by the `summon` view (`views/collection/index.ts`).
 
 ### Shop (`shop.ts`)
 
-Mounted by the `shop` view (`views/meta/index.ts`), opened from the hub's Market. One counter, the Shard shop: the items of `achievements.json` `shardShop`, paid in card shards (`state.cards.shards`): Card copies, Supplies (resource bundles) and Exclusive (cosmetics), some with limited stock (`shardShop`, `buyShardItem`); view data from `achievementsModel.ts`. The Starlight shop and the Ascension gate left it for the Ascension screen.
+Layout: the shard tiles (`.shop-tiles`, `shop.css`) are `auto-fill` columns of 230 px, centred, and the lone Market counter fills the width, so a wider window shows more tiles per row at the same size. Mounted by the `shop` view (`views/meta/index.ts`), opened from the hub's Market. One counter, the Shard shop: the items of `achievements.json` `shardShop`, paid in card shards (`state.cards.shards`): Card copies, Supplies (resource bundles) and Exclusive (cosmetics), some with limited stock (`shardShop`, `buyShardItem`); view data from `achievementsModel.ts`. The Starlight shop and the Ascension gate left it for the Ascension screen.
 
 ### Ascension screen (`ascension.ts`, `ascension.css`, model `ascensionModel.ts`)
 
