@@ -294,6 +294,9 @@ html .asc .asc-go.is-no:not(#_px) {
   font-size: calc(13px * var(--asc-z));
   color: var(--asc-good);
 }
+.asc-it__effect.is-off {
+  color: var(--asc-muted);
+}
 .asc-lv {
   grid-area: track;
   display: block;

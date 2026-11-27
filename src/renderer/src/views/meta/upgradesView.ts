@@ -17,7 +17,8 @@ export function mountUpgrades(host: HTMLElement, ctx: TableContext, api: ViewApi
   const subtitle = h('span', 'mv-subtitle');
   api.setTools(subtitle);
   const panels = new Map<string, { el: HTMLElement; list: HTMLElement; sig: string }>();
-  for (const key of ['logging', 'mining', 'training'] as const) {
+  // one panel per group the board has (only Training now: Logging and Mining have no milestones)
+  for (const { key } of milestoneBoard(ctx.state(), ctx.content).groups) {
     const el = h('section', `px-panel mv-up-panel mv-mp-panel mv-mp-panel--${key}`);
     el.dataset.deal = '';
     const head = h('header', 'mv-up-head');
