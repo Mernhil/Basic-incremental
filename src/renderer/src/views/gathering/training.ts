@@ -137,7 +137,7 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
   elBox.append(h('h3', 'trs__label', T.dummyElement), elRow);
 
   const ctrlBox = h('div', 'trs__box trs__ctrl');
-  const startBtn = h('button', 'px-btn px-btn--gold trs__restart', T.restart);
+  const startBtn = h('button', 'trs__go', T.restart);
   startBtn.type = 'button';
   startBtn.dataset['key'] = 'training-start';
   startBtn.addEventListener('click', () => begin());
@@ -188,7 +188,7 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
   summary.hidden = true;
   const summaryTitle = h('h3', 'px-display', T.summaryTitle);
   const summaryText = h('p', 'trb-summary__text');
-  const summaryReset = h('button', 'px-btn px-btn--gold', T.restart);
+  const summaryReset = h('button', 'trs__go', T.restart);
   summaryReset.type = 'button';
   summaryReset.dataset['key'] = 'training-summary-reset';
   summaryReset.addEventListener('click', () => begin());
@@ -382,15 +382,18 @@ export function createTrainingView(host: HTMLElement, ctx: TableContext): ViewHa
       setupSig = now;
       buildSetup();
     }
-    set(hitNow, `${fmt(s.dummy.damage)} ${T.perAttack}`);
+    let matched = false;
     for (const step of DUMMY_STEPS) {
       // the team's health moves a little with buffs, so a step counts as chosen within 5 %
       const want = stepDamage(s, content, s.dummy.team, step.id);
       const on = want.eq(0)
         ? s.dummy.damage.eq(0)
         : s.dummy.damage.sub(want).abs().div(want).lt(0.05);
+      if (on) matched = true;
       stepBtns.get(step.id)?.setAttribute('aria-pressed', String(on));
     }
+    set(hitNow, `${matched ? '' : `${T.custom} · `}${fmt(s.dummy.damage)} ${T.perAttack}`);
+    hitNow.classList.toggle('is-custom', !matched);
     const el = prefs().trainingElement;
     for (const [id, b] of elBtns) b.classList.toggle('is-on', id === el);
     if (run) {

@@ -49,6 +49,7 @@ export const GATHERING_COPY = {
   reset: 'Reset',
   stop: 'Stop',
   restart: 'Restart',
+  custom: 'Custom',
   dummyHits: 'Dummy hits',
   perAttack: 'per hit',
   panelAttacks: 'dummy attacks',
