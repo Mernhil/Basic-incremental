@@ -426,19 +426,11 @@ body {
   min-width: 0;
   white-space: nowrap;
 }
-.bi-info__speed {
-  flex: none;
-  font-size: max(8.5px, var(--cp-floor, 0px));
-  color: #b9bdc8;
-}
 .bi-info__line--meta {
   font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-.bi-info__level {
-  color: #9aa0ad;
 }
 .bi-info__rarity {
   color: var(--rar);
@@ -620,13 +612,6 @@ body {
   box-shadow: none;
   align-content: center;
 }
-.bi-card--kit:not([data-border-worn]) .bi-info__speed,
-.bi-card--kit:not([data-border-worn]) .bi-info__level {
-  color: var(--kit-ink-2);
-}
-.bi-card--kit:not([data-border-worn]) .bi-info__speed {
-  font-size: max(8px, var(--cp-floor, 0px));
-}
 .bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
   font-size: max(10px, var(--cp-floor, 0px));
   font-weight: 700;
@@ -635,38 +620,60 @@ body {
   align-items: center;
   gap: 2px;
 }
-/* the six 11-pixel stars take 61 art pixels of the line: the level gives a little on a 1x card so Lv n/cap still fits beside them */
-.bi-card--kit:not([data-border-worn]) .bi-info__line--meta .bi-info__level {
-  font-size: max(10px, calc(var(--cp-floor, 0px) * 0.86));
-}
 .bi-info__stars {
   display: none;
 }
 .bi-info__line--meta .bi-info__stars {
   display: flex;
 }
-/* a small card's banner: stars and level only; the speed and rarity word are for the big card */
-.bi-card--kit:not([data-border-worn]) .bi-info__speed,
+/* the banner shows the stars only, centred; the level is the chip on the corner (.bi-card__lv) and there is no hit-speed line */
 .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
   display: none;
 }
-/* the card's one name is the weapon's, on the top plate (DESIGN.md §5 Item names): the banner has no name line,
-   its first line ("hits every") is for the big card */
-.bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
+.bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
+  justify-content: center;
+}
+/* the level chip: dark fill, gold edge, the level big in white over a small "/max". It is EXTERNAL: it hangs off the card's
+   bottom-right corner as in the approved picture (card-pair.png), sized and placed as shares of the frame's outer box
+   (crest included; 29% x 12%, left edge at 85% of the width, top at 82% of the height): 61 x 37 card units, 47 units
+   past the card's right edge, 3 below its bottom. It covers the frame's right edge and the banner's scroll end, never a star.
+   The rows and grids that hold cards leave the overhang free. */
+.bi-card__lv {
+  position: absolute;
+  z-index: 6;
+  right: -47px;
+  bottom: -3px;
+  box-sizing: border-box;
+  width: 61px;
+  height: 37px;
+  padding-top: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 2px solid #f3dc9a;
+  border-radius: 4px;
+  background: #1c1a17;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  font-family: var(--bi-font-display);
+  font-style: normal;
+  line-height: 1;
+  pointer-events: none;
+}
+.bi-card__lv[hidden],
+.bi-card:not(.bi-card--face) .bi-card__lv {
   display: none;
 }
-@container style(--card-full: 1) {
-  .bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
-    display: flex;
-    justify-content: center;
-  }
-  .bi-card--kit:not([data-border-worn]) .bi-info__speed {
-    display: inline;
-  }
+.bi-card__lv b {
+  font-size: 15px;
+  font-weight: 400;
+  color: #fff;
 }
-/* the banner has no room for the rarity word next to six stars and the level: the level takes the rarity's colour */
-.bi-card--kit:not([data-border-worn]) .bi-info__level {
-  color: color-mix(in srgb, var(--rar) 55%, var(--kit-ink));
+.bi-card__lv i {
+  font-size: 7.5px;
+  font-style: normal;
+  color: #c9b48a;
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__bar {
   height: 3px;
@@ -687,8 +694,6 @@ body {
   --kit-shadow: 0 0 2px #000, 0 1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
 }
 /* the T6 and Heirloom banner is half light, half dark: light letters with a dark outline read on both halves */
-.bi-card--kit-t6:not([data-border-worn]) .bi-info__speed,
-.bi-card--kit-t6:not([data-border-worn]) .bi-info__level,
 .bi-card--kit-t6:not([data-border-worn]) .bi-info__rarity {
   paint-order: stroke fill;
   -webkit-text-stroke: 2.5px #14100a;
