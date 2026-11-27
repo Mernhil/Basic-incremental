@@ -31,7 +31,7 @@ TypeScript: `tsconfig.base.json` holds the shared strict options; `tsconfig.node
 
 ## Desktop app (Electron)
 
-- **Window** (`src/main/index.ts` `createWindow`): one window with a sandboxed, context-isolated page. New windows are refused (`https://` links open in the default browser) and in-page navigation is blocked.
+- **Window** (`src/main/index.ts` `createWindow`): one window with a sandboxed, context-isolated page. The window and the installer use the summon card back: `build/icon.ico` (exe, installer and uninstaller, set in `electron-builder.yml`) and `build/icon.png` (the `BrowserWindow` `icon`, shipped in the app files). New windows are refused (`https://` links open in the default browser) and in-page navigation is blocked.
 - **Bridge**: `src/preload/index.ts` exposes `window.api`; its shape (`AppApi`) and channel names (`IPC_CHANNELS`) are in `src/preload/api.ts`.
 - **Saves on disk**: `<userData>/saves` (`src/main/saves.ts`). `src/main/saveStore.ts` writes `save.json` through a temp file and a rename, first copying the previous save to `save.bak.json` when it is valid JSON, or to `save.corrupt.json` when it is not. For the save text see Saves.
 - **Closing**: `saveBeforeClose` holds the window until the page confirms a last save or a timeout passes.

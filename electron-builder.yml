@@ -8,15 +8,19 @@ directories:
 files:
   - out/**
   - package.json
+  - build/icon.png
 
 # Unsigned build: no code-signing config on purpose.
 win:
+  icon: build/icon.ico
   target:
     - target: nsis
       arch: x64
   artifactName: ${name}-setup-${version}.${ext}
 
 nsis:
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
   # One-click per-user install keeps silent auto-updates simple (no UAC prompt).
   oneClick: true
   perMachine: false
