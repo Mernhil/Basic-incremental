@@ -41,7 +41,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 34px 52px;
+  gap: 34px 80px;
   padding: 10px 24px 0;
 }
 .sp-choice {

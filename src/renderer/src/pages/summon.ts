@@ -365,8 +365,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     const d = screenDpr();
     const cardW = first.getBoundingClientRect().width;
     const free = handRow.clientWidth - n * cardW;
-    // when they fit, the gap leaves the level chip's overhang (0.15 of the card's width) free
-    const gap = Math.min(Math.max(16, cardW * 0.15), Math.max(-cardW * 0.62, free / (n - 1)));
+    // when they fit, the gap leaves the level chip's overhang (0.27 of the card's width) free
+    const gap = Math.min(Math.max(16, cardW * 0.27), Math.max(-cardW * 0.62, free / (n - 1)));
     handList.style.setProperty('--sm-gap', `${Math.floor(gap * d) / d}px`);
   }
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(spaceHand).observe(handRow);

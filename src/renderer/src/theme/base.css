@@ -634,18 +634,19 @@ body {
   justify-content: center;
 }
 /* the level chip: dark fill, gold edge, the level big in white over a small "/max". It is EXTERNAL: it hangs off the card's
-   bottom-right corner as in the approved picture (card-pair.png: left edge at 85% of the card's width, right edge at 114%, top at
-   82% and bottom at 95% of its height), over the frame's right edge and the banner's scroll end, well clear of the stars. The
-   rows and grids that hold cards leave the 25 px overhang free. */
+   bottom-right corner as in the approved picture (card-pair.png), sized and placed as shares of the frame's outer box
+   (crest included; 29% x 12%, left edge at 85% of the width, top at 82% of the height): 61 x 37 card units, 47 units
+   past the card's right edge, 3 below its bottom. It covers the frame's right edge and the banner's scroll end, never a star.
+   The rows and grids that hold cards leave the overhang free. */
 .bi-card__lv {
   position: absolute;
   z-index: 6;
-  right: -25px;
-  bottom: 12px;
+  right: -47px;
+  bottom: -3px;
   box-sizing: border-box;
-  width: 50px;
-  height: 30px;
-  padding-top: 2px;
+  width: 61px;
+  height: 37px;
+  padding-top: 1px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -665,12 +666,12 @@ body {
   display: none;
 }
 .bi-card__lv b {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
   color: #fff;
 }
 .bi-card__lv i {
-  font-size: 9px;
+  font-size: 7.5px;
   font-style: normal;
   color: #c9b48a;
 }
