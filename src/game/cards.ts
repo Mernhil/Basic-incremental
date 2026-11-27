@@ -27,6 +27,7 @@ import {
   type CardState,
   type GameState,
   type OwnedCard,
+  inFarmTeam,
   isOnTrip,
 } from './state';
 
@@ -68,6 +69,8 @@ export type CardFailure =
   | 'too-many-starters'
   /** The card is away on an expedition (DESIGN.md §15). */
   | 'on-expedition'
+  /** The card sits in a farming post's team (a card is in one team at a time). */
+  | 'in-farm-team'
   /** Not a valid slot. */
   | 'invalid-slot'
   /** No star-up from this rank (already ★6, or an Heirloom card). */
@@ -518,6 +521,7 @@ export function loadoutProblem(
     if (!state.cards.owned[id]) return 'not-owned';
     if (card.job !== job) return 'wrong-job';
     if (isOnTrip(state, id)) return 'on-expedition';
+    if (job === 'fighting' && inFarmTeam(state, id)) return 'in-farm-team';
   }
   if (new Set(ids).size !== ids.length) return 'duplicate';
   if (heirloomCount(content, ids) > MAX_LOADOUT_HEIRLOOMS) return 'too-many-heirlooms';

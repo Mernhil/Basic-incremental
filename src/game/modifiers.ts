@@ -12,6 +12,7 @@ import { tierRewardModifiers } from './tierRewards';
 import { elementModifiers } from './elements';
 import { bondModifiers } from './bonds';
 import { heirloomTreeModifiers } from './heirlooms';
+import { farmingModifiers } from './farming';
 import { challengeModifiers, restrictModifiers, restrictedView } from './challenges';
 
 /**
@@ -42,6 +43,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'challenge',
   /** Heirloom trees: the bought nodes of the Heirlooms at work (DESIGN.md §10 Heirloom trees). */
   'heirloom',
+  /** Farming post traits (DESIGN.md §2 A team farms a finished dungeon). */
+  'farm',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -245,6 +248,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Ascension challenges: rewards earned, the active rule's penalties, Training taken away.
   out.push(...challengeModifiers(state, content));
+
+  // Farming posts: the traits picked at their milestones, scoped to their dungeon.
+  out.push(...farmingModifiers(state, content));
 
   return strengthen(restrictModifiers(state, content, out));
 }

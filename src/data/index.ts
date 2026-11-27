@@ -19,6 +19,7 @@ import type {
   CampConfig,
   DummyConfig,
   ExpeditionsConfig,
+  FarmingConfig,
   Card,
   CardRules,
   CombatConfig,
@@ -95,6 +96,7 @@ import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
 import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
+import farmingJson from './content/farming.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
 import movesJson from './content/moves.json';
@@ -203,6 +205,8 @@ export interface Content {
   bondById: ReadonlyMap<string, Bond>;
   /** Expedition trip lengths and places (DESIGN.md §15 Expeditions). Not built. */
   expeditions: ExpeditionsConfig;
+  /** Farming posts (DESIGN.md §2 A team farms a finished dungeon). */
+  farming: FarmingConfig;
   /** Ascension challenges (DESIGN.md §15). Not built. */
   challenges: AscensionChallenge[];
   /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
@@ -286,6 +290,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     items,
     bonds,
     expeditions,
+    farming,
     challenges,
     skills,
     moves,
@@ -326,6 +331,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     }
   }
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
+  checkFarming(farming, resources, issues);
   checkSkills({ cards, skills }, issues);
   checkMoves({ cards, moves, resources }, issues);
   checkRaids({ cards, raids, resources, dungeons, trials }, issues);
@@ -476,6 +482,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     bonds,
     bondById: new Map(bonds.map((b) => [b.id, b])),
     expeditions,
+    farming,
     challenges,
     skills,
     skillById: new Map(skills.skills.map((x) => [x.id, x])),
@@ -544,6 +551,21 @@ function checkSkills(c: { cards: Card[]; skills: SkillsConfig }, issues: string[
  * The content of the table update's rules (save format 27): every id is unique and every card and
  * dungeon named exists (dungeons waiting for their theme count).
  */
+/** farming.json: unique traits, and the resources a post pays exist. */
+function checkFarming(farming: FarmingConfig, resources: { id: string }[], issues: string[]): void {
+  const ids = new Set(resources.map((r) => r.id));
+  for (const id of ['summon_scroll', 'scroll_fragment', 'herb_bundle']) {
+    if (!ids.has(id)) issues.push(`farming.json: needs the resource "${id}"`);
+  }
+  const seen = new Set<string>();
+  for (const t of farming.traits) {
+    if (seen.has(t.id)) issues.push(`farming.json › traits: duplicate id "${t.id}"`);
+    seen.add(t.id);
+    if (t.modifiers.some((m) => !m.stat.startsWith('farm.')))
+      issues.push(`farming.json › traits › ${t.id}: a trait may only change farm stats`);
+  }
+}
+
 function checkTableUpdate(
   c: {
     cards: Card[];
@@ -1632,6 +1654,7 @@ export function bundledRawContent(): RawContent {
     items: itemsJson,
     bonds: bondsJson,
     expeditions: expeditionsJson,
+    farming: farmingJson,
     challenges: challengesJson,
     skills: skillsJson,
     moves: movesJson,

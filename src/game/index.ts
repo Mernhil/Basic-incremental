@@ -49,6 +49,7 @@ export * from './quests';
 export * from './presets';
 export * from './bonds';
 export * from './expeditions';
+export * from './farming';
 export * from './account';
 export * from './web';
 export * from './upgrades';

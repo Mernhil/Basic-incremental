@@ -64,6 +64,7 @@ const TEXT = {
     'bad-length': 'That length is not offered.',
     'on-trip': 'That card is already away.',
     'in-loadout': 'That card is in the loadout.',
+    'in-farm-team': 'That card sits in a farming post.',
     'at-work': 'That card is at work.',
     'no-slot': 'Every expedition slot is in use.',
     'no-trip': 'No such trip.',

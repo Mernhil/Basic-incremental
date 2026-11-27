@@ -291,7 +291,7 @@ describe('save format 46', () => {
 
   it('loads at the current version with the new fields', () => {
     const text = createSaveText(freshState(), 1);
-    expect(JSON.parse(text).version).toBe(47);
+    expect(JSON.parse(text).version).toBe(48);
     expect(readSave(text, content).state.prestige.runFloors).toEqual({});
   });
 });

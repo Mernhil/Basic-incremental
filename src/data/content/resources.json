@@ -149,6 +149,20 @@
     "tier": 2
   },
   {
+    "id": "scroll_fragment",
+    "name": "Scroll Fragment",
+    "kind": "material",
+    "tier": 2,
+    "keptOnAscend": true
+  },
+  {
+    "id": "herb_bundle",
+    "name": "Herb Bundle",
+    "kind": "material",
+    "tier": 2,
+    "keptOnAscend": true
+  },
+  {
     "id": "star_dust",
     "name": "Star Dust",
     "kind": "material",

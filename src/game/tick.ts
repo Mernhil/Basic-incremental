@@ -7,6 +7,7 @@ import { settleQuests } from './quests';
 import { settleTierRewards } from './tierRewards';
 import { bondsDue, settleBonds } from './bonds';
 import { advanceTrips } from './expeditions';
+import { advanceFarming } from './farming';
 import { settleChallenges } from './challenges';
 import { advanceForge } from './forge';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
@@ -181,6 +182,9 @@ function advanceSpan(
     countHarvest(next, content, gains);
     grantAccountXp(next, content, harvestXp(content, job, gains), modifiers, job);
   }
+
+  // Farming posts earn alongside the main fight, with only their results shown (DESIGN.md §2).
+  advanceFarming(next, content, seconds, rng, modifiers);
 
   // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.perks.currency];
