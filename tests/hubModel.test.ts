@@ -11,8 +11,10 @@ import {
   hubPanned,
   hubScale,
   scaled,
+  sealWhy,
 } from '../src/renderer/src/hub/hubModel';
 import { VIEW_IDS } from '../src/renderer/src/table/viewIds';
+import { content, freshState, openAscension } from './helpers';
 
 /** The hub map (DESIGN.md section 2 Base camp): whole scales, exact masks, every dock screen reachable. */
 describe('hub map', () => {
@@ -88,11 +90,16 @@ describe('hub map', () => {
     }
   });
 
-  it('seals the arena, opens the raid gate after the first Ascension and goes to the dungeon from the arch', () => {
+  it('opens the arena with the Ascension milestone, the raid gate after the first Ascension and goes to the dungeon from the arch', () => {
     const by = (id: string) => HUB_BUILDINGS.find((b) => b.id === id)!;
     expect(by('raid_gate').action).toEqual({ kind: 'view', view: 'raids' });
     expect(by('raid_gate').needsAscension).toBe(true);
-    expect(by('arena').action.kind).toBe('locked');
+    expect(by('arena').action).toEqual({ kind: 'view', view: 'arena' });
+    expect(by('arena').needsArenaMilestone).toBe(true);
+    expect(sealWhy(by('arena'), freshState(), content)).toBe(
+      'Opens after Frostspire Vault on Normal',
+    );
+    expect(sealWhy(by('arena'), openAscension(freshState()), content)).toBeNull();
     expect(by('dungeon_arch').action).toEqual({ kind: 'dungeon' });
     expect(by('armoury').action.kind).toBe('menu');
   });

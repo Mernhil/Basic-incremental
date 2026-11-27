@@ -1,7 +1,13 @@
 import {
+  buyShopHeirloom,
   cardDisplayName,
+  claimSeasonChest,
   collectModifiers,
   localDay,
+  raidSeasonRank,
+  raidShop,
+  seasonEndsIn,
+  syncSeason,
   raidBossHp,
   raidLevel,
   raidsOpen,
@@ -12,6 +18,8 @@ import { foeHtml } from '../../art/foes';
 import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewHandle } from '../../table/contract';
+import { coinHtml, shopCards } from '../../ui/shopCards';
+import { durationText } from '../arena/arenaModel';
 import { RAIDS_COPY as T } from './copy';
 import {
   bossRows,
@@ -40,13 +48,23 @@ const set = (node: HTMLElement, text: string): void => {
   if (node.textContent !== text) node.textContent = text;
 };
 
-type Mode = { kind: 'list' } | { kind: 'ladder'; boss: string } | { kind: 'fight'; boss: string };
+type Mode =
+  | { kind: 'list' }
+  | { kind: 'ladder'; boss: string }
+  | { kind: 'fight'; boss: string }
+  | { kind: 'shop'; boss: string };
+
+/** The raid coin sprite of a boss's element. */
+const coinSprite = (element: string): string => `coin-raid-${element}`;
 
 export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandle {
   const { content } = ctx;
   host.classList.add('rd');
+  const tabs = h('nav', 'rd-tabs');
   const body = h('div', 'rd__body');
-  host.append(body);
+  host.append(tabs, body);
+  let notice = '';
+  let tabsSig = '';
   let mode: Mode = { kind: 'list' };
   let sig = '';
 
@@ -70,6 +88,8 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
 
   function go(next: Mode): void {
     mode = next;
+    notice = '';
+    tabsSig = '';
     sig = '';
     if (next.kind !== 'fight') {
       played = null;
@@ -109,6 +129,9 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     );
     const answer = h('p', 'rd-boss__answer', T.answer(row.answer));
     const tries = h('p', 'rd-boss__tries bi-num', T.tries(row.triesLeft, row.triesMax));
+    const boss = content.raidById.get(row.id)!;
+    const coins = h('p', 'rd-boss__coins bi-num');
+    coins.innerHTML = `${coinHtml(coinSprite(boss.element), 1)}<span>${fmt(ctx.state().arena.raidCoins[row.id] ?? 0)}</span>`;
     const best = h(
       'p',
       'rd-boss__best bi-num',
@@ -140,7 +163,7 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     ladder.addEventListener('click', () => go({ kind: 'ladder', boss: row.id }));
     const buttons = h('div', 'rd-boss__buttons');
     buttons.append(fight, ladder);
-    info.append(title, chips, trick, answer, tries, best, buttons);
+    info.append(title, chips, trick, answer, tries, coins, best, buttons);
     card.append(pic, info);
     return card;
   }
@@ -149,6 +172,42 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     const state = ctx.state();
     const head = h('section', 'rd-head px-panel');
     head.append(h('h2', 'px-display', T.title), h('p', 'rd-note', T.note));
+    const season = state.arena.season;
+    if (season > 0) {
+      const place = raidSeasonRank(state, content, Date.now());
+      head.append(
+        h(
+          'p',
+          'rd-gold bi-num',
+          T.season(season, durationText(seasonEndsIn(content, season, Date.now())), place),
+        ),
+      );
+    }
+    const waiting = state.arena.chests.filter((c) => c.mode === 'raid').length;
+    if (waiting > 0) {
+      const open = h('button', 'px-btn px-btn--primary', T.openChest(waiting));
+      open.type = 'button';
+      open.dataset['key'] = 'raid-chest';
+      open.addEventListener('click', () => {
+        // chests open in order: the ones before the first raid chest are opened with it
+        let s = ctx.state();
+        for (;;) {
+          const first = s.arena.chests[0];
+          const r = claimSeasonChest(s, content);
+          if (!r || !first) break;
+          s = r.state;
+          if (first.mode === 'raid') {
+            notice = T.chestOpened(r.rank.name, first.season, r.rank.frame);
+            break;
+          }
+        }
+        ctx.apply(s);
+        sig = '';
+        render();
+      });
+      head.append(open);
+    }
+    if (notice) head.append(h('p', 'rd-gold', notice));
     if (!raidsOpen(state, content)) head.append(h('p', 'rd-warn', T.sealed));
     else if (!state.cards.loadouts.fighting.slots.some((id) => id !== null))
       head.append(h('p', 'rd-warn', T.noTeam));
@@ -275,6 +334,64 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     result.hidden = false;
   }
 
+  // ---- the raid shops ------------------------------------------------------------------------------
+
+  function buildShop(bossId: string): void {
+    const state = ctx.state();
+    const boss = content.raidById.get(bossId)!;
+    const shop = content.arena.raid.shops[bossId]!;
+    const bar = h('section', 'rd-shopbar px-panel');
+    const coins = h('div', 'rd-shopbar__coins');
+    coins.innerHTML = `${coinHtml(coinSprite(boss.element), 1)}<div><b class="rd-shopbar__label">${shop.coin}s</b><p class="px-display bi-num rd-shopbar__n">${fmt(state.arena.raidCoins[bossId] ?? 0)}</p></div>`;
+    bar.append(coins, h('p', 'rd-note', T.shopNote(boss.name)));
+    const strip = h('div', 'rd-bosstabs');
+    for (const b of content.raids.bosses) {
+      const tab = h('button', `px-btn rd-bosstab${b.id === bossId ? ' is-on' : ''}`);
+      tab.type = 'button';
+      tab.dataset['key'] = `raid-shop-${b.id}`;
+      tab.innerHTML = `${coinHtml(coinSprite(b.element), 0.5)}<span>${b.name}</span>`;
+      tab.addEventListener('click', () => go({ kind: 'shop', boss: b.id }));
+      strip.append(tab);
+    }
+    const parts: HTMLElement[] = [bar, strip];
+    if (notice) parts.push(h('p', 'rd-gold', notice));
+    parts.push(
+      shopCards(
+        raidShop(state, content, bossId),
+        coinSprite(boss.element),
+        'raid',
+        content,
+        (id) => {
+          const r = buyShopHeirloom(ctx.state(), content, id);
+          if (!r.ok) return;
+          ctx.apply(r.state);
+          notice = T.bought(content.cardById.get(id)!.name);
+          sig = '';
+          render();
+        },
+      ),
+    );
+    body.replaceChildren(...parts);
+  }
+
+  function buildTabs(): void {
+    const back = h('button', 'px-btn rd-tab', T.hub);
+    back.type = 'button';
+    back.dataset['key'] = 'raid-hub';
+    back.addEventListener('click', () => ctx.close());
+    const raidTab = h('button', `px-btn rd-tab${mode.kind !== 'shop' ? ' is-on' : ''}`, T.tabRaid);
+    raidTab.type = 'button';
+    raidTab.dataset['key'] = 'raid-tab';
+    raidTab.addEventListener('click', () => go({ kind: 'list' }));
+    const shopTab = h('button', `px-btn rd-tab${mode.kind === 'shop' ? ' is-on' : ''}`, T.tabShop);
+    shopTab.type = 'button';
+    shopTab.dataset['key'] = 'raid-shop-tab';
+    shopTab.addEventListener('click', () =>
+      go({ kind: 'shop', boss: mode.kind === 'shop' ? mode.boss : content.raids.bosses[0]!.id }),
+    );
+    tabs.replaceChildren(back, raidTab, shopTab);
+  }
+
   // ---- the ladder ------------------------------------------------------------------------------
 
   function buildLadder(bossId: string): void {
@@ -318,6 +435,15 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
   }
 
   function render(): void {
+    const synced = syncSeason(ctx.state(), content, Date.now());
+    if (synced !== ctx.state()) {
+      ctx.apply(synced);
+      sig = '';
+    }
+    if (tabsSig !== mode.kind) {
+      tabsSig = mode.kind;
+      buildTabs();
+    }
     if (mode.kind === 'fight') {
       if (sig !== 'fight') {
         sig = 'fight';
@@ -332,11 +458,15 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
       s.raids,
       s.prestigeCount,
       s.cards.loadouts.fighting.slots,
+      s.arena,
+      notice,
       today(),
+      Math.floor(Date.now() / 60_000),
     ]);
     if (now === sig) return;
     sig = now;
-    if (mode.kind === 'ladder') buildLadder(mode.boss);
+    if (mode.kind === 'shop') buildShop(mode.boss);
+    else if (mode.kind === 'ladder') buildLadder(mode.boss);
     else buildList();
   }
 

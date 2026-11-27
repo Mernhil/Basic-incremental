@@ -1,0 +1,359 @@
+/* The Arena view: sub-tabs, the duel floor, the ladder, the season chest track and the Shop tab.
+   Panels and buttons are the shell's; sizes are design pixels of the 1920 x 1080 layout. */
+@font-face {
+  font-family: 'BI Rank Numerals';
+  src: url('../../art/rank-numerals.ttf') format('truetype');
+  font-display: block;
+}
+.ar {
+  padding: 12px 16px;
+}
+.ar p,
+.ar h2,
+.ar h3 {
+  margin: 0;
+}
+.ar-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.ar-tab.is-on {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+}
+.ar-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ar-note {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 15px;
+}
+.ar-gold {
+  color: var(--px-gold, #ffd66e);
+}
+.ar-warn {
+  color: var(--px-gold, #ffd66e);
+  text-align: center;
+  font-size: 15px;
+}
+.ar-floor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background-image: radial-gradient(ellipse at 50% 100%, rgba(255, 190, 80, 0.14), transparent 60%);
+}
+.ar-floor__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ar-floor__title {
+  color: var(--px-gold, #ffd66e);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+.ar-coins {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--px-gold, #ffd66e);
+  font-size: 28px;
+}
+.ar-stage {
+  display: grid;
+  grid-template-columns: 1fr 260px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.ar-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.ar-side--rival {
+  align-items: flex-end;
+  text-align: right;
+}
+.ar-side__name {
+  font-size: 34px;
+}
+.ar-rankname {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.ar-side__sub {
+  color: var(--px-gold, #ffd66e);
+  font-size: 18px;
+}
+.ar-side__power {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 14px;
+}
+.ar-boxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.ar-box {
+  aspect-ratio: 1 / 1.15;
+  display: grid;
+  place-items: center;
+  background: #1b1511;
+  border: 2px solid rgba(255, 214, 110, 0.3);
+  transition:
+    filter 0.4s ease,
+    opacity 0.4s ease;
+}
+.ar-box__art {
+  width: 100%;
+  height: 100%;
+}
+.ar-box.is-down {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+.ar-hp {
+  width: 100%;
+  height: 10px;
+  background: #2a1d17;
+  border: 1px solid rgba(255, 214, 110, 0.3);
+}
+.ar-hp i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(#e9c15a, #b9822d);
+}
+.ar-side--rival .ar-hp i {
+  background: linear-gradient(#d4584a, #8e2a22);
+  margin-left: auto;
+}
+.ar-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 30px;
+}
+.ar-vs {
+  font-size: 64px;
+  color: var(--px-gold, #ffd66e);
+  line-height: 1;
+}
+.ar-fight {
+  width: 100%;
+  font-size: 24px;
+  padding: 14px 0;
+}
+.ar-other {
+  width: 100%;
+}
+.ar-tries {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 14px;
+}
+.ar-timer {
+  text-align: center;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  min-height: 1em;
+}
+.ar-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 2px solid rgba(255, 214, 110, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+}
+.ar-result[data-ending='victory'] h3 {
+  color: #8fe388;
+}
+.ar-result[data-ending='defeat'] h3 {
+  color: #e87b6e;
+}
+.ar-result__buttons {
+  display: flex;
+  gap: 8px;
+}
+.ar-skip {
+  align-self: center;
+}
+.ar-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.ar-h3 {
+  color: var(--px-gold, #ffd66e);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 19px;
+}
+.ar-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ar-ladder__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.ar-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ar-ladder.is-whole .ar-rows {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.ar-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 150px 90px 90px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #241a14;
+  border: 2px solid rgba(255, 214, 110, 0.25);
+  font-size: 18px;
+}
+.ar-row.is-you {
+  border-color: var(--px-gold, #ffd66e);
+  background: #3a2a14;
+}
+.ar-row__rank {
+  color: var(--px-gold, #ffd66e);
+  font-weight: 700;
+}
+.ar-row__weapons {
+  display: flex;
+  gap: 2px;
+}
+.ar-mini {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+}
+.ar-mini svg {
+  width: 100%;
+  height: 100%;
+}
+.ar-row__power,
+.ar-row__points {
+  text-align: right;
+}
+.ar-row__power {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.ar-whole {
+  align-self: stretch;
+}
+.ar-chests {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ar-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.ar-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  text-align: center;
+  background: #241a14;
+  border: 2px solid rgba(255, 214, 110, 0.25);
+  min-height: 190px;
+}
+.ar-step.is-current {
+  border-color: var(--px-gold, #ffd66e);
+  background: #3a2a14;
+}
+.ar-step__name {
+  color: var(--px-gold, #ffd66e);
+}
+.ar-step__what {
+  font-size: 13px;
+}
+.ar-step__frame {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.ar-season {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-color: var(--px-gold, #ffd66e);
+}
+.ar-season__frame {
+  display: flex;
+  justify-content: center;
+}
+.ar-frame {
+  position: relative;
+  width: calc(212px * var(--fs, 1));
+  height: calc(256px * var(--fs, 1));
+  font-family: 'BI Rank Numerals', monospace;
+  font-size: calc(8px * var(--fs, 1));
+  color: #3a1f0a;
+  image-rendering: pixelated;
+}
+.ar-frame img {
+  display: block;
+}
+.ar-frame__top,
+.ar-frame__season {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1;
+}
+.ar-frame__top {
+  top: calc(44px * var(--fs, 1));
+}
+.ar-frame__season {
+  top: calc(208px * var(--fs, 1));
+}
+/* the Shop tab */
+.ar-shopbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 18px;
+}
+.ar-shopbar__coins {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ar-shopbar__label {
+  color: var(--px-gold, #ffd66e);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ar-shopbar__n {
+  color: var(--px-gold, #ffd66e);
+  font-size: 34px;
+}

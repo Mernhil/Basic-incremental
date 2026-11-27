@@ -154,3 +154,51 @@
 .rd-card .rd-chip {
   align-self: flex-start;
 }
+
+/* sub-tabs and the raid shops (the arena Shop's look) */
+.rd-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.rd-tab.is-on,
+.rd-bosstab.is-on {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+}
+.rd-boss__coins {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--px-gold, #ffd66e);
+}
+.rd-shopbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 18px;
+}
+.rd-shopbar__coins {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rd-shopbar__label {
+  color: var(--px-gold, #ffd66e);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rd-shopbar__n {
+  color: var(--px-gold, #ffd66e);
+  font-size: 34px;
+}
+.rd-bosstabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rd-bosstab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

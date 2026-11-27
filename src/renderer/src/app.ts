@@ -26,6 +26,7 @@ import {
   type GameState,
   type OfflineSummary,
   type QuestEntry,
+  syncSeason,
   type TickReport,
   type TierUp,
 } from '../../game';
@@ -420,6 +421,9 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const step = (): void => {
     const before = loop.state;
     const report = loop.step(Date.now());
+    // the arena's and the raids' 4-week season clock (a chest is made when a season ends)
+    const seasoned = syncSeason(loop.state, content, Date.now());
+    if (seasoned !== loop.state) applyAndSave(seasoned);
     syncDuelPace();
     announce(report);
     if (report.accountLevel) {

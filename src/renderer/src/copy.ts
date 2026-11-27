@@ -123,6 +123,7 @@ export const COPY = {
       training: 'Training ground',
       expeditions: 'Expedition board',
       raids: 'Raids',
+      arena: 'Arena',
       upgrades: 'Upgrades',
       settings: 'Settings',
     },
