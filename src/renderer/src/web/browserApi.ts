@@ -13,6 +13,8 @@ export interface BrowserApiOptions {
   pageEvents: PageEvents;
   logTail: (lines: number) => string[];
   system: SystemInfo;
+  /** The clock, for the name of a kept unreadable save. */
+  now?: () => Date;
 }
 
 /**
@@ -46,6 +48,14 @@ export function createBrowserApi(options: BrowserApiOptions): AppApi {
       };
     },
     flushDone: () => undefined,
+    keepUnreadableSave: () => {
+      try {
+        const stamp = (options.now?.() ?? new Date()).toISOString().replace(/[:.]/g, '-');
+        return Promise.resolve(store.keepUnreadable(stamp) ? stamp : null);
+      } catch (error) {
+        return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+      }
+    },
     devCheatsEnabled: () => Promise.resolve(false),
     devBackupSave: () => Promise.reject(new Error('Dev tools are not available in the web build')),
     devReloadView: () => undefined,

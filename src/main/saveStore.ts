@@ -18,6 +18,10 @@ export interface SaveFiles {
 export interface SaveStore {
   read(): SaveFiles;
   write(text: string): void;
+  /** Copies the save files that could not be loaded to `save.unreadable-<timestamp>.json` (and
+   *  `.bak.json`), so a new game's first write cannot destroy them; the main copy's file name,
+   *  or null when there is no file. */
+  keepUnreadable(now: Date): string | null;
   /** Dev builds: copies the main save to `save.before-reset-<timestamp>.json`; its file name,
    *  or null when there is no save to copy. */
   backupBeforeReset(now: Date): string | null;
@@ -72,6 +76,19 @@ export function createSaveStore(dir: string): SaveStore {
         copyFileSync(primaryPath, isJson(readOrNull(primaryPath)) ? backupPath : corruptPath);
       }
       renameSync(tempPath, primaryPath);
+    },
+    keepUnreadable(now) {
+      const stamp = `save.unreadable-${stampName(now)}`;
+      let kept: string | null = null;
+      if (existsSync(primaryPath)) {
+        copyFileSync(primaryPath, join(dir, `${stamp}.json`));
+        kept = `${stamp}.json`;
+      }
+      if (existsSync(backupPath)) {
+        copyFileSync(backupPath, join(dir, `${stamp}.bak.json`));
+        kept ??= `${stamp}.bak.json`;
+      }
+      return kept;
     },
     backupBeforeReset(now) {
       if (!existsSync(primaryPath)) return null;

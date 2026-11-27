@@ -64,6 +64,15 @@ describe('GameLoop', () => {
     expect(loop.state.resources['oak_gem']!.eq(11)).toBe(true);
   });
 
+  it('does not freeze when the clock was set far ahead and then set back', () => {
+    const loop = new GameLoop(withFarmers(bareState()), content, constantRng(0.5), 0);
+    loop.step(365 * 24 * 3600 * 1000); // a wrong clock: one step, capped at 8 hours
+    const before = loop.state.resources['oak_gem']!;
+    loop.step(10_000); // the clock is corrected: time restarts from here
+    loop.step(20_000);
+    expect(loop.state.resources['oak_gem']!.sub(before).gt(0)).toBe(true);
+  });
+
   // Simulates a full 8 hours in 1 s steps (card levels settle on whole seconds), so it is heavy:
   // ~2 s locally, several times that on CI runners. Give it room instead of the 5 s default.
   it('clamps a huge gap to the maximum step', { timeout: 20_000 }, () => {

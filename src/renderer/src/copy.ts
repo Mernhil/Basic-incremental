@@ -26,7 +26,7 @@ export const COPY = {
   load: {
     usedBackup: "Your latest save couldn't be read, so the previous backup was loaded.",
     startedFresh:
-      "Your save couldn't be read, so a new game started. The damaged save is kept in the saves folder.",
+      "Your save couldn't be read, so a new game started. A copy of the unreadable save is kept in the saves folder (save.unreadable-…).",
     badData: "The game data is invalid, so the game can't start.",
     failed: "The game couldn't start.",
   },

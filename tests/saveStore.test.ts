@@ -45,3 +45,32 @@ describe('createSaveStore', () => {
     expect(readFileSync(join(dir, 'save.corrupt.json'), 'utf8')).toBe('{"n":2');
   });
 });
+
+describe('createSaveStore.keepUnreadable', () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'bi-keep-'));
+  });
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('copies both files aside, so the first write of a new game cannot destroy them', () => {
+    const store = createSaveStore(dir);
+    store.write('{"version":999}');
+    store.write('{"version":999,"n":2}'); // main = n2, backup = the first
+    const name = store.keepUnreadable(new Date(2026, 10, 27, 12, 0, 0));
+    expect(name).toBe('save.unreadable-2026-11-27_12-00-00.json');
+    // the new game writes twice: the main file and the backup are both replaced
+    store.write('{"version":47}');
+    store.write('{"version":47,"fresh":true}');
+    expect(readFileSync(join(dir, name!), 'utf8')).toBe('{"version":999,"n":2}');
+    expect(readFileSync(join(dir, 'save.unreadable-2026-11-27_12-00-00.bak.json'), 'utf8')).toBe(
+      '{"version":999}',
+    );
+  });
+
+  it('keeps nothing when there is no file', () => {
+    expect(createSaveStore(dir).keepUnreadable(new Date())).toBeNull();
+  });
+});
