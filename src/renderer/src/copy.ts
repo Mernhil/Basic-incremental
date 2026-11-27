@@ -86,9 +86,7 @@ export const COPY = {
   },
   /** The full-art card face (DESIGN.md §5). */
   card: {
-    hitsEvery: (seconds: string) => `hits every ${seconds}`,
     level: (level: number, cap: number) => `Level ${level}/${cap}`,
-    levelShort: (level: number, cap: number) => `Lv ${level}/${cap}`,
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */

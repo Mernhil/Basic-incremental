@@ -887,11 +887,11 @@ A view is one full screen the player opens from the table (see Shell and table).
 - **Name**: one name, `cardDisplayName` (the weapon's item name for the card's tier), on the top plate (`.bi-card__head`).
 - **Art**: the weapon picture (`item`), or a placeholder emblem when none is given.
 - **Frame**: the kit from `art/frame.ts` `cardFrame`: `kit-<tier>` for Wood to Prismatic, the batch's kit for Mythic and Heirloom, and a starter weapon's own `kit-starter-<id>` at every tier. An Heirloom with a batch backdrop shows it behind a windowed kit.
-- **Bottom banner** (`.bi-card__info`, only when a `face` is given): a line "hits every Ns", a line with the six stars, "Lv level/cap" and the tier word, and an XP bar to the next level (full at the cap). With the tier kit and no border cosmetic worn (`theme/base.css`), the tier word is hidden and the "hits every" line shows only on a big card (`--card-full`, set by `ui/pixelFit.ts`); a small card shows stars, level and the bar.
+- **Bottom banner** (`.bi-card__info`, only when a `face` is given): one line with the six star sprites, centred (the tier word is hidden under the tier kit with no border cosmetic worn), and an XP bar to the next level (full at the cap). There is no hit-speed line. The level is a **chip** (`.bi-card__lv`, `theme/base.css`, drawn in CSS in design pixels): the level big and white in the display font over a small "/cap", dark fill, gold edge, on the card's bottom-right corner inside its box; hidden on a card the player does not own and on a boss.
 - **Stars**: six sprites, the first `rank.stars` lit; in the banner when there is one, else on the top plate.
 - **Role and job**: not drawn. The job label is only in the card's accessible name; `.bi-card__job` is hidden in CSS.
 - **Element**: no icon or text, and no effect on the art while `ELEMENT_FX` is off (see Element effects).
-- `cardFaceModel.ts` `cardFaceOf` supplies the banner: hit speed (the fight tick for a fighting card, harvest interval divided by strikes for a worker), level, cap and XP progress.
+- `cardFaceModel.ts` `cardFaceOf(info)` supplies the face: level, cap and XP progress (no hit speed).
 
 ### The weapon panel (`ui/weaponPanel.ts`, `pages/weaponModel.ts`)
 
