@@ -3,6 +3,7 @@ import type { GameState, ShopEntry } from '../../../game';
 import { cardFaceProps } from '../pages/loadoutCards';
 import { lockedHeirloomState } from '../pages/summonModel';
 import { createCard, type CardProps } from './card';
+import { fitCard } from './pixelFit';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { fmt } from '../settings/numberFormat';
 import { h } from '../shell/shell';
@@ -34,12 +35,17 @@ export function shopSpriteName(card: ShopEntry['card']): string | null {
 }
 
 /** The card an arena or raid shop Heirloom shows as: its owned face, or a fresh one (no level chip) while it is not owned. */
-export function shopCardProps(content: Content, state: GameState, cardId: string): CardProps | null {
+export function shopCardProps(
+  content: Content,
+  state: GameState,
+  cardId: string,
+): CardProps | null {
   const owned = Boolean(state.cards.owned[cardId]);
   const props = cardFaceProps(content, owned ? state : lockedHeirloomState(state, cardId), cardId);
   if (!props) return null;
   if (owned) return props;
-  const { face: _face, ...bare } = props;
+  const bare = { ...props };
+  delete bare.face;
   return bare;
 }
 
@@ -66,8 +72,13 @@ export function shopCards(
     const name = shopSpriteName(e.card);
     // the Heirloom as a real card: the batch's kit and backdrop around its picture
     const props = name && sprite(name) ? shopCardProps(content, state, e.card.id) : null;
-    if (props) art.append(createCard(props).el);
-    else {
+    if (props) {
+      const fit = h('span', 'cp-fit');
+      fit.append(createCard(props).el);
+      art.append(fit);
+      // a whole scale of the card (2x: 264 CSS px of art), as every card host is fitted
+      fitCard(art, { want: 264 });
+    } else {
       art.classList.add('is-empty');
       art.append(h('span', 'sh-card__none', SHOP_COPY.emptySlot));
     }

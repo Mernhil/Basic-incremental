@@ -20,7 +20,7 @@
   display: grid;
   place-items: center;
   width: 100%;
-  height: 400px;
+  height: 520px;
   background: #1b1511;
   border: 2px solid rgba(255, 214, 110, 0.35);
 }
@@ -74,8 +74,4 @@
   height: 24px;
   border: 2px dashed currentColor;
   border-radius: 50%;
-}
-/* the Heirloom is drawn as a real card (kit and backdrop), enlarged to fill its box */
-.sh-card__art .bi-card {
-  zoom: 1.45;
 }
