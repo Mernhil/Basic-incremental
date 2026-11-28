@@ -64,6 +64,8 @@ import {
   collectModifiers,
   breakSeal,
   createInitialState,
+  createNewGame,
+  claimTutorialHandout,
   claimStarter,
   createSeededRng,
   Decimal,
@@ -224,6 +226,9 @@ export interface SimLog {
   questClaims?: Array<[number, number, number, string]>;
   /** The table update's systems (DESIGN.md §14 The sim player's choices), for the report. */
   table?: TableLog;
+  /** A new game's tutorial area (`options.newGame`): sim seconds of each card hand-out and of the
+   *  area's boss kill. */
+  tutorial?: { handouts: number[]; clearedAt: number | null };
 }
 
 /** What the sim counts of the table update's systems. */
@@ -2027,6 +2032,11 @@ export function chooseFight(
 ): FightChoice {
   const normal = (id: string | null): FightChoice => ({ id, difficulty: 'normal' });
   const modifiers = collectModifiers(state, content);
+  // A new game plays the tutorial area until its boss is down.
+  const area = content.tutorialArea;
+  if (area?.tutorial && state.tutorial.given < area.tutorial.milestones.length) {
+    return normal(area.id);
+  }
   // A challenge run (DESIGN.md §15 Ascension challenges) climbs its target first: the rule holds
   // the run back until the target floor is reached.
   const challenge = state.ascensionChallenges.active
@@ -2283,6 +2293,9 @@ export function chooseOverflow(state: GameState, content: Content): GameState {
 
 export interface SimOptions {
   hours: number;
+  /** Starts a real new game (`createNewGame`): the tutorial area first, no Ember Squire. Needs
+   *  `starter`. */
+  newGame?: boolean;
   seed?: number;
   /** Seconds of play per step (the buyer acts between steps) during the opening. */
   stepSeconds?: number;
@@ -2566,7 +2579,8 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const hits: Record<string, number | null> = Object.fromEntries(
     MILESTONES.map((m) => [m.id, null]),
   );
-  let state = createInitialState(content);
+  let state = options.newGame ? createNewGame(content) : createInitialState(content);
+  if (options.newGame) log.tutorial = { handouts: [], clearedAt: null };
   if (options.starter) {
     const picked = claimStarter(state, content, options.starter);
     if (picked.ok) state = picked.state;
@@ -2758,6 +2772,18 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     const before = whereFighting(state, content);
     const { state: next, report } = advance(state, content, dt * 1000, rng);
     state = next;
+    if (log.tutorial) {
+      for (;;) {
+        const claim = claimTutorialHandout(state, content);
+        if (!claim.ok) break;
+        state = optimizeLoadouts(claim.state, content);
+        log.tutorial.handouts.push(t + dt);
+      }
+      const area = content.tutorialArea;
+      if (area && log.tutorial.clearedAt === null && isDungeonCleared(state, area.id)) {
+        log.tutorial.clearedAt = t + dt;
+      }
+    }
     if (state.activeDungeonId) {
       const fightingTrial = state.activeDungeonId !== 'glimmer_trial' || trialClearedAt !== null;
       if (fightingTrial) {
