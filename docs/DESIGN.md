@@ -98,6 +98,10 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 
 - [To build] **Account level rework** (user, 2026-11-15: "account level should probably be less incremental at cap at like 500, just as a general direction then you fix it a bit at level 0-50 early game 50-100 mid game 100-200 early endgame 200+ endgame"). Account levels get a much flatter XP curve and a cap of about 500, in four bands: 0 to 50 early game, 50 to 100 mid game, 100 to 200 early endgame, 200 and up endgame; the reward track, skill points and the loadout cost cap's growth spread over those levels. The exact numbers are Claude's to tune. Today: there is no level cap and each level costs a fixed factor more XP than the one before.
 
+### Platforms
+
+- [To build] **The game runs on iPhone as a home-screen web app** (user, 2026-11-28: "can we start working on the phone version in parallel tonight?"; "im on ios"; "web app thewn save it on home like pokemon team builder"; "finish and realese 0.9 0.10 first then from that point start the build"). The player opens the game's page in Safari and adds it with Share > Add to Home Screen, then starts it from its icon like an app; no App Store and no Mac. The save stays on the phone, in the web build's own storage. The build starts after 0.9 and 0.10 are released. Three chat defaults, open (section 3, Project): landscape on the one 1920x1080 design zoom with touch for hover, no web address published yet, no save transfer. Today: a web build exists (overview, Web build), not made for iPhone or published anywhere.
+
 ## 3. Open questions
 
 ### Pacing
@@ -138,13 +142,16 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 
 - The Elie asset pack's licence allows use inside a finished game but not redistribution, and the repository is public with the cut sprites in it; the Coin_Gems pack and the achievement badges sheet have no licence file. Keep them, make the repository private, or replace them?
 - Are all the beta systems (presets, bonds, expeditions, Ascension challenges, autobuyers) still wanted after the 2026-11-08 changes? All five are in the game.
-- The web build shows the desktop layout and keeps its own save in that browser only. Do you want a phone layout, or a way to carry a save between the desktop game and a phone?
+- [Default] **iPhone web app: first version** (Claude, 2026-11-28, to confirm; section 2, Platforms; details: section 4, Desktop app, web build and dev tools): landscape on the existing zoom with touch for hover, a phone layout of its own decided later; the public web address is yours to pick; no save transfer between PC and phone in the first version.
 
 ## 4. Choices a chat made that the user never confirmed
 
 ### Desktop app, web build and dev tools
 
 - [Default · in game] **Web build layout and save**: a plain browser shows the desktop layout unchanged, keeps its own save in browser storage under chat-chosen key names, and has no updater and no dev cheats (Claude, 2026-11-17). Overview: Web build.
+- [Default] **iPhone: landscape on the desktop zoom**: the first iPhone version is played in landscape on the one 1920x1080 design size scaled to the screen (rule 9.6), with touch doing what hover does on the PC; a phone layout of its own is a separate, later decision (Claude, 2026-11-28).
+- [Default] **iPhone: no address published yet**: the public web address the page lives at (GitHub Pages or another host) is the user's call, and nothing is published before their OK (Claude, 2026-11-28).
+- [Default] **iPhone: no save transfer at first**: carrying a save between the PC game and the phone (an export and import code) is not in the first version; each keeps its own save (Claude, 2026-11-28).
 - [Default · in game] **Dev panel extras**: speed steps beside the user's 5x, the backup file name written before a reset, and a second button "Reset, keep cosmetics" (Claude, 2026-11-15). Overview: Sim and dev tools.
 - [Default · in game] **Local dev build names**: the dev build's save folder name, its "Dev" window title and the names of its two start files (Claude, 2026-11-15). Overview: Desktop app (Electron).
 - [Default · in game] **Late pacing targets**: the targets for the first Hard clear, Dungeons 4 to 6 and the first Nightmare clear, which "mostly exhausted" also asks for (Claude, 2026-11-10). Overview: Sim and dev tools.
