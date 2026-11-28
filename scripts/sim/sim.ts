@@ -2663,13 +2663,18 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     const acting = !idle || sinceCheckin >= IDLE_CHECKIN_SECONDS;
     if (acting) sinceCheckin = 0;
     // The daily scroll reward, claimed at the first check-in of each simulated day (DESIGN.md §3).
-    if (acting) {
+    // A new game's player is still learning in the tutorial area: it claims no gifts and pulls
+    // nothing, so the team is the starter and the hand-outs.
+    const learning =
+      log.tutorial !== undefined &&
+      state.tutorial.given < (content.tutorialArea?.tutorial?.milestones.length ?? 0);
+    if (acting && !learning) {
       const daily = claimDaily(state, content, `day-${Math.floor(t / DAY_SECONDS)}`);
       if (daily.ok) state = daily.state;
     }
     // Quests are claimed at every check-in too (BI_SIM_NO_QUESTS=1 plays without them, the
     // baseline of a tuning run).
-    if (acting && !process.env['BI_SIM_NO_QUESTS']) {
+    if (acting && !learning && !process.env['BI_SIM_NO_QUESTS']) {
       const claim = claimAllQuests(state, content);
       if (claim.ok) {
         state = claim.state;
@@ -2680,8 +2685,21 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       }
     }
     if (acting) {
+      const held = learning
+        ? { summon: state.resources['summon_scroll'], glamour: state.resources['glamour_scroll'] }
+        : null;
+      if (held) {
+        state.resources['summon_scroll'] = new Decimal(0);
+        state.resources['glamour_scroll'] = new Decimal(0);
+      }
       const buys = greedyBuy(state, content, rng);
       state = buys.state;
+      if (held) {
+        state.resources['summon_scroll'] = state.resources['summon_scroll']!.add(held.summon ?? 0);
+        state.resources['glamour_scroll'] = state.resources['glamour_scroll']!.add(
+          held.glamour ?? 0,
+        );
+      }
       countSummons(buys);
       // Expeditions (DESIGN.md §15): the idle cards travel; an hour at a time while the player
       // is at the game, longer when it only checks in (8 h before the night).

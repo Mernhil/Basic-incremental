@@ -28,6 +28,9 @@ console.log(`starter ${starter}, seed ${seed}, ${hours} h`);
 console.log(
   `hand-outs at ${tut.handouts.map(min).join(', ')}; area cleared at ${min(tut.clearedAt)}`,
 );
-console.log(
-  `Mossy Cellar cleared: new game ${min(fresh.hits['clear_d1'])}, as before ${min(before.hits['clear_d1'])}`,
-);
+const row = (name: string, id: string): string =>
+  `${name} cleared: new game ${min(fresh.hits[id])} (${min(
+    fresh.hits[id] == null || tut.clearedAt == null ? null : fresh.hits[id]! - tut.clearedAt,
+  )} after the area), as before ${min(before.hits[id])}`;
+console.log(row('Mossy Cellar', 'clear_d1'));
+console.log(row('Ember Crypt', 'clear_d2'));

@@ -821,6 +821,12 @@ export const dungeonSchema = z.strictObject({
    * gentler one.
    */
   floorGrowth: z.number().min(1).optional(),
+  /** Each wave floor's share of the boss's HP, floor 1 first, instead of the growth curve (the
+   *  tutorial area, whose floors follow what the team can do). One per floor below the last. */
+  waveShares: z.array(z.number().gt(0).max(1)).optional(),
+  /** Multiplies the card XP per kill and per second fought here (the tutorial area levels the
+   *  team faster); read before the `xp.card` modifiers. */
+  xpFactor: z.number().gt(0).optional(),
   /**
    * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
    * a wave's HP is shared among its enemies, so each type has its own HP and purse.

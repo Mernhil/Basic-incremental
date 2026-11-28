@@ -5,7 +5,7 @@
     "tier": 1,
     "unlockedBy": null,
     "tutorial": {
-      "milestones": [4, 7, 10],
+      "milestones": [10, 20, 30],
       "roleOrder": ["dps", "support", "healer", "tank"],
       "starterRoles": {
         "sword": "dps",
@@ -25,7 +25,7 @@
         "healer": ["hedge_acolyte"]
       }
     },
-    "floors": 10,
+    "floors": 30,
     "floorGrowth": 1.03,
     "enemies": [
       {
@@ -47,17 +47,28 @@
         "sprite": "thieving_crow"
       }
     ],
-    "miniBosses": [],
+    "miniBosses": [
+      {
+        "id": "crow_king",
+        "name": "Crow King",
+        "sprite": "thieving_crow"
+      },
+      {
+        "id": "giant_sprout",
+        "name": "Giant Sprout",
+        "sprite": "sprout_slime"
+      }
+    ],
     "background": "thistledown_farm",
     "boss": {
       "id": "old_scarecrow",
       "name": "Old Scarecrow",
       "sprite": "old_scarecrow",
       "element": "earth",
-      "hp": "12000",
+      "hp": "4000",
       "hpBars": 3,
       "attack": {
-        "damage": "10",
+        "damage": "3",
         "intervalSeconds": 3
       }
     },
@@ -70,15 +81,15 @@
       "wages": [
         {
           "resource": "money",
-          "perSecond": "10"
+          "perSecond": "30"
         }
       ],
       "firstClear": [],
       "currencies": [
         {
           "resource": "money",
-          "min": 60,
-          "max": 90
+          "min": 300,
+          "max": 450
         }
       ],
       "extraMaterials": [],
@@ -87,7 +98,14 @@
         "chance": 0,
         "amount": 1
       }
-    }
+    },
+    "xpFactor": 8,
+    "waveShares": [
+      0.0113636, 0.0136364, 0.0159091, 0.0193182, 0.0227273, 0.0272727, 0.0318182, 0.0363636,
+      0.0397727, 0.0431818, 0.121591, 0.134091, 0.147727, 0.1625, 0.179545, 0.196591, 0.215909,
+      0.238636, 0.2625, 0.289773, 0.340909, 0.363636, 0.388636, 0.413636, 0.438636, 0.461364,
+      0.486364, 0.497727, 0.511364
+    ]
   },
   {
     "id": "mossy_cellar",
@@ -128,7 +146,7 @@
       "name": "Root Warden",
       "art": "root_warden",
       "element": "earth",
-      "hp": "5030",
+      "hp": "18000",
       "hpBars": 5,
       "attack": {
         "damage": "20",

@@ -1195,6 +1195,11 @@ function checkTutorial(
     if (m > d.floors) issues.push(`${where} › milestones › [${i}]: beyond the last floor`);
     if (i > 0 && m <= t.milestones[i - 1]!) issues.push(`${where} › milestones: must go up`);
   });
+  if (d.waveShares && d.waveShares.length !== d.floors - 1) {
+    issues.push(
+      `${where.replace(/ › tutorial$/, '')} › waveShares: one share per floor below the last (${d.floors - 1})`,
+    );
+  }
   if (t.milestones.at(-1) !== d.floors) {
     issues.push(`${where} › milestones: the last card comes with the boss (floor ${d.floors})`);
   }
