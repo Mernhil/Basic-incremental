@@ -578,7 +578,7 @@ describe('the three loops (DESIGN.md §3)', () => {
   it('refuses a dungeon that leaves out Money or drops a gem', () => {
     const bad = raw();
     type Drops = { currencies: { resource: string }[]; wages: { resource: string }[] };
-    const drops = (bad.dungeons as { drops: Drops }[])[1]!.drops;
+    const drops = (bad.dungeons as { drops: Drops }[])[2]!.drops;
     drops.currencies = drops.currencies.filter((x) => x.resource !== 'money');
     drops.currencies.push({ resource: 'oak_gem', min: 1, max: 2 } as never);
     const issues = issuesFor(bad);

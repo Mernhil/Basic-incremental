@@ -1,5 +1,6 @@
 {
   "startCards": ["ember_squire", "apprentice_feller", "cave_digger"],
+  "droppedStartCards": ["ember_squire"],
   "cost": {
     "wood": 2,
     "bronze": 3,

@@ -39,7 +39,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 49;
+export const CURRENT_SAVE_VERSION = 50;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -195,6 +195,8 @@ export const serializedStateSchema = z.object({
   }),
   /** v42: the starter weapon's pick (DESIGN.md §2 Starter weapon). */
   starter: z.object({ done: z.boolean(), skippable: z.boolean() }),
+  /** v50: the tutorial area's hand-outs given (DESIGN.md section 2). */
+  tutorial: z.object({ given: z.number().int().min(0) }),
   /** v44: raid tries, best scores and the ladder rewards paid (DESIGN.md §2 Raid bosses). */
   raids: z
     .object({
@@ -393,6 +395,7 @@ export function serializeState(state: GameState): SerializedState {
     },
     summon: { ...state.summon },
     starter: { ...state.starter },
+    tutorial: { ...state.tutorial },
     raids: cloneRaids(state.raids),
     arena: cloneArena(state.arena),
     presets: clonePresets(state.presets),
@@ -470,6 +473,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
   );
+  state.tutorial = { given: saved.tutorial.given };
   // The forge is rebuilt by deserializeForge once the cards are known; the camp by deserializeCamp.
   state.production = { ...base.production };
   state.combat = {

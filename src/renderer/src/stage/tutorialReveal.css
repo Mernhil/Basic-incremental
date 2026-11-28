@@ -1,0 +1,20 @@
+/* The tutorial area's card hand-out (stage/tutorialReveal.ts): one card on a dim table. */
+.tr__dialog {
+  gap: 10px;
+}
+.tr__role {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--bi-frame-ink);
+}
+.tr__line {
+  margin: 0;
+  max-width: 46ch;
+  text-align: center;
+  color: var(--bi-frame-ink-muted);
+}
+.tr__card {
+  --card-k: 1;
+  margin: 34px 0 26px;
+}

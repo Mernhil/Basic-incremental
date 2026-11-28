@@ -494,11 +494,21 @@ describe('balance sim: run', () => {
     // cards moved seed 2 from 710 s to 1360 s of the ten seeds' 710 s median), so they are picked
     // where the first clear sits at the median of ten.
     const ratios = [4, 5, 6].map((seed) => {
-      const result = runSim(shipped, { hours: 1, seed, stepSeconds: 10 });
+      // a real new game: the tutorial area first (the player pulls nothing in it), so the first
+      // summon comes when it ends and the first clear is counted from there
+      const result = runSim(shipped, {
+        hours: 1,
+        seed,
+        stepSeconds: 10,
+        newGame: true,
+        starter: 'geodefall',
+      });
+      const start = result.log.tutorial!.clearedAt!;
+      expect(start).not.toBeNull();
       expect(result.hits['first_summon']).not.toBeNull();
-      expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+      expect(result.hits['first_summon']! - start).toBeLessThanOrEqual(60);
       expect(result.hits['clear_d1']).not.toBeNull();
-      return targetRatio(clear, result.hits['clear_d1']! / 3600);
+      return targetRatio(clear, (result.hits['clear_d1']! - start) / 3600);
     });
     expect([...ratios].sort((x, y) => x - y)[1]!).toBeLessThan(125);
     // Three one-hour runs of the shipped game: with the quests' scrolls the sim pulls and upgrades
@@ -639,7 +649,13 @@ describe('balance sim: floors', () => {
   });
 
   it('reaches the Ember Crypt through the ten floors of the Mossy Cellar', () => {
-    const result = runSim(loadContent(), { hours: 0.5, seed: 2, stepSeconds: 10 });
+    const result = runSim(loadContent(), {
+      hours: 0.8,
+      seed: 2,
+      stepSeconds: 10,
+      newGame: true,
+      starter: 'geodefall',
+    });
     expect(result.hits['clear_d1']).not.toBeNull();
     const cellar = floorPosition(result.state, loadContent().dungeonById.get('mossy_cellar')!);
     expect(cellar.best).toBe(10);

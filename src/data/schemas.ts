@@ -637,6 +637,9 @@ const weaponFactorSchema = z.strictObject({
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
   startCards: z.array(id),
+  /** Start cards a real new game does not get (the tutorial area hands out the roles instead);
+   *  the baseline state and old saves keep them. */
+  droppedStartCards: z.array(id).default([]),
   /** Loadout cost of a card, by its tier (11.4). */
   cost: perLadderTier(count),
   /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of a tier's. */
@@ -768,6 +771,28 @@ export const BOSS_ARTS = [
   'crystal_sentinel',
 ] as const;
 
+/** The four roles a team of four needs; the tutorial area teaches the three the starter does not cover. */
+export const TUTORIAL_ROLES = ['tank', 'dps', 'support', 'healer'] as const;
+export type TutorialRole = (typeof TUTORIAL_ROLES)[number];
+
+/**
+ * A tutorial area (DESIGN.md section 2, A tutorial area before Mossy Cellar): a card is handed out
+ * when the area's best floor reaches each milestone, one role per milestone. The roles are the
+ * ones of `roleOrder` that the starter's weapon does not cover (`starterRoles`, by weapon type);
+ * a role's card is the first of its `roleCards` the player does not own, a Wood card.
+ */
+export const tutorialSchema = z.strictObject({
+  /** Best floors at which a card is handed out, ascending; as many as roles to hand out (3). */
+  milestones: z.array(z.number().int().min(1)).min(1),
+  /** The order roles are handed out in (the starter's own role is skipped). */
+  roleOrder: z.array(z.enum(TUTORIAL_ROLES)).min(1),
+  /** The role a starter's weapon type already covers. */
+  starterRoles: z.record(z.string(), z.enum(TUTORIAL_ROLES)),
+  /** Wood fighting cards that teach each role, best choice first. */
+  roleCards: z.record(z.string(), z.array(id).min(1)),
+});
+export type TutorialConfig = z.output<typeof tutorialSchema>;
+
 export const dungeonSchema = z.strictObject({
   id,
   name,
@@ -780,6 +805,9 @@ export const dungeonSchema = z.strictObject({
   enabled: z.boolean().default(true),
   /** Dungeon whose clear unlocks this one; null = open from the start. */
   unlockedBy: id.nullable(),
+  /** Set on the tutorial area only: it hands out the role cards, has Normal only, no farming post
+   *  and no Core or rare drop (its chances are 0). */
+  tutorial: tutorialSchema.optional(),
   /**
    * How many floors the dungeon has (DESIGN.md §6 Dungeon floors). The last floor holds the boss
    * below; the others hold waves of the `enemies`, with a mini-boss on every 10th floor
@@ -793,6 +821,12 @@ export const dungeonSchema = z.strictObject({
    * gentler one.
    */
   floorGrowth: z.number().min(1).optional(),
+  /** Each wave floor's share of the boss's HP, floor 1 first, instead of the growth curve (the
+   *  tutorial area, whose floors follow what the team can do). One per floor below the last. */
+  waveShares: z.array(z.number().gt(0).max(1)).optional(),
+  /** Multiplies the card XP per kill and per second fought here (the tutorial area levels the
+   *  team faster); read before the `xp.card` modifiers. */
+  xpFactor: z.number().gt(0).optional(),
   /**
    * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
    * a wave's HP is shared among its enemies, so each type has its own HP and purse.
@@ -846,8 +880,8 @@ export const dungeonSchema = z.strictObject({
     /** Rare item (card, cosmetic, ...) dropped on boss kills. */
     rare: z.strictObject({
       itemId: id,
-      /** Chance per kill, 0..1 (0.005 = 0.5%). */
-      chance: z.number().gt(0).max(1),
+      /** Chance per kill, 0..1 (0.005 = 0.5%); 0 = the dungeon drops none (the tutorial area). */
+      chance: z.number().min(0).max(1),
       /** Guaranteed after this many consecutive kills without the item. */
       pityThreshold: z.number().int().min(1),
     }),
@@ -888,7 +922,8 @@ export const dungeonSchema = z.strictObject({
     /** Tier-up material (Core) dropped with `chance` per kill, no pity. */
     material: z.strictObject({
       resource: id,
-      chance: z.number().gt(0).max(1),
+      /** 0 = the dungeon drops none (the tutorial area). */
+      chance: z.number().min(0).max(1),
       amount: z.number().int().min(1),
     }),
   }),

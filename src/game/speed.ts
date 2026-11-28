@@ -1,4 +1,4 @@
-import type { GameState } from './state';
+import { TUTORIAL_AREA_ID, type GameState } from './state';
 
 /** The duel speeds the button cycles through (DESIGN.md §2 Fights, Speed button). */
 export const DUEL_SPEEDS = [1, 2, 4] as const;
@@ -10,7 +10,7 @@ export type SpeedLock = 'clear' | 'ascend';
 /** Whether the player has earned `speed`. x1 is always open. */
 export function isSpeedUnlocked(state: GameState, speed: number): boolean {
   if (speed <= 1) return true;
-  if (speed === 2) return state.clearedDungeons.length > 0;
+  if (speed === 2) return state.clearedDungeons.some((id) => id !== TUTORIAL_AREA_ID);
   if (speed === 4) return state.prestigeCount > 0;
   return false;
 }

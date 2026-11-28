@@ -363,7 +363,7 @@ describe('the three new dungeons', () => {
       ['Faceless Void Reaper', 'Shade Mote', 'Hooded Rogue Assassin', 'Rift Maw'],
     ]);
     expect(later.map((d) => d.background)).toEqual(later.map((d) => d.id));
-    expect(shipped.allDungeons).toHaveLength(6);
+    expect(shipped.allDungeons).toHaveLength(7);
     expect(shipped.allDungeons.every((d) => d.enabled)).toBe(true);
     for (const d of later) {
       expect(d.enemies).toHaveLength(3);

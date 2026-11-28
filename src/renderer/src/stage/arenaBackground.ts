@@ -8,6 +8,7 @@
  * New art drops in as data plus one entry here: name the id in the dungeon's `background`, add the
  * picture under `stage/bg/` and `my_id: { url, bright }` below. The arena layout never changes.
  */
+import farm from './bg/stage-thistledown_farm-640x360.png';
 import cellar from './bg/stage-mossy_cellar-640x360.png';
 import crypt from './bg/stage-ember_crypt-640x360.png';
 import vault from './bg/stage-frostspire_vault-640x360.png';
@@ -36,6 +37,7 @@ export const TRIAL_BACKGROUND_ID = 'void_hollow';
  * (id `thunderpeak_aerie`) draws the Stormwrack Cove picture.
  */
 export const ARENA_BACKGROUNDS: Readonly<Record<string, ArenaBackground>> = {
+  thistledown_farm: { url: farm, bright: false },
   mossy_cellar: { url: cellar, bright: false },
   ember_crypt: { url: crypt, bright: false },
   frostspire_vault: { url: vault, bright: true },

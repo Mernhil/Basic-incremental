@@ -41,6 +41,7 @@ export * from './portals';
 export * from './tierRewards';
 export * from './heirlooms';
 export * from './starters';
+export * from './tutorial';
 export * from './prestige';
 export * from './challenges';
 export * from './wardrobe';

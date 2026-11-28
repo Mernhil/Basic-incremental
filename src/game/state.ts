@@ -69,6 +69,8 @@ export interface GameState {
   arena: ArenaState;
   /** The starter weapon's pick. Kept through prestige. */
   starter: StarterState;
+  /** The tutorial area's hand-outs given so far (DESIGN.md section 2). Kept through prestige. */
+  tutorial: TutorialState;
   /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
   presets: PresetState;
   /** Bond ids (`bonds.json`) triggered at least once (DESIGN.md §15 Bonds), in discovery order.
@@ -633,6 +635,14 @@ export function initialCamp(content: Content): CampState {
   return camp;
 }
 
+/** The tutorial area's id (`dungeons.json`): clearing it opens Mossy Cellar but not the x2 speed. */
+export const TUTORIAL_AREA_ID = 'thistledown_farm';
+
+/**
+ * The baseline state: what a save is rebuilt on and what rule tests start from. It owns the start
+ * cards and has the tutorial area done (`tutorial.given` full: Mossy Cellar open, no cards to hand out), like a save that
+ * began before the area existed. A real new game is `createNewGame`.
+ */
 export function createInitialState(content: Content): GameState {
   const resources: Record<string, Decimal> = {};
   for (const resource of content.resources)
@@ -663,6 +673,7 @@ export function createInitialState(content: Content): GameState {
     raids: initialRaids(),
     arena: initialArena(),
     starter: initialStarter(),
+    tutorial: { given: content.tutorialArea?.tutorial?.milestones.length ?? 0 },
     presets: initialPresets(),
     discoveredBonds: [],
     expeditions: initialExpeditions(),
@@ -712,6 +723,7 @@ export function cloneState(state: GameState): GameState {
     raids: cloneRaids(state.raids),
     arena: cloneArena(state.arena),
     starter: { ...state.starter },
+    tutorial: { ...state.tutorial },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
@@ -838,6 +850,12 @@ export interface StarterState {
   skippable: boolean;
 }
 
+/** The tutorial area's hand-outs (DESIGN.md section 2). Save format 50. */
+export interface TutorialState {
+  /** Cards handed out so far, in milestone order; all of them (or an old save) = the area is done. */
+  given: number;
+}
+
 export const initialStarter = (): StarterState => ({ done: false, skippable: false });
 
 /** The account (DESIGN.md §10a, 16 E7). Kept through prestige. */
@@ -916,6 +934,26 @@ export function initialCards(content: Content): CardState {
     if (card.job === 'fighting') cards.loadouts.fighting.slots[0] = id;
   }
   return cards;
+}
+
+/**
+ * A real new game (DESIGN.md section 2, A tutorial area before Mossy Cellar): it opens in the
+ * tutorial area, with no Ember Squire (`cardRules.json` `droppedStartCards`), no fighter until the
+ * starter pick, Mossy Cellar locked behind the area and every hand-out still to come.
+ */
+export function createNewGame(content: Content): GameState {
+  const state = createInitialState(content);
+  const area = content.tutorialArea;
+  if (!area) return state;
+  for (const id of content.cardRules.droppedStartCards) {
+    delete state.cards.owned[id];
+    state.cards.loadouts.fighting.slots = state.cards.loadouts.fighting.slots.map((s) =>
+      s === id ? null : s,
+    );
+  }
+  state.activeDungeonId = area.id;
+  state.tutorial = { given: 0 };
+  return state;
 }
 
 export function cloneCards(c: CardState): CardState {

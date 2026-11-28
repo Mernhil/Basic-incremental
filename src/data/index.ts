@@ -4,6 +4,8 @@ import {
   JOBS,
   RANK_TIERS,
   RARITIES,
+  TUTORIAL_ROLES,
+  WEAPON_KINDS,
   cardStyle,
   contentSchemas,
 } from './schemas';
@@ -127,6 +129,8 @@ export interface Content {
   /** Every dungeon, including those waiting for their theme (`enabled: false`, placeholder
    *  names and drops; DESIGN.md §6 Three new dungeons). */
   allDungeons: Dungeon[];
+  /** The tutorial area (not in `dungeons`), or null. */
+  tutorialArea: Dungeon | null;
   /** Special dungeons (strength tests). Their ids share the dungeon id space. */
   trials: Trial[];
   /** Raid bosses and their ladder (DESIGN.md §2 Raid bosses). */
@@ -428,7 +432,10 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     production,
     cards,
     cardRules,
-    dungeons: openDungeons,
+    // The tutorial area is a dungeon of its own kind: the real dungeons' rules (Ascension gain,
+    // farming posts, achievements, starters) never see it; the map lists it first.
+    dungeons: openDungeons.filter((d) => !d.tutorial),
+    tutorialArea: openDungeons.find((d) => d.tutorial) ?? null,
     allDungeons: dungeons,
     trials,
     raids,
@@ -587,6 +594,9 @@ function checkTableUpdate(
   const resourceIds = new Set(c.resources.map((r) => r.id));
   const cardIds = new Set(c.cards.map((x) => x.id));
   const dungeonIds = new Set(c.dungeons.map((d) => d.id));
+  c.dungeons.forEach((d, i) => {
+    if (d.tutorial) checkTutorial(c, d, `dungeons.json › [${i}] › tutorial`, issues);
+  });
   const unique = (file: string, ids: string[]): void => {
     const seen = new Set<string>();
     ids.forEach((x, i) => {
@@ -1165,6 +1175,60 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
   });
+}
+
+/** The tutorial area's hand-outs: milestones inside the area, one fewer than the roles, and role cards that are real Wood fighting cards. */
+function checkTutorial(
+  c: Pick<Content, 'cards' | 'dungeons'>,
+  d: Dungeon,
+  where: string,
+  issues: string[],
+): void {
+  const t = d.tutorial!;
+  const cards = new Map(c.cards.map((x) => [x.id, x]));
+  if (t.milestones.length !== TUTORIAL_ROLES.length - 1) {
+    issues.push(
+      `${where} › milestones: one card per role the starter does not cover (${TUTORIAL_ROLES.length - 1})`,
+    );
+  }
+  t.milestones.forEach((m, i) => {
+    if (m > d.floors) issues.push(`${where} › milestones › [${i}]: beyond the last floor`);
+    if (i > 0 && m <= t.milestones[i - 1]!) issues.push(`${where} › milestones: must go up`);
+  });
+  if (d.waveShares && d.waveShares.length !== d.floors - 1) {
+    issues.push(
+      `${where.replace(/ › tutorial$/, '')} › waveShares: one share per floor below the last (${d.floors - 1})`,
+    );
+  }
+  if (t.milestones.at(-1) !== d.floors) {
+    issues.push(`${where} › milestones: the last card comes with the boss (floor ${d.floors})`);
+  }
+  if ([...t.roleOrder].sort().join() !== [...TUTORIAL_ROLES].sort().join()) {
+    issues.push(`${where} › roleOrder: must list each role once`);
+  }
+  for (const role of TUTORIAL_ROLES) {
+    const list = t.roleCards[role];
+    if (!list) {
+      issues.push(`${where} › roleCards › ${role}: missing`);
+      continue;
+    }
+    list.forEach((id, j) => {
+      const card = cards.get(id);
+      if (!card)
+        return issues.push(`${where} › roleCards › ${role} › [${j}]: unknown card "${id}"`);
+      if (card.tier !== 'wood' || card.job !== 'fighting') {
+        issues.push(`${where} › roleCards › ${role} › [${j}]: "${id}" is not a Wood fighting card`);
+      }
+    });
+  }
+  for (const [kind, role] of Object.entries(t.starterRoles)) {
+    if (!WEAPON_KINDS.includes(kind as (typeof WEAPON_KINDS)[number])) {
+      issues.push(`${where} › starterRoles: unknown weapon type "${kind}" (${role})`);
+    }
+  }
+  for (const kind of WEAPON_KINDS) {
+    if (!t.starterRoles[kind]) issues.push(`${where} › starterRoles › ${kind}: missing`);
+  }
 }
 
 /** Every item type is listed once and matches its job; every card carries a listed type of its own job. */

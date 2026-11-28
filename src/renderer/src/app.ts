@@ -2,7 +2,7 @@ import { ContentValidationError, loadContent, type Content } from '../../data';
 import {
   Decimal,
   GameLoop,
-  createInitialState,
+  createNewGame,
   createSaveText,
   defaultRng,
   exportSaveString,
@@ -56,6 +56,7 @@ import { createRewardTrack } from './shell/rewardTrack';
 import { tipTable } from './shell/tooltip';
 import { unlockToast } from './pages/achievementsModel';
 import { toast } from './stage/toast';
+import { showTutorialHandout } from './stage/tutorialReveal';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
 import {
@@ -116,7 +117,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     return;
   }
   const startedAt = Date.now();
-  let state = best.save?.state ?? createInitialState(content);
+  let state = best.save?.state ?? createNewGame(content);
   let summary: OfflineSummary | null = null;
   if (best.save) {
     const offline = simulateOffline(state, content, best.save.savedAt, startedAt, defaultRng);
@@ -467,6 +468,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   window.setInterval(() => {
     step();
     rendered();
+    // the tutorial area hands out a card at each milestone floor (DESIGN.md section 2)
+    if (unlockTicks % 5 === 0 && !starterPickDue(loop.state, content)) {
+      showTutorialHandout(content, { state: () => loop.state, apply: applyAndSave }, () =>
+        playSound('click'),
+      );
+    }
     // a dungeon cleared on Nightmare or reached in the endless opens one more starter weapon
     if (++unlockTicks % 10 === 0 && starterUnlockDue(loop.state, content)) {
       showStarterPick(content, { state: () => loop.state, apply: applyAndSave }, () =>

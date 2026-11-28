@@ -873,7 +873,7 @@ export function fightingXpPerKill(
   modifiers: readonly Modifier[] = [],
 ): Decimal {
   const { perKill, tierGrowth } = content.cardRules.xp;
-  const base = perKill.mul(tierGrowth.pow(dungeon.tier - 1));
+  const base = perKill.mul(tierGrowth.pow(dungeon.tier - 1)).mul(dungeon.xpFactor ?? 1);
   const ctx = { job: 'fighting' as const, dungeon: dungeon.id };
   return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
 }
@@ -890,7 +890,9 @@ export function fightingXpPerSecond(
 ): Decimal {
   const { perSecond, tierGrowth } = content.cardRules.xp;
   const tier = 'tier' in place ? place.tier : 1;
-  const base = perSecond.mul(tierGrowth.pow(tier - 1));
+  const base = perSecond
+    .mul(tierGrowth.pow(tier - 1))
+    .mul('xpFactor' in place ? (place.xpFactor ?? 1) : 1);
   const ctx = { job: 'fighting' as const, dungeon: place.id };
   return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
 }

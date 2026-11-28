@@ -5,7 +5,9 @@ import {
   initialArena,
   advance,
   ascend,
+  claimStarter,
   createInitialState,
+  createNewGame,
   createSaveText,
   CURRENT_SAVE_VERSION,
   Decimal,
@@ -118,7 +120,10 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
   });
 
   it('a brand-new game never opens on a knocked-out fight', () => {
-    let state = createInitialState(real);
+    // a real new game: the tutorial area, the sealed starter alone
+    const picked = claimStarter(createNewGame(real), real, 'geodefall');
+    if (!picked.ok) throw new Error(picked.reason);
+    let state = picked.state;
     for (let s = 0; s < 60; s++) {
       state = advance(state, real, 1000, () => 0.5).state;
       expect(state.combat.cardsOut).toEqual([]);
@@ -224,6 +229,8 @@ describe('v26 -> v27 (the table update)', () => {
       delete p['autoChallenge'];
     }
     // format 38 added the skill web's levels to the account
+    // format 50 added the tutorial area's hand-outs
+    delete again['tutorial'];
     delete (again['account'] as Record<string, unknown>)['web'];
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];

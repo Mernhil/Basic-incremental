@@ -128,6 +128,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v48 -> v49: the arena and the raid shops (DESIGN.md Arena and raids): no season, no coins,
    *  nothing bought. */
   48: v48ToV49,
+  /** v49 -> v50: the tutorial area Thistledown Farm before Mossy Cellar (DESIGN.md section 2): a save
+   *  with a beaten Mossy Cellar floor counts the area as done and gets no cards; one without starts in it. */
+  49: v49ToV50,
 };
 
 /** v47 -> v48 (DESIGN.md §2 A team farms a finished dungeon): every save starts with no posts. */
@@ -388,6 +391,26 @@ const V46_REMOVED_ITEMS: readonly (readonly [string, number, number])[] = [
   ['constellation_crystals', 5, 1.8],
   ['wide_skies', 8, 2],
 ];
+
+/** Hand-outs a finished tutorial area has given (one per milestone; `thistledown_farm` in dungeons.json). */
+const TUTORIAL_HANDOUTS = 3;
+
+/** v49 -> v50 (DESIGN.md section 2, A tutorial area before Mossy Cellar). */
+function v49ToV50(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const floors = isRecord(combat['floors']) ? combat['floors'] : {};
+  const mossy = isRecord(floors['mossy_cellar']) ? floors['mossy_cellar'] : {};
+  const tiers = isRecord(mossy['tiers']) ? mossy['tiers'] : {};
+  const beaten = Object.values(tiers).some((t) => isRecord(t) && Number(t['best']) > 0);
+  const cleared = Array.isArray(state['clearedDungeons'])
+    ? (state['clearedDungeons'] as unknown[])
+    : [];
+  if (beaten || cleared.includes('mossy_cellar')) {
+    return { ...state, tutorial: { given: TUTORIAL_HANDOUTS } };
+  }
+  // Nothing beaten yet: the save starts in the area (Mossy Cellar is locked behind it).
+  return { ...state, tutorial: { given: 0 }, activeDungeonId: 'thistledown_farm' };
+}
 
 /** v48 -> v49 (DESIGN.md Arena and raids): an empty arena record; the first season starts when the
  *  game next looks at the clock. */

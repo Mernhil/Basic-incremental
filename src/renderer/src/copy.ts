@@ -1185,6 +1185,27 @@ export const COPY = {
     unsealed: 'Unsealed',
     unsealedNote: 'The whole weapon',
   },
+  /** The tutorial area's card hand-outs (DESIGN.md section 2, A tutorial area before Mossy Cellar). */
+  tutorial: {
+    title: (area: string) => `A new teammate joins you at ${area}`,
+    lead: (card: string, role: string) => `${card} joins your team as your ${role}.`,
+    ok: 'Got it',
+    /** The role and one line on what it does. */
+    roles: {
+      tank: 'Tank',
+      dps: 'Damage dealer',
+      support: 'Support',
+      healer: 'Healer',
+    } as const,
+    roleLines: {
+      tank: 'A tank stands in front: enemies hit it first, so the rest of the team lives longer.',
+      dps: 'A damage dealer hits hard and often. Most of your team damage comes from these.',
+      support:
+        'A support fights fast and fills its big-attack gauge sooner, so its signature comes more often.',
+      healer: 'A healer heals every standing card with its big attack instead of striking.',
+    } as const,
+    team: 'Your team is complete. Next stop: Mossy Cellar.',
+  },
   welcome: {
     title: 'Welcome back',
     collect: 'Collect',

@@ -203,6 +203,8 @@ export function isDifficultyUnlocked(
 ): boolean {
   const index = DIFFICULTIES.indexOf(difficulty);
   if (index <= 0) return index === 0;
+  // The tutorial area has Normal only (DESIGN.md section 2).
+  if (dungeon.tutorial) return false;
   const before = DIFFICULTIES[index - 1]!;
   return floorPosition(state, dungeon, before).best >= floorCount(dungeon, before);
 }
@@ -367,8 +369,9 @@ export function floorSpec(
   const seed = seedOf(dungeon.id) + DIFFICULTIES.indexOf(difficulty) * 7919;
   if (kind === 'miniboss') {
     const type = miniBossAt(content, dungeon, floor)!;
-    const share = scale * config.miniBossHpShare;
-    const hp = part(bossHp, share, config.miniBossHpShare);
+    const own = dungeon.waveShares?.[floor - 1];
+    const share = own ?? scale * config.miniBossHpShare;
+    const hp = part(bossHp, share, own ?? config.miniBossHpShare);
     return {
       ...base,
       kind,
@@ -394,14 +397,16 @@ export function floorSpec(
     (_, i) => dungeon.enemies[mix(seed + i + 1, floor) % dungeon.enemies.length]!,
   );
   const weight = types.reduce((sum, t) => sum + t.hpWeight, 0);
-  const waveShare = scale * config.waveHpShare;
+  // a dungeon may set each wave floor's share of its boss's HP itself (the tutorial area)
+  const waveHp = dungeon.waveShares?.[floor - 1] ?? config.waveHpShare;
+  const waveShare = dungeon.waveShares?.[floor - 1] === undefined ? scale * waveHp : waveHp;
   const enemies = types.map((type): FloorEnemy => {
     const share = (waveShare * type.hpWeight) / weight;
     return {
       id: type.id,
       name: type.name,
       kind: 'enemy',
-      hp: part(bossHp, share, (config.waveHpShare * type.hpWeight) / weight),
+      hp: part(bossHp, share, (waveHp * type.hpWeight) / weight),
       dropScale: share,
       purseScale: purseOf(share),
       hpBars: 1,

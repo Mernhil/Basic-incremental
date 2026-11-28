@@ -64,6 +64,8 @@ import {
   collectModifiers,
   breakSeal,
   createInitialState,
+  createNewGame,
+  claimTutorialHandout,
   claimStarter,
   createSeededRng,
   Decimal,
@@ -224,6 +226,9 @@ export interface SimLog {
   questClaims?: Array<[number, number, number, string]>;
   /** The table update's systems (DESIGN.md §14 The sim player's choices), for the report. */
   table?: TableLog;
+  /** A new game's tutorial area (`options.newGame`): sim seconds of each card hand-out and of the
+   *  area's boss kill. */
+  tutorial?: { handouts: number[]; clearedAt: number | null };
 }
 
 /** What the sim counts of the table update's systems. */
@@ -2027,6 +2032,11 @@ export function chooseFight(
 ): FightChoice {
   const normal = (id: string | null): FightChoice => ({ id, difficulty: 'normal' });
   const modifiers = collectModifiers(state, content);
+  // A new game plays the tutorial area until its boss is down.
+  const area = content.tutorialArea;
+  if (area?.tutorial && state.tutorial.given < area.tutorial.milestones.length) {
+    return normal(area.id);
+  }
   // A challenge run (DESIGN.md §15 Ascension challenges) climbs its target first: the rule holds
   // the run back until the target floor is reached.
   const challenge = state.ascensionChallenges.active
@@ -2283,6 +2293,9 @@ export function chooseOverflow(state: GameState, content: Content): GameState {
 
 export interface SimOptions {
   hours: number;
+  /** Starts a real new game (`createNewGame`): the tutorial area first, no Ember Squire. Needs
+   *  `starter`. */
+  newGame?: boolean;
   seed?: number;
   /** Seconds of play per step (the buyer acts between steps) during the opening. */
   stepSeconds?: number;
@@ -2566,7 +2579,8 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const hits: Record<string, number | null> = Object.fromEntries(
     MILESTONES.map((m) => [m.id, null]),
   );
-  let state = createInitialState(content);
+  let state = options.newGame ? createNewGame(content) : createInitialState(content);
+  if (options.newGame) log.tutorial = { handouts: [], clearedAt: null };
   if (options.starter) {
     const picked = claimStarter(state, content, options.starter);
     if (picked.ok) state = picked.state;
@@ -2649,13 +2663,18 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     const acting = !idle || sinceCheckin >= IDLE_CHECKIN_SECONDS;
     if (acting) sinceCheckin = 0;
     // The daily scroll reward, claimed at the first check-in of each simulated day (DESIGN.md §3).
-    if (acting) {
+    // A new game's player is still learning in the tutorial area: it claims no gifts and pulls
+    // nothing, so the team is the starter and the hand-outs.
+    const learning =
+      log.tutorial !== undefined &&
+      state.tutorial.given < (content.tutorialArea?.tutorial?.milestones.length ?? 0);
+    if (acting && !learning) {
       const daily = claimDaily(state, content, `day-${Math.floor(t / DAY_SECONDS)}`);
       if (daily.ok) state = daily.state;
     }
     // Quests are claimed at every check-in too (BI_SIM_NO_QUESTS=1 plays without them, the
     // baseline of a tuning run).
-    if (acting && !process.env['BI_SIM_NO_QUESTS']) {
+    if (acting && !learning && !process.env['BI_SIM_NO_QUESTS']) {
       const claim = claimAllQuests(state, content);
       if (claim.ok) {
         state = claim.state;
@@ -2666,8 +2685,21 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       }
     }
     if (acting) {
+      const held = learning
+        ? { summon: state.resources['summon_scroll'], glamour: state.resources['glamour_scroll'] }
+        : null;
+      if (held) {
+        state.resources['summon_scroll'] = new Decimal(0);
+        state.resources['glamour_scroll'] = new Decimal(0);
+      }
       const buys = greedyBuy(state, content, rng);
       state = buys.state;
+      if (held) {
+        state.resources['summon_scroll'] = state.resources['summon_scroll']!.add(held.summon ?? 0);
+        state.resources['glamour_scroll'] = state.resources['glamour_scroll']!.add(
+          held.glamour ?? 0,
+        );
+      }
       countSummons(buys);
       // Expeditions (DESIGN.md §15): the idle cards travel; an hour at a time while the player
       // is at the game, longer when it only checks in (8 h before the night).
@@ -2758,6 +2790,18 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     const before = whereFighting(state, content);
     const { state: next, report } = advance(state, content, dt * 1000, rng);
     state = next;
+    if (log.tutorial) {
+      for (;;) {
+        const claim = claimTutorialHandout(state, content);
+        if (!claim.ok) break;
+        state = optimizeLoadouts(claim.state, content);
+        log.tutorial.handouts.push(t + dt);
+      }
+      const area = content.tutorialArea;
+      if (area && log.tutorial.clearedAt === null && isDungeonCleared(state, area.id)) {
+        log.tutorial.clearedAt = t + dt;
+      }
+    }
     if (state.activeDungeonId) {
       const fightingTrial = state.activeDungeonId !== 'glimmer_trial' || trialClearedAt !== null;
       if (fightingTrial) {
