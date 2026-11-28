@@ -72,3 +72,11 @@
   padding: 4px 4px 8px;
   scrollbar-color: var(--px-hi) var(--px-lo);
 }
+
+/* the Farming tab starts right under the sub-tabs: no "← Fight" row of its own */
+.dv-sheet[data-panel='farming'] {
+  grid-template-rows: 1fr;
+}
+.dv-sheet[data-panel='farming'] .dv-sheet__head {
+  display: none;
+}

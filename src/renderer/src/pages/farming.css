@@ -19,12 +19,12 @@
 }
 .fm__title {
   margin: 0;
-  font-size: 26px;
+  font-size: 34px;
   color: var(--bi-frame-accent, var(--px-gold));
 }
 .fm__totals {
   margin: 0;
-  font-size: 15px;
+  font-size: 22px;
   font-weight: 700;
 }
 .fm__grid {
@@ -44,7 +44,7 @@
   overflow: hidden;
 }
 .fm-post__scene {
-  background-size: auto 100%;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   image-rendering: pixelated;
@@ -57,6 +57,7 @@
   opacity: 0.8;
 }
 .fm-post__body {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -66,23 +67,24 @@
 }
 .fm-post__name {
   margin: 0;
-  font-size: 20px;
+  font-size: 28px;
   color: var(--bi-frame-accent, var(--px-gold));
 }
 .fm-post__closed {
   margin: auto 0;
   text-align: center;
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--px-muted);
 }
 .fm-post__team {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 5px;
+  grid-template-columns: repeat(4, 58px);
+  gap: 7px;
 }
 .fm-slot {
-  aspect-ratio: 1;
+  width: 58px;
+  height: 58px;
   display: grid;
   place-items: center;
   padding: 2px;
@@ -104,7 +106,7 @@
   gap: 8px;
 }
 .fm-post__lv {
-  font-size: 20px;
+  font-size: 28px;
   white-space: nowrap;
 }
 .fm-bar {
@@ -120,7 +122,7 @@
 }
 .fm-post__trait {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--px-muted);
 }
@@ -129,7 +131,7 @@
 }
 .fm-lines {
   display: grid;
-  gap: 2px;
+  gap: 5px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -137,8 +139,8 @@
 .fm-line {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13.5px;
+  gap: 8px;
+  font-size: 18px;
   min-width: 0;
 }
 .fm-line.is-zero {
@@ -162,7 +164,7 @@
 }
 .fm-line__tag {
   flex: none;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--px-gold);
@@ -183,8 +185,8 @@
   margin-top: auto;
 }
 .fm-btn {
-  padding: 6px 10px;
-  font-size: 14px;
+  padding: 9px 10px;
+  font-size: 17px;
 }
 
 /* ---- dialogs ---- */

@@ -120,6 +120,7 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 
 ### Dungeons and summons
 
+- [Default] **Farming posts: three small rules** (Claude, 2026-11-28, the 0.9 build, to confirm): a post's earnings depend on the size of its team only, not on the cards' strength; ten scroll fragments become one Summon Scroll at once; Heirloom shards go to a random Heirloom. Details: section 4, Farming posts.
 - The small enemy packs (Bloodroot, Obsidian Crab and the small Elie sprites) look small next to the other bodies. Double them? Whether their drawn size changed since was not checked.
 
 ### Cosmetics
