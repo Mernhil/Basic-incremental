@@ -36,14 +36,20 @@ const shot = async (name) => {
 };
 
 // the page's clock: season 3 of the arena (the second week), so the shop shows four Heirlooms
-const SEASON3 = Date.UTC(2026, 10, 23) + 2 * 28 * 86400000 + 9 * 86400000;
+const SEASON3 = Date.UTC(2026, 10, 23) + 28 * 86400000 + 9 * 86400000;
 await page.addInitScript((target) => {
   const real = Date.now.bind(Date);
   const offset = target - real();
   Date.now = () => real() + offset;
 }, SEASON3);
 
-const saveText = saveFile ? readFileSync(saveFile, 'utf8') : null;
+const saveText = saveFile
+  ? (() => {
+      const raw = JSON.parse(readFileSync(saveFile, 'utf8'));
+      raw.state.summon.dailyClaimedDay = null; // the sim's clock is not a calendar day
+      return JSON.stringify(raw);
+    })()
+  : null;
 await metrics(1920, 1080);
 await page.evaluate(
   async ({ data, game, text }) => {
@@ -70,7 +76,7 @@ await page.evaluate(
     // dev cheats: coins to buy with, a ladder position and a finished season waiting
     s.arena.coins = 1240;
     s.arena.raidCoins = { tide_queen: 860, ember_tyrant: 300 };
-    s.arena.season = 3;
+    s.arena.season = 2;
     s.arena.points = 1500;
     s.arena.wins = 12;
     s.arena.losses = 5;
@@ -89,6 +95,15 @@ for (let i = 0; i < 10; i++) {
   await page.waitForTimeout(300);
 }
 
+// a starter pick that waits (the sim player has cleared dungeons on Nightmare): take the first
+const choose = page.getByRole('button', { name: 'Choose', exact: true });
+for (let i = 0; i < 3 && (await choose.count()) > 0; i++) {
+  await choose
+    .first()
+    .click()
+    .catch(() => {});
+  await page.waitForTimeout(800);
+}
 const open = async (building) => {
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
@@ -135,11 +150,11 @@ await page.evaluate(
     const d = await import(data);
     const g = await import(game);
     const content = d.loadContent();
-    const text = await window.api.readSave();
+    const text = (await window.api.readSave()).primary;
     const s = g.readSave(text, content).state;
     s.arena.chests = [
-      { mode: 'arena', season: 2, rank: 'top10', place: 7 },
-      { mode: 'raid', season: 2, rank: 'top50', place: 31 },
+      { mode: 'arena', season: 1, rank: 'top10', place: 7 },
+      { mode: 'raid', season: 1, rank: 'top50', place: 31 },
     ];
     await window.api.writeSave(g.createSaveText(s, Date.now()));
   },

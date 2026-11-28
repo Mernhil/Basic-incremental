@@ -202,3 +202,7 @@
   align-items: center;
   gap: 6px;
 }
+
+.shell-page.rd {
+  max-width: none;
+}

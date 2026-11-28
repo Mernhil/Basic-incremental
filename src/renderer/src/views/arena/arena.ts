@@ -51,23 +51,23 @@ export function frameHtml(
   season: string,
   scale = 1,
 ): string {
-  return `<div class="ar-frame" style="--fs:${scale}">${animatedSpriteHtml(`frame-${mode}-${rankId}`, scale)}<span class="ar-frame__top">${top}</span><span class="ar-frame__season">${season}</span></div>`;
+  return `<div class="col-frame" style="--fs:${scale}">${animatedSpriteHtml(`frame-${mode}-${rankId}`, scale)}<span class="col-frame__top">${top}</span><span class="col-frame__season">${season}</span></div>`;
 }
 
 export function weaponBox(slot: TeamSlot, down = false): HTMLElement {
-  const box = h('div', 'ar-box');
+  const box = h('div', 'col-box');
   box.title = slot.card.name;
   box.dataset['card'] = slot.id;
   box.classList.toggle('is-down', down);
-  box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" class="ar-box__art" aria-hidden="true">${cardTierArt(slot.card)}</svg>`;
+  box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" class="col-box__art" aria-hidden="true">${cardTierArt(slot.card)}</svg>`;
   return box;
 }
 
 export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandle {
   const { content } = ctx;
-  host.classList.add('ar');
-  const tabs = h('nav', 'ar-tabs');
-  const body = h('div', 'ar-body');
+  host.classList.add('col');
+  const tabs = h('nav', 'col-tabs');
+  const body = h('div', 'col-body');
   host.append(tabs, body);
   let tab: Tab = 'arena';
   let whole = false;
@@ -95,7 +95,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
   const resourceName = (id: string): string => content.resourceById.get(id)?.name ?? id;
 
   function tabButton(label: string, on: boolean, click: () => void, key: string): HTMLElement {
-    const b = h('button', `px-btn ar-tab${on ? ' is-on' : ''}`, label);
+    const b = h('button', `px-btn col-tab${on ? ' is-on' : ''}`, label);
     b.type = 'button';
     b.dataset['key'] = key;
     b.addEventListener('click', click);
@@ -118,12 +118,12 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     power: number,
     side: 'you' | 'rival',
   ): HTMLElement {
-    const col = h('section', `ar-side ar-side--${side}`);
-    col.append(h('h2', 'px-display ar-side__name', name), h('p', 'ar-side__sub bi-num', sub));
-    col.append(h('p', 'ar-side__power bi-num', T.power(fmt(power))));
-    const boxes = h('div', 'ar-boxes');
+    const col = h('section', `col-side col-side--${side}`);
+    col.append(h('h2', 'px-display col-side__name', name), h('p', 'col-side__sub bi-num', sub));
+    col.append(h('p', 'col-side__power bi-num', T.power(fmt(power))));
+    const boxes = h('div', 'col-boxes');
     boxes.append(...slots.map((s) => weaponBox(s)));
-    const bar = h('div', 'ar-hp');
+    const bar = h('div', 'col-hp');
     bar.append(h('i'));
     col.append(boxes, bar);
     return col;
@@ -159,18 +159,18 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     const state = ctx.state();
     const first = state.arena.chests[0];
     if (!first && !claimed) return null;
-    const panel = h('section', 'ar-season px-panel');
+    const panel = h('section', 'col-season px-panel');
     if (claimed) {
       panel.append(h('h2', 'px-display', T.claimed), h('p', '', claimed.text));
       if (claimed.frame) {
         const f = frameText(content, claimed.rank, claimed.season);
-        const wrap = h('div', 'ar-season__frame');
-        wrap.innerHTML = frameHtml(claimed.mode, claimed.rank, f.top, f.season, 1);
+        const wrap = h('div', 'col-season__frame');
+        wrap.innerHTML = frameHtml(claimed.mode, claimed.rank, f.top, f.season, 2);
         panel.append(
           wrap,
           h(
             'p',
-            'ar-gold',
+            'col-gold',
             T.frameEarned(
               content.arena.ranks.find((r) => r.id === claimed!.rank)!.name,
               claimed.season,
@@ -197,7 +197,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
         `${first!.mode === 'arena' ? T.arenaChest : T.raidChest}: ${T.finalPlace(first!.place, rank.name)}`,
       ),
     );
-    const icon = h('div', 'ar-season__icon');
+    const icon = h('div', 'col-season__icon');
     icon.innerHTML = animatedSpriteHtml(`rank-${first!.mode}-${rank.id}`, 2);
     const steps = chestTrack(content, first!.place, resourceName, first!.mode);
     const mine = steps.find((x) => x.rank.id === rank.id)!;
@@ -215,21 +215,21 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     const parts: HTMLElement[] = [];
     const chest = chestPanel(s);
     if (chest) parts.push(chest);
-    const floor = h('section', 'ar-floor px-panel');
-    const head = h('div', 'ar-floor__head');
-    const title = h('h2', 'px-display ar-floor__title', T.header(s.season, s.endsIn));
-    const coins = h('p', 'ar-coins bi-num');
+    const floor = h('section', 'col-floor px-panel');
+    const head = h('div', 'col-floor__head');
+    const title = h('h2', 'px-display col-floor__title', T.header(s.season, s.endsIn));
+    const coins = h('p', 'col-coins bi-num');
     coins.innerHTML = `${coinHtml('coin-arena', 1)}<span>${fmt(s.coins)}</span>`;
     head.append(title, coins);
-    const mid = h('div', 'ar-mid');
-    mid.append(h('p', 'ar-vs px-display', T.vs));
-    const fight = h('button', 'px-btn px-btn--primary ar-fight', T.fight);
+    const mid = h('div', 'col-mid');
+    mid.append(h('p', 'col-vs px-display', T.vs));
+    const fight = h('button', 'px-btn px-btn--primary col-fight', T.fight);
     fight.type = 'button';
     fight.dataset['key'] = 'arena-fight';
     fight.disabled =
       !s.open || s.you.length === 0 || s.triesLeft <= 0 || !s.rival || played !== null;
     fight.addEventListener('click', start);
-    const other = h('button', 'px-btn ar-other', T.otherRival);
+    const other = h('button', 'px-btn col-other', T.otherRival);
     other.type = 'button';
     other.dataset['key'] = 'arena-other';
     other.disabled = !s.open || played !== null;
@@ -238,12 +238,12 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
       sig = '';
       render();
     });
-    mid.append(fight, other, h('p', 'ar-tries bi-num', T.tries(s.triesLeft, s.triesMax)));
+    mid.append(fight, other, h('p', 'col-tries bi-num', T.tries(s.triesLeft, s.triesMax)));
     const warn = !s.open ? T.sealed : s.you.length === 0 ? T.noTeam : !s.rival ? T.noRival : '';
-    if (warn) mid.append(h('p', 'ar-warn', warn));
-    if (notice) mid.append(h('p', 'ar-warn', notice));
+    if (warn) mid.append(h('p', 'col-warn', warn));
+    if (notice) mid.append(h('p', 'col-warn', notice));
     const youCol = teamColumn(T.you, T.rankLine(s.rank, fmt(s.points)), s.you, s.yourPower, 'you');
-    youCol.querySelector('.ar-side__name')!.append(h('small', 'ar-rankname', ` ${s.rankName}`));
+    youCol.querySelector('.col-side__name')!.append(h('small', 'col-rankname', ` ${s.rankName}`));
     const rivalCol = s.rival
       ? teamColumn(
           s.rival.row.name,
@@ -252,13 +252,13 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
           s.rival.power,
           'rival',
         )
-      : h('section', 'ar-side ar-side--rival');
-    const stage = h('div', 'ar-stage');
+      : h('section', 'col-side col-side--rival');
+    const stage = h('div', 'col-stage');
     stage.append(youCol, mid, rivalCol);
-    const timer = h('p', 'ar-timer bi-num');
-    const result = h('div', 'ar-result');
+    const timer = h('p', 'col-timer bi-num');
+    const result = h('div', 'col-result');
     result.hidden = true;
-    const skip = h('button', 'px-btn ar-skip', T.skip);
+    const skip = h('button', 'px-btn col-skip', T.skip);
     skip.type = 'button';
     skip.dataset['key'] = 'arena-skip';
     skip.hidden = played === null;
@@ -269,40 +269,40 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     parts.push(floor);
     if (played) {
       live = {
-        you: [...youCol.querySelectorAll<HTMLElement>('.ar-box')],
-        rival: [...rivalCol.querySelectorAll<HTMLElement>('.ar-box')],
-        youBar: youCol.querySelector<HTMLElement>('.ar-hp i')!,
-        rivalBar: rivalCol.querySelector<HTMLElement>('.ar-hp i')!,
+        you: [...youCol.querySelectorAll<HTMLElement>('.col-box')],
+        rival: [...rivalCol.querySelectorAll<HTMLElement>('.col-box')],
+        youBar: youCol.querySelector<HTMLElement>('.col-hp i')!,
+        rivalBar: rivalCol.querySelector<HTMLElement>('.col-hp i')!,
         timer,
         result,
         skip,
       };
     } else live = null;
 
-    const lower = h('div', 'ar-lower');
-    const ladder = h('section', 'ar-ladder');
-    const lh = h('div', 'ar-ladder__head');
-    lh.append(h('h3', 'ar-h3', T.ladder), h('span', 'ar-note', T.ladderNote));
-    const rows = h('ol', 'ar-rows');
+    const lower = h('div', 'col-lower');
+    const ladder = h('section', 'col-ladder');
+    const lh = h('div', 'col-ladder__head');
+    lh.append(h('h3', 'col-h3', T.ladder), h('span', 'col-note', T.ladderNote));
+    const rows = h('ol', 'col-rows');
     for (const line of s.ladder) {
-      const li = h('li', `ar-row${line.you ? ' is-you' : ''}`);
-      const weapons = h('span', 'ar-row__weapons');
+      const li = h('li', `col-row${line.you ? ' is-you' : ''}`);
+      const weapons = h('span', 'col-row__weapons');
       for (const slot of teamSlots(content, line.cards ?? s.you.map((x) => x.id)))
         weapons.append(weaponMini(slot));
       li.append(
-        h('span', 'ar-row__rank bi-num', `#${line.rank}`),
-        h('span', 'ar-row__name', line.you ? T.you : line.name),
+        h('span', 'col-row__rank bi-num', `#${line.rank}`),
+        h('span', 'col-row__name', line.you ? T.you : line.name),
         weapons,
         h(
           'span',
-          'ar-row__power bi-num',
+          'col-row__power bi-num',
           line.you ? fmt(s.yourPower) : line.power > 0 ? fmt(line.power) : '',
         ),
-        h('span', 'ar-row__points bi-num', fmt(line.points)),
+        h('span', 'col-row__points bi-num', fmt(line.points)),
       );
       rows.append(li);
     }
-    const toggle = h('button', 'px-btn ar-whole', whole ? T.nearLadder : T.wholeLadder);
+    const toggle = h('button', 'px-btn col-whole', whole ? T.nearLadder : T.wholeLadder);
     toggle.type = 'button';
     toggle.dataset['key'] = 'arena-whole';
     toggle.addEventListener('click', () => {
@@ -313,22 +313,22 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     ladder.append(lh, rows, toggle);
     ladder.classList.toggle('is-whole', whole);
 
-    const track = h('section', 'ar-chests');
-    track.append(h('h3', 'ar-h3', T.chestTitle));
-    const steps = h('div', 'ar-steps');
+    const track = h('section', 'col-chests');
+    track.append(h('h3', 'col-h3', T.chestTitle));
+    const steps = h('div', 'col-steps');
     for (const step of chestTrack(content, s.rank, resourceName, 'arena')) {
-      const card = h('div', `ar-step${step.current ? ' is-current' : ''}`);
-      const icon = h('div', 'ar-step__icon');
+      const card = h('div', `col-step${step.current ? ' is-current' : ''}`);
+      const icon = h('div', 'col-step__icon');
       icon.innerHTML = animatedSpriteHtml(`rank-arena-${step.rank.id}`, 2);
       card.append(
         icon,
-        h('b', 'ar-step__name', step.label),
-        h('span', 'ar-step__what', step.rewards),
-        ...(step.frame ? [h('span', 'ar-step__frame', T.frameNote)] : []),
+        h('b', 'col-step__name', step.label),
+        h('span', 'col-step__what', step.rewards),
+        ...(step.frame ? [h('span', 'col-step__frame', T.frameNote)] : []),
       );
       steps.append(card);
     }
-    track.append(steps, h('p', 'ar-note', T.chestNote));
+    track.append(steps, h('p', 'col-note', T.chestNote));
     lower.append(ladder, track);
     parts.push(lower);
     body.replaceChildren(...parts);
@@ -336,7 +336,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
   }
 
   function weaponMini(slot: TeamSlot): HTMLElement {
-    const box = h('span', 'ar-mini');
+    const box = h('span', 'col-mini');
     box.title = slot.card.name;
     box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true">${cardTierArt(slot.card)}</svg>`;
     return box;
@@ -393,7 +393,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
       sig = '';
       render();
     });
-    result.append(h('div', 'ar-result__buttons'));
+    result.append(h('div', 'col-result__buttons'));
     result.lastElementChild!.append(again, close);
     result.hidden = false;
   }
@@ -402,16 +402,16 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
 
   function buildShop(): void {
     const state = ctx.state();
-    const bar = h('section', 'ar-shopbar px-panel');
-    const coins = h('div', 'ar-shopbar__coins');
-    coins.innerHTML = `${coinHtml('coin-arena', 1)}<div><b class="ar-shopbar__label">${T.coinsName}</b><p class="px-display bi-num ar-shopbar__n">${fmt(state.arena.coins)}</p></div>`;
-    bar.append(coins, h('p', 'ar-note', T.shopNote));
+    const bar = h('section', 'col-shopbar px-panel');
+    const coins = h('div', 'col-shopbar__coins');
+    coins.innerHTML = `${coinHtml('coin-arena', 1)}<div><b class="col-shopbar__label">${T.coinsName}</b><p class="px-display bi-num col-shopbar__n">${fmt(state.arena.coins)}</p></div>`;
+    bar.append(coins, h('p', 'col-note', T.shopNote));
     const parts: HTMLElement[] = [bar];
-    if (notice) parts.push(h('p', 'ar-gold', notice));
+    if (notice) parts.push(h('p', 'col-gold', notice));
     const entries = arenaShop(state, content);
     parts.push(
       entries.length === 0
-        ? h('p', 'ar-note', T.shopEmpty)
+        ? h('p', 'col-note', T.shopEmpty)
         : shopCards(entries, 'coin-arena', 'arena', content, (id) => {
             const r = buyShopHeirloom(ctx.state(), content, id);
             if (!r.ok) return;
@@ -427,7 +427,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
   // ---- tabs and the tick -------------------------------------------------------------------------
 
   function buildTabs(): void {
-    const back = h('button', 'px-btn ar-tab', T.hub);
+    const back = h('button', 'px-btn col-tab', T.hub);
     back.type = 'button';
     back.dataset['key'] = 'arena-hub';
     back.addEventListener('click', () => ctx.close());
