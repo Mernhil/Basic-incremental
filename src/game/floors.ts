@@ -203,6 +203,8 @@ export function isDifficultyUnlocked(
 ): boolean {
   const index = DIFFICULTIES.indexOf(difficulty);
   if (index <= 0) return index === 0;
+  // The tutorial area has Normal only (DESIGN.md section 2).
+  if (dungeon.tutorial) return false;
   const before = DIFFICULTIES[index - 1]!;
   return floorPosition(state, dungeon, before).best >= floorCount(dungeon, before);
 }

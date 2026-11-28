@@ -188,7 +188,14 @@ export function isDungeonCleared(state: GameState, id: string): boolean {
 export function isDungeonUnlocked(state: GameState, content: Content, id: string): boolean {
   const entry = content.dungeonById.get(id) ?? content.trialById.get(id);
   if (!entry) return false;
-  return entry.unlockedBy === null || isDungeonCleared(state, entry.unlockedBy);
+  if (entry.unlockedBy === null || isDungeonCleared(state, entry.unlockedBy)) return true;
+  // The tutorial area counts as done once all its cards are handed out (or a save began past it).
+  const area = content.tutorialArea;
+  return (
+    area !== null &&
+    entry.unlockedBy === area.id &&
+    state.tutorial.given >= (area.tutorial?.milestones.length ?? 0)
+  );
 }
 
 export function unlockedDungeons(state: GameState, content: Content): Dungeon[] {

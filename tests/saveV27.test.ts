@@ -224,6 +224,8 @@ describe('v26 -> v27 (the table update)', () => {
       delete p['autoChallenge'];
     }
     // format 38 added the skill web's levels to the account
+    // format 50 added the tutorial area's hand-outs
+    delete again['tutorial'];
     delete (again['account'] as Record<string, unknown>)['web'];
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];

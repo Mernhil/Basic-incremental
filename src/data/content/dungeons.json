@@ -1,9 +1,99 @@
 [
   {
+    "id": "thistledown_farm",
+    "name": "Thistledown Farm",
+    "tier": 1,
+    "unlockedBy": null,
+    "tutorial": {
+      "milestones": [4, 7, 10],
+      "roleOrder": ["dps", "support", "healer", "tank"],
+      "starterRoles": {
+        "sword": "dps",
+        "greatsword": "tank",
+        "spear": "dps",
+        "lance": "tank",
+        "dagger": "dps",
+        "hammer": "tank",
+        "bow": "dps",
+        "staff": "healer",
+        "scythe": "dps"
+      },
+      "roleCards": {
+        "tank": ["stable_squire", "rusty_brute", "quarry_smasher"],
+        "dps": ["fieldhand_archer", "militia_picket", "field_reaper"],
+        "support": ["alley_cutpurse"],
+        "healer": ["hedge_acolyte"]
+      }
+    },
+    "floors": 10,
+    "floorGrowth": 1.03,
+    "enemies": [
+      {
+        "id": "field_rat",
+        "name": "Field Rat",
+        "hpWeight": 1,
+        "sprite": "field_rat"
+      },
+      {
+        "id": "sprout_slime",
+        "name": "Sprout Slime",
+        "hpWeight": 1.2,
+        "sprite": "sprout_slime"
+      },
+      {
+        "id": "thieving_crow",
+        "name": "Thieving Crow",
+        "hpWeight": 0.8,
+        "sprite": "thieving_crow"
+      }
+    ],
+    "miniBosses": [],
+    "background": "thistledown_farm",
+    "boss": {
+      "id": "old_scarecrow",
+      "name": "Old Scarecrow",
+      "sprite": "old_scarecrow",
+      "element": "earth",
+      "hp": "12000",
+      "hpBars": 3,
+      "attack": {
+        "damage": "10",
+        "intervalSeconds": 3
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "gilded_plate",
+        "chance": 0,
+        "pityThreshold": 1000000
+      },
+      "wages": [
+        {
+          "resource": "money",
+          "perSecond": "10"
+        }
+      ],
+      "firstClear": [],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 60,
+          "max": 90
+        }
+      ],
+      "extraMaterials": [],
+      "material": {
+        "resource": "moss_core",
+        "chance": 0,
+        "amount": 1
+      }
+    }
+  },
+  {
     "id": "mossy_cellar",
     "name": "Mossy Cellar",
     "tier": 1,
-    "unlockedBy": null,
+    "unlockedBy": "thistledown_farm",
     "floors": 10,
     "enemies": [
       {

@@ -21,7 +21,7 @@ import { emptyReport, type TickReport } from './report';
 import { createSeededRng, type Rng } from './rng';
 import {
   cloneState,
-  createInitialState,
+  createNewGame,
   DIFFICULTIES,
   newOwnedCard,
   type Difficulty,
@@ -221,7 +221,7 @@ export function devResetGame(
   content: Content,
   options: { keepCosmetics?: boolean } = {},
 ): GameState {
-  const fresh = createInitialState(content);
+  const fresh = createNewGame(content);
   if (!options.keepCosmetics) return fresh;
   const kept = cloneState(state);
   return { ...fresh, cosmetics: kept.cosmetics, legacySkins: kept.legacySkins };

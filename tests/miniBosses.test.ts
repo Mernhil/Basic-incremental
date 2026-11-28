@@ -8,6 +8,7 @@ const content = loadContent();
 /** The 10th-floor stops of each dungeon, in order (the user's list, 2026-11-23). */
 const STOPS: Record<string, string[]> = {
   // the boss holds floor 10, so no stage stop; the entry only serves the endless depths
+  thistledown_farm: [],
   mossy_cellar: [],
   ember_crypt: ['blood_duchess'],
   frostspire_vault: ['glacierbreaker_knight', 'ivory_direwolf'],
