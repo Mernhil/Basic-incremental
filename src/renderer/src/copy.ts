@@ -10,6 +10,10 @@ export function starPercent(fill: number, need: number): number {
 }
 
 export const COPY = {
+  phone: {
+    turnTitle: 'Turn your phone sideways',
+    turnHint: 'Basic Incremental is played in landscape.',
+  },
   update: {
     message: 'Update ready — restart to install',
     action: 'Restart',

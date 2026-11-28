@@ -3,14 +3,25 @@
  * when the tooltip opens, so it always shows live values (for example a stat breakdown).
  */
 
+import { isActionTarget } from '../web/touchRules';
+
 export type TipContent = string | (() => string | Node);
 
 const SHOW_DELAY_MS = 250;
 const GAP_PX = 8;
+/** A touch held this long opens the tooltip (a tap that does something stays a tap). */
+const LONG_PRESS_MS = 600;
+/** A finger that moves more than this is a drag or scroll, not a press. */
+const PRESS_SLOP_PX = 10;
 
 let tipEl: HTMLDivElement | null = null;
 let current: HTMLElement | null = null;
 let timer: number | undefined;
+let lastTouchAt = -Infinity;
+
+/** The phone build (class `web-app`): hover does not exist, a touch opens and closes tooltips. */
+const phoneBuild = (): boolean => document.documentElement.classList.contains('web-app');
+const isTouch = (e: PointerEvent): boolean => e.pointerType === 'touch' && phoneBuild();
 
 function ensureTip(): HTMLDivElement {
   if (tipEl) return tipEl;
@@ -27,6 +38,17 @@ function ensureTip(): HTMLDivElement {
     hide();
   });
   window.addEventListener('blur', hide);
+  // a touch anywhere else closes a tooltip a touch opened
+  document.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (!isTouch(event) || !tipEl || tipEl.hidden) return;
+      const at = event.target as Node;
+      if (!current?.contains(at) && !tipEl.contains(at)) hide();
+    },
+    true,
+  );
+  document.addEventListener('visibilitychange', hide);
   return tipEl;
 }
 
@@ -78,13 +100,72 @@ export function hide(): void {
 /** Adds a tooltip to `target`, shown on hover (after a short delay) and on keyboard focus. */
 export function attachTooltip(target: HTMLElement, content: TipContent): void {
   contents.set(target, content);
-  target.addEventListener('pointerenter', () => {
+  target.addEventListener('pointerenter', (e) => {
+    if (isTouch(e)) return;
     window.clearTimeout(timer);
     timer = window.setTimeout(() => show(target), SHOW_DELAY_MS);
   });
-  target.addEventListener('pointerleave', hide);
-  target.addEventListener('focus', () => show(target));
+  target.addEventListener('pointerleave', (e) => {
+    if (!isTouch(e)) hide();
+  });
+  target.addEventListener('focus', () => {
+    // a tap focuses the control it presses; that is not a request for its tooltip
+    if (performance.now() - lastTouchAt > 800) show(target);
+  });
   target.addEventListener('blur', hide);
+  attachTouch(target);
+}
+
+/**
+ * Touch: a long press opens the tooltip; a short tap on something that does nothing else (text, a
+ * picture) opens it too, and a second tap closes it. A tap on a button, link or other control
+ * stays its action. The click that ends a long press is swallowed.
+ */
+function attachTouch(target: HTMLElement): void {
+  let press: { id: number; x: number; y: number; opened: boolean } | null = null;
+  const cancel = (): void => {
+    window.clearTimeout(timer);
+    press = null;
+  };
+  target.addEventListener('pointerdown', (e) => {
+    if (!isTouch(e)) return;
+    lastTouchAt = performance.now();
+    cancel();
+    const mine = { id: e.pointerId, x: e.clientX, y: e.clientY, opened: false };
+    press = mine;
+    if ((e.target as Element).closest('[data-hold-buy]')) return; // holding that buys, not reads
+    timer = window.setTimeout(() => {
+      if (press !== mine) return;
+      mine.opened = true;
+      show(target);
+    }, LONG_PRESS_MS);
+  });
+  target.addEventListener('pointermove', (e) => {
+    if (!press || e.pointerId !== press.id) return;
+    if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > PRESS_SLOP_PX) cancel();
+  });
+  target.addEventListener('pointercancel', cancel);
+  target.addEventListener('pointerup', (e) => {
+    if (!isTouch(e) || !press || e.pointerId !== press.id) return;
+    const { opened } = press;
+    cancel();
+    if (opened) {
+      // the long press showed it: eat the click that follows, the finger was reading, not buying
+      const eat = (ev: Event): void => ev.stopImmediatePropagation();
+      document.addEventListener('click', eat, { capture: true, once: true });
+      window.setTimeout(() => document.removeEventListener('click', eat, true), 400);
+      return;
+    }
+    for (let el = e.target as HTMLElement | null; el; el = el.parentElement) {
+      if (isActionTarget(el.tagName, el.getAttribute('role'))) return;
+      if (el === target) break;
+    }
+    if (current === target && tipEl && !tipEl.hidden) hide();
+    else show(target);
+  });
+  target.addEventListener('contextmenu', (e) => {
+    if (phoneBuild()) e.preventDefault();
+  });
 }
 
 /** A titled tooltip with label/value rows, used for stat breakdowns. */

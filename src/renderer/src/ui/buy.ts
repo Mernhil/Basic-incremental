@@ -111,6 +111,7 @@ export function holdToBuy(el: HTMLElement, buy: () => void): void {
   let delay = 0;
   let repeat = 0;
   let held = false;
+  el.dataset['holdBuy'] = '';
   const stop = (): void => {
     window.clearTimeout(delay);
     window.clearInterval(repeat);
