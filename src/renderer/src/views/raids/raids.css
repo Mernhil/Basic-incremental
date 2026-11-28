@@ -159,7 +159,6 @@
 .rd-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
 }
 .rd-tab.is-on,
 .rd-bosstab.is-on {
@@ -205,4 +204,12 @@
 
 .shell-page.rd {
   max-width: none;
+}
+
+/* the active sub-tab is gold (beats the theme's button rules) */
+html .px-btn.rd-tab.is-on:not(#_px),
+html .px-btn.rd-bosstab.is-on:not(#_px) {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+  border-color: #ffd66e;
 }

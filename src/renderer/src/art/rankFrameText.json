@@ -1,0 +1,86 @@
+{
+  "canvas": [212, 256],
+  "font": "rank-frames/font/rank-numerals.ttf (8 px pixel font; draw at whole-pixel scale on screen)",
+  "frames": {
+    "arena-top100": {
+      "medallion_centre": [105.5, 237.0],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#ffe9a8",
+      "shadow": "#4a3210",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "arena-top50": {
+      "medallion_centre": [106.0, 238.0],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#f0c860",
+      "shadow": "#1c1a17",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "arena-top10": {
+      "medallion_centre": [106.0, 236.0],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#f2c859",
+      "shadow": "#2a0a08",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "arena-champion": {
+      "medallion_centre": [106.0, 230.5],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#ffd94b",
+      "shadow": "#1c1a17",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "raid-top100": {
+      "medallion_centre": [105.5, 235.0],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#e9d6a0",
+      "shadow": "#1c1a17",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "raid-top50": {
+      "medallion_centre": [106.5, 227.0],
+      "text_size_of_8px_font": 0.833,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#d9b8f2",
+      "shadow": "#1a0f24",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "raid-top10": {
+      "medallion_centre": [105.0, 226.5],
+      "text_size_of_8px_font": 0.833,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#ffb347",
+      "shadow": "#2a0806",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    },
+    "raid-champion": {
+      "medallion_centre": [105.5, 235.0],
+      "text_size_of_8px_font": 0.667,
+      "line1": "rank number",
+      "line2": "S + season",
+      "colour": "#ffd94b",
+      "shadow": "#1c1a17",
+      "shadow_offset_px": [1, 1],
+      "line_gap": 0
+    }
+  }
+}

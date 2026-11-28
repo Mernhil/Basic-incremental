@@ -9,7 +9,7 @@ export const raidsViews: ViewPackage = {
     {
       id: 'raids',
       title: COPY.view.titles.raids,
-      mount: (host, ctx) => createRaidsView(host, ctx),
+      mount: (host, ctx, api) => createRaidsView(host, ctx, api),
     },
   ],
 };

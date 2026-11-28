@@ -118,9 +118,29 @@ export function frameText(
   content: Content,
   rankId: string,
   season: number,
-): { top: string; season: string } {
+): { number: string; season: string } {
   const rank = content.arena.ranks.find((r) => r.id === rankId)!;
-  return { top: `TOP ${rank.top ?? 0}`, season: `S${season}` };
+  return { number: String(rank.top ?? 0), season: `S${season}` };
+}
+
+/**
+ * The best title the player has earned: "S<season> <Rank>" for the best frame rank of any past season
+ * (a tie goes to the later season), or "Contender" with none (a Default, DESIGN.md section 3).
+ */
+export function bestTitle(
+  state: GameState,
+  content: Content,
+  mode: 'arena' | 'raid' = 'arena',
+): string {
+  let best: { top: number; season: number; name: string } | null = null;
+  for (const f of state.arena.frames) {
+    if (f.mode !== mode) continue;
+    const rank = content.arena.ranks.find((r) => r.id === f.rank);
+    if (!rank || rank.top === null) continue;
+    if (!best || rank.top < best.top || (rank.top === best.top && f.season > best.season))
+      best = { top: rank.top, season: f.season, name: rank.name };
+  }
+  return best ? `S${best.season} ${best.name}` : 'Contender';
 }
 
 export interface ArenaScreen {
@@ -128,7 +148,8 @@ export interface ArenaScreen {
   season: number;
   endsIn: string;
   rank: number;
-  rankName: string;
+  /** The best title earned (`bestTitle`). */
+  title: string;
   points: number;
   triesLeft: number;
   triesMax: number;
@@ -157,7 +178,7 @@ export function arenaScreen(
     season,
     endsIn: durationText(seasonEndsIn(content, season, now)),
     rank,
-    rankName: rankForPlace(content, rank).name,
+    title: bestTitle(state, content),
     points: state.arena.points,
     triesLeft: arenaTriesLeft(state, content, today),
     triesMax: content.arena.fights.perDay,

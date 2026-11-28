@@ -9,7 +9,7 @@ export const arenaViews: ViewPackage = {
     {
       id: 'arena',
       title: COPY.view.titles.arena,
-      mount: (host, ctx) => createArenaView(host, ctx),
+      mount: (host, ctx, api) => createArenaView(host, ctx, api),
     },
   ],
 };

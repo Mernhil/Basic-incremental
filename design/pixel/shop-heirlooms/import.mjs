@@ -26,7 +26,7 @@ for (const el of ['earth', 'fire', 'water', 'dark', 'light']) add(`raid/coin-rai
 for (const mode of ['arena', 'raid'])
   for (const band of ['contender', 'top100', 'top50', 'top10', 'champion']) {
     add(`ranks/${mode}-${band}.png`, `rank-${mode}-${band}`);
-    if (band !== 'contender') add(`ranks/frame-${mode}-${band}.png`, `frame-${mode}-${band}`);
+    if (band !== 'contender') add(`ranks-final/frame-${mode}-${band}.png`, `frame-${mode}-${band}`);
   }
 // arena Heirlooms: the set (season) each type belongs to
 const ARENA = { bow: 'arena_s1', spear: 'arena_s1', staff: 'arena_s2', greatsword: 'arena_s2' };
@@ -49,5 +49,5 @@ for (const [from, name] of jobs) {
 }
 if (added.length > 0) manifest = manifest.replace(/\n};\n?$/, `\n${added.join('\n')}\n};\n`);
 writeFileSync(manifestPath, manifest);
-copyFileSync(join(src, 'ranks/font/rank-numerals.ttf'), join(root, 'src/renderer/src/art/rank-numerals.ttf'));
+copyFileSync(join(src, 'ranks-final/font/rank-numerals.ttf'), join(root, 'src/renderer/src/art/rank-numerals.ttf'));
 console.log(`imported ${added.length} sprites and the rank numerals font`);

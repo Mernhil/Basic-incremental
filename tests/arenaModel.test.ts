@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { arenaLadder, seasonStartMs, syncSeason } from '../src/game';
 import {
   arenaScreen,
+  bestTitle,
   chestTrack,
   durationText,
   frameText,
@@ -46,8 +47,21 @@ describe('the Arena view model', () => {
   });
 
   it('writes the top number and the season on a frame', () => {
-    expect(frameText(content, 'top10', 4)).toEqual({ top: 'TOP 10', season: 'S4' });
-    expect(frameText(content, 'champion', 12)).toEqual({ top: 'TOP 1', season: 'S12' });
+    expect(frameText(content, 'top10', 4)).toEqual({ number: '10', season: 'S4' });
+    expect(frameText(content, 'champion', 12)).toEqual({ number: '1', season: 'S12' });
+  });
+
+  it('shows the best title earned, or Contender with none', () => {
+    const s = freshState();
+    expect(bestTitle(s, content)).toBe('Contender');
+    s.arena.frames = [
+      { mode: 'arena', season: 1, rank: 'top50', place: 40 },
+      { mode: 'arena', season: 2, rank: 'top10', place: 8 },
+      { mode: 'arena', season: 3, rank: 'top10', place: 6 },
+      { mode: 'raid', season: 3, rank: 'champion', place: 1 },
+    ];
+    expect(bestTitle(s, content)).toBe('S3 Top 10');
+    expect(bestTitle(s, content, 'raid')).toBe('S3 Champion #1');
   });
 
   it('builds the screen of a player with a team', () => {

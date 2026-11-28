@@ -78,7 +78,7 @@ _The dungeon tab is built as the winding map now (user, 2026-11-22: "Winding map
 
 _Built (overview, Arena and the raid shops): the arena opens with the Ascension milestone (user, 2026-11-27: "after Frostspire Vault Normal"); 4v4 auto-duels against AI teams built from the combos the sim found, by rank band; 4-week seasons shared with the raids (user: "4 weeks", "Same 4-week seasons"); arena coins and the arena shop with the last 2 seasons' Heirlooms (user: "Last 2 seasons, 4 on sale"); one raid coin per boss and each boss's 4 Heirlooms (user: "One per boss"); the five ranks and the season chest by final rank; the screens as approved (user: "2a but i also like 3b but i like hte separate shop", "Keep it")._
 
-- [Differs] **Rank cosmetics are earned, not worn yet** (user, 2026-11-27, via the controller: "lets use the first batch for the frames and put the season and top numbers in"; "frames or titles for the top ranks"). Top 100, Top 50, Top 10 and Champion each give a rank frame at a season's end, with the top number and the season written in its medallion. Today: the frames are kept in the save (`arena.frames`) and shown when the chest is opened, but there is no screen to wear one on a card, and rank titles are not built. Wearing a frame goes through the Wardrobe's cosmetic slots; which slot, and whether titles are wanted, are open (section 3).
+- [Differs] **Rank cosmetics are earned, not worn yet** (user, 2026-11-27, via the controller: "lets use the first batch for the frames and put the season and top numbers in"; "frames or titles for the top ranks"). Top 100, Top 50, Top 10 and Champion each give a rank frame at a season's end, with the top number and the season written in its medallion. Today: the frames are kept in the save (`arena.frames`) and shown when the chest is opened, but there is no screen to wear one on a card. Wearing a frame goes through the Wardrobe's cosmetic slots; which slot is open (section 3).
 - [Differs] **Worker Heirlooms in the shops have no perk** (user, 2026-11-27: "each boss will have 4", "usual weapon types"). The raid shops sell a pickaxe (Rootstone Titan) and a logging axe (Ember Tyrant, Dawn Seraph), which are worker cards and never fight, so a perk that works in a fight has nothing to do. Today: those three Heirlooms are sold with no perk and work as normal Heirloom workers.
 
 ### Base camp
@@ -131,7 +131,7 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 
 ### Arena and raids
 
-- Rank frames and titles: where does a rank frame go on a card (a Wardrobe slot of its own, or the card frame slot), and do you want rank titles (the mock-up named "Champion title" and "Gladiator title")? Meanwhile frames are only kept and shown when a chest is opened, and there are no titles.
+- Rank frames: where does a rank frame go on a card (a Wardrobe slot of its own, or the card frame slot)? Meanwhile frames are only kept and shown when a chest is opened. Rank titles are a Default (section 4): are they wanted, and what do they unlock?
 - The three worker Heirlooms in the raid shops (a pickaxe and two logging axes) have no raid perk, because they never fight. Keep that, or give them a perk for working (more output)?
 
 ### Project
@@ -322,3 +322,4 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 - [Default · in game] **Weapon panel card switch**: four small cards in formation order, opening on the first card, remembering the choice for the session, empty slots not offered (Claude, 2026-11-15). Overview: Screens.
 - [Default · in game] **Worker blocks**: a worker shows as a mini card on its plate; the worker picker shows full card faces since the user asked for it (2026-11-22, `docs/UI_RULES.md`) (Claude, 2026-11-11). Overview: Screens.
 - [Default · in game] **Toasts**: toasts stand as one column under the header at the left of the dungeon window and keep that spot when a view is open (Claude, 2026-11-12). Overview: Stage effects.
+- [Default · in game] **Rank titles** (Claude, 2026-11-27, the controller's follow-up to the arena build): under "You" the arena shows the best title earned as text, "S<season> <Rank>" (for example "S1 Top 10", the best frame rank of any past season, a tie to the later season), and "Contender" with none. Only text: no title is worn or unlocks anything. Overview: Arena and the raid shops.

@@ -17,7 +17,7 @@ import {
 import { foeHtml } from '../../art/foes';
 import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
-import type { TableContext, ViewHandle } from '../../table/contract';
+import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
 import { coinHtml, shopCards } from '../../ui/shopCards';
 import { durationText } from '../arena/arenaModel';
 import { RAIDS_COPY as T } from './copy';
@@ -57,12 +57,13 @@ type Mode =
 /** The raid coin sprite of a boss's element. */
 const coinSprite = (element: string): string => `coin-raid-${element}`;
 
-export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandle {
+export function createRaidsView(host: HTMLElement, ctx: TableContext, api: ViewApi): ViewHandle {
   const { content } = ctx;
   host.classList.add('rd');
   const tabs = h('nav', 'rd-tabs');
   const body = h('div', 'rd__body');
-  host.append(tabs, body);
+  host.append(body);
+  api.setTools(tabs);
   let notice = '';
   let tabsSig = '';
   let mode: Mode = { kind: 'list' };
@@ -346,7 +347,7 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
     bar.append(coins, h('p', 'rd-note', T.shopNote(boss.name)));
     const strip = h('div', 'rd-bosstabs');
     for (const b of content.raids.bosses) {
-      const tab = h('button', `px-btn rd-bosstab${b.id === bossId ? ' is-on' : ''}`);
+      const tab = h('button', `px-btn rd-bosstab${b.id === bossId ? ' px-btn--gold is-on' : ''}`);
       tab.type = 'button';
       tab.dataset['key'] = `raid-shop-${b.id}`;
       tab.innerHTML = `${coinHtml(coinSprite(b.element), 0.5)}<span>${b.name}</span>`;
@@ -375,21 +376,25 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext): ViewHandl
   }
 
   function buildTabs(): void {
-    const back = h('button', 'px-btn rd-tab', T.hub);
-    back.type = 'button';
-    back.dataset['key'] = 'raid-hub';
-    back.addEventListener('click', () => ctx.close());
-    const raidTab = h('button', `px-btn rd-tab${mode.kind !== 'shop' ? ' is-on' : ''}`, T.tabRaid);
+    const raidTab = h(
+      'button',
+      `px-btn vh-back rd-tab${mode.kind !== 'shop' ? ' px-btn--gold is-on' : ''}`,
+      T.tabRaid,
+    );
     raidTab.type = 'button';
     raidTab.dataset['key'] = 'raid-tab';
     raidTab.addEventListener('click', () => go({ kind: 'list' }));
-    const shopTab = h('button', `px-btn rd-tab${mode.kind === 'shop' ? ' is-on' : ''}`, T.tabShop);
+    const shopTab = h(
+      'button',
+      `px-btn vh-back rd-tab${mode.kind === 'shop' ? ' px-btn--gold is-on' : ''}`,
+      T.tabShop,
+    );
     shopTab.type = 'button';
     shopTab.dataset['key'] = 'raid-shop-tab';
     shopTab.addEventListener('click', () =>
       go({ kind: 'shop', boss: mode.kind === 'shop' ? mode.boss : content.raids.bosses[0]!.id }),
     );
-    tabs.replaceChildren(back, raidTab, shopTab);
+    tabs.replaceChildren(raidTab, shopTab);
   }
 
   // ---- the ladder ------------------------------------------------------------------------------

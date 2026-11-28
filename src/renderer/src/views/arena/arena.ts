@@ -12,10 +12,11 @@ import {
   type ArenaTry,
 } from '../../../../game';
 import { cardTierArt, ITEM_VIEWBOX } from '../../art/items';
+import rankText from '../../art/rankFrameText.json';
 import { animatedSpriteHtml } from '../../art/pixel/sprites';
 import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
-import type { TableContext, ViewHandle } from '../../table/contract';
+import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
 import { coinHtml, shopCards } from '../../ui/shopCards';
 import { ARENA_COPY as T } from './copy';
 import {
@@ -47,11 +48,15 @@ const set = (node: HTMLElement, text: string): void => {
 export function frameHtml(
   mode: 'arena' | 'raid',
   rankId: string,
-  top: string,
+  number: string,
   season: string,
   scale = 1,
 ): string {
-  return `<div class="col-frame" style="--fs:${scale}">${animatedSpriteHtml(`frame-${mode}-${rankId}`, scale)}<span class="col-frame__top">${top}</span><span class="col-frame__season">${season}</span></div>`;
+  const spec = (RANK_TEXT.frames as Record<string, FrameTextSpec | undefined>)[`${mode}-${rankId}`];
+  const text = spec
+    ? `<span class="col-frame__medal" style="left:${spec.medallion_centre[0]! * scale}px;top:${spec.medallion_centre[1]! * scale}px;font-size:${8 * spec.text_size_of_8px_font * scale}px;color:${spec.colour};text-shadow:${spec.shadow_offset_px[0]! * scale}px ${spec.shadow_offset_px[1]! * scale}px 0 ${spec.shadow};gap:${spec.line_gap * scale}px"><span>${number}</span><span>${season}</span></span>`
+    : '';
+  return `<div class="col-frame" style="--fs:${scale}">${animatedSpriteHtml(`frame-${mode}-${rankId}`, scale)}${text}</div>`;
 }
 
 export function weaponBox(slot: TeamSlot, down = false): HTMLElement {
@@ -63,12 +68,24 @@ export function weaponBox(slot: TeamSlot, down = false): HTMLElement {
   return box;
 }
 
-export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandle {
+interface FrameTextSpec {
+  medallion_centre: number[];
+  text_size_of_8px_font: number;
+  colour: string;
+  shadow: string;
+  shadow_offset_px: number[];
+  line_gap: number;
+}
+const RANK_TEXT = rankText;
+
+export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewApi): ViewHandle {
   const { content } = ctx;
   host.classList.add('col');
   const tabs = h('nav', 'col-tabs');
   const body = h('div', 'col-body');
-  host.append(tabs, body);
+  host.append(body);
+  // one row: the title bar's ← Hub, then Arena and Shop in the same bar (the Dungeons view's way)
+  api.setTools(tabs);
   let tab: Tab = 'arena';
   let whole = false;
   let sig = '';
@@ -95,7 +112,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
   const resourceName = (id: string): string => content.resourceById.get(id)?.name ?? id;
 
   function tabButton(label: string, on: boolean, click: () => void, key: string): HTMLElement {
-    const b = h('button', `px-btn col-tab${on ? ' is-on' : ''}`, label);
+    const b = h('button', `px-btn vh-back col-tab${on ? ' px-btn--gold is-on' : ''}`, label);
     b.type = 'button';
     b.dataset['key'] = key;
     b.addEventListener('click', click);
@@ -165,7 +182,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
       if (claimed.frame) {
         const f = frameText(content, claimed.rank, claimed.season);
         const wrap = h('div', 'col-season__frame');
-        wrap.innerHTML = frameHtml(claimed.mode, claimed.rank, f.top, f.season, 2);
+        wrap.innerHTML = frameHtml(claimed.mode, claimed.rank, f.number, f.season, 2);
         panel.append(
           wrap,
           h(
@@ -202,7 +219,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     const steps = chestTrack(content, first!.place, resourceName, first!.mode);
     const mine = steps.find((x) => x.rank.id === rank.id)!;
     panel.append(icon, h('p', 'bi-num', `${mine.rewards}${mine.frame ? ` ${T.frameNote}` : ''}`));
-    const open = h('button', 'px-btn px-btn--primary', T.claim);
+    const open = h('button', 'px-btn px-btn--gold', T.claim);
     open.type = 'button';
     open.dataset['key'] = 'arena-claim';
     open.addEventListener('click', claim);
@@ -223,13 +240,13 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     head.append(title, coins);
     const mid = h('div', 'col-mid');
     mid.append(h('p', 'col-vs px-display', T.vs));
-    const fight = h('button', 'px-btn px-btn--primary col-fight', T.fight);
+    const fight = h('button', 'px-btn px-btn--gold col-fight', T.fight);
     fight.type = 'button';
     fight.dataset['key'] = 'arena-fight';
     fight.disabled =
       !s.open || s.you.length === 0 || s.triesLeft <= 0 || !s.rival || played !== null;
     fight.addEventListener('click', start);
-    const other = h('button', 'px-btn col-other', T.otherRival);
+    const other = h('button', 'px-btn px-btn--quiet col-other', T.otherRival);
     other.type = 'button';
     other.dataset['key'] = 'arena-other';
     other.disabled = !s.open || played !== null;
@@ -243,7 +260,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
     if (warn) mid.append(h('p', 'col-warn', warn));
     if (notice) mid.append(h('p', 'col-warn', notice));
     const youCol = teamColumn(T.you, T.rankLine(s.rank, fmt(s.points)), s.you, s.yourPower, 'you');
-    youCol.querySelector('.col-side__name')!.append(h('small', 'col-rankname', ` ${s.rankName}`));
+    youCol.querySelector('.col-side__name')!.append(h('small', 'col-rankname', ` ${s.title}`));
     const rivalCol = s.rival
       ? teamColumn(
           s.rival.row.name,
@@ -427,12 +444,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext): ViewHandl
   // ---- tabs and the tick -------------------------------------------------------------------------
 
   function buildTabs(): void {
-    const back = h('button', 'px-btn col-tab', T.hub);
-    back.type = 'button';
-    back.dataset['key'] = 'arena-hub';
-    back.addEventListener('click', () => ctx.close());
     tabs.replaceChildren(
-      back,
       tabButton(T.tabArena, tab === 'arena', () => go('arena'), 'arena-tab'),
       tabButton(T.tabShop, tab === 'shop', () => go('shop'), 'arena-shop-tab'),
     );

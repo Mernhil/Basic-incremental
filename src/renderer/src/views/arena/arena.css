@@ -16,11 +16,23 @@
 .col-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
 }
 .col-tab.is-on {
   background: var(--px-gold, #f5a623);
   color: #1b1208;
+}
+/* one row: the title bar's ← Hub and the tabs; the view's own name is for screen readers only */
+.vh-view[data-view='arena'] .vh-title,
+.vh-view[data-view='raids'] .vh-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.vh-view[data-view='arena'] .vh-tools,
+.vh-view[data-view='raids'] .vh-tools {
+  margin-left: 0;
 }
 .col-body {
   display: flex;
@@ -150,11 +162,13 @@
 }
 .col-fight {
   width: 100%;
-  font-size: 24px;
-  padding: 14px 0;
+  font-size: 32px;
+  padding: 18px 0;
 }
 .col-other {
-  width: 100%;
+  width: 70%;
+  font-size: 18px;
+  padding: 8px 0;
 }
 .col-tries {
   color: var(--bi-frame-ink-muted, #b8b2a4);
@@ -321,20 +335,15 @@
 .col-frame img {
   display: block;
 }
-.col-frame__top,
-.col-frame__season {
+/* the rank text sits only in the medallion, as the final frames' spec says (art/rankFrameText.json) */
+.col-frame__medal {
   position: absolute;
-  left: 0;
-  right: 0;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
   white-space: nowrap;
   line-height: 1;
-}
-.col-frame__top {
-  top: calc(44px * var(--fs, 1));
-}
-.col-frame__season {
-  top: calc(208px * var(--fs, 1));
 }
 /* the Shop tab */
 .col-shopbar {
@@ -361,4 +370,11 @@
 /* the view fills the width under the header (the generic page cap would leave the right side empty) */
 .shell-page.col {
   max-width: none;
+}
+
+/* the active sub-tab is gold (beats the theme's button rules) */
+html .px-btn.col-tab.is-on:not(#_px) {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+  border-color: #ffd66e;
 }

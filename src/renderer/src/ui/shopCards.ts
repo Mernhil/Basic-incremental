@@ -71,7 +71,11 @@ export function shopCards(
     } else perk.append(h('span', 'sh-card__perkline', SHOP_COPY.noPerk));
     const price = h('p', 'sh-card__price bi-num');
     price.innerHTML = `${coinHtml(coinSprite, 1)}<span>${fmt(e.price)}</span>`;
-    const buy = h('button', 'px-btn sh-card__buy', e.owned ? SHOP_COPY.owned : SHOP_COPY.buy);
+    const buy = h(
+      'button',
+      `px-btn sh-card__buy${e.owned || !e.canAfford ? '' : ' px-btn--gold'}`,
+      e.owned ? SHOP_COPY.owned : SHOP_COPY.buy,
+    );
     buy.type = 'button';
     buy.dataset['key'] = `shop-buy-${e.card.id}`;
     buy.disabled = e.owned || !e.canAfford;
