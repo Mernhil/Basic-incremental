@@ -377,6 +377,16 @@ export const STATS = [
   'stars.loot',
   /** Expedition slots (DESIGN.md §15 Expeditions): base 1, the account tree and the Starlight shop add. */
   'expedition.slots',
+  /** Farming posts (DESIGN.md §2 A team farms a finished dungeon). Scope: dungeon; base 1.
+   *  `farm.yield` scales everything a post earns, `farm.speed` everything and its XP too. */
+  'farm.yield',
+  'farm.speed',
+  'farm.money',
+  'farm.materials',
+  'farm.shards',
+  'farm.fragments',
+  'farm.herbs',
+  'farm.xp',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -2790,6 +2800,59 @@ export const expeditionsSchema = z.strictObject({
 });
 export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 
+/** A farming-post trait (DESIGN.md §2 A team farms a finished dungeon): picked at a milestone, it
+ *  gives modifiers on the farm stats, scoped to the post's dungeon by `src/game/farming.ts`. */
+export const farmTraitSchema = z.strictObject({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  text: z.string().min(1),
+  modifiers: z
+    .array(z.strictObject({ stat: z.enum(STATS), kind: z.enum(MODIFIER_KINDS), value: decimal }))
+    .min(1),
+});
+export type FarmTrait = z.output<typeof farmTraitSchema>;
+
+/** Farming posts: every number of the rule (DESIGN.md §2 A team farms a finished dungeon). */
+export const farmingSchema = z.strictObject({
+  /** The share of a dungeon's hourly pay a full team earns, by the highest difficulty finished. */
+  difficultyShare: z.strictObject({
+    normal: z.number().positive(),
+    hard: z.number().positive(),
+    nightmare: z.number().positive(),
+  }),
+  /** Boss-table rolls an hour of fighting there is worth (the base of "what fighting brings"). */
+  rollsPerHour: z.number().positive(),
+  /** Farming-only drops per hour at a full team, times the dungeon's tier. */
+  perHourPerTier: z.strictObject({
+    heirloomShards: z.number().nonnegative(),
+    scrollFragments: z.number().nonnegative(),
+    herbBundles: z.number().nonnegative(),
+  }),
+  /** Scroll fragments that make one Summon Scroll, paid at once when they add up. */
+  fragmentsPerScroll: z.number().int().min(1),
+  /** Post level: XP is farming hours at a full team; a level needs `baseHours` × `growth`^(level-1). */
+  level: z.strictObject({
+    max: z.number().int().min(1),
+    baseHours: z.number().positive(),
+    growth: z.number().min(1),
+    /** Every level adds this percent to everything the post earns. */
+    yieldPercent: z.number().nonnegative(),
+    /** A trait pick opens at every multiple of this level. */
+    traitEvery: z.number().int().min(1),
+  }),
+  /** Herb bundles a trait reroll costs. */
+  rerollCost: z.number().int().min(0),
+  /** The post upgrade: herb bundles buy levels that add to everything the post earns. */
+  upgrade: z.strictObject({
+    maxLevel: z.number().int().min(1),
+    baseCost: z.number().positive(),
+    growth: z.number().min(1),
+    yieldPercent: z.number().nonnegative(),
+  }),
+  traits: z.array(farmTraitSchema).min(3),
+});
+export type FarmingConfig = z.output<typeof farmingSchema>;
+
 /** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
 export const CHALLENGE_RESTRICTIONS = [
   /** The fighting loadout's supports give no effect and no health. */
@@ -3049,6 +3112,7 @@ export const contentSchemas = {
   /** Save format 27 (the table update): content for rules not built yet. */
   bonds: z.array(bondSchema),
   expeditions: expeditionsSchema,
+  farming: farmingSchema,
   challenges: z.array(ascensionChallengeSchema),
   skills: skillsFileSchema,
   moves: movesFileSchema,

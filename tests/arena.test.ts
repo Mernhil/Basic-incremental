@@ -366,8 +366,8 @@ describe('raid coins and the raid season', () => {
 });
 
 describe('saving', () => {
-  it('the arena is saved and loaded, and the format is 48', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(48);
+  it('the arena is saved and loaded, and the format is 49', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(49);
     const s = syncSeason(teamOf(TEAM), content, S1 + DAY);
     s.arena.coins = 42;
     s.arena.raidCoins = { tide_queen: 9 };

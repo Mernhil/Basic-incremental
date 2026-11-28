@@ -123,10 +123,17 @@ export const MIGRATIONS: MigrationTable = {
   /** v46 -> v47: auto-challenge is a default feature (DESIGN.md §6 Challenge): it is on for every
    *  dungeon once, and the Auto-push item leaves the Starlight shop with its price paid back. */
   46: v46ToV47,
-  /** v47 -> v48: the arena and the raid shops (DESIGN.md Arena and raids): no season, no coins,
-   *  nothing bought. */
+  /** v47 -> v48: farming posts (DESIGN.md §2 A team farms a finished dungeon): none yet. */
   47: v47ToV48,
+  /** v48 -> v49: the arena and the raid shops (DESIGN.md Arena and raids): no season, no coins,
+   *  nothing bought. */
+  48: v48ToV49,
 };
+
+/** v47 -> v48 (DESIGN.md §2 A team farms a finished dungeon): every save starts with no posts. */
+function v47ToV48(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, farming: { posts: {} } };
+}
 
 /**
  * The camp's slots by level when save format 40 was made (a snapshot of `camp.json`): the rows of
@@ -382,9 +389,9 @@ const V46_REMOVED_ITEMS: readonly (readonly [string, number, number])[] = [
   ['wide_skies', 8, 2],
 ];
 
-/** v47 -> v48 (DESIGN.md Arena and raids): an empty arena record; the first season starts when the
+/** v48 -> v49 (DESIGN.md Arena and raids): an empty arena record; the first season starts when the
  *  game next looks at the clock. */
-function v47ToV48(state: Record<string, unknown>): Record<string, unknown> {
+function v48ToV49(state: Record<string, unknown>): Record<string, unknown> {
   return {
     ...state,
     arena: {

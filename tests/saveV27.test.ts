@@ -269,6 +269,10 @@ describe('v26 -> v27 (the table update)', () => {
     delete (scaled['resources'] as Record<string, unknown>)['summon_scroll'];
     delete (scaled['resources'] as Record<string, unknown>)['glamour_scroll'];
     delete resources['heirloom_scroll'];
+    // format 48: farming posts, and the two resources they pay
+    delete resources['scroll_fragment'];
+    delete resources['herb_bundle'];
+    delete again['farming'];
     // the formation is placed when the save is read (the migration only flags it)
     delete scaled['arrangeFormation'];
     const placed = again as {

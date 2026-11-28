@@ -25,8 +25,9 @@ describe('resource icons', () => {
     for (const id of KEPT_ICONS) {
       expect(MANIFEST[`res-${id}`], id).toMatchObject({ w: 32, h: 32 });
       expect(keptIconMarkup(id), id).toContain(`res-${id}`);
-      const r = content.resourceById.get(id)!;
-      expect(resourceIconMarkup(r), id).toBe(keptIconMarkup(id));
+      // Heirloom shards are a drop that goes straight to the Heirlooms, not a stored resource.
+      const r = content.resourceById.get(id);
+      if (r) expect(resourceIconMarkup(r), id).toBe(keptIconMarkup(id));
     }
   });
 
