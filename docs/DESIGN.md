@@ -65,6 +65,7 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 _Built (overview, Jobs, roles and elements): the five elements water, fire, earth, light and dark, on T6 and Heirloom cards only (user, 2026-11-21: "i think its best to do the usual water, fire, earth light and dark")._
 
 - [To build] **Wildwood Heirloom backdrops** (user, 2026-11-22, handing a list of open questions to Claude: "your picks"; the content is Claude's). The twelve Wildwood Heirlooms get backgrounds later; the batch itself is built (overview, Heirlooms and batches). Today: no Wildwood Heirloom has a backdrop.
+- [To build] **A loadout per mode** (user, 2026-11-28: "we should also probably b3e able tos et different loadouts for different tabs like raids arena dungeon etc"; in the click windows the same day, the modes: "Dungeons, Raids, Arena, Training"; each starts as a copy of the current team; on one card in several loadouts: "Yes, any mode"). Dungeons, Raids, Arena and Training each get a fighting loadout of their own; the farming posts keep their own teams. Each mode's loadout starts as a copy of the current team, and one card may sit in several mode loadouts at once: for example, the same Heirloom bow can be in the Raids and the Arena loadout, and changing the Arena loadout leaves the Raids one as it is. Each mode's loadout keeps the loadout rules (four slots, the Heirloom and starter limits, the cost cap). Today: one fighting loadout serves dungeons, raids and the arena; each dungeon remembers the loadout it was left with (overview, Presets); the Training ground dummy has four trial slots of its own with a copy-the-loadout button (overview, Base camp).
 
 ### Dungeons
 
@@ -143,6 +144,8 @@ _Built (overview, Summon and pulls): the portal level, the T6 pity, the first 10
 
 ### Arena and raids
 
+- [Default] **A loadout per mode: three fill-ins** (Claude, 2026-11-28, to confirm; section 2, Fights): the loadout cost cap applies to each mode's loadout on its own; loadout presets, where the game has them, can be applied to any mode; the loadout picker shows which mode is being edited.
+- A loadout per mode, against what the game has (section 2, Fights): (1) each dungeon already remembers its own loadout; does the Dungeons loadout replace that, or does each dungeon keep its own inside the Dungeons mode? (2) Training already has its own four trial slots; are those the Training loadout? (3) A farming post refuses a card in the fighting loadout; does it still refuse a card in the Dungeons loadout only, or in any mode's? Meanwhile one loadout is in the game.
 - Rank frames: where does a rank frame go on a card (a Wardrobe slot of its own, or the card frame slot)? Meanwhile frames are only kept and shown when a chest is opened. Rank titles are a Default (section 4): are they wanted, and what do they unlock?
 - The three worker Heirlooms in the raid shops (a pickaxe and two logging axes) have no raid perk, because they never fight. Keep that, or give them a perk for working (more output)?
 
