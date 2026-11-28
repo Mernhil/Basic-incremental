@@ -2,7 +2,6 @@ import {
   claimDaily,
   collectModifiers,
   dailyAvailable,
-  Decimal,
   defaultRng,
   FOCUS_PORTAL_ID,
   focusKinds,
@@ -47,6 +46,7 @@ import {
   heirloomDeckView,
   heirloomRevealViews,
   lastHandView,
+  lockedHeirloomState,
   oddsTable,
   portalView,
   tierBoxes,
@@ -837,17 +837,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   /** A locked Heirloom's face in the reveal and the hand: its card as it will be when unlocked. */
   function heirloomFace(s: GameState, cardId: string) {
-    const ghost = structuredClone(s);
-    ghost.cards.owned[cardId] = {
-      tier: 'heirloom',
-      stars: 1,
-      level: 1,
-      xp: new Decimal(0),
-      starFill: 0,
-      enhancements: [],
-      skillOpen: false,
-    };
-    return cardFaceProps(content, ghost, cardId);
+    return cardFaceProps(content, lockedHeirloomState(s, cardId), cardId);
   }
 
   // ---- the strip: the Card Portal's level, first 10-pull, T6 pity, chances and tier boxes ----

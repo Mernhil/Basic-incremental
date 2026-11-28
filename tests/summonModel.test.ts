@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardInfo,
   cardNameById,
   Decimal,
   portalInfo,
@@ -25,6 +26,7 @@ import {
   deckLayers,
   handSummary,
   lastHandView,
+  lockedHeirloomState,
   oddsTable,
   portalView,
   tierBoxes,
@@ -336,5 +338,19 @@ describe('the new reveal', () => {
     const cuts = t.steps.filter((s) => s.kind === 'cutin');
     expect(cuts).toHaveLength(2);
     expect(cuts[1]!.at).toBeGreaterThanOrEqual(cuts[0]!.at + CUTIN_MS);
+  });
+});
+
+describe('a locked Heirloom in the reveal (the pull lock bug)', () => {
+  it('previews an unlocked card without breaking the numbers or touching the save', () => {
+    const state = freshState();
+    const card = content.cards.find((c) => c.heirloom)!;
+    expect(state.cards.owned[card.id]).toBeUndefined();
+    const ghost = lockedHeirloomState(state, card.id);
+    expect(ghost.cards.owned[card.id]?.tier).toBe('heirloom');
+    expect(state.cards.owned[card.id]).toBeUndefined();
+    // the Cards page maths reads resources as Decimals; a structuredClone turned them into plain objects
+    expect(() => cardInfo(ghost, content, card.id)).not.toThrow();
+    expect(ghost.resources['star_dust'] ?? new Decimal(0)).toBeInstanceOf(Decimal);
   });
 });

@@ -4,6 +4,8 @@ import { ITEM_KINDS, RARITIES, type Content, type Rarity } from '../../../data';
 import {
   cardDisplayName,
   cardNameById,
+  cloneState,
+  Decimal,
   type GameState,
   type HeirloomGateInfo,
   type HeirloomPull,
@@ -647,4 +649,23 @@ export function doorPx(wantCss: number, dpr: number): number {
 /** The sprite name a weapon's art markup draws (`data-sprite="..."`), or null. */
 export function spriteNameOf(markup: string): string | null {
   return /data-sprite="([^"]+)"/.exec(markup)?.[1] ?? null;
+}
+
+/**
+ * The save with a locked Heirloom added as a fresh card, for its face in the reveal and the hand.
+ * It is a `cloneState` copy: a `structuredClone` turns every Decimal into a plain object, and the
+ * face maths then throws and leaves the page's pull lock on for good.
+ */
+export function lockedHeirloomState(state: GameState, cardId: string): GameState {
+  const ghost = cloneState(state);
+  ghost.cards.owned[cardId] = {
+    tier: 'heirloom',
+    stars: 1,
+    level: 1,
+    xp: new Decimal(0),
+    starFill: 0,
+    enhancements: [],
+    skillOpen: false,
+  };
+  return ghost;
 }
