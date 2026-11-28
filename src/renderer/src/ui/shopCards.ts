@@ -1,5 +1,8 @@
 import type { Content } from '../../../data';
-import type { ShopEntry } from '../../../game';
+import type { GameState, ShopEntry } from '../../../game';
+import { cardFaceProps } from '../pages/loadoutCards';
+import { lockedHeirloomState } from '../pages/summonModel';
+import { createCard, type CardProps } from './card';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { fmt } from '../settings/numberFormat';
 import { h } from '../shell/shell';
@@ -30,6 +33,16 @@ export function shopSpriteName(card: ShopEntry['card']): string | null {
   return card.shop ? `item-${card.item.kind}-${card.shop.set}-heirloom` : null;
 }
 
+/** The card an arena or raid shop Heirloom shows as: its owned face, or a fresh one (no level chip) while it is not owned. */
+export function shopCardProps(content: Content, state: GameState, cardId: string): CardProps | null {
+  const owned = Boolean(state.cards.owned[cardId]);
+  const props = cardFaceProps(content, owned ? state : lockedHeirloomState(state, cardId), cardId);
+  if (!props) return null;
+  if (owned) return props;
+  const { face: _face, ...bare } = props;
+  return bare;
+}
+
 /** A coin picture (48 x 48 sprite) at a scale, or a plain dot when it has none. */
 export function coinHtml(name: string, scale = 1): string {
   return sprite(name)
@@ -42,6 +55,7 @@ export function shopCards(
   coinSprite: string,
   mode: 'arena' | 'raid',
   content: Content,
+  state: GameState,
   onBuy: (cardId: string) => void,
 ): HTMLElement {
   const grid = h('div', 'sh-grid');
@@ -50,7 +64,9 @@ export function shopCards(
     card.dataset['card'] = e.card.id;
     const art = h('div', 'sh-card__art');
     const name = shopSpriteName(e.card);
-    if (name && sprite(name)) art.innerHTML = animatedSpriteHtml(name, 3, 'sh-card__pic');
+    // the Heirloom as a real card: the batch's kit and backdrop around its picture
+    const props = name && sprite(name) ? shopCardProps(content, state, e.card.id) : null;
+    if (props) art.append(createCard(props).el);
     else {
       art.classList.add('is-empty');
       art.append(h('span', 'sh-card__none', SHOP_COPY.emptySlot));

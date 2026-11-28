@@ -75,3 +75,7 @@
   border: 2px dashed currentColor;
   border-radius: 50%;
 }
+/* the Heirloom is drawn as a real card (kit and backdrop), enlarged to fill its box */
+.sh-card__art .bi-card {
+  zoom: 1.45;
+}

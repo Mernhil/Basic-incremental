@@ -429,7 +429,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
     parts.push(
       entries.length === 0
         ? h('p', 'col-note', T.shopEmpty)
-        : shopCards(entries, 'coin-arena', 'arena', content, (id) => {
+        : shopCards(entries, 'coin-arena', 'arena', content, state, (id) => {
             const r = buyShopHeirloom(ctx.state(), content, id);
             if (!r.ok) return;
             ctx.apply(r.state);

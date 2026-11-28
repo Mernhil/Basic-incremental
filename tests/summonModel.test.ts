@@ -34,6 +34,9 @@ import {
   revealViews,
   wishlistPanelView,
 } from '../src/renderer/src/pages/summonModel';
+import { cardStyle } from '../src/data';
+import { resolveCard } from '../src/game';
+import { sprite } from '../src/renderer/src/art/pixel/sprites';
 import { content, freshState } from './helpers';
 
 const portal = content.portals[0]!;
@@ -352,5 +355,21 @@ describe('a locked Heirloom in the reveal (the pull lock bug)', () => {
     // the Cards page maths reads resources as Decimals; a structuredClone turned them into plain objects
     expect(() => cardInfo(ghost, content, card.id)).not.toThrow();
     expect(ghost.resources['star_dust'] ?? new Decimal(0)).toBeInstanceOf(Decimal);
+  });
+});
+
+describe('shop Heirlooms wear a card kit and a backdrop', () => {
+  it('every arena and raid shop Heirloom resolves to a baked kit and backdrop picture', () => {
+    const shop = content.cards.filter((c) => c.shop);
+    expect(shop.length).toBeGreaterThan(0);
+    for (const c of shop) {
+      const theme = resolveCard(
+        content,
+        { slots: {}, cards: {} },
+        { id: c.id, rank: { tier: 'heirloom', stars: 1 }, rarity: cardStyle(c) },
+      );
+      expect(sprite(`${theme.baseKit}-window`), c.id).toBeTruthy();
+      expect(theme.backdrop && sprite(theme.backdrop.bg), c.id).toBeTruthy();
+    }
   });
 });

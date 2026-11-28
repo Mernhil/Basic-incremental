@@ -362,6 +362,7 @@ export function createRaidsView(host: HTMLElement, ctx: TableContext, api: ViewA
         coinSprite(boss.element),
         'raid',
         content,
+        state,
         (id) => {
           const r = buyShopHeirloom(ctx.state(), content, id);
           if (!r.ok) return;
