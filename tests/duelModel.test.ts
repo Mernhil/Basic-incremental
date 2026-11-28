@@ -219,7 +219,7 @@ describe('the left column and the panels', () => {
   });
 
   it('opens a panel and closes it on a second click', () => {
-    expect(DUEL_PANELS).toEqual(['dungeons', 'weapon', 'training']);
+    expect(DUEL_PANELS).toEqual(['dungeons', 'weapon', 'training', 'farming']);
     expect(togglePanel(null, 'weapon')).toBe('weapon');
     expect(togglePanel('weapon', 'weapon')).toBeNull();
     expect(togglePanel('weapon', 'training')).toBe('training');

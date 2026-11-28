@@ -68,6 +68,10 @@ export const KEPT_ICONS: readonly string[] = [
   'facet_shard',
   'star_dust',
   'starlight',
+  // Farming posts' own drops (user, 2026-11-27, approved): Heirloom shards are not a stored resource.
+  'scroll_fragment',
+  'herb_bundle',
+  'heirloom_shard',
 ];
 
 /** The sprite name of a resource's kept icon, or null when it has none (Money). */

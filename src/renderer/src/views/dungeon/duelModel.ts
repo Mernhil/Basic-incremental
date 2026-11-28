@@ -350,8 +350,8 @@ export function clock(seconds: number): string {
 
 // ---- the full view's panels --------------------------------------------------------------------
 
-export type DuelPanel = 'dungeons' | 'weapon' | 'training';
-export const DUEL_PANELS: readonly DuelPanel[] = ['dungeons', 'weapon', 'training'];
+export type DuelPanel = 'dungeons' | 'weapon' | 'training' | 'farming';
+export const DUEL_PANELS: readonly DuelPanel[] = ['dungeons', 'weapon', 'training', 'farming'];
 
 /** The panel open after a click on `clicked`'s button: it opens, or closes when it was open. */
 export function togglePanel(open: DuelPanel | null, clicked: DuelPanel): DuelPanel | null {

@@ -11,7 +11,7 @@ import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { materialRate } from './camp';
 import { producersOf } from './production';
-import { cloneState, isOnTrip, type ExpeditionTrip, type GameState } from './state';
+import { cloneState, inFarmTeam, isOnTrip, type ExpeditionTrip, type GameState } from './state';
 import { slotWorkers } from './camp';
 import { forgeWorker } from './workers';
 
@@ -43,6 +43,8 @@ export type ExpeditionFailure =
   | 'on-trip'
   /** The card is in the fighting loadout. */
   | 'in-loadout'
+  /** The card sits in a farming post's team. */
+  | 'in-farm-team'
   /** The card works a tree, a mine or the forge. */
   | 'at-work'
   /** Every expedition slot is in use. */
@@ -133,6 +135,7 @@ export function tripProblem(
   if (!isPlaceOpen(state, place)) return 'locked';
   if (!content.expeditions.durationsHours.includes(hours)) return 'bad-length';
   if (isOnTrip(state, cardId)) return 'on-trip';
+  if (inFarmTeam(state, cardId)) return 'in-farm-team';
   const busy = busyWith(state, content, cardId);
   if (busy) return busy;
   if (state.expeditions.trips.length >= expeditionSlots(state, content, modifiers)) {

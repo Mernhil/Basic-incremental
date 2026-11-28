@@ -10,6 +10,7 @@ import {
   cloneBursts,
   cloneCards,
   cloneFloors,
+  cloneFarming,
   cloneHeirlooms,
   cloneRaids,
   DIFFICULTIES,
@@ -21,11 +22,14 @@ import {
   cloneState,
   createInitialState,
   MAX_CHALLENGE_COMPLETIONS,
+  type FarmingState,
+  type FarmPost,
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { arrangeSavedFormations, isStarterCard, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
+import { postXpNeed } from './farming';
 import { settleTierRewards } from './tierRewards';
 import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints, fitWebToPoints } from './account';
@@ -34,7 +38,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 47;
+export const CURRENT_SAVE_VERSION = 48;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -229,6 +233,23 @@ export const serializedStateSchema = z.object({
     pulls: z.number().int().min(0),
     trees: z.record(z.string(), z.array(z.string())),
   }),
+  /** v48: farming posts (DESIGN.md §2 A team farms a finished dungeon). */
+  farming: z
+    .object({
+      posts: z.record(
+        z.string(),
+        z.object({
+          team: z.array(z.string().nullable()),
+          level: z.number().int().min(1),
+          xp: z.number().min(0).finite(),
+          traits: z.array(z.string()),
+          rerolls: z.number().int().min(0),
+          upgrade: z.number().int().min(0),
+          carry: z.record(z.string(), z.number().min(0).finite()),
+        }),
+      ),
+    })
+    .default({ posts: {} }),
   /** v30 migration only: the Heirlooms the cards had at the Heirloom tier, made into cards on load. */
   heirloomMigration: z
     .array(z.object({ card: z.string(), stars: z.number().int(), level: z.number().int() }))
@@ -330,6 +351,7 @@ export function serializeState(state: GameState): SerializedState {
       completions: { ...state.ascensionChallenges.completions },
     },
     heirlooms: cloneHeirlooms(state.heirlooms),
+    farming: cloneFarming(state.farming),
     account: {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
@@ -865,6 +887,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
       .map((t) => ({ ...t })),
     completed: saved.expeditions.completed,
   };
+  state.farming = loadFarming(saved.farming, state, content);
   const challengeIds = new Set(content.challenges.map((c) => c.id));
   const active = saved.ascensionChallenges.active;
   state.ascensionChallenges = {
@@ -875,6 +898,51 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
         .map(([id, n]) => [id, Math.min(n, MAX_CHALLENGE_COMPLETIONS)]),
     ),
   };
+}
+
+/**
+ * Farming posts of a save (DESIGN.md §2 A team farms a finished dungeon): posts of unknown
+ * dungeons go; a team keeps only owned fighting cards that sit in one team only (the fighting
+ * loadout wins) and are not away; level, traits and upgrade stay inside their ranges.
+ */
+function loadFarming(
+  saved: { posts: Record<string, FarmPost> },
+  state: GameState,
+  content: Content,
+): FarmingState {
+  const config = content.farming;
+  const used = new Set<string>(
+    state.cards.loadouts.fighting.slots.filter((id): id is string => id !== null),
+  );
+  for (const trip of state.expeditions.trips) used.add(trip.cardId);
+  const posts: Record<string, FarmPost> = {};
+  for (const [dungeonId, p] of Object.entries(saved.posts)) {
+    if (!content.dungeonById.has(dungeonId)) continue;
+    const team = Array.from({ length: LOADOUT_SLOTS }, (_, i) => {
+      const id = p.team[i] ?? null;
+      const card = id === null ? undefined : content.cardById.get(id);
+      if (id === null || !card || card.job !== 'fighting' || !state.cards.owned[id] || used.has(id))
+        return null;
+      used.add(id);
+      return id;
+    });
+    const level = Math.min(config.level.max, Math.max(1, p.level));
+    const traits: string[] = [];
+    for (const id of p.traits) {
+      if (config.traits.some((t) => t.id === id) && !traits.includes(id)) traits.push(id);
+    }
+    traits.length = Math.min(traits.length, Math.floor(level / config.level.traitEvery));
+    posts[dungeonId] = {
+      team,
+      level,
+      xp: level >= config.level.max ? 0 : Math.min(p.xp, postXpNeed(config, level)),
+      traits,
+      rerolls: p.rerolls,
+      upgrade: Math.min(p.upgrade, config.upgrade.maxLevel),
+      carry: Object.fromEntries(Object.entries(p.carry).map(([k, v]) => [k, Math.min(v, 1)])),
+    };
+  }
+  return { posts };
 }
 
 /** Star levels a stage has (DESIGN.md §6 Stage stars): a chest count never goes past this. */

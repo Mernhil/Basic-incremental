@@ -79,6 +79,62 @@ export interface GameState {
   /** The Heirloom Gate's counters, Heirloom shards and trees (DESIGN.md §7, §10). Save format 30.
    *  Kept through prestige. The Heirloom cards themselves are in `cards.owned`. */
   heirlooms: HeirloomState;
+  /** Farming posts (DESIGN.md §2 A team farms a finished dungeon). Save format 48. Kept through prestige. */
+  farming: FarmingState;
+}
+
+/** One dungeon's farming post: a team of up to four fighting cards, and what the post has grown to. */
+export interface FarmPost {
+  /** Always LOADOUT_SLOTS entries. A card sits in one team at a time (the fighting loadout counts). */
+  team: (string | null)[];
+  /** 1 to `farming.json` `level.max`. The post grows, not the cards: swapping cards loses nothing. */
+  level: number;
+  /** Farming hours (at a full team) towards the next level. */
+  xp: number;
+  /** Trait ids picked, in order (one per `level.traitEvery` levels reached). */
+  traits: string[];
+  /** Rerolls of the pending trait offer (the offer is derived from this, so it is not saved). */
+  rerolls: number;
+  /** Post upgrade levels bought with herb bundles. */
+  upgrade: number;
+  /** Part-units of the farming-only drops, under one whole each, carried between steps. */
+  carry: Record<string, number>;
+}
+
+export interface FarmingState {
+  /** Dungeon id -> its post, once the post was used. */
+  posts: Record<string, FarmPost>;
+}
+
+/** Whether a card sits in any farming post's team (it cannot also fight or go away). */
+export function inFarmTeam(state: Pick<GameState, 'farming'>, cardId: string): boolean {
+  return Object.values(state.farming.posts).some((p) => p.team.includes(cardId));
+}
+
+export function initialFarming(): FarmingState {
+  return { posts: {} };
+}
+
+export function initialPost(): FarmPost {
+  return {
+    team: Array<string | null>(LOADOUT_SLOTS).fill(null),
+    level: 1,
+    xp: 0,
+    traits: [],
+    rerolls: 0,
+    upgrade: 0,
+    carry: {},
+  };
+}
+
+export function clonePost(p: FarmPost): FarmPost {
+  return { ...p, team: [...p.team], traits: [...p.traits], carry: { ...p.carry } };
+}
+
+export function cloneFarming(f: FarmingState): FarmingState {
+  return {
+    posts: Object.fromEntries(Object.entries(f.posts).map(([id, p]) => [id, clonePost(p)])),
+  };
 }
 
 /** Heirlooms (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom trees). */
@@ -529,6 +585,7 @@ export function createInitialState(content: Content): GameState {
     expeditions: initialExpeditions(),
     ascensionChallenges: initialAscensionChallenges(),
     heirlooms: initialHeirlooms(),
+    farming: initialFarming(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -582,6 +639,7 @@ export function cloneState(state: GameState): GameState {
       completions: { ...state.ascensionChallenges.completions },
     },
     heirlooms: cloneHeirlooms(state.heirlooms),
+    farming: cloneFarming(state.farming),
     account: {
       ...state.account,
       skills: { ...state.account.skills },
