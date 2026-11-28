@@ -39,7 +39,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 50;
+export const CURRENT_SAVE_VERSION = 51;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -74,6 +74,8 @@ export const serializedStateSchema = z.object({
   /** v42: the Training ground's dummy: its damage and the team on trial. */
   dummy: z.object({ damage: decimalText, team: z.array(z.string().nullable()) }),
   clearedDungeons: z.array(z.string()),
+  /** v51: dungeons cleared in earlier runs (an Ascension empties `clearedDungeons`). */
+  clearedBefore: z.array(z.string()).default([]),
   combat: z.object({
     /** v24: floors per dungeon and difficulty (DESIGN.md §6). */
     floors: z.record(
@@ -84,7 +86,12 @@ export const serializedStateSchema = z.object({
         autoChallenge: z.boolean(),
         tiers: z.partialRecord(
           z.enum(DIFFICULTIES),
-          z.object({ floor: z.number().int().min(1), best: z.number().int().min(0) }),
+          z.object({
+            floor: z.number().int().min(1),
+            best: z.number().int().min(0),
+            /** v51: the deepest floor ever beaten (kept through Ascension). */
+            record: z.number().int().min(0).optional(),
+          }),
         ),
       }),
     ),
@@ -357,6 +364,7 @@ export function serializeState(state: GameState): SerializedState {
     camp: cloneCamp(state.camp),
     dummy: { damage: decimalToString(state.dummy.damage), team: [...state.dummy.team] },
     clearedDungeons: [...state.clearedDungeons],
+    clearedBefore: [...state.clearedBefore],
     combat: {
       floors: cloneFloors(state.combat.floors),
       training: { ...state.combat.training },
@@ -471,6 +479,9 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   }
   // Unknown ids (removed from the game) are dropped.
   state.clearedDungeons = saved.clearedDungeons.filter(
+    (id) => content.dungeonById.has(id) || content.trialById.has(id),
+  );
+  state.clearedBefore = saved.clearedBefore.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
   );
   state.tutorial = { given: saved.tutorial.given };

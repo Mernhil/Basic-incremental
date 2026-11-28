@@ -699,7 +699,7 @@ export const COPY = {
     unlocked: 'Unlocked',
     notUnlocked: 'Not unlocked',
     unlockedShort: 'Owned',
-    headStart: (percent: number) => `New runs start on ${percent}% of your best floors`,
+    headStart: (percent: number) => `New runs skip the first ${percent}% of your best floors`,
     buy: 'Buy level',
     maxed: 'Max level',
     price: (amount: string) => `${amount} Starlight`,

@@ -18,8 +18,12 @@ export interface GameState {
   camp: CampState;
   /** The Training ground's test dummy: its damage and the team on trial. See dummy.ts. */
   dummy: DummyState;
-  /** Dungeons cleared at least once. Kept through prestige; clearing one unlocks mine types. */
+  /** Dungeons cleared this run: they open the next dungeon. An Ascension empties it (DESIGN.md
+   *  section 2, Ascension fully resets the maps). Clearing one also unlocks mine types. */
   clearedDungeons: string[];
+  /** Dungeons cleared in earlier runs. Kept through prestige; with `clearedDungeons` it is "ever
+   *  cleared" (`everCleared`): mines, expeditions, achievements and the first-clear purse read it. Save format 51. */
+  clearedBefore: string[];
   /** Floors, stage kills and the Glimmer Trial attempt. See combat.ts. */
   combat: CombatState;
   /** The fighting burst gauge (signature attack). */
@@ -496,8 +500,11 @@ export interface TierProgress {
    *  once a floor is beaten (floors.ts `floorPosition` reads it so). Reset by Ascension to half of
    *  `best`. */
   floor: number;
-  /** The deepest floor beaten (0 = none). Kept through Ascension. */
+  /** The deepest floor beaten this run (0 = none). An Ascension resets it (to the Head Start floor). */
   best: number;
+  /** The deepest floor ever beaten: kept through Ascension for stats, Head Start and the farming
+   *  posts. Missing in a save from before format 51 (read as `best`). */
+  record?: number;
 }
 
 /** A dungeon's floors: the difficulty chosen, auto-challenge, and the progress on each difficulty. */
@@ -638,6 +645,14 @@ export function initialCamp(content: Content): CampState {
 /** The tutorial area's id (`dungeons.json`): clearing it opens Mossy Cellar but not the x2 speed. */
 export const TUTORIAL_AREA_ID = 'thistledown_farm';
 
+/** Whether a dungeon was ever cleared, in this run or an earlier one. */
+export function everCleared(
+  state: Pick<GameState, 'clearedDungeons' | 'clearedBefore'>,
+  id: string,
+): boolean {
+  return state.clearedDungeons.includes(id) || state.clearedBefore.includes(id);
+}
+
 /**
  * The baseline state: what a save is rebuilt on and what rule tests start from. It owns the start
  * cards and has the tutorial area done (`tutorial.given` full: Mossy Cellar open, no cards to hand out), like a save that
@@ -654,6 +669,7 @@ export function createInitialState(content: Content): GameState {
     camp: initialCamp(content),
     dummy: initialDummy(content),
     clearedDungeons: [],
+    clearedBefore: [],
     combat: initialCombat(),
     bursts: initialBursts(),
     activeDungeonId: content.dungeons[0]?.id ?? null,
@@ -705,6 +721,7 @@ export function cloneState(state: GameState): GameState {
     camp: cloneCamp(state.camp),
     dummy: { damage: state.dummy.damage, team: [...state.dummy.team] },
     clearedDungeons: [...state.clearedDungeons],
+    clearedBefore: [...state.clearedBefore],
     combat: cloneCombat(state.combat),
     bursts: cloneBursts(state.bursts),
     pity: { ...state.pity },

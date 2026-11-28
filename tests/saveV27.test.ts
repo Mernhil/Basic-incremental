@@ -227,10 +227,15 @@ describe('v26 -> v27 (the table update)', () => {
     for (const key of V27_COMBAT) delete combat[key];
     for (const p of Object.values(combat['floors'] as Record<string, Record<string, unknown>>)) {
       delete p['autoChallenge'];
+      for (const tier of Object.values(p['tiers'] as Record<string, Record<string, unknown>>)) {
+        delete tier['record'];
+      }
     }
     // format 38 added the skill web's levels to the account
     // format 50 added the tutorial area's hand-outs
     delete again['tutorial'];
+    // format 51 added the earlier runs' cleared dungeons
+    delete again['clearedBefore'];
     delete (again['account'] as Record<string, unknown>)['web'];
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];
@@ -240,6 +245,10 @@ describe('v26 -> v27 (the table update)', () => {
     const floors = (expected['combat'] as Record<string, unknown>)['floors'];
     for (const p of Object.values(floors as Record<string, Record<string, unknown>>)) {
       delete p['mode'];
+      // format 51 added each tier's record; the old save's tiers are compared without it
+      for (const tier of Object.values(p['tiers'] as Record<string, Record<string, unknown>>)) {
+        delete tier['record'];
+      }
     }
     // The shared health pool is gone: each team card's own health replaced it (package 7).
     delete (expected['combat'] as Record<string, unknown>)['loadoutDamage'];

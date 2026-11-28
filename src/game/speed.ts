@@ -10,7 +10,11 @@ export type SpeedLock = 'clear' | 'ascend';
 /** Whether the player has earned `speed`. x1 is always open. */
 export function isSpeedUnlocked(state: GameState, speed: number): boolean {
   if (speed <= 1) return true;
-  if (speed === 2) return state.clearedDungeons.some((id) => id !== TUTORIAL_AREA_ID);
+  if (speed === 2)
+    return (
+      state.prestigeCount > 0 ||
+      [...state.clearedDungeons, ...state.clearedBefore].some((id) => id !== TUTORIAL_AREA_ID)
+    );
   if (speed === 4) return state.prestigeCount > 0;
   return false;
 }

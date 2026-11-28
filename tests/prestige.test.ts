@@ -207,7 +207,8 @@ describe('ascend', () => {
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);
     expect(s.cosmetics.owned['holo_hex']).toBeDefined();
     expect(s.camp.level).toBe(12);
-    expect(s.clearedDungeons).toEqual(['mossy_cellar', 'frostspire_vault']);
+    expect(s.clearedDungeons).toEqual([]);
+    expect(s.clearedBefore).toEqual(['mossy_cellar', 'frostspire_vault']);
     expect(s.mastery).toEqual(before.mastery);
     expect(s.portals).toEqual(before.portals);
   });

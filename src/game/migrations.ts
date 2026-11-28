@@ -131,7 +131,28 @@ export const MIGRATIONS: MigrationTable = {
   /** v49 -> v50: the tutorial area Thistledown Farm before Mossy Cellar (DESIGN.md section 2): a save
    *  with a beaten Mossy Cellar floor counts the area as done and gets no cards; one without starts in it. */
   49: v49ToV50,
+  /** v50 -> v51: Ascension fully resets the maps (DESIGN.md section 2): `clearedBefore` (dungeons
+   *  cleared in earlier runs) starts empty and each tier's `record` is its best floor. */
+  50: v50ToV51,
 };
+
+function v50ToV51(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const floors = isRecord(combat['floors']) ? combat['floors'] : {};
+  const next: Record<string, unknown> = {};
+  for (const [id, progress] of Object.entries(floors)) {
+    if (!isRecord(progress) || !isRecord(progress['tiers'])) {
+      next[id] = progress;
+      continue;
+    }
+    const tiers: Record<string, unknown> = {};
+    for (const [d, tier] of Object.entries(progress['tiers'])) {
+      tiers[d] = isRecord(tier) ? { ...tier, record: Number(tier['best']) || 0 } : tier;
+    }
+    next[id] = { ...progress, tiers };
+  }
+  return { ...state, clearedBefore: [], combat: { ...combat, floors: next } };
+}
 
 /** v47 -> v48 (DESIGN.md §2 A team farms a finished dungeon): every save starts with no posts. */
 function v47ToV48(state: Record<string, unknown>): Record<string, unknown> {

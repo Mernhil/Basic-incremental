@@ -11,7 +11,14 @@ import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { materialRate } from './camp';
 import { producersOf } from './production';
-import { cloneState, inFarmTeam, isOnTrip, type ExpeditionTrip, type GameState } from './state';
+import {
+  cloneState,
+  everCleared,
+  inFarmTeam,
+  isOnTrip,
+  type ExpeditionTrip,
+  type GameState,
+} from './state';
 import { slotWorkers } from './camp';
 import { forgeWorker } from './workers';
 
@@ -89,7 +96,7 @@ export function expeditionSlots(
 
 /** A place is open once its dungeon is cleared. */
 export function isPlaceOpen(state: GameState, place: ExpeditionPlace): boolean {
-  return state.clearedDungeons.includes(place.dungeon);
+  return everCleared(state, place.dungeon);
 }
 
 /** The places that are open, in content order. */

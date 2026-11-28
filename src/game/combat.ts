@@ -78,6 +78,7 @@ import {
 } from './stageStars';
 import {
   cloneState,
+  everCleared,
   type BurstGauge,
   type Difficulty,
   type DungeonProgress,
@@ -1517,7 +1518,7 @@ function fightDungeon(
     // down to the floor won. Clearing (DESIGN.md §6): the Normal last-floor boss died. The last
     // floor of a tier also opens the next one (floors.ts `isDifficultyUnlocked`).
     const tier = ensureTier(next, dungeon);
-    const first = tier.best < stage.floor;
+    const first = Math.max(tier.best, tier.record ?? 0) < stage.floor;
     // Heirloom Scrolls (DESIGN.md §3): the first win of a Nightmare last-floor boss and every
     // tenth endless depth. Later Nightmare boss kills pay theirs below, outside a Challenge too.
     const heirloomScrolls = payHeirloomScrollsForClear(
@@ -1547,6 +1548,7 @@ function fightDungeon(
       }
     }
     tier.best = Math.max(tier.best, stage.floor);
+    tier.record = Math.max(tier.record ?? 0, tier.best);
     tier.floor = stage.floor;
     next.combat.challenge = null;
     next.combat.challengeWaitSeconds = 0;
@@ -1943,13 +1945,15 @@ function addResource(state: GameState, resource: string, amount: Decimal | numbe
 /** Records a first clear and what it unlocks. */
 function markCleared(next: GameState, content: Content, id: string, report: TickReport): void {
   if (isDungeonCleared(next, id)) return;
+  // A dungeon cleared again after an Ascension opens the next one again, but pays no first-clear purse.
+  const first = !everCleared(next, id);
   const dungeon = content.dungeonById.get(id);
   if (dungeon) {
     const result = clearDungeon(next, content, id);
     next.clearedDungeons = result.state.clearedDungeons;
-    report.unlockedMines.push(...result.unlockedMines);
+    if (first) report.unlockedMines.push(...result.unlockedMines);
     // The first-clear purse (DESIGN.md §3).
-    for (const purse of dungeon.drops.firstClear) {
+    for (const purse of first ? dungeon.drops.firstClear : []) {
       addResource(next, purse.resource, purse.amount);
       report.currencies[purse.resource] =
         (report.currencies[purse.resource] ?? 0) + purse.amount.toNumber();

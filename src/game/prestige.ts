@@ -6,7 +6,7 @@ import { isProductionGem } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, resetProduction, type Price } from './production';
-import { initialBursts, startingAmount, type GameState } from './state';
+import { initialBursts, startingAmount, TUTORIAL_AREA_ID, type GameState } from './state';
 import { keepUpgrades } from './upgrades';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
@@ -324,11 +324,25 @@ export function ascend(
   const runFloors: Record<string, number> = {};
   for (const [dungeonId, progress] of Object.entries(next.combat.floors)) {
     progress.autoChallenge = true;
+    const dungeon = content.dungeonById.get(dungeonId);
+    // The tutorial area is done for good and keeps its floors.
+    if (dungeon?.tutorial) continue;
+    // Full reset: the chosen tier goes back to Normal and every map starts over. Head Start counts
+    // its share of the record's floors as already beaten.
+    progress.difficulty = 'normal';
     for (const [difficulty, tier] of Object.entries(progress.tiers)) {
-      tier.floor = ascensionStartFloor(tier.best, headStart);
-      runFloors[`${dungeonId}:${difficulty}`] = tier.best > 0 ? tier.floor : 0;
+      const record = Math.max(tier.best, tier.record ?? 0);
+      const skipped = dungeon
+        ? ascensionStartFloor(record, headStart, floorCount(dungeon, difficulty as Difficulty))
+        : 0;
+      tier.record = record;
+      tier.best = skipped;
+      tier.floor = Math.max(1, skipped);
+      runFloors[`${dungeonId}:${difficulty}`] = skipped;
     }
   }
+  next.clearedBefore = [...new Set([...state.clearedBefore, ...state.clearedDungeons])];
+  next.clearedDungeons = state.clearedDungeons.filter((id) => id === TUTORIAL_AREA_ID);
   next.combat = {
     ...next.combat,
     // Training is bought again each run, unless Lasting Training is owned (DESIGN.md §6 Training).
@@ -427,11 +441,11 @@ export function grantLevel(
 export const keepsTraining = (state: GameState, content: Content): boolean =>
   grantLevel(state, content, 'keep_training') > 0;
 
-/** Percent of the best floor a run starts on: 50 and Head Start's levels, at most 100. */
+/** Percent of the best floor Head Start skips: its levels' share, at most 100. */
 export function headStartPercent(state: GameState, content: Content): number {
   const item = content.prestige.shop.find((i) => i.grants === 'head_start');
   const per = item?.percent ?? 0;
-  return Math.min(100, 50 + per * grantLevel(state, content, 'head_start'));
+  return Math.min(100, per * grantLevel(state, content, 'head_start'));
 }
 
 /** Starlight price of the next level (through `cost.multiplier`), or null at the max level. */

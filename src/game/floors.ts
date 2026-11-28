@@ -137,8 +137,10 @@ export interface FloorPosition {
   /** The floor being farmed, 1 to the floor count (the depth, in the endless depths). Once a floor
    *  is beaten it is never above the best one (DESIGN.md §6 Farming and Challenge). */
   floor: number;
-  /** The deepest floor beaten on this difficulty (0 = none). Kept through Ascension. */
+  /** The deepest floor beaten on this difficulty this run (0 = none). An Ascension resets it. */
   best: number;
+  /** The deepest floor ever beaten on this difficulty: kept through Ascension (never below `best`). */
+  record: number;
   /** Floors on this difficulty; Infinity in the endless depths. */
   floors: number;
   /** The floor a Challenge fights (`challengeFloor`), or null when there is none. */
@@ -170,6 +172,7 @@ export function floorPosition(
     autoChallenge: progress.autoChallenge,
     floor,
     best,
+    record: Math.max(best, Math.floor(tier.record ?? 0) || 0),
     floors,
     challengeFloor: challengeFloor(floor, best, floors),
   };
@@ -219,9 +222,17 @@ export function hasDeeperFloor(position: Pick<FloorPosition, 'floor' | 'floors'>
   return position.floor < position.floors;
 }
 
-/** The floor an Ascension starts a dungeon tier on: `percent` (50 and Head Start's levels) of the best floor, at least floor 1. */
-export function ascensionStartFloor(best: number, percent = 50): number {
-  return Math.max(1, Math.floor((best * percent) / 100));
+/**
+ * The floors Head Start skips on a full reset: `percent` (Head Start's levels, 0 without it) of the
+ * best floor ever beaten, never the last floor of the tier (`floors`), so a boss is always fought.
+ * 0 means start from floor 1.
+ */
+export function ascensionStartFloor(
+  record: number,
+  percent = 0,
+  floors = Number.POSITIVE_INFINITY,
+): number {
+  return Math.max(0, Math.min(Math.floor((record * percent) / 100), floors - 1));
 }
 
 /**
