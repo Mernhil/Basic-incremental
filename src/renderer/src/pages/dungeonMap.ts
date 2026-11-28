@@ -161,6 +161,10 @@ function portrait(
 }
 
 export function createDungeonMap(ctx: PageContext): DungeonMap {
+  // the tutorial area (not a real dungeon in the rules) leads the map
+  const mapDungeons: Dungeon[] = ctx.content.tutorialArea
+    ? [ctx.content.tutorialArea, ...ctx.content.dungeons]
+    : ctx.content.dungeons;
   const { content } = ctx;
 
   const el = h('div', 'wm');
@@ -224,7 +228,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       s.clearedDungeons,
       s.prestigeCount,
       selected,
-      content.dungeons.map((d) => {
+      s.tutorial.given,
+      mapDungeons.map((d) => {
         const p = floorPosition(s, d);
         return [p.difficulty, p.best, p.floor, p.challengeFloor];
       }),
@@ -317,7 +322,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
   }
 
   function buildList(s: GameState): void {
-    list.replaceChildren(...content.dungeons.map((d) => plate(d, false, s)));
+    list.replaceChildren(...mapDungeons.map((d) => plate(d, false, s)));
     trials.replaceChildren(...content.trials.map((t) => plate(t, true, s)));
   }
 
@@ -383,6 +388,8 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       : DUEL_COPY.depthOnTier(pos.best + 1, COPY.dungeons.difficulty[difficulty] ?? difficulty);
     head.append(title, h('span', 'wm-sub', at));
     DIFFICULTIES.forEach((diff, i) => {
+      // the tutorial area has Normal only
+      if (d.tutorial && diff !== 'normal') return;
       const open = isDifficultyUnlocked(s, d, diff);
       const b = h('button', `wm-badge${diff === difficulty ? ' is-on' : ''}`) as HTMLButtonElement;
       b.type = 'button';
@@ -708,7 +715,9 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
     };
     const owned = s.inventory[d.drops.rare.itemId] ?? 0;
     const rows = h('ul', 'wm-droplist');
-    if (kind === 'boss') {
+    // a chance of 0 means the dungeon drops none (the tutorial area)
+    const hasRare = d.drops.rare.chance > 0;
+    if (kind === 'boss' && hasRare) {
       rows.append(
         row(
           owned > 0 ? `${rareName} (${COPY.dungeons.owned(owned)})` : rareName,
@@ -728,14 +737,18 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
           c.resource,
         ),
       ),
-      row(
-        resName(scaled.material.resource),
-        scaled.material.amount > 1
-          ? `${pct(scaled.material.chance)} ×${scaled.material.amount}`
-          : pct(scaled.material.chance),
-        '',
-        scaled.material.resource,
-      ),
+      ...(scaled.material.chance > 0
+        ? [
+            row(
+              resName(scaled.material.resource),
+              scaled.material.amount > 1
+                ? `${pct(scaled.material.chance)} ×${scaled.material.amount}`
+                : pct(scaled.material.chance),
+              '',
+              scaled.material.resource,
+            ),
+          ]
+        : []),
       ...scaled.extraMaterials.map((extra) =>
         row(
           resName(extra.resource),
@@ -755,7 +768,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
           )),
     );
     box.append(rows);
-    if (kind === 'boss') {
+    if (kind === 'boss' && hasRare) {
       const pity = h('div', 'wm-pity');
       const value = h('b', 'bi-num');
       const track = h('div', 'wm-pity__track');
@@ -773,7 +786,7 @@ export function createDungeonMap(ctx: PageContext): DungeonMap {
       });
       box.append(pity);
     }
-    box.append(h('p', 'wm-note', DUEL_COPY.harderMore));
+    if (!d.tutorial) box.append(h('p', 'wm-note', DUEL_COPY.harderMore));
     return box;
   }
 
