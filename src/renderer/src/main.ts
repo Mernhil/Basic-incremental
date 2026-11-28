@@ -10,6 +10,7 @@ import '@fontsource/pixelify-sans/700.css';
 import '@fontsource/atkinson-hyperlegible/400.css';
 import '@fontsource/atkinson-hyperlegible/700.css';
 import { installBrowserApi } from './web/installBrowserApi';
+import { installPhoneApp } from './web/phoneApp';
 import { installLogCapture } from './settings/logBuffer';
 import { installMotionPref } from './settings/motion';
 import { installDesignScale } from './ui/designScale';
@@ -18,7 +19,7 @@ import { installPixelScale } from './ui/pixelFit';
 // before anything else: recent log lines for Report an issue, and the reduced-motion override
 installLogCapture();
 // in a plain browser (the phone build) there is no desktop shell: saves go to browser storage
-installBrowserApi();
+if (installBrowserApi()) installPhoneApp();
 installMotionPref();
 // the whole UI is laid out at 1920 x 1080 and zoomed to the window (before the pixel scale reads it)
 installDesignScale();

@@ -6,7 +6,8 @@
  * `getBoundingClientRect` and `clientX` all stay in the same (design) CSS px.
  * A window that is not 16:9 gets a design area larger than 1920 x 1080 on one side (the layouts
  * flex; the painted backgrounds cover it), so there is never an empty band.
- * The browser (phone) build has no page zoom and keeps its own size.
+ * The browser (phone) build has no page zoom: on a touch screen the viewport meta tag carries the
+ * design size (`web/phoneViewport.ts`), on a desktop browser it keeps its own size.
  */
 import { designZoom } from './designZoom';
 
@@ -14,6 +15,11 @@ let scaled = false;
 
 /** True once the page zoom is carrying the design size (the desktop app). */
 export const isDesignScaled = (): boolean => scaled;
+
+/** The phone build's viewport (web/phoneApp.ts) carries the design size instead of a page zoom: the pixel-scale code then works in design px too. */
+export function markDesignScaled(): void {
+  scaled = true;
+}
 
 /** Once, early: keeps the page zoom at the window's fit, now and on every resize. */
 export function installDesignScale(): void {

@@ -6,8 +6,9 @@ import { createBrowserApi } from './browserApi';
 declare const __BI_WEB_VERSION__: string | undefined;
 
 /** Installs the browser `window.api` unless the desktop shell already provided one. */
-export function installBrowserApi(): void {
-  if ((window as { api?: AppApi }).api) return;
+/** Returns true when it installed the browser api (the page is the web build). */
+export function installBrowserApi(): boolean {
+  if ((window as { api?: AppApi }).api) return false;
   window.api = createBrowserApi({
     storage: window.localStorage,
     version: typeof __BI_WEB_VERSION__ === 'string' ? __BI_WEB_VERSION__ : '0.0.0',
@@ -28,4 +29,5 @@ export function installBrowserApi(): void {
       chrome: navigator.userAgent,
     },
   });
+  return true;
 }
