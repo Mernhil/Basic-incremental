@@ -95,7 +95,7 @@
     {
       "id": "head_start",
       "name": "Head Start",
-      "description": "Each run starts 4% deeper into your best floors",
+      "description": "Each run starts 10% of your best floors in",
       "maxLevel": 5,
       "cost": {
         "base": "10",
@@ -103,7 +103,7 @@
       },
       "perLevel": [],
       "grants": "head_start",
-      "percent": 4
+      "percent": 10
     },
     {
       "id": "long_night",

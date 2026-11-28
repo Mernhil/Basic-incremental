@@ -221,6 +221,7 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
       autoChallenge: true,
       floor: 1,
       best: 0,
+      record: 0,
       floors: 10,
       challengeFloor: 1,
     });
@@ -638,11 +639,10 @@ describe('offline, Ascension and goals', () => {
     expect(isDungeonCleared(climbed.state, 'mossy_cellar')).toBe(true);
   });
 
-  it('restarts each dungeon at half of its best floor on an Ascension, auto-challenge on', () => {
-    expect(ascensionStartFloor(0)).toBe(1);
-    expect(ascensionStartFloor(1)).toBe(1);
-    expect(ascensionStartFloor(9)).toBe(4);
-    expect(ascensionStartFloor(30)).toBe(15);
+  it('restarts each dungeon on floor 1 on an Ascension, keeps the record, auto-challenge on', () => {
+    expect(ascensionStartFloor(30)).toBe(0);
+    expect(ascensionStartFloor(30, 10)).toBe(3);
+    expect(ascensionStartFloor(30, 50, 10)).toBe(9);
     const state = freshState();
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
@@ -665,14 +665,20 @@ describe('offline, Ascension and goals', () => {
     expect(result.state.combat.floors['mossy_cellar']).toMatchObject({
       difficulty: 'normal',
       autoChallenge: true,
-      tiers: { normal: { floor: 5, best: 10 } },
+      tiers: { normal: { floor: 1, best: 0, record: 10 } },
     });
-    expect(floorPosition(result.state, cellar).challengeFloor).toBe(6);
+    expect(floorPosition(result.state, cellar).challengeFloor).toBe(1);
     expect(result.state.combat.challenge).toBeNull();
     expect(result.state.combat.challengeWaitSeconds).toBe(0);
     expect(result.state.combat.enemyIndex).toBe(0);
-    expect(result.state.combat.floors['ember_crypt']!.tiers.normal).toEqual({ floor: 6, best: 13 });
-    expect(isDungeonCleared(result.state, 'mossy_cellar')).toBe(true);
+    expect(result.state.combat.floors['ember_crypt']!.tiers.normal).toEqual({
+      floor: 1,
+      best: 0,
+      record: 13,
+    });
+    // The unlock is gone (the maps start over); the record of the clear is not.
+    expect(isDungeonCleared(result.state, 'mossy_cellar')).toBe(false);
+    expect(result.state.clearedBefore).toContain('mossy_cellar');
   });
 
   it('shows the way down as the progress of the "Clear" goal', () => {

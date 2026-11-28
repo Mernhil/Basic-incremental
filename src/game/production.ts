@@ -1,7 +1,7 @@
 import type { Content, CostCurve, Mine, ProductionJob, Tree } from '../data';
 import { type Modifier, type StatContext, statValue } from './modifiers';
 import { Decimal } from './num';
-import { cloneState, type GameState } from './state';
+import { cloneState, everCleared, type GameState } from './state';
 
 /**
  * What is left of production (DESIGN.md section 2 Base camp): the six materials (woods and ores),
@@ -50,10 +50,7 @@ export function isProducerUnlocked(
 ): boolean {
   const material = (job === 'logging' ? content.treeById : content.mineById).get(id);
   if (!material) return false;
-  return (
-    material.unlockedByDungeon === null ||
-    state.clearedDungeons.includes(material.unlockedByDungeon)
-  );
+  return material.unlockedByDungeon === null || everCleared(state, material.unlockedByDungeon);
 }
 
 /** The open materials of a job, in content order. */

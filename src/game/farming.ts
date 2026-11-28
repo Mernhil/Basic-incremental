@@ -74,7 +74,7 @@ export function finishedDifficulty(
   if (!dungeon) return null;
   let top: FarmDifficulty | null = null;
   for (const difficulty of FARM_DIFFICULTIES) {
-    if (floorPosition(state, dungeon, difficulty).best < dungeon.floors) break;
+    if (floorPosition(state, dungeon, difficulty).record < dungeon.floors) break;
     top = difficulty;
   }
   return top;

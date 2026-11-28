@@ -29,7 +29,7 @@ export function measureQuest(
     }
     case 'floor_reached': {
       const dungeon = content.dungeonById.get(condition.dungeon);
-      const best = dungeon ? floorPosition(state, dungeon, condition.difficulty).best : 0;
+      const best = dungeon ? floorPosition(state, dungeon, condition.difficulty).record : 0;
       return { value: best, target: condition.floor };
     }
     case 'cards_owned':

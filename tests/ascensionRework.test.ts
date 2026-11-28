@@ -168,8 +168,8 @@ describe('prizes, preview and the new run', () => {
     const state = openAscension(climbed(20));
     const r = ascend(state, content);
     if (!r.ok) throw new Error(r.reason);
-    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(10);
-    expect(r.state.prestige.runFloors['mossy_cellar:normal']).toBe(10);
+    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(1);
+    expect(r.state.prestige.runFloors['mossy_cellar:normal']).toBe(0);
     expect(starlightBreakdown(r.state, content).floors).toBe(0);
   });
 });
@@ -220,15 +220,25 @@ describe('the Starlight shop of unlocks', () => {
     expect(kept.state.combat.training).toEqual({ sharpen: 4 });
   });
 
-  it('Head Start starts the next run deeper than half of the best floor', () => {
+  it('Head Start skips a share of the best floor, never the last floor', () => {
     const state = openAscension(climbed(30));
-    state.combat.floors['mossy_cellar']!.tiers['normal'] = { floor: 30, best: 30 };
-    expect(headStartPercent(state, content)).toBe(50);
+    state.combat.floors['ember_crypt'] = {
+      difficulty: 'normal',
+      autoChallenge: false,
+      tiers: { normal: { floor: 20, best: 20 } },
+    };
+    expect(headStartPercent(state, content)).toBe(0);
     state.prestige.shop['head_start'] = 2;
-    expect(headStartPercent(state, content)).toBe(58);
+    expect(headStartPercent(state, content)).toBe(20);
     const r = ascend(state, content);
     if (!r.ok) throw new Error(r.reason);
-    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.floor).toBe(17);
+    expect(r.state.combat.floors['ember_crypt']!.tiers.normal).toMatchObject({
+      floor: 4,
+      best: 4,
+      record: 20,
+    });
+    // 20% of 30.
+    expect(r.state.combat.floors['mossy_cellar']!.tiers.normal!.best).toBe(6);
   });
 
   it('an Ascension turns auto-challenge on for every dungeon, and nothing in the shop gates it', () => {
@@ -291,7 +301,7 @@ describe('save format 46', () => {
 
   it('loads at the current version with the new fields', () => {
     const text = createSaveText(freshState(), 1);
-    expect(JSON.parse(text).version).toBe(50);
+    expect(JSON.parse(text).version).toBe(51);
     expect(readSave(text, content).state.prestige.runFloors).toEqual({});
   });
 });

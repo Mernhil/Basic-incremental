@@ -235,19 +235,19 @@ describe('difficulty tiers', () => {
     expect(fightStage(at(2), content, 'mossy_cellar')!.scale.purse).toBe(1);
   });
 
-  it('keeps every tier through an Ascension and restarts each at half of its best floor', () => {
+  it('locks Hard and Nightmare again on an Ascension and keeps their records', () => {
     const state = on(on(freshState(), plain, 8, 'hard'), plain, 4, 'nightmare');
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
     openAscension(state);
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
     const after = result.state;
-    expect(unlockedDifficulties(after, cellar)).toEqual(['normal', 'hard', 'nightmare']);
-    expect(floorPosition(after, cellar, 'normal')).toMatchObject({ floor: 5, best: 10 });
-    expect(floorPosition(after, cellar, 'hard')).toMatchObject({ floor: 5, best: 10 });
-    expect(floorPosition(after, cellar, 'nightmare')).toMatchObject({ floor: 2, best: 4 });
-    // The difficulty chosen is kept too.
-    expect(floorPosition(after, cellar).difficulty).toBe('nightmare');
+    expect(unlockedDifficulties(after, cellar)).toEqual(['normal']);
+    expect(floorPosition(after, cellar, 'normal')).toMatchObject({ floor: 1, best: 0, record: 10 });
+    expect(floorPosition(after, cellar, 'hard')).toMatchObject({ floor: 1, best: 0, record: 10 });
+    expect(floorPosition(after, cellar, 'nightmare')).toMatchObject({ best: 0, record: 4 });
+    // The chosen difficulty goes back to Normal.
+    expect(floorPosition(after, cellar).difficulty).toBe('normal');
   });
 });
 
@@ -318,13 +318,17 @@ describe('endless depths', () => {
     expect(floorPosition(bottom, cellar).floor).toBe(1);
   });
 
-  it('resets the depth to half of the best one on an Ascension and keeps the best', () => {
+  it('resets the depth to 1 on an Ascension and keeps the record', () => {
     const state = on(freshState(), plain, 31, 'endless');
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
     openAscension(state);
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
-    expect(floorPosition(result.state, cellar, 'endless')).toMatchObject({ floor: 15, best: 31 });
+    expect(floorPosition(result.state, cellar, 'endless')).toMatchObject({
+      floor: 1,
+      best: 0,
+      record: 31,
+    });
   });
 
   it('never climbs deeper offline with auto-challenge off', () => {

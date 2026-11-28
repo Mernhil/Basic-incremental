@@ -9,7 +9,7 @@ import { stageStarLevel, totalStageStarLevels } from './stageStars';
 import { totalChallengeCompletions } from './challenges';
 import { forgeWorker } from './workers';
 import type { TickReport } from './report';
-import { cloneState, type GameState } from './state';
+import { cloneState, everCleared, type GameState } from './state';
 import { cosmeticMaxLevel, detectSets } from './theme';
 import { grantCosmetic } from './wardrobe';
 import type { CosmeticGain } from './portals';
@@ -48,7 +48,7 @@ export function measure(
       return { value: unlocked.length, target: condition.count ?? all.length };
     }
     case 'cleared':
-      return { value: state.clearedDungeons.includes(condition.dungeon) ? 1 : 0, target: 1 };
+      return { value: everCleared(state, condition.dungeon) ? 1 : 0, target: 1 };
     case 'pulls':
       return {
         value: Object.values(state.portals).reduce((a, p) => a + p.pulls, 0),
@@ -127,14 +127,15 @@ export function measure(
     case 'tier_cleared': {
       const beaten = content.dungeons.filter(
         (d) =>
-          floorPosition(state, d, condition.difficulty).best >= floorCount(d, condition.difficulty),
+          floorPosition(state, d, condition.difficulty).record >=
+          floorCount(d, condition.difficulty),
       ).length;
       return { value: beaten, target: condition.count ?? content.dungeons.length };
     }
     case 'endless_depth': {
       const deepest = Math.max(
         0,
-        ...content.dungeons.map((d) => floorPosition(state, d, 'endless').best),
+        ...content.dungeons.map((d) => floorPosition(state, d, 'endless').record),
       );
       return { value: deepest, target: condition.depth };
     }

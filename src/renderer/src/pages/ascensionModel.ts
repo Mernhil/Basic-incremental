@@ -363,7 +363,7 @@ function grantText(o: StarlightOffer): string | null {
     case 'expedition_slot':
       return o.level > 0 ? t.unlocked : t.notUnlocked;
     case 'head_start':
-      return t.headStart(50 + (o.item.percent ?? 0) * o.level);
+      return t.headStart((o.item.percent ?? 0) * o.level);
     default:
       return null;
   }

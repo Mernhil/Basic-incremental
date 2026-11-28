@@ -41,7 +41,8 @@ export function starterGroup(content: Content, cardId: string): StarterGroup | n
 /** The dungeons whose last-floor boss has been beaten on Nightmare. */
 export function nightmareClears(state: GameState, content: Content): number {
   return content.dungeons.filter((d) => {
-    const best = dungeonProgress(state, d.id).tiers.nightmare?.best ?? 0;
+    const t = dungeonProgress(state, d.id).tiers.nightmare;
+    const best = Math.max(t?.best ?? 0, t?.record ?? 0);
     return best >= floorCount(d, 'nightmare');
   }).length;
 }
@@ -49,7 +50,11 @@ export function nightmareClears(state: GameState, content: Content): number {
 /** The dungeons in which an endless depth has been beaten. */
 export function endlessReached(state: GameState, content: Content): number {
   return content.dungeons.filter(
-    (d) => (dungeonProgress(state, d.id).tiers.endless?.best ?? 0) >= 1,
+    (d) =>
+      Math.max(
+        dungeonProgress(state, d.id).tiers.endless?.best ?? 0,
+        dungeonProgress(state, d.id).tiers.endless?.record ?? 0,
+      ) >= 1,
   ).length;
 }
 
