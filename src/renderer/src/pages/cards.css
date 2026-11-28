@@ -1059,6 +1059,8 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
    (DESIGN.md §5 Loadouts) */
 .cp-slots {
   align-items: flex-start;
+  justify-content: center; /* the four slots stand centred in the panel */
+  column-gap: 56px; /* room for the kits' side decorations (LOADOUT_GAP in cards.ts) */
 }
 .cp-slot--back {
   margin-top: calc(var(--card-k) * 44px);

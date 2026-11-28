@@ -23,6 +23,7 @@ import { skinTileMarkup } from './loadoutCards';
 import { enableLoadoutDrag } from './loadoutDrag';
 import type { SkinPickerView } from './cardSkinsModel';
 import { watchFit } from '../ui/pixelFit';
+import { CARD_ART_W } from '../ui/pixelScale';
 import { createSealBlock } from '../ui/sealBlock';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
@@ -66,6 +67,16 @@ const TIER_NAMES: Record<string, string> = TIER_LABELS;
  * four fit that big (a 1080p window); the detail card is 2x (264 x 372).
  */
 const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
+/**
+ * The four loadout slots: each card as big as the panel allows, up to 2x (264 CSS px of art), in
+ * half steps under the design-size zoom. A slot is the card plus the kit's side room (about 40 px per
+ * scale step), and the slots share the row with `LOADOUT_GAP` between them.
+ */
+const LOADOUT_SLOT_WANT = 264;
+const LOADOUT_GAP = 56;
+const LOADOUT_SLOTS = 4;
+/** CSS px of slot per 1x of card art: 132 for the card and about 40 for the kit's side room. */
+const SLOT_PER_SCALE = 172;
 /** Cards across the collection grid, and the gap between them (CSS px). */
 const GRID_COLUMNS = 4;
 const GRID_GAP = 10;
@@ -1096,7 +1107,13 @@ export function createCardsPage(
       );
 
       const slots = h('ol', 'cp-slots');
-      watchFit(slots, { want: CARD_WANT.slot });
+      watchFit(slots, {
+        want: LOADOUT_SLOT_WANT,
+        step: 0.5,
+        max: () =>
+          (((innerWidth(slots) - LOADOUT_GAP * (LOADOUT_SLOTS - 1)) / LOADOUT_SLOTS) * CARD_ART_W) /
+          SLOT_PER_SCALE,
+      });
       const picking = pick && pick.job === job ? pick.slot : null;
       const slotName = (i: number): string => COPY.cards.slotName(i);
       lo.slots.forEach((id, i) => {
