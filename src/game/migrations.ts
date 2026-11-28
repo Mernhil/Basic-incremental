@@ -125,6 +125,9 @@ export const MIGRATIONS: MigrationTable = {
   46: v46ToV47,
   /** v47 -> v48: farming posts (DESIGN.md §2 A team farms a finished dungeon): none yet. */
   47: v47ToV48,
+  /** v48 -> v49: the arena and the raid shops (DESIGN.md Arena and raids): no season, no coins,
+   *  nothing bought. */
+  48: v48ToV49,
 };
 
 /** v47 -> v48 (DESIGN.md §2 A team farms a finished dungeon): every save starts with no posts. */
@@ -385,6 +388,31 @@ const V46_REMOVED_ITEMS: readonly (readonly [string, number, number])[] = [
   ['constellation_crystals', 5, 1.8],
   ['wide_skies', 8, 2],
 ];
+
+/** v48 -> v49 (DESIGN.md Arena and raids): an empty arena record; the first season starts when the
+ *  game next looks at the clock. */
+function v48ToV49(state: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...state,
+    arena: {
+      season: 0,
+      checkedAt: 0,
+      paidThrough: 0,
+      points: 0,
+      wins: 0,
+      losses: 0,
+      day: null,
+      used: 0,
+      rolls: 0,
+      coins: 0,
+      raidCoins: {},
+      raidBest: {},
+      bought: [],
+      chests: [],
+      frames: [],
+    },
+  };
+}
 
 /**
  * v45 -> v46: the Starlight spent on the removed stat items is paid back (the sum of their level

@@ -2,6 +2,7 @@ import { collectionViews } from '../views/collection';
 import { dungeonViews } from '../views/dungeon';
 import { gatheringViews } from '../views/gathering';
 import { metaViews } from '../views/meta';
+import { arenaViews } from '../views/arena';
 import { raidsViews } from '../views/raids';
 import type { TablePieceDef, ViewDef, ViewId, ViewPackage } from './contract';
 
@@ -16,6 +17,7 @@ export const PACKAGES: readonly ViewPackage[] = [
   collectionViews, // 9c: Cards, Summon, Wardrobe
   metaViews, // 9d: Skill Tree, Achievements, Shop, Upgrades, Settings
   raidsViews, // the Raids view, opened from the hub's Raid gate
+  arenaViews, // the Arena view, opened from the hub's colosseum
 ];
 
 /** The dock, left to right (user, mockup 4a). */

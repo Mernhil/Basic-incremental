@@ -56,8 +56,8 @@ describe('a card arrives at its own tier and stays there (DESIGN.md §5 No tier-
       }
     }
     expect(content.cards.filter((c) => c.tier === 'mythic')).toHaveLength(116);
-    expect(content.cards.filter((c) => c.tier === 'heirloom')).toHaveLength(34);
-    expect(content.cards).toHaveLength(205);
+    expect(content.cards.filter((c) => c.tier === 'heirloom' && !c.shop)).toHaveLength(34);
+    expect(content.cards).toHaveLength(229); // 24 shop Heirlooms (arena and raids)
   });
 
   it('only T6 and Heirloom cards have a side, and the grade is the tier or that side', () => {

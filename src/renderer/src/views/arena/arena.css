@@ -1,0 +1,380 @@
+/* The Arena view: sub-tabs, the duel floor, the ladder, the season chest track and the Shop tab.
+   Panels and buttons are the shell's; sizes are design pixels of the 1920 x 1080 layout. */
+@font-face {
+  font-family: 'BI Rank Numerals';
+  src: url('../../art/rank-numerals.ttf') format('truetype');
+  font-display: block;
+}
+.col {
+  padding: 12px 16px;
+}
+.col p,
+.col h2,
+.col h3 {
+  margin: 0;
+}
+.col-tabs {
+  display: flex;
+  gap: 8px;
+}
+.col-tab.is-on {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+}
+/* one row: the title bar's ← Hub and the tabs; the view's own name is for screen readers only */
+.vh-view[data-view='arena'] .vh-title,
+.vh-view[data-view='raids'] .vh-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+.vh-view[data-view='arena'] .vh-tools,
+.vh-view[data-view='raids'] .vh-tools {
+  margin-left: 0;
+}
+.col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.col-note {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 15px;
+}
+.col-gold {
+  color: var(--px-gold, #ffd66e);
+}
+.col-warn {
+  color: var(--px-gold, #ffd66e);
+  text-align: center;
+  font-size: 15px;
+}
+.col-floor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  background-image: radial-gradient(ellipse at 50% 100%, rgba(255, 190, 80, 0.14), transparent 60%);
+}
+.col-floor__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.col-floor__title {
+  color: var(--px-gold, #ffd66e);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+}
+.col-coins {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--px-gold, #ffd66e);
+  font-size: 28px;
+}
+.col-stage {
+  display: grid;
+  grid-template-columns: 1fr 260px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+.col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.col-side--rival {
+  align-items: flex-end;
+  text-align: right;
+}
+.col-side__name {
+  font-size: 34px;
+}
+.col-rankname {
+  font-size: 15px;
+  font-style: italic;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.col-side__sub {
+  color: var(--px-gold, #ffd66e);
+  font-size: 18px;
+}
+.col-side__power {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 14px;
+}
+.col-boxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.col-box {
+  aspect-ratio: 1 / 1.15;
+  display: grid;
+  place-items: center;
+  background: #1b1511;
+  border: 2px solid rgba(255, 214, 110, 0.3);
+  transition:
+    filter 0.4s ease,
+    opacity 0.4s ease;
+}
+.col-box__art {
+  width: 100%;
+  height: 100%;
+}
+.col-box.is-down {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+.col-hp {
+  width: 100%;
+  height: 10px;
+  background: #2a1d17;
+  border: 1px solid rgba(255, 214, 110, 0.3);
+}
+.col-hp i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(#e9c15a, #b9822d);
+}
+.col-side--rival .col-hp i {
+  background: linear-gradient(#d4584a, #8e2a22);
+  margin-left: auto;
+}
+.col-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 30px;
+}
+.col-vs {
+  font-size: 64px;
+  color: var(--px-gold, #ffd66e);
+  line-height: 1;
+}
+.col-fight {
+  width: 100%;
+  font-size: 32px;
+  padding: 18px 0;
+}
+.col-other {
+  width: 70%;
+  font-size: 18px;
+  padding: 8px 0;
+}
+.col-tries {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  font-size: 14px;
+}
+.col-timer {
+  text-align: center;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+  min-height: 1em;
+}
+.col-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 2px solid rgba(255, 214, 110, 0.5);
+  background: rgba(0, 0, 0, 0.35);
+}
+.col-result[data-ending='victory'] h3 {
+  color: #8fe388;
+}
+.col-result[data-ending='defeat'] h3 {
+  color: #e87b6e;
+}
+.col-result__buttons {
+  display: flex;
+  gap: 8px;
+}
+.col-skip {
+  align-self: center;
+}
+.col-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.col-h3 {
+  color: var(--px-gold, #ffd66e);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 19px;
+}
+.col-ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.col-ladder__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.col-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.col-ladder.is-whole .col-rows {
+  max-height: 420px;
+  overflow-y: auto;
+}
+.col-row {
+  display: grid;
+  grid-template-columns: 64px 1fr 150px 90px 90px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: #241a14;
+  border: 2px solid rgba(255, 214, 110, 0.25);
+  font-size: 18px;
+}
+.col-row.is-you {
+  border-color: var(--px-gold, #ffd66e);
+  background: #3a2a14;
+}
+.col-row__rank {
+  color: var(--px-gold, #ffd66e);
+  font-weight: 700;
+}
+.col-row__weapons {
+  display: flex;
+  gap: 2px;
+}
+.col-mini {
+  display: inline-block;
+  width: 34px;
+  height: 34px;
+}
+.col-mini svg {
+  width: 100%;
+  height: 100%;
+}
+.col-row__power,
+.col-row__points {
+  text-align: right;
+}
+.col-row__power {
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.col-whole {
+  align-self: stretch;
+}
+.col-chests {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.col-steps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.col-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  text-align: center;
+  background: #241a14;
+  border: 2px solid rgba(255, 214, 110, 0.25);
+  min-height: 190px;
+}
+.col-step.is-current {
+  border-color: var(--px-gold, #ffd66e);
+  background: #3a2a14;
+}
+.col-step__name {
+  color: var(--px-gold, #ffd66e);
+}
+.col-step__what {
+  font-size: 13px;
+}
+.col-step__frame {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted, #b8b2a4);
+}
+.col-season {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border-color: var(--px-gold, #ffd66e);
+}
+.col-season__frame {
+  display: flex;
+  justify-content: center;
+}
+.col-frame {
+  position: relative;
+  width: calc(212px * var(--fs, 1));
+  height: calc(256px * var(--fs, 1));
+  font-family: 'BI Rank Numerals', monospace;
+  font-size: calc(8px * var(--fs, 1));
+  color: #3a1f0a;
+  image-rendering: pixelated;
+}
+.col-frame img {
+  display: block;
+}
+/* the rank text sits only in the medallion, as the final frames' spec says (art/rankFrameText.json) */
+.col-frame__medal {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  line-height: 1;
+}
+/* the Shop tab */
+.col-shopbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 18px;
+}
+.col-shopbar__coins {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.col-shopbar__label {
+  color: var(--px-gold, #ffd66e);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.col-shopbar__n {
+  color: var(--px-gold, #ffd66e);
+  font-size: 34px;
+}
+
+/* the view fills the width under the header (the generic page cap would leave the right side empty) */
+.shell-page.col {
+  max-width: none;
+}
+
+/* the active sub-tab is gold (beats the theme's button rules) */
+html .px-btn.col-tab.is-on:not(#_px) {
+  background: var(--px-gold, #f5a623);
+  color: #1b1208;
+  border-color: #ffd66e;
+}

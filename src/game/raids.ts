@@ -12,6 +12,7 @@ import {
   weakenFactor,
   type TeamCard,
 } from './duel';
+import { raidCoinsFor } from './arena';
 import { collectModifiers, computeStat, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { cloneState, type GameState } from './state';
@@ -340,6 +341,8 @@ export interface RaidTry {
   levelUp: number | null;
   /** Rewards this try paid (rank rewards, each paid once per boss). */
   rewards: { resource: string; amount: Decimal }[];
+  /** Raid coins of this boss the try paid (the boss's shop, DESIGN.md Arena and raids). */
+  coins: number;
 }
 
 export type RaidTryResult =
@@ -368,6 +371,10 @@ export function tryRaid(
     next.raids.used = {};
   }
   next.raids.used[bossId] = (next.raids.used[bossId] ?? 0) + 1;
+  const coins = raidCoinsFor(content, fight.share, fight.killed);
+  next.arena.raidCoins[bossId] = (next.arena.raidCoins[bossId] ?? 0) + coins;
+  if (next.arena.season > 0 && fight.share > (next.arena.raidBest[bossId] ?? 0))
+    next.arena.raidBest[bossId] = fight.share;
   const newBest = fight.share > (next.raids.best[bossId] ?? 0);
   if (newBest) next.raids.best[bossId] = fight.share;
   const rank = raidRank(content, bossId, next.raids.best[bossId] ?? null);
@@ -389,5 +396,5 @@ export function tryRaid(
     next.raids.level[bossId] = levelUp;
     delete next.raids.best[bossId];
   }
-  return { ok: true, state: next, result: { fight, rank, newBest, levelUp, rewards } };
+  return { ok: true, state: next, result: { fight, rank, newBest, levelUp, rewards, coins } };
 }

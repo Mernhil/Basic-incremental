@@ -93,7 +93,10 @@ export function itemArt(
  * shows the type's tier pictures and original Heirloom (`itemArt` with the card's side). With no tier given it is the card's own.
  */
 export function cardTierArt(
-  card: Pick<Card, 'tier' | 'side' | 'heirloomArt' | 'batch' | 'pictureAlt' | 'starterArt'> & {
+  card: Pick<
+    Card,
+    'tier' | 'side' | 'heirloomArt' | 'batch' | 'pictureAlt' | 'starterArt' | 'shop'
+  > & {
     item: { kind: ItemKind };
   },
   at?: RankTier,
@@ -101,6 +104,8 @@ export function cardTierArt(
   const tier = at ?? card.tier;
   // a starter weapon (DESIGN.md §2) shows its type's starter picture at every tier it can be at
   if (card.starterArt) return itemBoxSprite(`item-${card.item.kind}-starter`);
+  // a shop Heirloom (DESIGN.md Arena and raids): its set's picture; an empty slot until it is drawn
+  if (card.shop) return itemBoxSprite(`item-${card.item.kind}-${card.shop.set}-heirloom`);
   // a card of a later art batch (Leviathan, DESIGN.md §5 Art batches) shows its batch's T6 picture
   // for its side, or the batch's Heirloom picture; below T6 it shows the type's one model
   if (card.batch && (tier === 'mythic' || tier === 'heirloom')) {

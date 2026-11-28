@@ -1,5 +1,5 @@
 import type { Content } from '../../../data';
-import { raidsOpen, type GameState } from '../../../game';
+import { arenaOpen, raidsOpen, type GameState } from '../../../game';
 import type { ViewId } from '../table/viewIds';
 
 /**
@@ -37,6 +37,8 @@ export interface HubBuilding {
   action: HubAction;
   /** The place opens only after the first Ascension (raids): sealed with a plate until then. */
   needsAscension?: true;
+  /** The place opens with the first Ascension's milestone (Frostspire Vault Normal cleared). */
+  needsArenaMilestone?: true;
   /** Views whose pile hints say something waits: the gold "!" shows when any of them is ready. */
   marks: readonly ViewId[];
 }
@@ -74,7 +76,8 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
   {
     id: 'arena',
     name: 'Arena',
-    action: { kind: 'locked', why: 'The arena is not built yet' },
+    action: { kind: 'view', view: 'arena' },
+    needsArenaMilestone: true,
     marks: [],
   },
   {
@@ -150,6 +153,8 @@ export const HUB_BUILDINGS: readonly HubBuilding[] = [
 export function sealWhy(def: HubBuilding, state: GameState, content: Content): string | null {
   if (def.action.kind === 'locked') return def.action.why;
   if (def.needsAscension && !raidsOpen(state, content)) return 'Opens after your first Ascension';
+  if (def.needsArenaMilestone && !arenaOpen(state, content))
+    return 'Opens after Frostspire Vault on Normal';
   return null;
 }
 

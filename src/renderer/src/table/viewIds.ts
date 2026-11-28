@@ -13,6 +13,7 @@ export const VIEW_IDS = [
   'training',
   'expeditions',
   'raids',
+  'arena',
   'upgrades',
   'settings',
 ] as const;

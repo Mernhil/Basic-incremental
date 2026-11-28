@@ -44,4 +44,16 @@ export const RAIDS_COPY = {
   levelUp: (n: number) =>
     `Each kill raises the boss: it is now level ${n + 1}, with more health and a harder hit. Your best score starts again; rank rewards already paid stay paid.`,
   tabBosses: 'Bosses',
+  hub: '← Hub',
+  tabRaid: 'Raid',
+  tabShop: 'Shop',
+  season: (n: number, left: string, place: number | null) =>
+    `Season ${n} · ends in ${left} · ${place === null ? 'no season score yet' : `season rank #${place}`}`,
+  openChest: (n: number) =>
+    n > 1 ? `Open a raid season chest (${n} waiting)` : 'Open the raid season chest',
+  chestOpened: (rank: string, season: number, frame: boolean) =>
+    `Season ${season} chest opened: ${rank}${frame ? ', and a rank frame' : ''}`,
+  shopNote: (boss: string) =>
+    `Heirlooms from ${boss}: their perk works against raid bosses; elsewhere they are a normal Heirloom.`,
+  bought: (name: string) => `${name} bought`,
 };

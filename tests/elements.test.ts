@@ -53,7 +53,7 @@ describe('the five elements', () => {
   it('the 150 T6 and Heirloom cards come out as dark 32, water 25, light 23, fire 36, earth 34', () => {
     const count: Record<string, number> = {};
     for (const card of content.cards) {
-      if (card.element) count[card.element] = (count[card.element] ?? 0) + 1;
+      if (card.element && !card.shop) count[card.element] = (count[card.element] ?? 0) + 1;
     }
     expect(count).toEqual({ dark: 32, water: 25, light: 23, fire: 36, earth: 34 });
   });

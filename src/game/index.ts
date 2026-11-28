@@ -374,4 +374,6 @@ export {
 } from './bossAttacks';
 export * from './elements';
 export * from './raids';
+export * from './arena';
+export * from './shopPerks';
 export * from './cardStats';

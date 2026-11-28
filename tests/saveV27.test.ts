@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  initialArena,
   advance,
   ascend,
   createInitialState,
@@ -315,8 +316,13 @@ describe('v26 -> v27 (the table update)', () => {
     // format 46: the run's start floors are empty
     const prestige = raided['prestige'] as { shop: Record<string, number> };
     raided['prestige'] = { ...prestige, runFloors: {} };
-    // format 47 only sets autoChallenge, which this comparison leaves out
-    expect(again).toEqual({ ...raided, bossHp: null, activeDungeonId: 'mossy_cellar' });
+    // format 47 only sets autoChallenge, which this comparison leaves out; format 48 adds the arena
+    expect(again).toEqual({
+      ...raided,
+      arena: initialArena(),
+      bossHp: null,
+      activeDungeonId: 'mossy_cellar',
+    });
 
     // Saved again it is the current format and loads to the same state.
     const resaved = createSaveText(state, 1);

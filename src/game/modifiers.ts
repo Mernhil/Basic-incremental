@@ -14,6 +14,7 @@ import { bondModifiers } from './bonds';
 import { heirloomTreeModifiers } from './heirlooms';
 import { farmingModifiers } from './farming';
 import { challengeModifiers, restrictModifiers, restrictedView } from './challenges';
+import { shopPerkModifiers } from './shopPerks';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -43,6 +44,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'challenge',
   /** Heirloom trees: the bought nodes of the Heirlooms at work (DESIGN.md §10 Heirloom trees). */
   'heirloom',
+  /** Arena and raid shop Heirloom perks (DESIGN.md Arena and raids). */
+  'shop',
   /** Farming post traits (DESIGN.md §2 A team farms a finished dungeon). */
   'farm',
 ] as const;
@@ -245,6 +248,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Named pairs of cards at work together.
   out.push(...bondModifiers(state, content));
+
+  // Arena and raid shop Heirloom perks: scoped to the arena or the raid bosses.
+  out.push(...shopPerkModifiers(state, content));
 
   // Ascension challenges: rewards earned, the active rule's penalties, Training taken away.
   out.push(...challengeModifiers(state, content));

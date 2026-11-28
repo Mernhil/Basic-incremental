@@ -65,6 +65,8 @@ export interface GameState {
   summon: SummonState;
   /** Raid tries today, best scores and ladder rewards paid (DESIGN.md §2 Raid bosses). Save format 44. Kept through prestige. */
   raids: RaidState;
+  /** The arena, the 4-week seasons and the shop coins (arena.ts). Save format 48. */
+  arena: ArenaState;
   /** The starter weapon's pick. Kept through prestige. */
   starter: StarterState;
   /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
@@ -194,6 +196,86 @@ export interface RaidState {
 
 export function initialRaids(): RaidState {
   return { day: null, used: {}, best: {}, paid: {}, level: {} };
+}
+
+/** A season chest waiting to be claimed (arena.ts `claimSeasonChest`). */
+export interface SeasonChest {
+  mode: 'arena' | 'raid';
+  season: number;
+  /** The rank band's id (arena.json `ranks`). */
+  rank: string;
+  /** The final place on the ladder (1 = best). */
+  place: number;
+}
+
+/** A rank frame earned at a season's end (Top 100 and better). */
+export interface SeasonFrame {
+  mode: 'arena' | 'raid';
+  season: number;
+  rank: string;
+  place: number;
+}
+
+/** The arena, the season clock and the shop coins (arena.ts). The season figures belong to
+ *  `season` and start again when a new one begins; coins, bought Heirlooms, unclaimed chests and
+ *  frames stay. */
+export interface ArenaState {
+  /** The season the figures belong to (0: no season seen yet). */
+  season: number;
+  /** The clock (epoch ms) at the last season check: a clock set far back is noticed by it. */
+  checkedAt: number;
+  /** The newest season whose chests were made, so none is made twice. */
+  paidThrough: number;
+  /** Ladder points this season, and the fights won and lost. */
+  points: number;
+  wins: number;
+  losses: number;
+  /** The local day `used` counts fights of. */
+  day: string | null;
+  used: number;
+  /** Rival draws this season: which rival is offered. */
+  rolls: number;
+  /** Arena coins. */
+  coins: number;
+  /** Raid coins by boss id. */
+  raidCoins: Record<string, number>;
+  /** The best score share on each raid boss this season (the raid season ladder). */
+  raidBest: Record<string, number>;
+  /** Shop Heirloom card ids bought. */
+  bought: string[];
+  chests: SeasonChest[];
+  frames: SeasonFrame[];
+}
+
+export function initialArena(): ArenaState {
+  return {
+    season: 0,
+    checkedAt: 0,
+    paidThrough: 0,
+    points: 0,
+    wins: 0,
+    losses: 0,
+    day: null,
+    used: 0,
+    rolls: 0,
+    coins: 0,
+    raidCoins: {},
+    raidBest: {},
+    bought: [],
+    chests: [],
+    frames: [],
+  };
+}
+
+export function cloneArena(a: ArenaState): ArenaState {
+  return {
+    ...a,
+    raidCoins: { ...a.raidCoins },
+    raidBest: { ...a.raidBest },
+    bought: [...a.bought],
+    chests: a.chests.map((c) => ({ ...c })),
+    frames: a.frames.map((f) => ({ ...f })),
+  };
 }
 
 export function cloneRaids(r: RaidState): RaidState {
@@ -579,6 +661,7 @@ export function createInitialState(content: Content): GameState {
     upgrades: initialUpgrades(),
     summon: initialSummon(),
     raids: initialRaids(),
+    arena: initialArena(),
     starter: initialStarter(),
     presets: initialPresets(),
     discoveredBonds: [],
@@ -627,6 +710,7 @@ export function cloneState(state: GameState): GameState {
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     summon: { ...state.summon, tierRewardsClaimed: [...state.summon.tierRewardsClaimed] },
     raids: cloneRaids(state.raids),
+    arena: cloneArena(state.arena),
     starter: { ...state.starter },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
