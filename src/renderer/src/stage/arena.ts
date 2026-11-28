@@ -84,6 +84,7 @@ import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
 import './arena.css';
 import { paced } from './duelPace';
+import { hopMotion, hurtMotion } from './cardMotion';
 
 /**
  * The card duel (DESIGN.md §6 What the duel shows; UI_RULES.md §2 The duel's layout, Duel motion,
@@ -1351,21 +1352,8 @@ export function createArena(ctx: ArenaContext): Arena {
   // ---- the director's reports ----
   const hop = (slot: HandSlot): void => {
     if (calm() || slot.out) return;
-    const dpr = screenDpr();
     const n = Number(hand.style.getPropertyValue('--card-n')) || 1;
-    const lift = (HOP_ART_PX * n) / dpr;
-    slot.body.animate(
-      [
-        { transform: 'translateY(0)' },
-        { transform: `translateY(${-lift}px)`, offset: 0.45 },
-        { transform: 'translateY(0)' },
-      ],
-      { duration: paced(slot.hopMs), easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' },
-    );
-    slot.glow.animate([{ opacity: 0 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], {
-      duration: paced(slot.hopMs * 1.4),
-      easing: 'ease-out',
-    });
+    hopMotion(slot.body, slot.glow, slot.hopMs, (HOP_ART_PX * n) / screenDpr());
   };
 
   /**
@@ -1378,39 +1366,7 @@ export function createArena(ctx: ArenaContext): Arena {
    */
   const hurtCard = (slot: HandSlot, big: boolean): void => {
     for (const a of slot.hurtAnims) a.cancel();
-    const none = 'drop-shadow(0 0 0 rgb(255 138 90 / 0)) drop-shadow(0 0 0 rgb(255 138 90 / 0))';
-    const rim = big
-      ? 'drop-shadow(0 0 4px rgb(255 185 140 / 1)) drop-shadow(0 0 12px rgb(255 120 80 / 0.85))'
-      : 'drop-shadow(0 0 4px rgb(255 170 120 / 0.95)) drop-shadow(0 0 10px rgb(255 110 70 / 0.7))';
-    if (calm()) {
-      slot.hurtAnims = [
-        slot.body.animate(
-          [
-            { filter: none },
-            { filter: rim, offset: 0.1 },
-            { filter: rim, offset: 0.96 },
-            { filter: none },
-          ],
-          { duration: paced(300), easing: 'linear' },
-        ),
-      ];
-      return;
-    }
-    slot.hurtAnims = [
-      slot.body.animate([{ filter: none }, { filter: rim, offset: 0.12 }, { filter: none }], {
-        duration: paced(800),
-        easing: 'ease-out',
-      }),
-      slot.el.animate(
-        [
-          { transform: 'translateY(0)' },
-          { transform: 'translateY(8px)', offset: 0.15 },
-          { transform: 'translateY(0)', offset: 0.45 },
-          { transform: 'translateY(0)' },
-        ],
-        { duration: paced(450), easing: 'ease-out' },
-      ),
-    ];
+    slot.hurtAnims = hurtMotion(slot.body, slot.el, big, calm());
   };
 
   ctx.director.on('duel', (e) => {

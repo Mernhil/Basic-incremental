@@ -384,6 +384,25 @@ export interface ArenaSample {
   rivalDown: number;
 }
 
+/**
+ * One thing the screen can show, on the fight's clock (`t`, seconds): a card's plain blows
+ * (`hit`), its ultimate (`burst`) or heal (`heal`), or a card going down (`down`). `share` is
+ * the blow's damage as a share of the target's full health. Show only: it never changes the result.
+ */
+export interface ArenaEvent {
+  t: number;
+  side: 'you' | 'rival';
+  kind: 'hit' | 'burst' | 'heal' | 'down';
+  card: string;
+  /** The card the blow landed on (hit and burst). */
+  target?: string;
+  share?: number;
+  /** The blow's damage (hit and burst). */
+  damage?: Decimal;
+  /** The ultimate's name (burst). */
+  skill?: string;
+}
+
 export interface ArenaFight {
   won: boolean;
   seconds: number;
@@ -393,6 +412,8 @@ export interface ArenaFight {
   youHealth: number;
   rivalHealth: number;
   samples: ArenaSample[];
+  /** The blows, ultimates, heals and knockouts in time order, for the screen's animation. */
+  events: ArenaEvent[];
   /** Damage dealt by each side's cards, for the screen's read-out. */
   youPower: number;
   rivalPower: number;
@@ -450,6 +471,7 @@ export function duelTeams(
   const defY = 1 - defencePercent(you.modifiers, ARENA_ID) / 100;
   const defR = 1 - defencePercent(rival.modifiers, ARENA_ID) / 100;
   const samples: ArenaSample[] = [{ t: 0, you: 1, rival: 1, youDown: 0, rivalDown: 0 }];
+  const events: ArenaEvent[] = [];
   let t = 0;
   let nextSample = 1;
   let step = 0;
@@ -462,6 +484,7 @@ export function duelTeams(
       against: readonly TeamCard[],
       againstState: GameState,
       defence: number,
+      side: 'you' | 'rival',
     ): Map<string, Decimal> => {
       const dealt = new Map<string, Decimal>();
       const weaken = weakenFactor(againstState, against);
@@ -479,36 +502,64 @@ export function duelTeams(
             : relation === 'resist'
               ? 1 + resistance / 100
               : 1;
-        let damage = card.hit.mul(run.hits);
-        if (run.bursts > 0) damage = damage.add(card.signature.mul(run.bursts));
-        damage = damage.mul(factor).mul(element).mul(defence).mul(weaken);
+        const scale = factor.mul(element).mul(defence).mul(weaken);
+        const blow = card.hit.mul(run.hits).mul(scale);
+        const burst = run.bursts > 0 ? card.signature.mul(run.bursts).mul(scale) : new Decimal(0);
+        const damage = blow.add(burst);
+        const shareOf = (d: Decimal): number =>
+          target.maxHealth.gt(0) ? d.div(target.maxHealth).toNumber() : 0;
+        if (blow.gt(0))
+          events.push({
+            t,
+            side,
+            kind: 'hit',
+            card: card.id,
+            target: target.id,
+            share: shareOf(blow),
+            damage: blow,
+          });
+        if (burst.gt(0))
+          events.push({
+            t,
+            side,
+            kind: 'burst',
+            card: card.id,
+            target: target.id,
+            share: shareOf(burst),
+            damage: burst,
+            skill: card.moves?.ult.name ?? '',
+          });
         dealt.set(target.id, (dealt.get(target.id) ?? new Decimal(0)).add(damage));
       }
       return dealt;
     };
-    const onRival = hitsOn(you.team, sy, rival.team, sr, defR);
-    const onYou = hitsOn(rival.team, sr, you.team, sy, defY);
+    const onRival = hitsOn(you.team, sy, rival.team, sr, defR, 'you');
+    const onYou = hitsOn(rival.team, sr, you.team, sy, defY, 'rival');
     // Heals from ultimates fired in this step (before the blows land, on standing cards).
-    for (const [team, st] of [
-      [you.team, sy],
-      [rival.team, sr],
+    for (const [team, st, side] of [
+      [you.team, sy, 'you'],
+      [rival.team, sr, 'rival'],
     ] as const) {
       for (const card of team) {
         if (!isStanding(st, card) || card.heals.length === 0) continue;
         const run = cardRun(card, t, t1);
-        if (run.bursts > 0) healFromMoves(st, team, card, run.bursts);
+        if (run.bursts <= 0) continue;
+        healFromMoves(st, team, card, run.bursts);
+        events.push({ t, side, kind: 'heal', card: card.id });
       }
     }
-    for (const [dealt, team, st] of [
-      [onRival, rival.team, sr],
-      [onYou, you.team, sy],
+    for (const [dealt, team, st, side] of [
+      [onRival, rival.team, sr, 'rival'],
+      [onYou, you.team, sy, 'you'],
     ] as const) {
       for (const [id, amount] of dealt) {
         const card = team.find((c) => c.id === id);
         if (!card) continue;
         const taken = damageTaken(st, id).add(amount);
-        if (taken.gte(card.maxHealth)) knockOut(st, card);
-        else st.combat.cardDamage[id] = taken;
+        if (taken.gte(card.maxHealth)) {
+          knockOut(st, card);
+          events.push({ t: t1, side, kind: 'down', card: id });
+        } else st.combat.cardDamage[id] = taken;
       }
     }
     t = t1;
@@ -547,6 +598,7 @@ export function duelTeams(
     youHealth,
     rivalHealth,
     samples,
+    events,
     youPower: teamPower(you.team),
     rivalPower: teamPower(rival.team),
   };

@@ -378,3 +378,35 @@ html .px-btn.col-tab.is-on:not(#_px) {
   color: #1b1208;
   border-color: #ffd66e;
 }
+
+/* the fight's show (duelShow.ts): the same card hop, glow and soft rim as the dungeon duel */
+.col-floor {
+  position: relative;
+}
+.col-box {
+  position: relative;
+}
+.col-box__glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 55%, rgba(255, 224, 150, 0.55), transparent 68%);
+}
+.col-box__body {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.col-box.is-falling {
+  animation: col-fall 0.5s ease-in;
+}
+@keyframes col-fall {
+  to {
+    transform: translateY(6px);
+  }
+}
+/* an ultimate's special attack dims the floor; the striking card and its target keep their light */
+.col-floor.is-special .col-box:not(.is-special-src) {
+  filter: brightness(0.45);
+}

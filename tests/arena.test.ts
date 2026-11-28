@@ -198,6 +198,32 @@ describe('the fight', () => {
     expect(mirror.seconds).toBeLessThanOrEqual(content.arena.fights.maxSeconds);
   });
 
+  it('records every blow for the screen: who hit whom, when, and each knockout', () => {
+    const s = state();
+    const row = currentRival(s, content, now)!;
+    const fight = fightArena(s, content, row)!;
+    const ids = new Set([...s.cards.loadouts.fighting.slots.filter(Boolean)] as string[]);
+    expect(fight.events.length).toBeGreaterThan(5);
+    let last = 0;
+    for (const e of fight.events) {
+      expect(e.t).toBeGreaterThanOrEqual(last);
+      expect(e.t).toBeLessThanOrEqual(fight.seconds + 1e-6);
+      last = e.t;
+      if (e.kind === 'hit' || e.kind === 'burst') {
+        expect(e.target).toBeTruthy();
+        expect(e.share).toBeGreaterThan(0);
+        expect(e.damage?.gt(0)).toBe(true);
+        expect(ids.has(e.card)).toBe(e.side === 'you');
+      }
+    }
+    expect(fight.events.some((e) => e.kind === 'hit')).toBe(true);
+    // one 'down' per knocked-out card, on the side it fell
+    const downs = (side: string) =>
+      fight.events.filter((e) => e.kind === 'down' && e.side === side);
+    expect(downs('you').map((e) => e.card)).toEqual(fight.youOut);
+    expect(downs('rival').map((e) => e.card)).toEqual(fight.rivalOut);
+  });
+
   it('the stronger team wins', () => {
     const row = currentRival(state(), content, now)!;
     const weak = rivalTeam(content, row.archetype!, { ...row.band!, damage: 0.05, health: 0.05 });

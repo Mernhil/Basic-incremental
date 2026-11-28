@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arenaLadder, seasonStartMs, syncSeason } from '../src/game';
+import { arenaLadder, otherRival, seasonStartMs, syncSeason } from '../src/game';
 import {
   arenaScreen,
   bestTitle,
@@ -71,5 +71,17 @@ describe('the Arena view model', () => {
     expect(s.triesMax).toBe(content.arena.fights.perDay);
     expect(s.rival).not.toBeNull();
     expect(s.rival!.slots).toHaveLength(4);
+  });
+
+  it('shows the rival that was fought while a fight plays, not the next one on offer', () => {
+    const state = syncSeason(freshState(), content, S1 + DAY);
+    const fought = arenaScreen(state, content, S1 + DAY, '2026-12-01', false, 100).rival!.row;
+    const next = otherRival(state);
+    // the state after a try: a new rival is on offer
+    const after = arenaScreen(next, content, S1 + DAY, '2026-12-01', false, 100, fought);
+    expect(after.rival!.row.index).toBe(fought.index);
+    expect(after.rival!.slots.map((x) => x.id)).toEqual(
+      (fought.archetype?.cards ?? []).map((id) => id),
+    );
   });
 });

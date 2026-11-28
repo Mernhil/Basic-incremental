@@ -168,11 +168,13 @@ export function arenaScreen(
   today: string,
   whole: boolean,
   yourPower: number,
+  /** The rival of the fight now playing: its floor keeps showing them after the next rival is drawn. */
+  fought?: ArenaRow,
 ): ArenaScreen {
   const season = state.arena.season;
   const rows = arenaLadder(content, season, now, state.arena.points);
   const rank = arenaRank(state, content, now);
-  const rival = currentRival(state, content, now);
+  const rival = fought ?? currentRival(state, content, now);
   return {
     open: arenaOpen(state, content),
     season,

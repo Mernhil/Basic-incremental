@@ -18,6 +18,7 @@ import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
 import { coinHtml, shopCards } from '../../ui/shopCards';
+import { createDuelShow, type DuelBox, type DuelShow } from './duelShow';
 import { ARENA_COPY as T } from './copy';
 import {
   arenaScreen,
@@ -64,7 +65,8 @@ export function weaponBox(slot: TeamSlot, down = false): HTMLElement {
   box.title = slot.card.name;
   box.dataset['card'] = slot.id;
   box.classList.toggle('is-down', down);
-  box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" class="col-box__art" aria-hidden="true">${cardTierArt(slot.card)}</svg>`;
+  // the glow and the weapon are the two layers the fight's show moves (duelShow.ts)
+  box.innerHTML = `<span class="col-box__glow"></span><span class="col-box__body"><svg viewBox="${ITEM_VIEWBOX}" class="col-box__art" aria-hidden="true">${cardTierArt(slot.card)}</svg></span>`;
   return box;
 }
 
@@ -89,7 +91,13 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
   let tab: Tab = 'arena';
   let whole = false;
   let sig = '';
-  let played: { try: ArenaTry; startedAt: number; skipped: boolean } | null = null;
+  let played: {
+    try: ArenaTry;
+    startedAt: number;
+    skipped: boolean;
+    show: DuelShow | null;
+  } | null = null;
+  let frame = 0;
   let claimed: {
     text: string;
     mode: 'arena' | 'raid';
@@ -151,7 +159,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
     const r = tryArena(state, content, Date.now(), today());
     if (!r.ok) return;
     ctx.apply(r.state);
-    played = { try: r.result, startedAt: performance.now(), skipped: false };
+    played = { try: r.result, startedAt: performance.now(), skipped: false, show: null };
     notice = '';
     sig = '';
     render();
@@ -280,7 +288,10 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
     skip.dataset['key'] = 'arena-skip';
     skip.hidden = played === null;
     skip.addEventListener('click', () => {
-      if (played) played.skipped = true;
+      if (played) {
+        played.skipped = true;
+        played.show?.skip();
+      }
     });
     floor.append(head, stage, timer, result, skip);
     parts.push(floor);
@@ -294,6 +305,26 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
         result,
         skip,
       };
+      const boxOf = (el: HTMLElement): DuelBox => ({
+        id: el.dataset['card']!,
+        el,
+        body: el.querySelector<HTMLElement>('.col-box__body')!,
+        glow: el.querySelector<HTMLElement>('.col-box__glow')!,
+      });
+      played.show = createDuelShow(
+        floor,
+        content,
+        played.try.fight.events,
+        [...live.you, ...live.rival].map(boxOf),
+        ctx.sound,
+      );
+      window.cancelAnimationFrame(frame);
+      const loop = (): void => {
+        if (!played || !live) return;
+        renderFight();
+        frame = window.requestAnimationFrame(loop);
+      };
+      frame = window.requestAnimationFrame(loop);
     } else live = null;
 
     const lower = h('div', 'col-lower');
@@ -379,6 +410,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
       const id = el.dataset['card']!;
       el.classList.toggle('is-down', fight.rivalOut.slice(0, sample.rivalDown).includes(id));
     });
+    if (!played.skipped) played.show?.run(Math.min(elapsed, fight.seconds));
     live.skip.hidden = done;
     if (done && live.result.hidden) showResult();
   }
@@ -396,6 +428,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
     const again = h('button', 'px-btn', T.again);
     again.type = 'button';
     again.addEventListener('click', () => {
+      played?.show?.cancel();
       played = null;
       live = null;
       sig = '';
@@ -405,6 +438,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
     const close = h('button', 'px-btn', T.close);
     close.type = 'button';
     close.addEventListener('click', () => {
+      played?.show?.cancel();
       played = null;
       live = null;
       sig = '';
@@ -491,6 +525,7 @@ export function createArenaView(host: HTMLElement, ctx: TableContext, api: ViewA
           today(),
           whole,
           team.some((c) => c.maxHealth.gt(0)) ? teamPower(team) : 0,
+          played?.try.rival,
         ),
       );
     }
